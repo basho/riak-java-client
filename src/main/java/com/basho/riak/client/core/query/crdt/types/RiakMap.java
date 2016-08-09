@@ -27,37 +27,35 @@ import static java.util.Collections.unmodifiableMap;
 /**
  * Representation of the Riak map datatype.
  * <p>
- * This is an immutable map returned when querying Riak for 
+ * This is an immutable map returned when querying Riak for
  * a map datatype.
  * </p>
- * 
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public class RiakMap extends RiakDatatype
 {
-
-    private final Map<BinaryValue, List<RiakDatatype>> entries =
-        new HashMap<BinaryValue, List<RiakDatatype>>();
+    private final Map<BinaryValue, List<RiakDatatype>> entries = new HashMap<>();
 
     public RiakMap(List<MapEntry> mapEntries)
     {
-
         for (MapEntry entry : mapEntries)
         {
-	        List<RiakDatatype> datatypes;
+            List<RiakDatatype> datatypes;
             if ((datatypes = entries.get(entry.field)) == null)
             {
-	            datatypes = new LinkedList<RiakDatatype>();
-	            entries.put(entry.field, datatypes);
+                datatypes = new LinkedList<>();
+                entries.put(entry.field, datatypes);
             }
-	        datatypes.add(entry.element);
+            datatypes.add(entry.element);
         }
     }
 
     /**
-     * Returns the value(s) to which the specified key is mapped, or {@literal null} 
+     * Returns the value(s) to which the specified key is mapped, or {@literal null}
      * if the map contains no mapping for the key.
+     *
      * @param key key whose associated value(s) is to be returned.
      * @return a List containing one or more datatypes, or null if this map contains no mapping for the key.
      */
@@ -67,164 +65,174 @@ public class RiakMap extends RiakDatatype
     }
 
     /**
-     * Returns a RiakMap to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakMap to which the specified key is mapped, or {@literal null}
      * if no RiakMap is present.
+     *
      * @param key key whose associated RiakMap is to be returned.
      * @return a RiakMap, or null if one is not present.
      */
-	public RiakMap getMap(BinaryValue key)
-	{
-            if (entries.containsKey(key))
+    public RiakMap getMap(BinaryValue key)
+    {
+        if (entries.containsKey(key))
+        {
+            for (RiakDatatype dt : entries.get(key))
             {
-                for (RiakDatatype dt : entries.get(key))
+                if (dt.isMap())
                 {
-                    if (dt.isMap())
-                    {
-                        return dt.getAsMap();
-                    }
+                    return dt.getAsMap();
                 }
             }
-            return null;
-	}
+        }
+        return null;
+    }
 
     /**
-     * Returns a RiakMap to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakMap to which the specified key is mapped, or {@literal null}
      * if no RiakMap is present.
+     *
      * @param key key whose associated RiakMap is to be returned.
      * @return a RiakMap, or null if one is not present.
      */
-	public RiakMap getMap(String key)
-	{
-		return getMap(BinaryValue.create(key));
-	}
+    public RiakMap getMap(String key)
+    {
+        return getMap(BinaryValue.create(key));
+    }
 
     /**
-     * Returns a RiakSet to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakSet to which the specified key is mapped, or {@literal null}
      * if no RiakSet is present.
+     *
      * @param key key whose associated RiakSet is to be returned.
      * @return a RiakSet, or null if one is not present.
      */
-	public RiakSet getSet(BinaryValue key)
-	{
-            if (entries.containsKey(key))
+    public RiakSet getSet(BinaryValue key)
+    {
+        if (entries.containsKey(key))
+        {
+            for (RiakDatatype dt : entries.get(key))
             {
-                for (RiakDatatype dt : entries.get(key))
+                if (dt.isSet())
                 {
-                    if (dt.isSet())
-                    {
-                        return dt.getAsSet();
-                    }
+                    return dt.getAsSet();
                 }
             }
-            return null;
-	}
+        }
+        return null;
+    }
 
     /**
-     * Returns a RiakSet to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakSet to which the specified key is mapped, or {@literal null}
      * if no RiakSet is present.
+     *
      * @param key key whose associated RiakSet is to be returned.
      * @return a RiakSet, or null if one is not present.
      */
-	public RiakSet getSet(String key)
-	{
-		return getSet(BinaryValue.create(key));
-	}
+    public RiakSet getSet(String key)
+    {
+        return getSet(BinaryValue.create(key));
+    }
 
     /**
-     * Returns a RiakCounter to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakCounter to which the specified key is mapped, or {@literal null}
      * if no RiakCounter is present.
+     *
      * @param key key whose associated RiakCounter is to be returned.
      * @return a RiakCounter, or null if one is not present.
      */
-	public RiakCounter getCounter(BinaryValue key)
-	{
-            if (entries.containsKey(key))
+    public RiakCounter getCounter(BinaryValue key)
+    {
+        if (entries.containsKey(key))
+        {
+            for (RiakDatatype dt : entries.get(key))
             {
-                for (RiakDatatype dt : entries.get(key))
+                if (dt.isCounter())
                 {
-                    if (dt.isCounter())
-                    {
-                        return dt.getAsCounter();
-                    }
+                    return dt.getAsCounter();
                 }
             }
-            return null;
-	}
+        }
+        return null;
+    }
 
     /**
-     * Returns a RiakCounter to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakCounter to which the specified key is mapped, or {@literal null}
      * if no RiakCounter is present.
+     *
      * @param key key whose associated RiakCounter is to be returned.
      * @return a RiakCounter, or null if one is not present.
      */
-	public RiakCounter getCounter(String key)
-	{
-		return getCounter(BinaryValue.create(key));
-	}
+    public RiakCounter getCounter(String key)
+    {
+        return getCounter(BinaryValue.create(key));
+    }
 
     /**
-     * Returns a RiakFlag to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakFlag to which the specified key is mapped, or {@literal null}
      * if no RiakFlag is present.
+     *
      * @param key key whose associated RiakFlag is to be returned.
      * @return a RiakFlag, or null if one is not present.
      */
-	public RiakFlag getFlag(BinaryValue key)
-	{
-            if (entries.containsKey(key))
+    public RiakFlag getFlag(BinaryValue key)
+    {
+        if (entries.containsKey(key))
+        {
+            for (RiakDatatype dt : entries.get(key))
             {
-                for (RiakDatatype dt : entries.get(key))
+                if (dt.isFlag())
                 {
-                    if (dt.isFlag())
-                    {
-                        return dt.getAsFlag();
-                    }
+                    return dt.getAsFlag();
                 }
             }
-            return null;
-	}
+        }
+        return null;
+    }
 
     /**
-     * Returns a RiakFlag to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakFlag to which the specified key is mapped, or {@literal null}
      * if no RiakFlag is present.
+     *
      * @param key key whose associated RiakFlag is to be returned.
      * @return a RiakFlag, or null if one is not present.
      */
-	public RiakFlag getFlag(String key)
-	{
-		return getFlag(BinaryValue.create(key));
-	}
+    public RiakFlag getFlag(String key)
+    {
+        return getFlag(BinaryValue.create(key));
+    }
 
     /**
-     * Returns a RiakRegister to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakRegister to which the specified key is mapped, or {@literal null}
      * if no RiakRegister is present.
+     *
      * @param key key whose associated RiakRegister is to be returned.
      * @return a RiakRegister, or null if one is not present.
      */
-	public RiakRegister getRegister(BinaryValue key)
-	{
-            if (entries.containsKey(key))
+    public RiakRegister getRegister(BinaryValue key)
+    {
+        if (entries.containsKey(key))
+        {
+            for (RiakDatatype dt : entries.get(key))
             {
-                for (RiakDatatype dt : entries.get(key))
+                if (dt.isRegister())
                 {
-                    if (dt.isRegister())
-                    {
-                        return dt.getAsRegister();
-                    }
+                    return dt.getAsRegister();
                 }
             }
-            return null;
-	}
+        }
+        return null;
+    }
 
     /**
-     * Returns a RiakRegister to which the specified key is mapped, or {@literal null} 
+     * Returns a RiakRegister to which the specified key is mapped, or {@literal null}
      * if no RiakRegister is present.
+     *
      * @param key key whose associated RiakRegister is to be returned.
      * @return a RiakRegister, or null if one is not present.
      */
-	public RiakRegister getRegister(String key)
-	{
-		return getRegister(BinaryValue.create(key));
-	}
+    public RiakRegister getRegister(String key)
+    {
+        return getRegister(BinaryValue.create(key));
+    }
 
     /**
      * Get this RiakMap as a {@link Map}. The returned Map is unmodifiable.
@@ -235,6 +243,30 @@ public class RiakMap extends RiakDatatype
     public Map<BinaryValue, List<RiakDatatype>> view()
     {
         return unmodifiableMap(entries);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        RiakMap riakMap = (RiakMap) o;
+
+        return entries != null ? entries.equals(riakMap.entries) : riakMap.entries == null;
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return entries != null ? entries.hashCode() : 0;
     }
 
     /**
@@ -263,6 +295,4 @@ public class RiakMap extends RiakDatatype
         }
 
     }
-
-
 }
