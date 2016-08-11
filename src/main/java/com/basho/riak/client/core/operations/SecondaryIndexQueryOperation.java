@@ -18,6 +18,7 @@ package com.basho.riak.client.core.operations;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -83,7 +84,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
              * Also, the $key index queries just ignore return_terms altogether.
              */
 
-            if (pbReq.getReturnTerms() && !query.indexName.toString().equalsIgnoreCase("$key"))
+            if (pbReq.getReturnTerms() && !query.indexName.toString().equalsIgnoreCase(IndexNames.KEY))
             {
                 convertTerms(responseBuilder, pbEntry);
             }
@@ -227,7 +228,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                         .setIndex(ByteString.copyFrom(query.indexName.unsafeGetValue()))
                         .setReturnTerms(query.returnKeyAndIndex)
                         .setReturnBody(query.returnBody);
-            
+
             if (query.indexKey != null)
             {
                 pbReqBuilder.setKey(ByteString.copyFrom(query.indexKey.unsafeGetValue()))
@@ -246,7 +247,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
 
                 pbReqBuilder.setCoverContext(ByteString.copyFrom(query.coverageContext))
                     .setKey(ByteString.EMPTY)
-                    .setIndex(ByteString.copyFromUtf8("$bucket"))
+                    .setIndex(ByteString.copyFromUtf8(IndexNames.BUCKET))
                     .clearReturnTerms()
                     .setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
             }
@@ -445,7 +446,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
             private Integer timeout;
             private byte[] coverageContext;
             private boolean returnBody;
-            
+
             /**
             * Constructs a builder for a (2i) Query.
             * The index name must be the complete name with the _int or _bin suffix.

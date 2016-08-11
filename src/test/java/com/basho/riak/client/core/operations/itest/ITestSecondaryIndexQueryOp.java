@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc. 
+ * Copyright 2013 Basho Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.query.indexes.LongIntIndex;
 import com.basho.riak.client.core.query.indexes.StringBinIndex;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -153,7 +154,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         Assume.assumeTrue(test2i);
 
         SecondaryIndexQueryOperation.Query query =
-                new SecondaryIndexQueryOperation.Query.Builder(defaultTypeNamespace, BinaryValue.unsafeCreate("$bucket".getBytes()))
+                new SecondaryIndexQueryOperation.Query.Builder(defaultTypeNamespace, BinaryValue.unsafeCreate(IndexNames.BUCKET.getBytes()))
                         .withIndexKey(BinaryValue.create(bucketName))
                         .withReturnKeyAndIndex(true)
                         .build();
@@ -174,7 +175,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         Assume.assumeTrue(test2i);
 
         SecondaryIndexQueryOperation.Query query =
-                new SecondaryIndexQueryOperation.Query.Builder(defaultTypeNamespace, BinaryValue.unsafeCreate("$key".getBytes()))
+                new SecondaryIndexQueryOperation.Query.Builder(defaultTypeNamespace, BinaryValue.unsafeCreate(IndexNames.KEY.getBytes()))
                         .withRangeStart(BinaryValue.create("my_key10"))
                         .withRangeEnd(BinaryValue.create("my_key19"))
                         .withReturnKeyAndIndex(true)

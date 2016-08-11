@@ -23,6 +23,7 @@ import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.google.protobuf.ByteString;
 
@@ -109,12 +110,12 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
         {
             public BuilderFullBucketRead2i(Namespace namespace)
             {
-                super(namespace, "$bucket", BinaryValue.create(ByteString.EMPTY.toByteArray()));
+                super(namespace, IndexNames.BUCKET, BinaryValue.create(ByteString.EMPTY.toByteArray()));
             }
 
             public BuilderFullBucketRead2i(Namespace namespace, byte[] coverageContext)
             {
-                super(namespace, "$bucket", coverageContext);
+                super(namespace, IndexNames.BUCKET, namespace.getBucketName(), coverageContext);
             }
 
             @Override

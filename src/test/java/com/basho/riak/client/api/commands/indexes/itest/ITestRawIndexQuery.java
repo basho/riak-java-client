@@ -22,9 +22,7 @@ import com.basho.riak.client.api.annotations.RiakIndex;
 import com.basho.riak.client.api.annotations.RiakKey;
 import com.basho.riak.client.api.annotations.RiakVClock;
 import com.basho.riak.client.api.cap.VClock;
-import com.basho.riak.client.api.commands.indexes.BucketIndexQuery;
-import com.basho.riak.client.api.commands.indexes.KeyIndexQuery;
-import com.basho.riak.client.api.commands.indexes.RawIndexQuery;
+import com.basho.riak.client.api.commands.indexes.*;
 import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery.Type;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.core.RiakFuture;
@@ -33,6 +31,7 @@ import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.*;
 
@@ -116,7 +115,7 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
         RiakClient client = new RiakClient(cluster);
 
         RawIndexQuery biq  =
-            new RawIndexQuery.Builder(sharedNamespace, "$key", Type._KEY, BinaryValue.create("my_key10"), BinaryValue.create("my_key19"))
+            new RawIndexQuery.Builder(sharedNamespace, IndexNames.KEY, Type._KEY, BinaryValue.create("my_key10"), BinaryValue.create("my_key19"))
                 .withKeyAndIndex(true).build();
         RawIndexQuery.Response iResp = client.execute(biq);
         assertTrue(iResp.hasEntries());
@@ -145,7 +144,8 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
         RiakClient client = new RiakClient(cluster);
 
         RawIndexQuery biq  =
-            new RawIndexQuery.Builder(sharedNamespace, "$bucket", Type._BUCKET, BinaryValue.create(sharedBucket))
+            new RawIndexQuery.Builder(sharedNamespace,
+                                      IndexNames.BUCKET, Type._BUCKET, BinaryValue.create(sharedBucket))
                 .withKeyAndIndex(true).build();
 
         RawIndexQuery.Response iResp = client.execute(biq);
@@ -162,7 +162,7 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
 
         BucketIndexQuery bq = new BucketIndexQuery.Builder(sharedNamespace).build();
 
-        final RawIndexQuery.Response bqResp = client.execute(bq);
+        final BinIndexQuery.Response bqResp = client.execute(bq);
         assertTrue(bqResp.hasEntries());
         assertEquals(100, bqResp.getEntries().size());
     }

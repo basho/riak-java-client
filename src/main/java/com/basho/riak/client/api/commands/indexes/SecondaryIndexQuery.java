@@ -415,13 +415,15 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
          * </p>
          * @param namespace the namespace for this query
          * @param indexName the index name
+         * @param match     the index value.
          * @param coverageContext the cover context. An opaque binary received from coverage context entry
          *                        to be sent back to Riak for receiving appropriate data.
          */
-        public Init(Namespace namespace, String indexName, byte[] coverageContext)
+        public Init(Namespace namespace, String indexName, S match, byte[] coverageContext)
         {
             this.namespace = namespace;
             this.indexName = indexName;
+            this.match = match;
             this.coverageContext = coverageContext;
         }
 
@@ -550,7 +552,7 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
         final protected IndexConverter<T> converter;
         final protected SecondaryIndexQueryOperation.Response coreResponse;
         final protected Namespace queryLocation;
-        
+
         protected Response(Namespace queryLocation,
                            SecondaryIndexQueryOperation.Response coreResponse,
                            IndexConverter<T> converter)
