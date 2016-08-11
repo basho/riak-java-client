@@ -57,7 +57,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     private final LinkedBlockingQueue<FutureOperation> retryQueue =
         new LinkedBlockingQueue<FutureOperation>();
     private final boolean queueOperations;
-    private final LinkedBlockingDeque<FutureOperation> operationQueue;
+    private final ConcurrentLinkedDeque<FutureOperation> operationQueue;
     private final List<NodeStateListener> stateListeners =
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
 
@@ -120,7 +120,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         if (this.queueOperations)
         {
             this.operationQueueMaxDepth = builder.operationQueueMaxDepth;
-            this.operationQueue = new LinkedBlockingDeque<FutureOperation>();
+            this.operationQueue = new ConcurrentLinkedDeque<>();
 
             for (RiakNode node : nodeList)
             {
@@ -262,7 +262,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
     private void executeWithQueueStrategy(FutureOperation operation, RiakNode previousNode)
     {
-        if (operationQueue.size() >= operationQueueMaxDepth)
+        final int currentSize = operationQueue.size();
+        if (operationQueueMaxDepth <= currentSize)
         {
             logger.warn("No Nodes Available, and Operation Queue at Max Depth");
             operation.setRetrier(this, 1);
@@ -473,7 +474,12 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
     private void queueDrainOperation() throws InterruptedException
     {
-        FutureOperation operation = operationQueue.take();
+        FutureOperation operation = operationQueue.poll();
+        if(operation == null)
+        {
+            Thread.sleep(50);
+            return;
+        }
 
         boolean connectionSuccess = executeWithRequeueOnNoConnection(operation);
 
