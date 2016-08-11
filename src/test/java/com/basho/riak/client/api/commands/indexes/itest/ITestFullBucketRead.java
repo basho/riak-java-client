@@ -10,13 +10,11 @@ import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.CoveragePlanOperation;
 import com.basho.riak.client.core.operations.CoveragePlanOperation.Response.CoverageEntry;
 import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
+import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.HostAndPort;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,14 +27,14 @@ import static org.junit.Assert.*;
 /**
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
-public class ITestFullBucketRead extends ITestAutoCleanupBase
+public class ITestFullBucketRead extends ITestBase
 {
     final static int minPartitions = 5;
     final static int NUMBER_OF_TEST_VALUES = 100;
     private final static Logger logger = LoggerFactory.getLogger(ITestFullBucketRead.class);
 
-    private CoveragePlan.Response coveragePlan;
-    private RiakClient client;
+    private static CoveragePlan.Response coveragePlan;
+    private static RiakClient client;
 
     // TODO: Remove assumption as Riak KV with PEx and Coverage plan will be released
     @BeforeClass
@@ -44,8 +42,8 @@ public class ITestFullBucketRead extends ITestAutoCleanupBase
         Assume.assumeTrue(testTimeSeries);
     }
 
-    @Before
-    public void setupData() throws ExecutionException, InterruptedException
+    @BeforeClass
+    public static void setupData() throws ExecutionException, InterruptedException
     {
         String indexName = "creationNo";
         String keyBase = "k";
@@ -77,6 +75,16 @@ public class ITestFullBucketRead extends ITestAutoCleanupBase
 
         // To be sure that settle down across nodes
         Thread.sleep(1000);
+    }
+
+    @AfterClass
+    public static void cleanupData() throws ExecutionException, InterruptedException
+    {
+        resetAndEmptyBucket(bucketName);
+        if (testBucketType)
+        {
+            resetAndEmptyBucket(defaultNamespace());
+        }
     }
 
     @Test
