@@ -25,7 +25,7 @@ import org.powermock.reflect.Whitebox;
 
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.Assert.*;
@@ -88,7 +88,7 @@ public class RiakClusterTest
             }
         }
     }
-    
+
     @Test
     public void addNodeToCluster() throws UnknownHostException
     {
@@ -96,13 +96,13 @@ public class RiakClusterTest
         RiakNode node = mock(RiakNode.class);
         RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
         doReturn(node).when(nodeBuilder).build();
-        
+
         RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).withNodeManager(nodeManager).build();
         cluster.addNode(nodeBuilder.build());
         assertEquals(2, cluster.getNodes().size());
         verify(nodeManager).addNode(node);
     }
-    
+
     @Test
     public void removeNodeFromCluster()
     {
@@ -111,13 +111,13 @@ public class RiakClusterTest
         RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
         doReturn(node).when(nodeBuilder).build();
         doReturn(true).when(nodeManager).removeNode(node);
-        
+
         RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).withNodeManager(nodeManager).build();
         assertTrue(cluster.removeNode(node));
         verify(nodeManager).removeNode(node);
         assertEquals(0, cluster.getNodes().size());
     }
-    
+
     @Test
     public void allNodesShutdownStopsCluster()
     {
@@ -126,13 +126,13 @@ public class RiakClusterTest
         RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
         doReturn(node).when(nodeBuilder).build();
         doReturn(true).when(nodeManager).removeNode(node);
-        
+
         RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).withNodeManager(nodeManager).build();
         cluster.nodeStateChanged(node, RiakNode.State.SHUTDOWN);
         RiakCluster.State state = Whitebox.getInternalState(cluster, "state");
         assertEquals(state, RiakCluster.State.SHUTDOWN);
     }
-    
+
     @Test
     @SuppressWarnings("unchecked")
     public void clusterExecutesOperation()
@@ -143,7 +143,7 @@ public class RiakClusterTest
         RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
         doReturn(node).when(nodeBuilder).build();
         doReturn(true).when(node).execute(operation);
-        
+
         RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).withNodeManager(nodeManager).build();
         Whitebox.setInternalState(cluster, "state", RiakCluster.State.RUNNING);
         cluster.execute(operation);
@@ -151,7 +151,7 @@ public class RiakClusterTest
         verify(nodeManager).executeOnNode(operation, null);
         cluster.operationComplete(operation, 2);
         assertEquals(0, cluster.inFlightCount());
-        
+
         cluster.execute(operation);
         cluster.operationFailed(operation, 1);
         LinkedBlockingQueue<?> retryQueue = Whitebox.getInternalState(cluster, "retryQueue");
@@ -230,7 +230,7 @@ public class RiakClusterTest
                                                         FutureOperation expectedQueueHead)
     {
         boolean queueEnabled = Whitebox.getInternalState(cluster, "queueOperations");
-        LinkedBlockingDeque< FutureOperation > operationQueue = Whitebox.getInternalState(cluster, "operationQueue");
+        ConcurrentLinkedDeque<FutureOperation > operationQueue = Whitebox.getInternalState(cluster, "operationQueue");
         RiakCluster.State state = Whitebox.getInternalState(cluster, "state");
         assertTrue(queueEnabled);
         assertEquals((long)expectedQueueSize, operationQueue.size());
