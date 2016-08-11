@@ -244,7 +244,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
             // Queue it up, run next from queue
             if (this.queueOperations)
             {
-                executeWithQueueStrategy(operation, null);
+                executeWithQueueStrategy(operation);
             }
             else // Out of connections, retrier will pick it up later.
             {
@@ -260,12 +260,13 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         return !this.queueOperations || this.operationQueue.size() == 0;
     }
 
-    private void executeWithQueueStrategy(FutureOperation operation, RiakNode previousNode)
+    private void executeWithQueueStrategy(FutureOperation operation)
     {
         final int currentSize = operationQueue.size();
         if (operationQueueMaxDepth <= currentSize)
         {
-            logger.warn("No Nodes Available, and Operation Queue at Max Depth");
+            logger.warn("Can't execute operation {}, no connections available, and Operation Queue at Max Depth",
+                        System.identityHashCode(operation));
             operation.setRetrier(this, 1);
             operation.setException(new NoNodesAvailableException("No Nodes Available, and Operation Queue at Max Depth"));
             return;
@@ -286,12 +287,15 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
     private boolean executeWithRequeueOnNoConnection(FutureOperation operation)
     {
+        logger.debug("Queued operation {} attempting to be executed.", System.identityHashCode(operation));
         // Attempt to run
         boolean gotConnection = this.execute(operation, null);
 
         // If we can't get a connection, put it back at the beginning of the queue
         if (!gotConnection)
         {
+            logger.debug("Queued operation {} wasn't executed, no connection available, requeuing operation.",
+                         System.identityHashCode(operation));
             operationQueue.offerFirst(operation);
         }
 
@@ -307,11 +311,11 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         if (queueSize > 0 && state == State.RUNNING)
         {
             state = State.QUEUING;
-            logger.debug("RiakCluster queuing operations.");
+            logger.debug("RiakCluster state change: Now Queuing operations.");
         }
         else if (queueSize == 0 && (state == State.QUEUING || state == State.SHUTTING_DOWN))
         {
-            logger.debug("RiakCluster cleared operation queue.");
+            logger.debug("RiakCluster state change: Cleared operation queue.");
             if (state == State.QUEUING)
             {
                 state = State.RUNNING;
@@ -442,7 +446,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     @Override
     public void operationFailed(FutureOperation operation, int remainingRetries)
     {
-        logger.debug("operation failed; remaining retries: {}", remainingRetries);
+        logger.debug("operation {} failed; remaining retries: {}", System.identityHashCode(operation), remainingRetries);
         if (remainingRetries > 0)
         {
             retryQueue.add(operation);
@@ -457,7 +461,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     public void operationComplete(FutureOperation operation, int remainingRetries)
     {
         inFlightCount.decrementAndGet();
-        logger.debug("operation complete; remaining retries: {}", remainingRetries);
+        logger.debug("operation {} complete; remaining retries: {}", System.identityHashCode(operation), remainingRetries);
     }
 
     private void retryOperation() throws InterruptedException
@@ -474,9 +478,11 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
     private void queueDrainOperation() throws InterruptedException
     {
+        logger.debug("QueueDrainer - Polling for queued operations.");
         FutureOperation operation = operationQueue.poll();
         if(operation == null)
         {
+            logger.debug("QueueDrainer - No queued operation available, sleeping.");
             Thread.sleep(50);
             return;
         }
@@ -487,6 +493,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         // Sleep for a bit so we don't spinwait our CPUs to death
         if (!connectionSuccess)
         {
+            logger.debug("QueueDrainer - Pulled queued operation {}, but no connection available, sleeping.", System.identityHashCode(operation));
+
             // TODO: should this timeout be configurable, or based on an
             // average command execution time?
             Thread.sleep(50);
