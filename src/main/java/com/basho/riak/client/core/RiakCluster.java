@@ -47,7 +47,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     enum State { CREATED, RUNNING, QUEUING, SHUTTING_DOWN, SHUTDOWN }
     private final Logger logger = LoggerFactory.getLogger(RiakCluster.class);
     private final int executionAttempts;
-    private final int operationQueueMaxDepth;
     private final NodeManager nodeManager;
     private final AtomicInteger inFlightCount = new AtomicInteger();
     private final ScheduledExecutorService executor;
@@ -58,6 +57,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         new LinkedBlockingQueue<FutureOperation>();
     private final boolean queueOperations;
     private final ConcurrentLinkedDeque<FutureOperation> operationQueue;
+    private final RiakNode.Sync operationQueuePermits;
     private final List<NodeStateListener> stateListeners =
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
 
@@ -119,8 +119,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
         if (this.queueOperations)
         {
-            this.operationQueueMaxDepth = builder.operationQueueMaxDepth;
             this.operationQueue = new ConcurrentLinkedDeque<>();
+            this.operationQueuePermits = new RiakNode.Sync(builder.operationQueueMaxDepth);
 
             for (RiakNode node : nodeList)
             {
@@ -129,12 +129,12 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         }
         else
         {
-            this.operationQueueMaxDepth = 0;
+            this.operationQueuePermits = new RiakNode.Sync(0);
             this.operationQueue = null;
         }
 
         // Pass a *copy* of the list to the NodeManager
-        nodeManager.init(new ArrayList<RiakNode>(nodeList));
+        nodeManager.init(new ArrayList<>(nodeList));
         state = State.CREATED;
     }
 
@@ -262,8 +262,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
     private void executeWithQueueStrategy(FutureOperation operation)
     {
-        final int currentSize = operationQueue.size();
-        if (operationQueueMaxDepth <= currentSize)
+        if (!operationQueuePermits.tryAcquire())
         {
             logger.warn("Can't execute operation {}, no connections available, and Operation Queue at Max Depth",
                         System.identityHashCode(operation));
@@ -298,15 +297,19 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                          System.identityHashCode(operation));
             operationQueue.offerFirst(operation);
         }
+        else
+        {
+            operationQueuePermits.release();
+        }
 
         verifyQueueStatus();
 
         return gotConnection;
     }
 
-    private void verifyQueueStatus()
+    private synchronized void verifyQueueStatus()
     {
-        Integer queueSize = operationQueue.size();
+        Integer queueSize = operationQueuePermits.getMaxPermits() - operationQueuePermits.availablePermits();
 
         if (queueSize > 0 && state == State.RUNNING)
         {

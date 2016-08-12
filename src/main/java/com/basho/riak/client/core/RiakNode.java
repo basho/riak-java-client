@@ -994,7 +994,7 @@ public class RiakNode implements RiakResponseListener
         }
     }
 
-    private class Sync extends Semaphore
+    static class Sync extends Semaphore
     {
         private static final long serialVersionUID = -5118488872281021072L;
         private volatile int maxPermits;
