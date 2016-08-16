@@ -118,9 +118,9 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
             super(namespace, indexName + Type._INT, start, end);
         }
 
-        public Init(Namespace namespace, String indexName, S match, byte[] coverContext)
+        public Init(Namespace namespace, String indexName, byte[] coverContext)
         {
-            super(namespace, indexName + Type._INT, match, coverContext);
+            super(namespace, indexName + Type._INT, coverContext);
         }
 
         public Init(Namespace namespace, String indexName, S match)
@@ -149,12 +149,11 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
          * <p>
          * @param namespace The namespace in Riak to query.
          * @param indexName The name of the index in Riak.
-         * @param match the 2i key.
          * @param coverContext cover context.
          */
-        public Builder(Namespace namespace, String indexName, Long match, byte[] coverContext)
+        public Builder(Namespace namespace, String indexName, byte[] coverContext)
         {
-            super(namespace, indexName, match, coverContext);
+            super(namespace, indexName, coverContext);
         }
 
         /**

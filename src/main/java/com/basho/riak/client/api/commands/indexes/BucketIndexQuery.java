@@ -36,7 +36,7 @@ public class BucketIndexQuery extends BinIndexQuery
 
         public Builder(Namespace namespace, byte[] coverContext)
         {
-            super(namespace, IndexNames.BUCKET, namespace.getBucketName().toStringUtf8(), coverContext);
+            super(namespace, IndexNames.BUCKET, coverContext);
         }
 
         @Override

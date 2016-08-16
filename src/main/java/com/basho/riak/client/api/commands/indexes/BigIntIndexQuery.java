@@ -124,9 +124,9 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
             super(namespace, indexName + Type._INT, match);
         }
 
-        public Init(Namespace namespace, String indexName, S match, byte[] coverContext)
+        public Init(Namespace namespace, String indexName, byte[] coverContext)
         {
-            super(namespace, indexName + Type._INT, match, coverContext);
+            super(namespace, indexName + Type._INT, coverContext);
         }
 
         @Override
@@ -149,12 +149,11 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
          * <p>
          * @param namespace The namespace in Riak to query.
          * @param indexName The name of the index in Riak.
-         * @param match the 2i key.
          * @param coverContext cover context.
          */
-        public Builder(Namespace namespace, String indexName, BigInteger match, byte[] coverContext)
+        public Builder(Namespace namespace, String indexName,  byte[] coverContext)
         {
-            super(namespace, indexName, match, coverContext);
+            super(namespace, indexName, coverContext);
         }
 
         /**

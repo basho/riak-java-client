@@ -129,9 +129,9 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
             super(namespace, generateIndexName(indexName), match);
         }
 
-        public Init(Namespace namespace, String indexName, S match, byte[] coverContext)
+        public Init(Namespace namespace, String indexName, byte[] coverContext)
         {
-            super(namespace, generateIndexName(indexName), match, coverContext);
+            super(namespace, generateIndexName(indexName), coverContext);
         }
 
         private static String generateIndexName(String baseIndexName)
@@ -168,9 +168,9 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
          * @param indexName The name of the index in Riak.
          * @param coverContext cover context.
          */
-        public Builder(Namespace namespace, String indexName, String match, byte[] coverContext)
+        public Builder(Namespace namespace, String indexName, byte[] coverContext)
         {
-            super(namespace, indexName, match, coverContext);
+            super(namespace, indexName, coverContext);
         }
 
         /**
@@ -290,6 +290,10 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
         @Override
         public BinaryValue convert(String input)
         {
+            if (input == null )
+            {
+                return null;
+            }
             return BinaryValue.create(input, charset);
         }
 
