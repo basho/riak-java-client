@@ -110,7 +110,7 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
         {
             public BuilderFullBucketRead2i(Namespace namespace)
             {
-                super(namespace, IndexNames.BUCKET, (BinaryValue)null);
+                super(namespace, IndexNames.BUCKET, namespace.getBucketName());
             }
 
             public BuilderFullBucketRead2i(Namespace namespace, byte[] coverageContext)
