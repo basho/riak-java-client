@@ -550,7 +550,7 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
         final protected IndexConverter<T> converter;
         final protected SecondaryIndexQueryOperation.Response coreResponse;
         final protected Namespace queryLocation;
-        
+
         protected Response(Namespace queryLocation,
                            SecondaryIndexQueryOperation.Response coreResponse,
                            IndexConverter<T> converter)
