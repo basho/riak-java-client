@@ -38,12 +38,13 @@ public class ITestFullBucketRead extends ITestBase
 
     // TODO: Remove assumption as Riak KV with PEx and Coverage plan will be released
     @BeforeClass
-    public static void BeforeClass() {
+    public static void BeforeClass() throws ExecutionException, InterruptedException
+    {
         Assume.assumeTrue(testTimeSeries);
+        setupData();
     }
 
-    @BeforeClass
-    public static void setupData() throws ExecutionException, InterruptedException
+    private static void setupData() throws ExecutionException, InterruptedException
     {
         String indexName = "creationNo";
         String keyBase = "k";
@@ -51,9 +52,17 @@ public class ITestFullBucketRead extends ITestBase
 
         setupIndexTestData(defaultNamespace(), indexName, keyBase, value);
 
+        setupCoveragePlan();
+
+        // To be sure that settle down across nodes
+        Thread.sleep(1000);
+    }
+
+    private static void setupCoveragePlan() throws ExecutionException, InterruptedException
+    {
         final CoveragePlan cmd = CoveragePlan.Builder.create(defaultNamespace())
-            .withMinPartitions(minPartitions)
-            .build();
+                                                     .withMinPartitions(minPartitions)
+                                                     .build();
 
         client = new RiakClient(cluster);
 
@@ -62,7 +71,7 @@ public class ITestFullBucketRead extends ITestBase
         if (logger.isInfoEnabled())
         {
             final StringBuilder builder = new StringBuilder("\n\tGot the following list of Coverage Entries:");
-            for (CoveragePlanOperation.Response.CoverageEntry ce : coveragePlan)
+            for (CoverageEntry ce : coveragePlan)
             {
                 builder.append(String.format("\n\t%s:%d ('%s')",
                     ce.getHost(),
@@ -72,9 +81,6 @@ public class ITestFullBucketRead extends ITestBase
             }
             logger.info(builder.toString());
         }
-
-        // To be sure that settle down across nodes
-        Thread.sleep(1000);
     }
 
     @AfterClass

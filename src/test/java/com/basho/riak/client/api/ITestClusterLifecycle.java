@@ -36,7 +36,7 @@ public class ITestClusterLifecycle
 
     public ITestClusterLifecycle()
     {
-        testLifecycle = Boolean.getBoolean("com.basho.riak.lifecycle");
+        testLifecycle = Boolean.parseBoolean(System.getProperty("com.basho.riak.lifecycle", "true"));
         hostname = System.getProperty("com.basho.riak.host", RiakNode.Builder.DEFAULT_REMOTE_ADDRESS);
 
         pbcPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);

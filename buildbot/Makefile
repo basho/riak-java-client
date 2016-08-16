@@ -47,7 +47,11 @@ test: test-normal test-security
 
 test-normal:
 	$(RIAK_ADMIN) security disable
-	@cd ..; mvn -Pitest,default -Dcom.basho.riak.2i=true -Dcom.basho.riak.yokozuna=true -Dcom.basho.riak.buckettype=true -Dcom.basho.riak.crdt=true -Dcom.basho.riak.lifecycle=true verify
+	@cd ..; mvn -Pitest,default verify
+
+test-timeseries:
+	$(RIAK_ADMIN) security disable
+	mvn -Pitest,default -Dcom.basho.riak.timeseries=true verify
 
 test-security:
 	$(RIAK_ADMIN) security enable

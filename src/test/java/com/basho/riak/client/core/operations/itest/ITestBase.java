@@ -86,7 +86,7 @@ public abstract class ITestBase
             NoSuchAlgorithmException
     {
         bucketName = BinaryValue.unsafeCreate("ITestBase".getBytes());
-        
+
         /**
          * Riak security.
          *
@@ -94,7 +94,7 @@ public abstract class ITestBase
          * in the README.md's "Security Tests" section.
          */
 
-        security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
+        security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security", "false"));
         overrideCert = System.getProperty("com.basho.riak.security.cacert");
 
         /**
@@ -106,7 +106,7 @@ public abstract class ITestBase
          * riak-admin bucket-type activate yokozuna
          */
         yokozunaBucketType = BinaryValue.create("yokozuna");
-        testYokozuna = Boolean.parseBoolean(System.getProperty("com.basho.riak.yokozuna"));
+        testYokozuna = Boolean.parseBoolean(System.getProperty("com.basho.riak.yokozuna", "true"));
 
         /**
          * Bucket type
@@ -116,7 +116,7 @@ public abstract class ITestBase
          * riak-admin bucket-type create plain '{"props":{}}'
          * riak-admin bucket-type activate plain
          */
-        testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
+        testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype", "true"));
         bucketType = BinaryValue.unsafeCreate("plain".getBytes());
 
         /**
@@ -124,10 +124,10 @@ public abstract class ITestBase
          *
          * The backend must be 'leveldb' in riak config to us this
          */
-        test2i = Boolean.parseBoolean(System.getProperty("com.basho.riak.2i"));
+        test2i = Boolean.parseBoolean(System.getProperty("com.basho.riak.2i", "true"));
 
 
-        legacyRiakSearch = Boolean.parseBoolean(System.getProperty("com.basho.riak.riakSearch"));
+        legacyRiakSearch = Boolean.parseBoolean(System.getProperty("com.basho.riak.riakSearch", "false"));
 
 
         /**
@@ -148,8 +148,8 @@ public abstract class ITestBase
 
         mapReduceBucketType = BinaryValue.create("mr");
 
-        testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
-        testTimeSeries = Boolean.parseBoolean(System.getProperty("com.basho.riak.timeseries"));
+        testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt", "true"));
+        testTimeSeries = Boolean.parseBoolean(System.getProperty("com.basho.riak.timeseries", "false"));
 
         /**
          * Riak PBC host
