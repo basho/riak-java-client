@@ -3,6 +3,8 @@ package com.basho.riak.client.core.operations.itest;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.buckets.FetchBucketProperties;
 import com.basho.riak.client.api.commands.indexes.BinIndexQuery;
+import com.basho.riak.client.api.commands.indexes.BucketIndexQuery;
+import com.basho.riak.client.api.commands.indexes.RawIndexQuery;
 import com.basho.riak.client.api.commands.kv.CoveragePlan;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
@@ -148,9 +150,8 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
             {
                 for(CoverageEntry ce: response.hostEntries(host))
                 {
-                    // The only "$bucket" Binary Index may be used for Full Bucket Reads
-                    final BinIndexQuery query = new BinIndexQuery.Builder(defaultNamespace(), "$bucket", ce.getCoverageContext())
-                            .withCoverageContext(ce.getCoverageContext())
+                    final BucketIndexQuery query =
+                            new BucketIndexQuery.Builder(defaultNamespace(), ce.getCoverageContext())
                             .withTimeout(2000)
                             .build();
 

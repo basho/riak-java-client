@@ -592,13 +592,14 @@ public class RiakNode implements RiakResponseListener
             inProgressMap.put(channel, operation);
             ChannelFuture writeFuture = channel.writeAndFlush(operation);
             writeFuture.addListener(writeListener);
-            logger.debug("Operation being executed on RiakNode {}:{}", remoteAddress, port);
+            logger.debug("Operation {} being executed on RiakNode {}:{}",
+                         System.identityHashCode(operation), remoteAddress, port);
             return true;
         }
         else
         {
-            logger.debug("Operation not being executed Riaknode {}:{}; no connections available",
-                            remoteAddress, port);
+            logger.debug("Operation {} not being executed Riaknode {}:{}; no connections available",
+                         System.identityHashCode(operation), remoteAddress, port);
             return false;
         }
     }
@@ -857,8 +858,7 @@ public class RiakNode implements RiakResponseListener
     @Override
     public void onSuccess(Channel channel, final RiakMessage response)
     {
-        logger.debug("Operation onSuccess() channel: id:{} {}:{}", channel.hashCode(),
-            remoteAddress, port);
+        logger.debug("Operation onSuccess() channel: id:{} {}:{}", channel.hashCode(), remoteAddress, port);
         consecutiveFailedOperations.set(0);
         final FutureOperation inProgress = inProgressMap.get(channel);
 
@@ -994,7 +994,7 @@ public class RiakNode implements RiakResponseListener
         }
     }
 
-    private class Sync extends Semaphore
+    static class Sync extends Semaphore
     {
         private static final long serialVersionUID = -5118488872281021072L;
         private volatile int maxPermits;

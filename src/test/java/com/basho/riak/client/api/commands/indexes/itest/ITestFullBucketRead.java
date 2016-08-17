@@ -10,13 +10,11 @@ import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.CoveragePlanOperation;
 import com.basho.riak.client.core.operations.CoveragePlanOperation.Response.CoverageEntry;
 import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
+import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.HostAndPort;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,23 +27,24 @@ import static org.junit.Assert.*;
 /**
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
-public class ITestFullBucketRead extends ITestAutoCleanupBase
+public class ITestFullBucketRead extends ITestBase
 {
     final static int minPartitions = 5;
     final static int NUMBER_OF_TEST_VALUES = 100;
     private final static Logger logger = LoggerFactory.getLogger(ITestFullBucketRead.class);
 
-    private CoveragePlan.Response coveragePlan;
-    private RiakClient client;
+    private static CoveragePlan.Response coveragePlan;
+    private static RiakClient client;
 
     // TODO: Remove assumption as Riak KV with PEx and Coverage plan will be released
     @BeforeClass
-    public static void BeforeClass() {
+    public static void BeforeClass() throws ExecutionException, InterruptedException
+    {
         Assume.assumeTrue(testTimeSeries);
+        setupData();
     }
 
-    @Before
-    public void setupData() throws ExecutionException, InterruptedException
+    private static void setupData() throws ExecutionException, InterruptedException
     {
         String indexName = "creationNo";
         String keyBase = "k";
@@ -53,9 +52,17 @@ public class ITestFullBucketRead extends ITestAutoCleanupBase
 
         setupIndexTestData(defaultNamespace(), indexName, keyBase, value);
 
+        setupCoveragePlan();
+
+        // To be sure that settle down across nodes
+        Thread.sleep(1000);
+    }
+
+    private static void setupCoveragePlan() throws ExecutionException, InterruptedException
+    {
         final CoveragePlan cmd = CoveragePlan.Builder.create(defaultNamespace())
-            .withMinPartitions(minPartitions)
-            .build();
+                                                     .withMinPartitions(minPartitions)
+                                                     .build();
 
         client = new RiakClient(cluster);
 
@@ -64,7 +71,7 @@ public class ITestFullBucketRead extends ITestAutoCleanupBase
         if (logger.isInfoEnabled())
         {
             final StringBuilder builder = new StringBuilder("\n\tGot the following list of Coverage Entries:");
-            for (CoveragePlanOperation.Response.CoverageEntry ce : coveragePlan)
+            for (CoverageEntry ce : coveragePlan)
             {
                 builder.append(String.format("\n\t%s:%d ('%s')",
                     ce.getHost(),
@@ -74,9 +81,16 @@ public class ITestFullBucketRead extends ITestAutoCleanupBase
             }
             logger.info(builder.toString());
         }
+    }
 
-        // To be sure that settle down across nodes
-        Thread.sleep(1000);
+    @AfterClass
+    public static void cleanupData() throws ExecutionException, InterruptedException
+    {
+        resetAndEmptyBucket(bucketName);
+        if (testBucketType)
+        {
+            resetAndEmptyBucket(defaultNamespace());
+        }
     }
 
     @Test

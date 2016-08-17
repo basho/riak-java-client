@@ -22,6 +22,7 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.DefaultCharset;
 
@@ -120,17 +121,28 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
 
         public Init(Namespace namespace, String indexName, S start, S end)
         {
-            super(namespace, indexName + Type._BIN, start, end);
+            super(namespace, generateIndexName(indexName), start, end);
         }
 
         public Init(Namespace namespace, String indexName, S match)
         {
-            super(namespace, indexName + Type._BIN, match);
+            super(namespace, generateIndexName(indexName), match);
         }
 
         public Init(Namespace namespace, String indexName, byte[] coverContext)
         {
-            super(namespace, indexName + Type._BIN, coverContext);
+            super(namespace, generateIndexName(indexName), coverContext);
+        }
+
+        private static String generateIndexName(String baseIndexName)
+        {
+            if(IndexNames.BUCKET.equalsIgnoreCase(baseIndexName) ||
+               IndexNames.KEY.equalsIgnoreCase(baseIndexName))
+            {
+                return baseIndexName;
+            }
+
+            return baseIndexName + Type._BIN;
         }
 
         T withCharacterSet(Charset charset)
@@ -278,6 +290,10 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
         @Override
         public BinaryValue convert(String input)
         {
+            if (input == null )
+            {
+                return null;
+            }
             return BinaryValue.create(input, charset);
         }
 

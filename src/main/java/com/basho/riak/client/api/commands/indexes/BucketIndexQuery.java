@@ -2,6 +2,7 @@ package com.basho.riak.client.api.commands.indexes;
 
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
 
 /**
@@ -19,18 +20,23 @@ import com.basho.riak.client.core.util.BinaryValue;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.7
  */
-public class BucketIndexQuery extends RawIndexQuery
+public class BucketIndexQuery extends BinIndexQuery
 {
-    private BucketIndexQuery(Init<BinaryValue, Builder> builder)
+    private BucketIndexQuery(Init<String, Builder> builder)
     {
         super(builder);
     }
 
-    public static class Builder extends SecondaryIndexQuery.Init<BinaryValue, Builder>
+    public static class Builder extends BinIndexQuery.Init<String, Builder>
     {
         public Builder(Namespace namespace)
         {
-            super(namespace, "$bucket", namespace.getBucketName());
+            super(namespace, IndexNames.BUCKET, namespace.getBucketName().toStringUtf8());
+        }
+
+        public Builder(Namespace namespace, byte[] coverContext)
+        {
+            super(namespace, IndexNames.BUCKET, coverContext);
         }
 
         @Override

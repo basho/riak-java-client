@@ -45,7 +45,7 @@ public class IndexTest
         Assert.assertEquals(IndexType.BUCKET.suffix(), "");
         Assert.assertEquals(IndexType.KEY.suffix(), "");
     }
-    
+
     @Test
     public void testValidIndexTypeExtensions()
     {
@@ -54,11 +54,11 @@ public class IndexTest
 
         IndexType indexType1 = IndexType.typeFromFullname("indexname_bin");
         Assert.assertTrue(indexType1.equals(IndexType.BIN));
-        
-        IndexType indexType2 = IndexType.typeFromFullname("$bucket");
+
+        IndexType indexType2 = IndexType.typeFromFullname(IndexNames.BUCKET);
         Assert.assertTrue(indexType2.equals(IndexType.BUCKET));
-        
-        IndexType indexType3 = IndexType.typeFromFullname("$key");
+
+        IndexType indexType3 = IndexType.typeFromFullname(IndexNames.KEY);
         Assert.assertTrue(indexType3.equals(IndexType.KEY));
 
     }

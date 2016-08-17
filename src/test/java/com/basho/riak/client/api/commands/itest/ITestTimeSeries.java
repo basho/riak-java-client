@@ -241,7 +241,8 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        Row row = new Row(com.basho.riak.client.core.query.timeseries.Cell.newTimestamp(fifteenMinsAgo), new Cell("hash1"), new Cell("user1"), new Cell("cloudy"), new Cell(79.0));
+        Row row = new Row(Cell.newTimestamp(fifteenMinsAgo), new Cell("hash1"), new Cell("user1"),
+                          new Cell("cloudy"), new Cell(79.0));
         Store store = new Store.Builder(BAD_TABLE_NAME).withRow(row).build();
 
         RiakFuture<Void, String> future = client.executeAsync(store);
@@ -255,9 +256,8 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"), com.basho.riak.client.core
-                .query.timeseries.Cell
-                .newTimestamp(fifteenMinsAgo));
+        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"),
+                                                  Cell.newTimestamp(fifteenMinsAgo));
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
 
         QueryResult queryResult = client.execute(fetch);
@@ -273,8 +273,8 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), com.basho.riak.client.core.query.timeseries.Cell
-                .newTimestamp(fifteenMinsAgo));
+        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"),
+                                                  Cell.newTimestamp(fifteenMinsAgo));
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
 
         QueryResult queryResult = client.execute(fetch);
@@ -284,8 +284,8 @@ public class ITestTimeSeries extends ITestTsBase
     @Test
     public void test_n_TestDeletingRowRemovesItFromQueries() throws ExecutionException, InterruptedException
     {
-        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"), com.basho.riak.client.core.query.timeseries.Cell
-                .newTimestamp(fiveMinsAgo));
+        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"),
+                                                  Cell.newTimestamp(fiveMinsAgo));
 
         RiakClient client = new RiakClient(cluster);
 
@@ -313,7 +313,7 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), com.basho.riak.client.core.query.timeseries.Cell
+        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), Cell
                 .newTimestamp(fifteenMinsAgo));
         Delete delete = new Delete.Builder(tableName, keyCells).build();
 

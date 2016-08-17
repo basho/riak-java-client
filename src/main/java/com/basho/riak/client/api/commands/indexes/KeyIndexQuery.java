@@ -2,6 +2,7 @@ package com.basho.riak.client.api.commands.indexes;
 
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.DefaultCharset;
 
@@ -39,7 +40,7 @@ public class KeyIndexQuery extends RawIndexQuery
 
         public Builder(Namespace namespace, BinaryValue start, BinaryValue end)
         {
-            super(namespace, "$key", start, end);
+            super(namespace, IndexNames.KEY, start, end);
         }
 
         @Override

@@ -576,9 +576,9 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
         }
 
         @Override
-        public void await(long timeout, TimeUnit unit) throws InterruptedException
+        public boolean await(long timeout, TimeUnit unit) throws InterruptedException
         {
-            latch.await(timeout, unit);
+            return latch.await(timeout, unit);
         }
 
         @Override
