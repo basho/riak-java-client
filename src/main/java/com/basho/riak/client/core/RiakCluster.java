@@ -775,6 +775,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
          * Set the maximum number of operations to queue.
          * A value of 0 disables the command queue.
          * <b>Setting this will override any of this clusters @{link RiakNode}s blockOnMaxConnection settings.</b>
+         * <p>Please note that while using the Operation Queue, operations may be executed out of the order that they were added in.</p>
          *
          * @param operationQueueMaxDepth - maximum number of operations to queue if all connections are busy
          * @return this
