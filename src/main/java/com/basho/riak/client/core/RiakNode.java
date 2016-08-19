@@ -25,6 +25,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.BlockingOperationException;
 import io.netty.util.concurrent.DefaultPromise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -644,6 +645,12 @@ public class RiakNode implements RiakResponseListener
             {
                 // no-op, don't care
             }
+            catch (BlockingOperationException ex)
+            {
+                logger.error("Netty interrupted waiting for connection permit to be available; {}",
+                             remoteAddress);
+
+            }
         }
         else
         {
@@ -704,6 +711,12 @@ public class RiakNode implements RiakResponseListener
             logger.error("Thread interrupted waiting for new connection to be made; {}",
                 remoteAddress);
             Thread.currentThread().interrupt();
+            throw new ConnectionFailedException(ex);
+        }
+        catch (BlockingOperationException ex)
+        {
+            logger.error("Netty interrupted waiting for new connection to be made; {}",
+                         remoteAddress);
             throw new ConnectionFailedException(ex);
         }
 
@@ -1183,11 +1196,7 @@ public class RiakNode implements RiakResponseListener
                 closeConnection(c);
             }
         }
-        catch (ConnectionFailedException ex)
-        {
-            healthCheckFailed(ex);
-        }
-        catch (UnknownHostException ex)
+        catch (ConnectionFailedException | UnknownHostException ex)
         {
             healthCheckFailed(ex);
         }

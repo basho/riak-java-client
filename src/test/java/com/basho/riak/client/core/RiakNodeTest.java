@@ -15,6 +15,8 @@
  */
 package com.basho.riak.client.core;
 
+import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.commands.ListenableFuture;
 import com.basho.riak.client.core.RiakNode.State;
 import com.google.protobuf.Message;
 import io.netty.bootstrap.Bootstrap;
@@ -22,9 +24,12 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPipeline;
+import io.netty.util.concurrent.BlockingOperationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -35,9 +40,8 @@ import java.net.UnknownHostException;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.awaitility.Awaitility.fieldIn;
 import static org.hamcrest.Matchers.equalTo;
@@ -83,16 +87,15 @@ public class RiakNodeTest
 
         doReturn(BOOTSTRAP).when(BOOTSTRAP).clone();
 
-        RiakNode node = new RiakNode.Builder()
-            .withIdleTimeout(IDLE_TIMEOUT)
-            .withConnectionTimeout(CONNECTION_TIMEOUT)
-            .withMinConnections(MIN_CONNECTIONS)
-            .withMaxConnections(MAX_CONNECTIONS)
-            .withRemotePort(PORT)
-            .withRemoteAddress(REMOTE_ADDRESS)
-            .withExecutor(EXECUTOR)
-            .withBootstrap(BOOTSTRAP)
-            .build();
+        RiakNode node = new RiakNode.Builder().withIdleTimeout(IDLE_TIMEOUT)
+                                              .withConnectionTimeout(CONNECTION_TIMEOUT)
+                                              .withMinConnections(MIN_CONNECTIONS)
+                                              .withMaxConnections(MAX_CONNECTIONS)
+                                              .withRemotePort(PORT)
+                                              .withRemoteAddress(REMOTE_ADDRESS)
+                                              .withExecutor(EXECUTOR)
+                                              .withBootstrap(BOOTSTRAP)
+                                              .build();
 
         assertEquals(node.getRemoteAddress(), REMOTE_ADDRESS);
 
@@ -145,10 +148,7 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder()
-            .withBootstrap(bootstrap)
-            .withMinConnections(MIN_CONNECTIONS)
-            .build();
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMinConnections(MIN_CONNECTIONS).build();
         node.start();
         Deque<?> available = Whitebox.getInternalState(node, "available");
         assertEquals(MIN_CONNECTIONS, available.size());
@@ -172,10 +172,7 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder()
-            .withBootstrap(bootstrap)
-            .withMaxConnections(MAX_CONNECTIONS)
-            .build();
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMaxConnections(MAX_CONNECTIONS).build();
         node.start();
 
         for (int i = 0; i < MAX_CONNECTIONS; i++)
@@ -195,9 +192,7 @@ public class RiakNodeTest
     public void NodeMaxCanBeExplicitlySetToUnlimited() throws Exception
     {
         final int UNLIMITED = 0;
-        new RiakNode.Builder()
-            .withMaxConnections(UNLIMITED)
-            .build();
+        new RiakNode.Builder().withMaxConnections(UNLIMITED).build();
     }
 
     @Test
@@ -217,10 +212,7 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder()
-            .withBootstrap(bootstrap)
-            .withMaxConnections(MAX_CONNECTIONS)
-            .build();
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMaxConnections(MAX_CONNECTIONS).build();
         node.start();
 
         assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
@@ -247,13 +239,12 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder()
-            .withBootstrap(bootstrap)
-            .build();
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).build();
 
         for (int i = 0; i < 5; i++)
         {
-            ChannelFutureListener listener = Whitebox.getInternalState(node, "inAvailableCloseListener", RiakNode.class);
+            ChannelFutureListener listener = Whitebox.getInternalState(node, "inAvailableCloseListener", RiakNode
+                    .class);
             listener.operationComplete(future);
         }
 
@@ -281,11 +272,7 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder()
-            .withBootstrap(bootstrap)
-            .withMinConnections(1)
-            .withIdleTimeout(1)
-            .build();
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMinConnections(1).withIdleTimeout(1).build();
 
         node.start();
         Channel[] channelArray = new Channel[6];
@@ -323,11 +310,7 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder()
-                .withBootstrap(bootstrap)
-                .withMinConnections(1)
-                .withMaxConnections(6)
-                .build();
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMinConnections(1).withMaxConnections(6).build();
 
         node.start();
         Channel[] channelArray = new Channel[6];
@@ -387,11 +370,7 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder()
-                .withBootstrap(bootstrap)
-                .withMinConnections(1)
-                .withMaxConnections(1)
-                .build();
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMinConnections(1).withMaxConnections(1).build();
 
         node.start();
 
@@ -433,11 +412,7 @@ public class RiakNodeTest
         // Capture arguments passed to InetSocketAddress ctors.
         ArgumentCaptor<InetSocketAddress> addressCaptor = ArgumentCaptor.forClass(InetSocketAddress.class);
 
-        RiakNode node = new RiakNode.Builder()
-                            .withBootstrap(bootstrap)
-                            .withMinConnections(1)
-                            .withMaxConnections(1)
-                            .build();
+        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMinConnections(1).withMaxConnections(1).build();
 
         node.start();
 
@@ -530,11 +505,106 @@ public class RiakNodeTest
         await().atMost(500, TimeUnit.MILLISECONDS).until(fieldIn(operation).ofType(Throwable.class).andWithName("exception"), equalTo(t));
     }
 
-    @Test(expected = UnknownHostException.class )
+    @Test(expected = UnknownHostException.class)
     public void failsResolvingHostname() throws UnknownHostException
     {
         RiakNode node = new RiakNode.Builder().withRemoteAddress("invalid-host-name").build();
         node.start();
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void BlockingExceptionIsCaught() throws UnknownHostException, InterruptedException, ExecutionException
+    {
+        CompoundCommand cc = new CompoundCommand();
+
+        final Channel channel = mock(Channel.class);
+        ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
+        final ChannelFuture future = mock(ChannelFuture.class);
+
+        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
+
+        doReturn(future).when(channel).closeFuture();
+        doReturn(true).when(channel).isOpen();
+        doReturn(channelPipeline).when(channel).pipeline();
+        doReturn(future).when(channel).writeAndFlush(cc.firstCommand.operation);
+        doReturn(future).when(future).await();
+        doReturn(true).when(future).isSuccess();
+        doReturn(channel).when(future).channel();
+        doReturn(future).when(bootstrap).connect();
+        doReturn(bootstrap).when(bootstrap).clone();
+
+        final RiakNode node = new RiakNode.Builder().build();
+        RiakCluster cluster = RiakCluster.builder(node).withExecutionAttempts(1).withBootstrap(bootstrap).build();
+
+        Runnable secondCmdSetup = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    Deque<?> available = Whitebox.getInternalState(node, "available");
+
+                    // throw away connection, imitate that they are all used.
+                    available.poll();
+
+                    // throw a BlockingOperationException when a new connection opened.
+                    doThrow(BlockingOperationException.class).when(future).await(); //
+                }
+                catch (InterruptedException ignored)
+                {
+
+                }
+            }
+        };
+
+        // Throw away all connections before second command is run, and throw a BlockingOperationException when a new one is opened.
+        cc.secondCommand.injectSetup(secondCmdSetup);
+
+        cluster.start();
+
+        doAnswer(createYesChannelListenerAnswer(node, channel, future))
+                .when(future).addListener(any(ChannelFutureListener.class));
+
+        final RiakFuture<String, Void> ccFuture = cc.executeAsync(cluster);
+        ccFuture.await();
+        try
+        {
+            ccFuture.get();
+        }
+        catch (ExecutionException ex)
+        {
+            assertEquals(NoNodesAvailableException.class, ex.getCause().getClass());
+            throw ex;
+        }
+    }
+
+    private Answer<Void> createYesChannelListenerAnswer(final RiakNode node, final Channel channel, final ChannelFuture future)
+    {
+        return new Answer<Void>()
+        {
+            final ChannelFutureListener writeListener = Whitebox.getInternalState(node, "writeListener");
+            final ChannelFutureListener inProgressCloseListener =
+                    Whitebox.getInternalState(node, "inProgressCloseListener");
+
+            @Override
+            public Void answer(InvocationOnMock invocationOnMock) throws Throwable
+            {
+                final ChannelFutureListener listener = (ChannelFutureListener) invocationOnMock.getArguments()[0];
+                if (listener.equals(inProgressCloseListener))
+                {
+                    return null;
+                }
+
+                listener.operationComplete(future);
+
+                if (listener.equals(writeListener))
+                {
+                    node.onSuccess(channel, new RiakMessage((byte) 0, new byte[]{}));
+                }
+                return null;
+            }
+        };
     }
 
     private class FutureOperationImpl extends FutureOperation<String, Message, Void>
@@ -563,7 +633,191 @@ public class RiakNodeTest
         {
             return null;
         }
-
     }
 
+    private class NopCommand extends RiakCommand<String, Void>
+    {
+        public FutureOperationImpl operation = new FutureOperationImpl();
+        private Runnable testSetup;
+
+        @Override
+        protected RiakFuture<String, Void> executeAsync(RiakCluster cluster)
+        {
+            if(testSetup != null)
+            {
+                testSetup.run();
+            }
+
+            return cluster.execute(operation);
+        }
+
+        public void injectSetup(Runnable testSetup) {this.testSetup = testSetup;}
+    }
+
+    /**
+     * Imitates a compound command like UpdateValue, where we run 1 command, then run a second in the callback of the first.
+     */
+    private class CompoundCommand extends RiakCommand<String, Void>
+    {
+        public NopCommand firstCommand = new NopCommand();
+        public NopCommand secondCommand = new NopCommand();
+
+        @Override
+        protected RiakFuture<String, Void> executeAsync(final RiakCluster cluster)
+        {
+            final CompoundFuture cf = new CompoundFuture();
+
+            final RiakFuture<String, Void> firstFuture = firstCommand.executeAsync(cluster);
+
+            RiakFutureListener<String, Void> listener =
+                    new RiakFutureListener<String, Void>()
+                    {
+                        @Override
+                        public void handle(RiakFuture<String, Void> f)
+                        {
+                            final RiakFuture<String, Void> secondFuture =
+                                    secondCommand.executeAsync(cluster);
+                            secondFuture.addListener(cf);
+                        }
+                    };
+
+            firstFuture.addListener(listener);
+
+            return cf;
+        }
+
+        private class CompoundFuture extends ListenableFuture<String, Void>
+            implements RiakFutureListener<String, Void>
+        {
+            private String finalValue;
+            private Throwable exception;
+            private final CountDownLatch latch = new CountDownLatch(1);
+
+            @Override
+            public void handle(RiakFuture<String, Void> f)
+            {
+                try
+                {
+                    setResponse(f.get());
+                }
+                catch (InterruptedException | ExecutionException ex)
+                {
+                    setException(ex);
+                }
+            }
+
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning)
+            {
+                return false;
+            }
+
+            @Override
+            public String get() throws InterruptedException, ExecutionException
+            {
+                latch.await();
+
+                if (exception != null)
+                {
+                    if(exception.getClass() == ExecutionException.class)
+                    {
+                        throw (ExecutionException) exception;
+                    }
+
+                    throw new ExecutionException(exception);
+                }
+                else
+                {
+                    return finalValue;
+                }
+            }
+
+            @Override
+            public String get(long timeout, TimeUnit unit)
+                    throws InterruptedException, ExecutionException, TimeoutException
+            {
+                boolean succeed = latch.await(timeout, unit);
+
+                if (!succeed)
+                {
+                    throw new TimeoutException();
+                }
+                else if (exception != null)
+                {
+                    if(exception.getClass() == ExecutionException.class)
+                    {
+                        throw (ExecutionException) exception;
+                    }
+
+                    throw new ExecutionException(exception);
+                }
+                else
+                {
+                    return finalValue;
+                }
+            }
+
+            @Override
+            public boolean isCancelled()
+            {
+                return false;
+            }
+
+            @Override
+            public boolean isDone()
+            {
+                return latch.getCount() != 1;
+            }
+
+            @Override
+            public void await() throws InterruptedException
+            {
+                latch.await();
+            }
+
+            @Override
+            public boolean await(long timeout, TimeUnit unit) throws InterruptedException
+            {
+                return latch.await(timeout, unit);
+            }
+
+            @Override
+            public String getNow()
+            {
+                return finalValue;
+            }
+
+            @Override
+            public boolean isSuccess()
+            {
+                return isDone() && exception == null;
+            }
+
+            @Override
+            public Throwable cause()
+            {
+                return this.exception;
+            }
+
+            @Override
+            public Void getQueryInfo()
+            {
+                return null;
+            }
+
+            private void setResponse(String response)
+            {
+                this.finalValue = response;
+                latch.countDown();
+                notifyListeners();
+            }
+
+            private void setException(Throwable t)
+            {
+                this.exception = t;
+                latch.countDown();
+                notifyListeners();
+            }
+        }
+    }
 }
