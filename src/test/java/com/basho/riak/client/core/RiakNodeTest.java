@@ -35,6 +35,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Deque;
@@ -577,6 +578,123 @@ public class RiakNodeTest
             assertEquals(NoNodesAvailableException.class, ex.getCause().getClass());
             throw ex;
         }
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void BlockingExceptionIsCaughtBlockOnMaxConns()
+            throws UnknownHostException, InterruptedException, ExecutionException, NoSuchFieldException,
+            IllegalAccessException
+    {
+        CompoundCommand cc = new CompoundCommand();
+
+        final Channel channel = mock(Channel.class);
+        ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
+        final ChannelFuture future = mock(ChannelFuture.class);
+
+        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
+
+        doReturn(future).when(channel).closeFuture();
+        doReturn(true).when(channel).isOpen();
+        doReturn(channelPipeline).when(channel).pipeline();
+        doReturn(future).when(channel).writeAndFlush(cc.firstCommand.operation);
+        doReturn(future).when(future).await();
+        doReturn(true).when(future).isSuccess();
+        doReturn(channel).when(future).channel();
+        doReturn(future).when(bootstrap).connect();
+        doReturn(bootstrap).when(bootstrap).clone();
+
+        final RiakNode node = new RiakNode.Builder().withBlockOnMaxConnections(true).withMaxConnections(1).build();
+
+        Field field = node.getClass().getDeclaredField("permits");
+        field.setAccessible(true);
+        field.set(node, new BadSync(1));
+
+        RiakCluster cluster = RiakCluster.builder(node).withExecutionAttempts(1).withBootstrap(bootstrap).build();
+
+        Runnable secondCmdSetup = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    RiakNode.Sync permits = Whitebox.getInternalState(node, "permits");
+
+                    // Use up permit, imitate that they are all used.
+                    permits.acquire();
+                }
+                catch (InterruptedException ignored)
+                {
+
+                }
+            }
+        };
+
+        // Throw away all connections before second command is run, and throw a BlockingOperationException when a new one is opened.
+        cc.secondCommand.injectSetup(secondCmdSetup);
+
+        cluster.start();
+
+        final Answer<Void> holdOntoConnectionAnswer = new Answer<Void>()
+        {
+            final ChannelFutureListener writeListener = Whitebox.getInternalState(node, "writeListener");
+            final ChannelFutureListener inProgressCloseListener = Whitebox.getInternalState(node,
+                                                                                            "inProgressCloseListener");
+
+            @Override
+            public Void answer(InvocationOnMock invocationOnMock) throws Throwable
+            {
+                final ChannelFutureListener listener = (ChannelFutureListener) invocationOnMock.getArguments()[0];
+                if (listener.equals(inProgressCloseListener))
+                {
+                    return null;
+                }
+
+                if (listener.equals(writeListener))
+                {
+                    node.onSuccess(channel, new RiakMessage((byte) 0, new byte[]{}));
+                }
+                else
+                {
+                    listener.operationComplete(future);
+                }
+                return null;
+            }
+        };
+
+        doAnswer(holdOntoConnectionAnswer).when(future).addListener(any(ChannelFutureListener.class));
+
+        final RiakFuture<String, Void> ccFuture = cc.executeAsync(cluster);
+        ccFuture.await();
+        try
+        {
+            ccFuture.get();
+        }
+        catch (ExecutionException ex)
+        {
+            assertEquals(NoNodesAvailableException.class, ex.getCause().getClass());
+            throw ex;
+        }
+    }
+
+    private class BadSync extends RiakNode.Sync
+    {
+        public BadSync(int numPermits)
+        {
+            super(numPermits);
+        }
+
+        @Override
+        public void acquire() throws InterruptedException
+        {
+            if(this.availablePermits() == 0)
+            {
+                throw new BlockingOperationException();
+            }
+            super.acquire();
+        }
+
+
     }
 
     private Answer<Void> createYesChannelListenerAnswer(final RiakNode node, final Channel channel, final ChannelFuture future)
