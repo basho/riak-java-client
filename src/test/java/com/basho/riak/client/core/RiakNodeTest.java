@@ -514,28 +514,14 @@ public class RiakNodeTest
     }
 
     @Test(expected = ExecutionException.class)
-    public void BlockingExceptionIsCaught() throws UnknownHostException, InterruptedException, ExecutionException
+    public void BlockingExceptionIsCaughtWhileWaitingForChannelToOpen() throws UnknownHostException, InterruptedException, ExecutionException
     {
-        CompoundCommand cc = new CompoundCommand();
-
-        final Channel channel = mock(Channel.class);
-        ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
-        final ChannelFuture future = mock(ChannelFuture.class);
-
-        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
-
-        doReturn(future).when(channel).closeFuture();
-        doReturn(true).when(channel).isOpen();
-        doReturn(channelPipeline).when(channel).pipeline();
-        doReturn(future).when(channel).writeAndFlush(cc.firstCommand.operation);
-        doReturn(future).when(future).await();
-        doReturn(true).when(future).isSuccess();
-        doReturn(channel).when(future).channel();
-        doReturn(future).when(bootstrap).connect();
-        doReturn(bootstrap).when(bootstrap).clone();
+        final BlockingExceptionTestSetup setup = new BlockingExceptionTestSetup();
+        final CompoundCommand command = setup.getCommand();
 
         final RiakNode node = new RiakNode.Builder().build();
-        RiakCluster cluster = RiakCluster.builder(node).withExecutionAttempts(1).withBootstrap(bootstrap).build();
+        RiakCluster cluster = RiakCluster.builder(node).withExecutionAttempts(1)
+                                         .withBootstrap(setup.getBootstrap()).build();
 
         Runnable secondCmdSetup = new Runnable()
         {
@@ -550,58 +536,25 @@ public class RiakNodeTest
                     available.poll();
 
                     // throw a BlockingOperationException when a new connection opened.
-                    doThrow(BlockingOperationException.class).when(future).await(); //
+                    doThrow(BlockingOperationException.class).when(setup.getChannelFuture()).await(); //
                 }
-                catch (InterruptedException ignored)
-                {
-
-                }
+                catch (InterruptedException ignored) {}
             }
         };
 
         // Throw away all connections before second command is run, and throw a BlockingOperationException when a new one is opened.
-        cc.secondCommand.injectSetup(secondCmdSetup);
+        command.secondCommand.injectSetup(secondCmdSetup);
 
-        cluster.start();
-
-        doAnswer(createYesChannelListenerAnswer(node, channel, future))
-                .when(future).addListener(any(ChannelFutureListener.class));
-
-        final RiakFuture<String, Void> ccFuture = cc.executeAsync(cluster);
-        ccFuture.await();
-        try
-        {
-            ccFuture.get();
-        }
-        catch (ExecutionException ex)
-        {
-            assertEquals(NoNodesAvailableException.class, ex.getCause().getClass());
-            throw ex;
-        }
+        startAndRunBlockingExceptionTest(command, setup.getChannel(), setup.getChannelFuture(), node, cluster);
     }
 
     @Test(expected = ExecutionException.class)
-    public void BlockingExceptionIsCaughtBlockOnMaxConns()
+    public void BlockingExceptionIsCaughtWhileBlockedOnMaxConnections()
             throws UnknownHostException, InterruptedException, ExecutionException, NoSuchFieldException,
             IllegalAccessException
     {
-        CompoundCommand cc = new CompoundCommand();
-
-        final Channel channel = mock(Channel.class);
-        ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
-        final ChannelFuture future = mock(ChannelFuture.class);
-
-        Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());
-
-        doReturn(future).when(channel).closeFuture();
-        doReturn(true).when(channel).isOpen();
-        doReturn(channelPipeline).when(channel).pipeline();
-        doReturn(future).when(channel).writeAndFlush(cc.firstCommand.operation);
-        doReturn(future).when(future).await();
-        doReturn(true).when(future).isSuccess();
-        doReturn(channel).when(future).channel();
-        doReturn(future).when(bootstrap).connect();
-        doReturn(bootstrap).when(bootstrap).clone();
+        BlockingExceptionTestSetup setup = new BlockingExceptionTestSetup();
+        final CompoundCommand command = setup.getCommand();
 
         final RiakNode node = new RiakNode.Builder().withBlockOnMaxConnections(true).withMaxConnections(1).build();
 
@@ -609,7 +562,9 @@ public class RiakNodeTest
         field.setAccessible(true);
         field.set(node, new BadSync(1));
 
-        RiakCluster cluster = RiakCluster.builder(node).withExecutionAttempts(1).withBootstrap(bootstrap).build();
+        RiakCluster cluster = RiakCluster.builder(node)
+                                         .withExecutionAttempts(1)
+                                         .withBootstrap(setup.getBootstrap()).build();
 
         Runnable secondCmdSetup = new Runnable()
         {
@@ -623,48 +578,28 @@ public class RiakNodeTest
                     // Use up permit, imitate that they are all used.
                     permits.acquire();
                 }
-                catch (InterruptedException ignored)
-                {
-
-                }
+                catch (InterruptedException ignored) {}
             }
         };
 
         // Throw away all connections before second command is run, and throw a BlockingOperationException when a new one is opened.
-        cc.secondCommand.injectSetup(secondCmdSetup);
+        command.secondCommand.injectSetup(secondCmdSetup);
 
+        startAndRunBlockingExceptionTest(command, setup.getChannel(), setup.getChannelFuture(), node, cluster);
+    }
+
+    private void startAndRunBlockingExceptionTest(CompoundCommand compoundCommand,
+                                                  Channel channel,
+                                                  ChannelFuture future,
+                                                  RiakNode node,
+                                                  RiakCluster cluster) throws InterruptedException, ExecutionException
+    {
         cluster.start();
 
-        final Answer<Void> holdOntoConnectionAnswer = new Answer<Void>()
-        {
-            final ChannelFutureListener writeListener = Whitebox.getInternalState(node, "writeListener");
-            final ChannelFutureListener inProgressCloseListener = Whitebox.getInternalState(node,
-                                                                                            "inProgressCloseListener");
+        doAnswer(createYesChannelListenerAnswer(node,channel,future))
+                .when(future).addListener(any(ChannelFutureListener.class));
 
-            @Override
-            public Void answer(InvocationOnMock invocationOnMock) throws Throwable
-            {
-                final ChannelFutureListener listener = (ChannelFutureListener) invocationOnMock.getArguments()[0];
-                if (listener.equals(inProgressCloseListener))
-                {
-                    return null;
-                }
-
-                if (listener.equals(writeListener))
-                {
-                    node.onSuccess(channel, new RiakMessage((byte) 0, new byte[]{}));
-                }
-                else
-                {
-                    listener.operationComplete(future);
-                }
-                return null;
-            }
-        };
-
-        doAnswer(holdOntoConnectionAnswer).when(future).addListener(any(ChannelFutureListener.class));
-
-        final RiakFuture<String, Void> ccFuture = cc.executeAsync(cluster);
+        final RiakFuture<String, Void> ccFuture = compoundCommand.executeAsync(cluster);
         ccFuture.await();
         try
         {
@@ -677,6 +612,9 @@ public class RiakNodeTest
         }
     }
 
+    /**
+     * Don't wait when we run out of permits, throw an exception
+     */
     private class BadSync extends RiakNode.Sync
     {
         public BadSync(int numPermits)
@@ -693,10 +631,11 @@ public class RiakNodeTest
             }
             super.acquire();
         }
-
-
     }
 
+    /**
+     * Say yes/onSuccess to all listeners that are added, except inProgressCloseListener. Completes operations.
+     */
     private Answer<Void> createYesChannelListenerAnswer(final RiakNode node, final Channel channel, final ChannelFuture future)
     {
         return new Answer<Void>()
@@ -727,7 +666,6 @@ public class RiakNodeTest
 
     private class FutureOperationImpl extends FutureOperation<String, Message, Void>
     {
-
         @Override
         protected String convert(List<Message> rawResponse)
         {
@@ -936,6 +874,55 @@ public class RiakNodeTest
                 latch.countDown();
                 notifyListeners();
             }
+        }
+    }
+
+    private class BlockingExceptionTestSetup
+    {
+        private CompoundCommand compoundCommand;
+        private Channel channel;
+        private ChannelFuture channelFuture;
+        private Bootstrap bootstrap;
+
+        public CompoundCommand getCommand()
+        {
+            return compoundCommand;
+        }
+
+        public Channel getChannel()
+        {
+            return channel;
+        }
+
+        public ChannelFuture getChannelFuture()
+        {
+            return channelFuture;
+        }
+
+        public Bootstrap getBootstrap()
+        {
+            return bootstrap;
+        }
+
+        public BlockingExceptionTestSetup() throws InterruptedException
+        {
+            compoundCommand = new CompoundCommand();
+
+            channel = mock(Channel.class);
+            ChannelPipeline channelPipeline = mock(ChannelPipeline.class);
+            channelFuture = mock(ChannelFuture.class);
+
+            bootstrap = PowerMockito.spy(new Bootstrap());
+
+            doReturn(channelFuture).when(channel).closeFuture();
+            doReturn(true).when(channel).isOpen();
+            doReturn(channelPipeline).when(channel).pipeline();
+            doReturn(channelFuture).when(channel).writeAndFlush(compoundCommand.firstCommand.operation);
+            doReturn(channelFuture).when(channelFuture).await();
+            doReturn(true).when(channelFuture).isSuccess();
+            doReturn(channel).when(channelFuture).channel();
+            doReturn(channelFuture).when(bootstrap).connect();
+            doReturn(bootstrap).when(bootstrap).clone();
         }
     }
 }
