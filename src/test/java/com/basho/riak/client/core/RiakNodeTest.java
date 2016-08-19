@@ -88,15 +88,16 @@ public class RiakNodeTest
 
         doReturn(BOOTSTRAP).when(BOOTSTRAP).clone();
 
-        RiakNode node = new RiakNode.Builder().withIdleTimeout(IDLE_TIMEOUT)
-                                              .withConnectionTimeout(CONNECTION_TIMEOUT)
-                                              .withMinConnections(MIN_CONNECTIONS)
-                                              .withMaxConnections(MAX_CONNECTIONS)
-                                              .withRemotePort(PORT)
-                                              .withRemoteAddress(REMOTE_ADDRESS)
-                                              .withExecutor(EXECUTOR)
-                                              .withBootstrap(BOOTSTRAP)
-                                              .build();
+        RiakNode node = new RiakNode.Builder()
+            .withIdleTimeout(IDLE_TIMEOUT)
+            .withConnectionTimeout(CONNECTION_TIMEOUT)
+            .withMinConnections(MIN_CONNECTIONS)
+            .withMaxConnections(MAX_CONNECTIONS)
+            .withRemotePort(PORT)
+            .withRemoteAddress(REMOTE_ADDRESS)
+            .withExecutor(EXECUTOR)
+            .withBootstrap(BOOTSTRAP)
+            .build();
 
         assertEquals(node.getRemoteAddress(), REMOTE_ADDRESS);
 
@@ -149,7 +150,10 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMinConnections(MIN_CONNECTIONS).build();
+        RiakNode node = new RiakNode.Builder()
+            .withBootstrap(bootstrap)
+            .withMinConnections(MIN_CONNECTIONS)
+            .build();
         node.start();
         Deque<?> available = Whitebox.getInternalState(node, "available");
         assertEquals(MIN_CONNECTIONS, available.size());
@@ -173,7 +177,10 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMaxConnections(MAX_CONNECTIONS).build();
+        RiakNode node = new RiakNode.Builder()
+            .withBootstrap(bootstrap)
+            .withMaxConnections(MAX_CONNECTIONS)
+            .build();
         node.start();
 
         for (int i = 0; i < MAX_CONNECTIONS; i++)
@@ -193,7 +200,9 @@ public class RiakNodeTest
     public void NodeMaxCanBeExplicitlySetToUnlimited() throws Exception
     {
         final int UNLIMITED = 0;
-        new RiakNode.Builder().withMaxConnections(UNLIMITED).build();
+        new RiakNode.Builder()
+            .withMaxConnections(UNLIMITED)
+            .build();
     }
 
     @Test
@@ -213,7 +222,10 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMaxConnections(MAX_CONNECTIONS).build();
+        RiakNode node = new RiakNode.Builder()
+            .withBootstrap(bootstrap)
+            .withMaxConnections(MAX_CONNECTIONS)
+            .build();
         node.start();
 
         assertNotNull(Whitebox.invokeMethod(node, "getConnection"));
@@ -240,12 +252,13 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).build();
+        RiakNode node = new RiakNode.Builder()
+            .withBootstrap(bootstrap)
+            .build();
 
         for (int i = 0; i < 5; i++)
         {
-            ChannelFutureListener listener = Whitebox.getInternalState(node, "inAvailableCloseListener", RiakNode
-                    .class);
+            ChannelFutureListener listener = Whitebox.getInternalState(node, "inAvailableCloseListener", RiakNode.class);
             listener.operationComplete(future);
         }
 
@@ -273,7 +286,11 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMinConnections(1).withIdleTimeout(1).build();
+        RiakNode node = new RiakNode.Builder()
+            .withBootstrap(bootstrap)
+            .withMinConnections(1)
+            .withIdleTimeout(1)
+            .build();
 
         node.start();
         Channel[] channelArray = new Channel[6];
@@ -311,7 +328,11 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMinConnections(1).withMaxConnections(6).build();
+        RiakNode node = new RiakNode.Builder()
+                .withBootstrap(bootstrap)
+                .withMinConnections(1)
+                .withMaxConnections(6)
+                .build();
 
         node.start();
         Channel[] channelArray = new Channel[6];
@@ -371,7 +392,11 @@ public class RiakNodeTest
         doReturn(future).when(bootstrap).connect();
         doReturn(bootstrap).when(bootstrap).clone();
 
-        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMinConnections(1).withMaxConnections(1).build();
+        RiakNode node = new RiakNode.Builder()
+                .withBootstrap(bootstrap)
+                .withMinConnections(1)
+                .withMaxConnections(1)
+                .build();
 
         node.start();
 
@@ -413,7 +438,11 @@ public class RiakNodeTest
         // Capture arguments passed to InetSocketAddress ctors.
         ArgumentCaptor<InetSocketAddress> addressCaptor = ArgumentCaptor.forClass(InetSocketAddress.class);
 
-        RiakNode node = new RiakNode.Builder().withBootstrap(bootstrap).withMinConnections(1).withMaxConnections(1).build();
+        RiakNode node = new RiakNode.Builder()
+                            .withBootstrap(bootstrap)
+                            .withMinConnections(1)
+                            .withMaxConnections(1)
+                            .build();
 
         node.start();
 
