@@ -8,6 +8,7 @@ Release Notes
  * Some of the changes are binary-incompatible with RJC 2.0.6, so you will need to recompile your project with this new version.
 
 Following issues / PRs addressed:
+* [Fixed - Disallow 0 as a timeout value for TimeSeries operations](https://github.com/basho/riak-java-client/pull/662)
 * Added Batch Delete Command: [1](https://github.com/basho/riak-java-client/pull/487), [2](https://github.com/basho/riak-java-client/pull/650)
 * Added equals(), hashCode(), toString() to RiakObject and associated files: [1](https://github.com/basho/riak-java-client/pull/557), [2](https://github.com/basho/riak-java-client/pull/648)
 * Fixed - In RiakUserMetadata.containsKey(), use the charset method parameter when encoding the key : [1](https://github.com/basho/riak-java-client/pull/558), [2](https://github.com/basho/riak-java-client/pull/646)
