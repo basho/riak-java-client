@@ -209,7 +209,7 @@ public abstract class ITestBase
         resetOp.get();
     }
 
-    private static void setupUsernamePasswordSecurity(RiakNode.Builder builder) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
+    protected static void setupUsernamePasswordSecurity(RiakNode.Builder builder) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
     {
         InputStream in;
         if (overrideCert != null)
