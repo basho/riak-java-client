@@ -1,3 +1,10 @@
+
 language: java
+jdk: oraclejdk8
+sudo: false
+
+services:
+  - riak
+
 script:
-- "mvn deploy -DskipTests"
+  - mvn deploy -Dkv -Dcom.basho.riak.pbchost=127.0.0.1:8087
