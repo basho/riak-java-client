@@ -1,8 +1,12 @@
 package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.operations.TTBFutureOperation;
+import com.basho.riak.client.core.query.timeseries.CollectionConverters;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
+import com.basho.riak.client.core.query.timeseries.ConvertibleIterable;
 import com.basho.riak.client.core.query.timeseries.Row;
+import com.basho.riak.protobuf.RiakTsPB;
+import com.google.protobuf.ByteString;
 
 import java.util.Collection;
 import java.util.List;
@@ -51,6 +55,7 @@ public class StoreOperation extends TTBFutureOperation<Void, String>
 
     public static class Builder
     {
+        private final RiakTsPB.TsPutReq.Builder reqBuilder;
         private final String tableName;
         private Collection<Row> rows;
 
@@ -62,16 +67,20 @@ public class StoreOperation extends TTBFutureOperation<Void, String>
             }
 
             this.tableName = tableName;
+            this.reqBuilder = RiakTsPB.TsPutReq.newBuilder();
+            this.reqBuilder.setTable(ByteString.copyFromUtf8(tableName));
         }
 
         public Builder withColumns(Collection<ColumnDescription> columns)
         {
-            throw new UnsupportedOperationException();
+            this.reqBuilder.addAllColumns(CollectionConverters.convertColumnDescriptionsToPb(columns));
+            return this;
         }
 
         public Builder withRows(Collection<Row> rows)
         {
             this.rows = rows;
+            this.reqBuilder.addAllRows(ConvertibleIterable.asIterablePbRow(rows));
             return this;
         }
 
