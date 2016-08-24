@@ -13,7 +13,7 @@ cache:
 
 before_script:
   - docker run --name $RIAK_FLAVOR -d -p 8087:8087 -p 8098:8098 basho/riak-ts
-  - basho/riak-java-client/tools/devrel/riak-cluster-config "docker exec $RIAK_FLAVOR riak-admin" 8098 false false
+  - tools/devrel/riak-cluster-config "docker exec $RIAK_FLAVOR riak-admin" 8098 false false
 
 script:
   - mvn -Pitest,default -Dcom.basho.riak.timeseries=true verify
