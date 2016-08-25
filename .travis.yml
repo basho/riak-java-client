@@ -18,7 +18,7 @@ before_script:
 
 script:
   - if [ $RIAK_FLAVOR == "riak-kv" ]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false verify; else echo "Not riak-kv flavor"; fi
-  - if [ $RIAK_FLAVOR == "riak-ts" ]; then ; else echo "Not riak-ts flavor"; fi
+  - if [ $RIAK_FLAVOR == "riak-ts" ]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false -Dcom.basho.riak.timeseries=true verify; else echo "Not riak-ts flavor"; fi
 after_script:
   - docker rm -f $RIAK_FLAVOR
 
