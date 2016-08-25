@@ -17,7 +17,7 @@ before_script:
   - tools/devrel/riak-cluster-config "docker exec $RIAK_FLAVOR riak-admin" 8098 false false
 
 script:
-  - mvn -Pitest,default -Dcom.basho.riak.timeseries=true verify
+  - mvn -Pitest,default -Dcom.basho.riak.search=false -Dcom.basho.riak.timeseries=true verify
 
 after_script:
   - docker rm -f $RIAK_FLAVOR
