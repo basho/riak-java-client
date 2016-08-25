@@ -11,6 +11,7 @@ Please see the [Release Notes](https://github.com/basho/riak-java-client/blob/de
 2. [Documentation](#documentation)
 3. [Contributing](#contributing)
     * [Integration Tests Setup](#integration-tests-setup)
+    * [Running Integration Tests](#running-integration-tests)
     * [Security Tests](#security-tests)
 	* [An honest disclaimer](#an-honest-disclaimer)
 4. [Roadmap](#roadmap)
