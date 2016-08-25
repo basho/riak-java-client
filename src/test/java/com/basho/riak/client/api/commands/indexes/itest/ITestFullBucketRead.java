@@ -41,6 +41,7 @@ public class ITestFullBucketRead extends ITestBase
     public static void BeforeClass() throws ExecutionException, InterruptedException
     {
         Assume.assumeTrue(testTimeSeries);
+        Assume.assumeTrue(testCoveragePlan);
         setupData();
     }
 
