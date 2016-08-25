@@ -57,55 +57,59 @@ Also see [the Javadoc site](http://basho.github.io/riak-java-client/) for more i
 
 ## Contributing
 
-#### `riak_pb` dependency
-To build the Riak Java Client, you must have the correct version of the riak_pb dependency installed to your local Maven repository.
-
-```
-git clone https://github.com/basho/riak_pb
-git checkout 2.1.2.0
-mvn clean install
-```
-
 #### Security tests
 To run the security-related integration tests, you will need to:
 
- 1) Setup the certs by running the buildbot makefile's "configure-security-certs" target
-     cd buildbot;
-     make configure-security-certs;
-     cd ../;
+ 1) Setup the certs by running the buildbot makefile's `configure-security-certs` target.
+ ```
+cd buildbot;
+make configure-security-certs;
+cd ../;
+```
 
- 2) Copy the certs to your Riak's etc dir, and configure the riak.conf file to use them
-     resources_dir=./src/test/resources
-     riak_etc_dir=/fill/in/this/path/
+ 2) Copy the certs to your Riak's etc dir, and configure the riak.conf file to use them.
 
-     # Shell
-     cp $resources_dir/cacert.pem $riak_etc_dir
-     cp $resources_dir/riak-test-cert.pem $riak_etc_dir
-     cp $resources_dir/riakuser-client-cert.pem $riak_etc_dir
+ ```
+resources_dir=./src/test/resources
+riak_etc_dir=/fill/in/this/path/
 
-     # riak.conf file additions
-     ssl.certfile = (riak_etc_dir)/cert.pem
-     ssl.keyfile = (riak_etc_dir)/key.pem
-     ssl.cacertfile = (riak_etc_dir)/cacert.pem
+# Shell
+cp $resources_dir/cacert.pem $riak_etc_dir
+cp $resources_dir/riak-test-cert.pem $riak_etc_dir
+cp $resources_dir/riakuser-client-cert.pem $riak_etc_dir
 
- 3) Enable Riak Security
-     riak-admin security enable
+# riak.conf file additions
+ssl.certfile = (riak_etc_dir)/cert.pem
+ssl.keyfile = (riak_etc_dir)/key.pem
+ssl.cacertfile = (riak_etc_dir)/cacert.pem
+```
 
- 4) create a user "riakuser" with the password "riak_cert_user" and configure it with certificate as a source
-     riak-admin security add-user riakuser
-     riak-admin security add-source riakuser 0.0.0.0/0 certificate
+ 3) Enable Riak Security.
+```
+riak-admin security enable
+```
+ 4) Create a user "riakuser" with the password "riak_cert_user" and configure it with certificate as a source
+```
+riak-admin security add-user riakuser
+riak-admin security add-source riakuser 0.0.0.0/0 certificate
+```
 
- 5) create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a
- source
-     riak-admin security add-user riak_trust_user password=riak_trust_user
-     riak-admin security add-source riak_trust_user 0.0.0.0/0 trust
+ 5) Create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a source.
+```
+riak-admin security add-user riak_trust_user password=riak_trust_user
+riak-admin security add-source riak_trust_user 0.0.0.0/0 trust
+```
 
- 6) create a user "riakpass" with the password "riak_passwd_user" and configure it with password as a source
-     riak-admin security add-user riakpass password=Test1234
-     riak-admin security add-source riakpass 0.0.0.0/0 password
+ 6) Create a user "riakpass" with the password "riak_passwd_user" and configure it with password as a source.
+```
+riak-admin security add-user riakpass password=Test1234
+riak-admin security add-source riakpass 0.0.0.0/0 password
+```
 
- 7) Run the Test suit with the com.basho.riak.security and com.basho.riak.security.clientcert flags set to
- true
+ 7) Run `integration-test-security` target of the makefile.
+ ```
+ make integration-test-security
+ ```
 
 
 This repository's maintainers are engineers at Basho and we welcome your contribution to the project! Review the details in [CONTRIBUTING.md](CONTRIBUTING.md) in order to give back to this project.
@@ -123,7 +127,7 @@ Thank you for being part of the community!
 TODO
 
 ## License and Authors
-**The Riak Java** Client is Open Source software released under the Apache 2.0 License. Please see the [LICENSE](LICENSE) file for full license details.
+**The Riak Java Client** is Open Source software released under the Apache 2.0 License. Please see the [LICENSE](LICENSE) file for full license details.
 
 * Author: [Alex Moore](https://github.com/alexmoore)
 * Author: [Brian Roach](https://github.com/broach)

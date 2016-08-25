@@ -1,3 +1,30 @@
+sudo: required
+dist: trusty
+
 language: java
+jdk: oraclejdk8
+
+services:
+  - docker
+
+cache:
+  directories:
+    - "$HOME/.m2"
+
+before_script:
+  - docker run --name $RIAK_FLAVOR -d -p 8087:8087 -p 8098:8098 basho/riak-ts
+  - docker exec $RIAK_FLAVOR riak-admin wait-for-service riak_kv
+  - tools/devrel/riak-cluster-config "docker exec $RIAK_FLAVOR riak-admin" 8098 false false
+
 script:
-- "mvn deploy -DskipTests"
+  - mvn -Pitest,default -Dcom.basho.riak.timeseries=true verify
+
+after_script:
+  - docker rm -f $RIAK_FLAVOR
+
+env:
+  matrix:
+    - RIAK_FLAVOR=riak-ts
+    - RIAK_FLAVOR=riak-kv
+  global:
+    - RIAK_HOSTS=localhost:8087
