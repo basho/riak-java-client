@@ -24,7 +24,7 @@ Following issues / PRs addressed:
 * Added overload of `RiakClient#execute` that accepts a timeout [[1]](https://github.com/basho/riak-java-client/pull/610), [[2]](https://github.com/basho/riak-java-client/pull/642)
 * [Added shortcut commands for $bucket and $key 2i indices](https://github.com/basho/riak-java-client/pull/652)
 * [Added `isNotFound()` field to data type responses](https://github.com/basho/riak-java-client/pull/654)
-* Added - Dataplatform / Riak Spark Connector changes merged back into main client [[1]](https://github.com/basho/riak-java-client/pull/621), [[2]](https://github.com/basho/riak-java-client/pull/626), [[3]](https://github.com/basho/riak-java-client/pull/644), [[4]](https://github.com/basho/riak-java-client/pull/659)
+* Added - Dataplatform / Riak Spark Connector changes merged back into main client [[1]](https://github.com/basho/riak-java-client/pull/621), [[2]](https://github.com/basho/riak-java-client/pull/626), [[3]](https://github.com/basho/riak-java-client/pull/644), [[4]](https://github.com/basho/riak-java-client/pull/659), [[5]](https://github.com/basho/riak-java-client/pull/665)
 * [Updated plugins and dependencies](https://github.com/basho/riak-java-client/pull/631)
 * [Updated TS objects and Commands for TS 1.4](https://github.com/basho/riak-java-client/pull/651)
 * [Enhanced - Made Integration Tests Great Again](https://github.com/basho/riak-java-client/pull/657)
