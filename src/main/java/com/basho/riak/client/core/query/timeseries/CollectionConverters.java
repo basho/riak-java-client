@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-final class CollectionConverters
+public final class CollectionConverters
 {
     private CollectionConverters() {}
 

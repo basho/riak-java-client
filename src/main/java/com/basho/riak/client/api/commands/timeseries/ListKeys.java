@@ -83,7 +83,7 @@ public class ListKeys extends RiakCommand<QueryResult, String>
         /**
          * Set the Riak-side timeout value.
          * <p>
-         * By default, riak has a 60s timeout for operations. Setting
+         * By default, Riak has a 60s timeout for operations. Setting
          * this value will override that default for this operation.
          * </p>
          * @param timeout the timeout in milliseconds to be sent to riak.
@@ -91,6 +91,11 @@ public class ListKeys extends RiakCommand<QueryResult, String>
          */
         public Builder withTimeout(int timeout)
         {
+            if (timeout < 1)
+            {
+                throw new IllegalArgumentException("Timeout must be a positive integer");
+            }
+
             this.timeout = timeout;
             return this;
         }

@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -19,7 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 /**
  * Reflection/class utilities.
- * 
+ *
  * @author russell
  * @author Brian Roach <roach at basho dot com>
  * @since 1.0
@@ -32,14 +32,15 @@ public final class ClassUtil
     /**
      * Make the {@link Member} accessible if possible, throw
      * {@link IllegalArgumentException} is not.
-     * 
+     *
      * @param member the member to check
      * @return the member
      * @throws IllegalArgumentException if cannot set accessibility
      */
+    @SuppressWarnings("deprecation")
     public static <T extends Member> T checkAndFixAccess(T member)
     {
-         com.fasterxml.jackson.databind.util.ClassUtil.checkAndFixAccess(member, false);
+        com.fasterxml.jackson.databind.util.ClassUtil.checkAndFixAccess(member);
         return member;
     }
 
@@ -92,7 +93,7 @@ public final class ClassUtil
 
         return value;
     }
-    
+
     public static <T> void setMethodValue(Method m, T obj, Object value)
     {
         try
@@ -112,5 +113,5 @@ public final class ClassUtil
             throw new IllegalStateException("Unable to set Riak annotated method value", e);
         }
     }
-    
+
 }

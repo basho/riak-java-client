@@ -5,6 +5,7 @@ import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
+import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import org.junit.Rule;
@@ -13,6 +14,10 @@ import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -22,30 +27,30 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
-public class ITestClusterLifecycle
+public class ITestClusterLifecycle extends ITestBase
 {
     protected static RiakCluster cluster;
     protected static boolean testLifecycle;
-    protected static String hostname;
-    protected static int pbcPort;
     protected static Random random = new Random();
     private final Logger logger = LoggerFactory.getLogger(ITestClusterLifecycle.class);
 
     @Rule
     public ExpectedException thrown= ExpectedException.none();
 
-    public ITestClusterLifecycle()
+    public ITestClusterLifecycle() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException
     {
         testLifecycle = Boolean.parseBoolean(System.getProperty("com.basho.riak.lifecycle", "true"));
-        hostname = System.getProperty("com.basho.riak.host", RiakNode.Builder.DEFAULT_REMOTE_ADDRESS);
-
-        pbcPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
 
         RiakNode.Builder builder = new RiakNode.Builder()
                                                .withRemoteAddress(hostname)
                                                .withRemotePort(pbcPort)
                                                .withMinConnections(1)
                                                .withMaxConnections(1);
+
+        if(security)
+        {
+            setupUsernamePasswordSecurity(builder);
+        }
 
         cluster = new RiakCluster.Builder(builder.build()).build();
     }
