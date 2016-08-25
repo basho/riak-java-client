@@ -41,7 +41,14 @@ public class TermToBinaryCodec
         }
         os.write_nil(); // NB: finishes the list
 
-        os.write_long(timeout);
+        if(timeout != 0)
+        {
+            os.write_long(timeout);
+        }
+        else
+        {
+            os.write_atom(UNDEFINED);
+        }
 
         return os;
     }

@@ -38,8 +38,10 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
 
     // TODO: Remove assumption as Riak KV with PEx and Coverage plan will be released
     @BeforeClass
-    public static void BeforeClass() {
+    public static void BeforeClass()
+    {
         Assume.assumeTrue(testTimeSeries);
+        Assume.assumeTrue(testCoveragePlan);
     }
 
     @Test

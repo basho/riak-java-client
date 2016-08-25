@@ -63,6 +63,7 @@ public abstract class ITestBase
     protected static boolean testBucketType;
     protected static boolean testCrdt;
     protected static boolean testTimeSeries;
+    protected static boolean testCoveragePlan;
     protected static boolean legacyRiakSearch;
     protected static boolean security;
     protected static BinaryValue bucketName;
@@ -149,7 +150,10 @@ public abstract class ITestBase
         mapReduceBucketType = BinaryValue.create("mr");
 
         testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt", "true"));
+
         testTimeSeries = Boolean.parseBoolean(System.getProperty("com.basho.riak.timeseries", "false"));
+
+        testCoveragePlan = Boolean.parseBoolean(System.getProperty("com.basho.riak.coveragePlan", "false"));
 
         /**
          * Riak PBC host
