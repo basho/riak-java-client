@@ -2,6 +2,7 @@ package com.basho.riak.client.core.operations.itest.ts;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -38,7 +39,13 @@ public class ITestCoveragePlan extends ITestTsBase
     private static long to = from + period;
 
     @BeforeClass
-    public static void createData() throws ExecutionException, InterruptedException
+    public static void BeforeClass() throws ExecutionException, InterruptedException
+    {
+        assumeTrue(testCoveragePlan);
+        createData();
+    }
+
+    private static void createData() throws ExecutionException, InterruptedException
     {
         List<Row> rows1 = new ArrayList<Row>();
         for (long time = from; time <= to; time += quantum)
@@ -74,7 +81,6 @@ public class ITestCoveragePlan extends ITestTsBase
     @Test
     public void queryWithCoveragePlan() throws ExecutionException, InterruptedException, UnknownHostException
     {
-
         final RiakClient client = new RiakClient(cluster);
         String queryOneRowOnly = "select * from " + tableName + " where time >= " + (from - 100) + " and time < " + (from + 100)
                 + " and user = 'user1' and geohash = 'hash1'";
