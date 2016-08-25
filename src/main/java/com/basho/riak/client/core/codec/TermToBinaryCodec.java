@@ -94,18 +94,36 @@ public class TermToBinaryCodec
 
     public static OtpOutputStream encodeTsPutRequest(String tableName, Collection<Row> rows)
     {
+        return encodeTsPutRequest(tableName, Collections.<String>emptyList(), rows);
+    }
+
+    public static OtpOutputStream encodeTsPutRequest(String tableName, Collection<String> columns, Collection<Row> rows)
+    {
         final OtpOutputStream os = new OtpOutputStream();
         os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value
 
-        // TsPutReq is a 4-tuple: {'tsputreq', tableName, [], [rows]}
-        // columns is empte
+        // TsPutReq is a 4-tuple: {'tsputreq', tableName, [columns], [rows]}
         os.write_tuple_head(4);
+
+        // tsputreq Atom
         os.write_atom(TS_PUT_REQ);
+
+        // Table Name Binary
         os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
-        // columns is an empty list
+
+        // Columns List
+        if(columns != null && !columns.isEmpty())
+        {
+            os.write_list_head(columns.size());
+
+            for (String column : columns)
+            {
+                os.write_binary(column.getBytes(StandardCharsets.UTF_8));
+            }
+        }
         os.write_nil();
 
-        // write a list of rows
+        // Rows List
         // each row is a tuple of cells
         os.write_list_head(rows.size());
         for (Row row : rows)

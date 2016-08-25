@@ -91,7 +91,7 @@ public class TermToBinaryCodecTest
                                     // NB: this is what Erlang generates, an old-style float
                                     // 99,51,46,52,50,57,57,57,57,57,57,57,57,57,57,57,57,57,55,49,53,55,56,101,43,48,49,0,0,0,0,0, // float_ext len 31
                                     // NB: this is what JInterface generates, a new-style float
-                                    70, 64, 65, 38, 102, 102, 102, 102, 102,
+                                    70,64,65,38,102,102,102,102,102,
                                     106, // null cell empty list
                             106}; // list arity 1 end
 
@@ -102,6 +102,60 @@ public class TermToBinaryCodecTest
         try
         {
             OtpOutputStream os = TermToBinaryCodec.encodeTsPutRequest(TABLE_NAME, rows);
+            os.flush();
+            byte[] msg = os.toByteArray();
+            Assert.assertArrayEquals(exp, msg);
+        }
+        catch (IOException ex)
+        {
+            Assert.fail(ex.getMessage());
+        }
+    }
+
+    @Test
+    public void encodesPutWithColumnsCorrectly()
+    {
+        /*
+            {tsputreq,<<"test_table">>,
+                      [<<"a">>,<<"b">>,<<"c">>,<<"d">>,<<"e">>,<<"f">>,<<"g">>],
+                      [{<<"series">>,<<"family">>,12345678,1,true,34.3,[]}]}
+         */
+        final byte[] exp = {
+                (byte)131,104,4,
+                    100,0,8,116,115,112,117,116,114,101,113,
+                    109,0,0,0,10,116,101,115,116,95,116,97,98,108,101,
+                    108,0,0,0,7,
+                        109,0,0,0,1,97,
+                        109,0,0,0,1,98,
+                        109,0,0,0,1,99,
+                        109,0,0,0,1,100,
+                        109,0,0,0,1,101,
+                        109,0,0,0,1,102,
+                        109,0,0,0,1,103,
+                        106,
+                    108,0,0,0,1,
+                        104,7,
+                            109,0,0,0,6,115,101,114,105,101,115,
+                            109,0,0,0,6,102,97,109,105,108,121,
+                            98,0,(byte)188,97,78,
+                            97,1,
+                            100,0,4,116,114,117,101,
+                            // NB: this is what Erlang generates, an old-style float
+                            // 99,51,46,52,50,57,57,57,57,57,57,57,57,57,57,57,57,57,55,49,53,55,56,101,43,48,49,0,0,0,0,0, // float_ext len 31
+                            // NB: this is what JInterface generates, a new-style float
+                            70,64,65,38,102,102,102,102,102,
+                            106,
+                        106};
+
+
+        final List<String> columns = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
+        final ArrayList<Row> rows = new ArrayList<>(1);
+        rows.add(new Row(new Cell("series"), new Cell("family"), Cell.newTimestamp(12345678),
+                         new Cell(1L), new Cell(true), new Cell(34.3), null));
+
+        try
+        {
+            OtpOutputStream os = TermToBinaryCodec.encodeTsPutRequest(TABLE_NAME, columns, rows);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);

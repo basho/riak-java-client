@@ -1,9 +1,14 @@
 package com.basho.riak.client.core.operations.ts;
 
 import com.basho.riak.client.core.operations.TTBFutureOperation;
+import com.basho.riak.client.core.query.timeseries.CollectionConverters;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
+import com.basho.riak.client.core.query.timeseries.ConvertibleIterable;
 import com.basho.riak.client.core.query.timeseries.Row;
+import com.basho.riak.protobuf.RiakTsPB;
+import com.google.protobuf.ByteString;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -53,6 +58,7 @@ public class StoreOperation extends TTBFutureOperation<Void, String>
     {
         private final String tableName;
         private Collection<Row> rows;
+        private Collection<String> columns;
 
         public Builder(String tableName)
         {
@@ -64,9 +70,38 @@ public class StoreOperation extends TTBFutureOperation<Void, String>
             this.tableName = tableName;
         }
 
-        public Builder withColumns(Collection<ColumnDescription> columns)
+        /**
+         * Add the names & order of the columns to be inserted.
+         * Order is implied by the order of the names in the Collection.
+         * <b>NOTE:</b>: As of Riak TS 1.4, this functionality is not implemented server-side,
+         * and any stored data is expected to be in the order of the table.
+         * @param columnNames The names of the columns to insert, and an implicit order.
+         * @return a reference to this object
+         */
+        public Builder withColumns(Collection<String> columnNames)
         {
-            throw new UnsupportedOperationException();
+            columns = columnNames;
+            return this;
+        }
+
+        /**
+         * Add the names & order of the columns to be inserted.
+         * Order is implied by the order of the ColumnDescriptions in the Collection.
+         * <b>NOTE:</b>: As of Riak TS 1.4, this functionality is not implemented server-side,
+         * and any stored data is expected to be in the order of the table.
+         * @param columns The ColumnDescriptions that contain a column name and an implicit order.
+         * @return a reference to this object
+         */
+        public Builder withColumnDescriptions(Collection<? extends ColumnDescription> columns)
+        {
+            columns = new ArrayList<>(columns.size());
+
+            for (ColumnDescription column : columns)
+            {
+                this.columns.add(column.getName());
+            }
+
+            return this;
         }
 
         public Builder withRows(Collection<Row> rows)
@@ -83,6 +118,11 @@ public class StoreOperation extends TTBFutureOperation<Void, String>
         public Collection<Row> getRows()
         {
             return rows;
+        }
+
+        public Collection<String> getColumns()
+        {
+            return columns;
         }
 
         public StoreOperation build()
