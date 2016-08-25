@@ -17,8 +17,8 @@ before_script:
   - tools/devrel/riak-cluster-config "docker exec $RIAK_FLAVOR riak-admin" 8098 false false
 
 script:
-  - $RIAK_FLAVOR == "riak-kv" && mvn -Pitest,default -Dcom.basho.riak.yokozuna=false verify
-  - $RIAK_FLAVOR == "riak-ts" && mvn -Pitest,default -Dcom.basho.riak.yokozuna=false -Dcom.basho.riak.timeseries=true verify
+  - [[ $RIAK_FLAVOR == "riak-kv" ]] && mvn -Pitest,default -Dcom.basho.riak.yokozuna=false verify
+  - [[ $RIAK_FLAVOR == "riak-ts" ]] && mvn -Pitest,default -Dcom.basho.riak.yokozuna=false -Dcom.basho.riak.timeseries=true verify
 
 after_script:
   - docker rm -f $RIAK_FLAVOR
