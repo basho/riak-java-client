@@ -42,7 +42,15 @@ public class ITestFullBucketRead extends ITestBase
     {
         Assume.assumeTrue(testTimeSeries);
         Assume.assumeTrue(testCoveragePlan);
+
+        bucketName = BinaryValue.create("ITestFullBucketRead" + new Random().nextLong());
         setupData();
+    }
+
+    @AfterClass
+    public static void AfterClass() throws ExecutionException, InterruptedException
+    {
+        resetAndEmptyBucket(defaultNamespace());
     }
 
     private static void setupData() throws ExecutionException, InterruptedException
@@ -81,16 +89,6 @@ public class ITestFullBucketRead extends ITestBase
                 ));
             }
             logger.info(builder.toString());
-        }
-    }
-
-    @AfterClass
-    public static void cleanupData() throws ExecutionException, InterruptedException
-    {
-        resetAndEmptyBucket(bucketName);
-        if (testBucketType)
-        {
-            resetAndEmptyBucket(defaultNamespace());
         }
     }
 
