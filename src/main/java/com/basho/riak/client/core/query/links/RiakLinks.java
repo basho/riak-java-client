@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A thread safe container for {@link RiakLink} objects.
- * <p>
+ * 
  * <br/><b>Thread Safety:</b><br/> This is a thread safe container.
  *
  * @author Brian Roach <roach at basho dot com>
@@ -115,7 +115,7 @@ public class RiakLinks implements Iterable<RiakLink>
      */
     public Set<RiakLink> getLinks()
     {
-        return new HashSet<RiakLink>(links);
+        return new HashSet<>(links);
     }
 
     /**

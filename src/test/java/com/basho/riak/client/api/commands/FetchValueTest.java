@@ -52,7 +52,7 @@ public class FetchValueTest extends MockedResponseOperationTest<FetchOperation, 
     {
         super.setupResponse(mockedResponse);
 
-        when(mockedResponse.getObjectList()).thenReturn(new ArrayList<RiakObject>());
+        when(mockedResponse.getObjectList()).thenReturn(new ArrayList<>());
     }
 
     @Test

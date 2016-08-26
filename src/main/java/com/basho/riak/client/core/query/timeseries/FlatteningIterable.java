@@ -25,7 +25,7 @@ public class FlatteningIterable<O,I> implements Iterable<I>
     @Override
     public Iterator<I> iterator()
     {
-        return new FlatteningIterator<O,I>(source.iterator(), innerIterableProvider);
+        return new FlatteningIterator<>(source.iterator(), innerIterableProvider);
     }
 
     private static class FlatteningIterator<O,I> implements Iterator<I>

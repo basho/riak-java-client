@@ -45,7 +45,7 @@ public class RiakMap extends RiakDatatype
             List<RiakDatatype> datatypes;
             if ((datatypes = entries.get(entry.field)) == null)
             {
-                datatypes = new LinkedList<>();
+	            datatypes = new LinkedList<>();
                 entries.put(entry.field, datatypes);
             }
             datatypes.add(entry.element);

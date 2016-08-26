@@ -87,8 +87,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
     private final String filterQuery;
     private final String sortField;
     private final List<String> returnFields;
-    private final Map<Option<?>, Object> options =
-        new HashMap<Option<?>, Object>();
+    private final Map<Option<?>, Object> options = new HashMap<>();
 
     public Search(Builder builder)
     {
@@ -109,7 +108,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
     {
         RiakFuture<SearchOperation.Response, BinaryValue> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<SearchOperation.Response, BinaryValue, SearchOperation.Response, BinaryValue> future =
             new CoreFutureAdapter<SearchOperation.Response, BinaryValue, SearchOperation.Response, BinaryValue>(coreFuture)
             {
@@ -128,7 +127,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
         coreFuture.addListener(future);
         return future;
     }
-    
+
     private SearchOperation buildCoreOperation()
     {
         SearchOperation.Builder builder = new SearchOperation.Builder(BinaryValue.create(index), query);
@@ -209,15 +208,15 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
            }
        }
 
-       public static Option<Operation> DEFAULT_OPERATION = new Option<Operation>("DEFAULT_OPERATION");
-       public static Option<String> DEFAULT_FIELD = new Option<String>("DEFAULT_FIELD");
+       public static Option<Operation> DEFAULT_OPERATION = new Option<>("DEFAULT_OPERATION");
+       public static Option<String> DEFAULT_FIELD = new Option<>("DEFAULT_FIELD");
 
        private Option(String name)
        {
            super(name);
        }
    }
-    
+
    /**
     * Builder for a Search command.
     */
@@ -231,7 +230,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
         private String filterQuery;
         private String sortField;
         private List<String> returnFields;
-        private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+        private Map<Option<?>, Object> options = new HashMap<>();
 
         /**
          * Construct a Builder for a Search command.
@@ -323,7 +322,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
          */
         public Builder returnFields(Iterable<String> fields)
         {
-            this.returnFields = new ArrayList<String>();
+            this.returnFields = new ArrayList<>();
             for (String field : fields)
             {
                 returnFields.add(field);

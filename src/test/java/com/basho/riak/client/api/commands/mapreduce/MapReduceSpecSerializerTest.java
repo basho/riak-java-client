@@ -54,7 +54,7 @@ public class MapReduceSpecSerializerTest
     public void testSerializeMapReduceSpec() throws IOException
     {
 
-        ArrayList<MapReducePhase> phases = new ArrayList<MapReducePhase>();
+        ArrayList<MapReducePhase> phases = new ArrayList<>();
         phases.add(new MapPhase(Function.newNamedJsFunction("map_func")));
         phases.add(new ReducePhase(Function.newNamedJsFunction("reduce_func")));
         phases.add(new LinkPhase("bucket", "tag"));

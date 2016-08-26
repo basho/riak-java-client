@@ -59,7 +59,7 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
 
         final JsonNodeFactory factory = JsonNodeFactory.instance;
         final ObjectMapper mapper = new ObjectMapper();
-        final Map<Integer, ArrayNode> resultMap = new LinkedHashMap<Integer, ArrayNode>();
+        final Map<Integer, ArrayNode> resultMap = new LinkedHashMap<>();
 
         int phase = 0;
 

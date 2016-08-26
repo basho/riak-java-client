@@ -56,12 +56,12 @@ public class CrdtResponseConverterTest
     public void testDtUpdateRespSet()
     {
 
-        Set<ByteString> values = new HashSet<ByteString>();
+        Set<ByteString> values = new HashSet<>();
         values.add(ByteString.copyFromUtf8("1"));
         values.add(ByteString.copyFromUtf8("2"));
         values.add(ByteString.copyFromUtf8("3"));
 
-        Set<BinaryValue> wrappedValues = new HashSet<BinaryValue>();
+        Set<BinaryValue> wrappedValues = new HashSet<>();
         wrappedValues.add(BinaryValue.create("1"));
         wrappedValues.add(BinaryValue.create("2"));
         wrappedValues.add(BinaryValue.create("3"));
@@ -83,12 +83,12 @@ public class CrdtResponseConverterTest
     public void testDtUpdateRespMap()
     {
 
-        Set<ByteString> setValues = new HashSet<ByteString>();
+        Set<ByteString> setValues = new HashSet<>();
         setValues.add(ByteString.copyFromUtf8("1"));
         setValues.add(ByteString.copyFromUtf8("2"));
         setValues.add(ByteString.copyFromUtf8("3"));
 
-        Set<BinaryValue> wrappedSetValues = new HashSet<BinaryValue>();
+        Set<BinaryValue> wrappedSetValues = new HashSet<>();
         wrappedSetValues.add(BinaryValue.create("1"));
         wrappedSetValues.add(BinaryValue.create("2"));
         wrappedSetValues.add(BinaryValue.create("3"));

@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -61,7 +61,7 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.codehaus.jackson.map.ser.BeanSerializerModifier#changeProperties(
      * org.codehaus.jackson.map.SerializationConfig,
@@ -72,7 +72,7 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier
                                                      BeanDescription beanDesc,
                                                      List<BeanPropertyWriter> beanProperties)
     {
-        final List<BeanPropertyWriter> keptProperties = new ArrayList<BeanPropertyWriter>();
+        final List<BeanPropertyWriter> keptProperties = new ArrayList<>();
         for (BeanPropertyWriter w : beanProperties)
         {
             if (keepProperty(w))
@@ -84,7 +84,7 @@ public class RiakBeanSerializerModifier extends BeanSerializerModifier
         return keptProperties;
     }
 
-    static final List<Class<? extends Annotation>> RIAK_ANNOTATIONS = new ArrayList<Class<? extends Annotation>>();
+    static final List<Class<? extends Annotation>> RIAK_ANNOTATIONS = new ArrayList<>();
 
     static
     {

@@ -48,7 +48,7 @@ public class StoreOperationTest
 
         RiakObject ro = new RiakObject();
 
-        List<RiakLink> links = new ArrayList<RiakLink>();
+        List<RiakLink> links = new ArrayList<>();
         links.add(new RiakLink("bucket", "key", "tag"));
         ro.getLinks().addLinks(links);
 

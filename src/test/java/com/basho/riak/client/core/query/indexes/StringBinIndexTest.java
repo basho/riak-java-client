@@ -33,16 +33,16 @@ public class StringBinIndexTest
     public void storeAndRetrieveString()
     {
         StringBinIndex index = StringBinIndex.named("index_name").createIndex();
-        Set<String> stringSet = new HashSet<String>(Arrays.asList("value1", "value2"));
-        
+        Set<String> stringSet = new HashSet<>(Arrays.asList("value1", "value2"));
+
         index.add(stringSet);
-        
+
         assertEquals(index.size(), 2);
         assertTrue(index.hasValue("value1"));
         assertTrue(index.hasValue("value2"));
-        
+
         Set<String> stringSet2 = index.values();
         assertTrue(stringSet.containsAll(stringSet2));
-        
+
     }
 }

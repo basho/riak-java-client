@@ -147,7 +147,7 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
         RiakSet set = fetchSet(setBucketType, bucketName, key);
         assertTrue(set.view().isEmpty());
 
-        Set<BinaryValue> testValues = new HashSet<BinaryValue>(iterations);
+        Set<BinaryValue> testValues = new HashSet<>(iterations);
         Location location = new Location(new Namespace(setBucketType, bucketName), key);
         BinaryValue ctx = null;
         for (int i = 0; i < iterations; ++i)
@@ -171,7 +171,7 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
         assertEquals(iterations, set.view().size());
         assertEquals(testValues, set.view());
 
-        
+
         for (BinaryValue setElement : testValues)
         {
 
@@ -208,7 +208,7 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
         RiakSet set = fetchSet(setBucketType, bucketName, key);
         assertTrue(set.view().isEmpty());
 
-        Set<BinaryValue> testValues = new HashSet<BinaryValue>(iterations);
+        Set<BinaryValue> testValues = new HashSet<>(iterations);
         Location location = new Location(new Namespace(setBucketType, bucketName), key);
         for (int i = 0; i < iterations; ++i)
         {
@@ -259,7 +259,7 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
         Location location = new Location(new Namespace(mapBucketType, bucketName), key);
         BinaryValue setValue = BinaryValue.create("value");
         BinaryValue mapKey = BinaryValue.create("set");
-        
+
         DtUpdateOperation update =
             new DtUpdateOperation.Builder(location)
                 .withOp(new MapOp().update(mapKey, new SetOp().add(setValue)))
@@ -278,7 +278,7 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
 
 
         mapKey = BinaryValue.create("counter");
-        
+
         update = new DtUpdateOperation.Builder(location)
             .withOp(new MapOp().update(mapKey, new CounterOp(1)))
             .build();
@@ -315,7 +315,7 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
 
 
         mapKey = BinaryValue.create("register");
-        
+
         update = new DtUpdateOperation.Builder(location)
             .withOp(new MapOp().update(mapKey, new RegisterOp(mapKey)))
             .build();
@@ -362,14 +362,14 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
         resetAndEmptyBucket(new Namespace(mapBucketType, bucketName));
 
     }
-    
+
     @Test
     public void testComplexMapUpdate() throws InterruptedException, ExecutionException
     {
         assumeTrue(testCrdt);
         testComplexMapUpdate(false);
     }
-    
+
     @Test
     public void testComplexMapUpdateWithReturnBody() throws InterruptedException, ExecutionException
     {
@@ -377,8 +377,8 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
         assumeTrue(testCrdt);
         testComplexMapUpdate(true);
     }
-    
-    
+
+
     private void testComplexMapUpdate(boolean returnBody) throws InterruptedException, ExecutionException
     {
         /*
@@ -393,52 +393,52 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
                   -> "cart"       : set
 
          */
-        
+
         BinaryValue key = BinaryValue.create("user-info2");
         BinaryValue username = BinaryValue.create("Bob");
         BinaryValue logins = BinaryValue.create("logins");
         BinaryValue lastLogin = BinaryValue.create("last-login");
         BinaryValue loggedIn = BinaryValue.create("logged-in");
         BinaryValue cartContents = BinaryValue.create("cart");
-        
-        
+
+
         MapOp outerMap = new MapOp();
         MapOp innerMap = new MapOp();
-        
+
         ByteBuffer nowBinary = ByteBuffer.allocate(8).putLong(System.currentTimeMillis());
         byte[] now = nowBinary.array();
-        
+
         CounterOp counterOp = new CounterOp(1);
         RegisterOp registerOp = new RegisterOp(BinaryValue.create(now));
         FlagOp flagOp = new FlagOp(false);
         SetOp setOp = new SetOp()
                         .add(BinaryValue.create("Item 1"))
                         .add(BinaryValue.create("Item 2"));
-        
+
         innerMap.update(logins, counterOp)
                 .update(lastLogin, registerOp)
                 .update(loggedIn, flagOp)
                 .update(cartContents, setOp);
-        
+
         outerMap.update(username, innerMap);
-        
+
         Namespace ns = new Namespace(mapBucketType, bucketName);
         Location loc = new Location(ns, key);
-        
+
         DtUpdateOperation update = new DtUpdateOperation.Builder(loc)
                                         .withOp(outerMap)
                                         .withReturnBody(returnBody)
                                         .build();
-        
+
         cluster.execute(update);
-        
+
         update.await();
-        
+
         if (!update.isSuccess())
         {
             fail("Update operation failed: " + update.cause().toString());
         }
-        
+
         RiakMap map;
         if (returnBody)
         {
@@ -454,8 +454,8 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
         {
             map = fetchMap(mapBucketType, bucketName, key);
         }
-        
-        
+
+
         map = map.getMap(username);
         assertNotNull(map);
         RiakCounter counter = map.getCounter(logins);
@@ -466,37 +466,37 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
         assertNotNull(flag);
         RiakSet set = map.getSet(cartContents);
         assertNotNull(set);
-        
+
         resetAndEmptyBucket(new Namespace(mapBucketType, bucketName));
-        
+
     }
-    
+
     @Test
     public void testSimpleMap() throws InterruptedException, ExecutionException
     {
         assumeTrue(testCrdt);
-        
+
         BinaryValue key = BinaryValue.create("simple-map");
         BinaryValue mapKey = BinaryValue.create("set");
         Namespace ns = new Namespace(mapBucketType, bucketName);
         Location loc = new Location(ns, key);
-        
+
         SetOp setOp = new SetOp()
                         .add(BinaryValue.create("Item 1"))
                         .add(BinaryValue.create("Item 2"));
-        
-        
+
+
         MapOp op = new MapOp().update(mapKey, setOp);
-        
+
         DtUpdateOperation update = new DtUpdateOperation.Builder(loc)
                                         .withOp(op)
                                         .withReturnBody(true)
                                         .build();
-        
+
         cluster.execute(update);
-        
-        update.await(); 
-        
+
+        update.await();
+
         assertTrue(update.isSuccess());
         DtUpdateOperation.Response response = update.get();
         assertNotNull(response);
@@ -505,11 +505,11 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
         RiakDatatype dt = response.getCrdtElement();
         assertTrue(dt.isMap());
         RiakMap map = dt.getAsMap();
-        
+
         resetAndEmptyBucket(new Namespace(mapBucketType, bucketName));
-        
-        
-        
+
+
+
     }
 
 }

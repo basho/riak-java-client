@@ -31,7 +31,7 @@ import java.util.List;
 public class BucketPropertiesConverter
 {
     private BucketPropertiesConverter() {}
-    
+
     public static BucketProperties convert(RiakPB.RpbBucketProps pbProps)
     {
         BucketProperties.Builder builder = new BucketProperties.Builder()
@@ -56,7 +56,7 @@ public class BucketPropertiesConverter
                     .withModule(pbProps.getChashKeyfun().getModule().toStringUtf8())
                     .withFunction(pbProps.getChashKeyfun().getFunction().toStringUtf8())
                     .build());
-            
+
             if (pbProps.hasLinkfun())
             {
                 builder.withLinkwalkFunction(
@@ -65,7 +65,7 @@ public class BucketPropertiesConverter
                     .withFunction(pbProps.getLinkfun().getFunction().toStringUtf8())
                     .build());
             }
-        
+
             if (pbProps.hasHasPrecommit())
             {
                 for (Function f : parseHooks(pbProps.getPrecommitList()))
@@ -73,7 +73,7 @@ public class BucketPropertiesConverter
                     builder.withPrecommitHook(f);
                 }
             }
-            
+
             if (pbProps.hasHasPostcommit())
             {
                 for (Function f : parseHooks(pbProps.getPostcommitList()))
@@ -81,25 +81,25 @@ public class BucketPropertiesConverter
                     builder.withPostcommitHook(f);
                 }
             }
-            
+
             if (pbProps.hasSearchIndex())
             {
                 builder.withSearchIndex(pbProps.getSearchIndex().toStringUtf8());
             }
-            
+
             if (pbProps.hasBackend())
             {
                 builder.withBackend(pbProps.getBackend().toStringUtf8());
             }
-            
+
             return builder.build();
     }
-    
+
     public static RiakPB.RpbBucketProps convert(BucketProperties bucketProperties)
     {
         RiakPB.RpbBucketProps.Builder propsBuilder =
             RiakPB.RpbBucketProps.newBuilder();
-        
+
         if (bucketProperties.hasNVal())
         {
             propsBuilder.setNVal(bucketProperties.getNVal());
@@ -188,20 +188,20 @@ public class BucketPropertiesConverter
         {
             propsBuilder.setSearchIndex(ByteString.copyFromUtf8(bucketProperties.getSearchIndex()));
         }
-        
+
         return propsBuilder.build();
-        
+
     }
-    
-    
+
+
     private static List<Function> parseHooks(List<RiakPB.RpbCommitHook> hooks)
     {
-        List<Function> list = new ArrayList<Function>(hooks.size());
+        List<Function> list = new ArrayList<>(hooks.size());
         for ( RiakPB.RpbCommitHook hook : hooks)
         {
             if (hook.hasName())
             {
-                Function f = 
+                Function f =
                     new Function.Builder()
                         .withName(hook.getName().toStringUtf8())
                         .build();
@@ -218,7 +218,7 @@ public class BucketPropertiesConverter
         }
         return list;
     }
-    
+
     private static RiakPB.RpbModFun convertModFun(Function f)
     {
         return RiakPB.RpbModFun.newBuilder()
@@ -226,10 +226,10 @@ public class BucketPropertiesConverter
                     .setFunction(ByteString.copyFromUtf8(f.getFunction()))
                     .build();
     }
-    
+
     private static List<RiakPB.RpbCommitHook> convertHooks(List<Function> hookList)
     {
-        List<RiakPB.RpbCommitHook> pbHookList = new ArrayList<RiakPB.RpbCommitHook>(hookList.size());
+        List<RiakPB.RpbCommitHook> pbHookList = new ArrayList<>(hookList.size());
         RiakPB.RpbCommitHook.Builder builder = RiakPB.RpbCommitHook.newBuilder();
         RiakPB.RpbModFun.Builder mfBuilder = RiakPB.RpbModFun.newBuilder();
         for (Function hook : hookList)
@@ -244,7 +244,7 @@ public class BucketPropertiesConverter
                 mfBuilder.setFunction(ByteString.copyFromUtf8(hook.getFunction()));
                 builder.setModfun(mfBuilder);
             }
-            
+
             pbHookList.add(builder.build());
             builder.clear();
             mfBuilder.clear();

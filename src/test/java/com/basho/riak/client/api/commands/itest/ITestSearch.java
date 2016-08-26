@@ -76,7 +76,7 @@ public class ITestSearch extends ISearchTestBase
         final SearchOperation.Response response = client.execute(searchCmd);
         assertEquals(3, response.numResults());
 
-        ArrayList<String> ages = new ArrayList<String>();
+        ArrayList<String> ages = new ArrayList<>();
         for (Map<String, List<String>> stringListMap : response.getAllResults())
         {
             ages.add(stringListMap.get("age_i").get(0));

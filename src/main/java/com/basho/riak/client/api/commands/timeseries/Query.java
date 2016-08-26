@@ -55,7 +55,7 @@ public class Query extends RiakCommand<QueryResult, String>
         private static final Pattern paramPattern = Pattern.compile("(:[a-zA-Z][0-9a-zA-Z_]*)");
 
         private final String queryText;
-        private final Map<String, BinaryValue> interpolations = new HashMap<String, BinaryValue>();
+        private final Map<String, BinaryValue> interpolations = new HashMap<>();
         private final Set<String> knownParams;
         private byte[] coverageContext = null;
 
@@ -82,7 +82,7 @@ public class Query extends RiakCommand<QueryResult, String>
                 return;
             }
 
-            knownParams = new HashSet<String>(paramMatcher.groupCount());
+            knownParams = new HashSet<>(paramMatcher.groupCount());
 
             for (int i = 0; i < paramMatcher.groupCount(); i++)
             {

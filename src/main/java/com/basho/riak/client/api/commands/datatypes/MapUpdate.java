@@ -25,18 +25,18 @@ import java.util.Set;
  * An update to a Riak map datatype.
  * <p>
  * When building an {@link UpdateMap} command
- * this class is used to encapsulate the update to be performed on a 
- * Riak map datatype. It is a composition of other updates. 
+ * this class is used to encapsulate the update to be performed on a
+ * Riak map datatype. It is a composition of other updates.
  * </p>
- * 
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public class MapUpdate implements DatatypeUpdate
 {
 
-    private final Set<MapOp.MapField> removes = new HashSet<MapOp.MapField>();
-    private final Set<MapOp.MapUpdate> updates = new HashSet<MapOp.MapUpdate>();
+    private final Set<MapOp.MapField> removes = new HashSet<>();
+    private final Set<MapOp.MapUpdate> updates = new HashSet<>();
 
     /**
      * Construct an empty MapUpdate.
@@ -112,7 +112,7 @@ public class MapUpdate implements DatatypeUpdate
      * <p>
      *
      * @param key the key the map is mapped to.
-     * @param builder the update to apply to the map the key is mapped to. If none exists it is created. 
+     * @param builder the update to apply to the map the key is mapped to. If none exists it is created.
      * @return a reference to this object.
      */
     public MapUpdate update(String key, MapUpdate builder)
@@ -129,7 +129,7 @@ public class MapUpdate implements DatatypeUpdate
      * <p>
      *
      * @param key the key the set is mapped to.
-     * @param builder the update to apply to the set the key is mapped to. If none exists it is created. 
+     * @param builder the update to apply to the set the key is mapped to. If none exists it is created.
      * @return a reference to this object.
      */
     public MapUpdate update(String key, SetUpdate builder)
@@ -146,7 +146,7 @@ public class MapUpdate implements DatatypeUpdate
      * <p>
      *
      * @param key the key the set is mapped to.
-     * @param builder the update to apply to the counter the key is mapped to. If none exists it is created. 
+     * @param builder the update to apply to the counter the key is mapped to. If none exists it is created.
      * @return a reference to this object.
      */
     public MapUpdate update(String key, CounterUpdate builder)
@@ -163,7 +163,7 @@ public class MapUpdate implements DatatypeUpdate
      * <p>
      *
      * @param key the key the register is mapped to.
-     * @param builder the update to apply to the register the key is mapped to. If none exists it is created. 
+     * @param builder the update to apply to the register the key is mapped to. If none exists it is created.
      * @return a reference to this object.
      */
     public MapUpdate update(String key, RegisterUpdate builder)
@@ -180,7 +180,7 @@ public class MapUpdate implements DatatypeUpdate
      * <p>
      *
      * @param key the key the register is mapped to.
-     * @param builder the update to apply to the flag the key is mapped to. If none exists it is created. 
+     * @param builder the update to apply to the flag the key is mapped to. If none exists it is created.
      * @return a reference to this object.
      */
     public MapUpdate update(String key, FlagUpdate builder)

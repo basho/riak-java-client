@@ -43,8 +43,8 @@ import org.slf4j.LoggerFactory;
  */
 public class DefaultNodeManager implements NodeManager, NodeStateListener
 {
-    private final ArrayList<RiakNode> healthy = new ArrayList<RiakNode>();
-    private final ArrayList<RiakNode> unhealthy = new ArrayList<RiakNode>();
+    private final ArrayList<RiakNode> healthy = new ArrayList<>();
+    private final ArrayList<RiakNode> unhealthy = new ArrayList<>();
     private final AtomicInteger index = new AtomicInteger();
     private final Logger logger = LoggerFactory.getLogger(DefaultNodeManager.class);
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);

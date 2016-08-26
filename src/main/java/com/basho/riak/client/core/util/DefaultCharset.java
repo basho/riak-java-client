@@ -58,7 +58,7 @@ public final class DefaultCharset
     private DefaultCharset(Charset c)
     {
         logger.info("Initializing client charset to: {}", c.name());
-        this.currentCharset = new AtomicReference<Charset>(c);
+        this.currentCharset = new AtomicReference<>(c);
     }
 
     private static DefaultCharset initializeDefaultCharsetSingleton()

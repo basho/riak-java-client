@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Holds instances of converters to be used for serialization / deserialization 
+ * Holds instances of converters to be used for serialization / deserialization
  * of objects stored and fetched from Riak.
  * <p>
  * When storing and retrieving your own domain objects to/from Riak, they
@@ -36,34 +36,34 @@ import java.util.concurrent.ConcurrentHashMap;
  * In the case you do need custom conversion, you would extend {@link Converter}
  * and then register it with the ConverterFactory for your classes.
  * </p>
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since  2.0
  */
-public enum ConverterFactory 
+public enum ConverterFactory
 {
     INSTANCE;
-    
+
     private final Map<Type, Converter<?>> converterInstances =
         new ConcurrentHashMap<Type, Converter<?>>()
         {{
-            put(new TypeReference<RiakObject>(){}.getType(), new PassThroughConverter());
+          put(new TypeReference<RiakObject>(){}.getType(), new PassThroughConverter());  
             put(RiakObject.class, new PassThroughConverter());
             put (new TypeReference<String>(){}.getType(), new StringConverter());
             put(String.class, new StringConverter());
         }};
-    
-    
-    
+
+
+
     /**
-     * Get the instance of the ConverterFactory. 
+     * Get the instance of the ConverterFactory.
      * @return the ConverterFactory
      */
     public static ConverterFactory getInstance()
     {
         return INSTANCE;
     }
-    
+
     /**
      * Returns a Converter<T> instance for the supplied class.
      * <p>
@@ -77,7 +77,7 @@ public enum ConverterFactory
     {
         return getConverter(type, null);
     }
-    
+
     /**
      * Returns a Converter instance for the supplied class.
      * <p>
@@ -91,33 +91,33 @@ public enum ConverterFactory
     {
         return getConverter(null, typeReference);
     }
-    
+
     @SuppressWarnings("unchecked")
-    private <T> Converter<T> getConverter(Type type, TypeReference<T> typeReference) 
+    private <T> Converter<T> getConverter(Type type, TypeReference<T> typeReference)
     {
         type = type != null ? type : typeReference.getType();
-        
+
         Converter<T> converter;
-        
+
         converter = (Converter<T>) converterInstances.get(type);
         if (converter == null)
         {
             if (typeReference != null)
             {
                 // Should we cache this?
-                converter = new JSONConverter<T>(typeReference);
+                converter = new JSONConverter<>(typeReference);
             }
             else
             {
-                converter = new JSONConverter<T>(type);
+                converter = new JSONConverter<>(type);
             }
         }
 
         return converter;
-        
+
     }
-    
-    
+
+
     /**
      * Register a converter for the supplied class.
      * <p>
@@ -131,7 +131,7 @@ public enum ConverterFactory
     {
         converterInstances.put((Type)clazz, converter);
     }
-    
+
     /**
      * Register a converter for the supplied class.
      * <p>
@@ -146,7 +146,7 @@ public enum ConverterFactory
         Type t = typeReference.getType();
         converterInstances.put(t, converter);
     }
-    
+
     /**
      * Unregister a converter.
      * @param <T> The type
@@ -156,7 +156,7 @@ public enum ConverterFactory
     {
         converterInstances.remove((Type)clazz);
     }
-    
+
     /**
      * Unregister a converter.
      * @param <T> The type

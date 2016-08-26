@@ -75,8 +75,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 {
 
     private final Location location;
-    private final Map<RiakOption<?>, Object> options =
-            new HashMap<>();
+    private final Map<RiakOption<?>, Object> options = new HashMap<>();
 
     FetchValue(Builder builder)
     {
@@ -265,48 +264,48 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
         * Read Quorum.
         * How many replicas need to agree when fetching the object.
         */
-       public static final Option<Quorum> R = new Option<Quorum>("R");
+       public static final Option<Quorum> R = new Option<>("R");
        /**
         * Primary Read Quorum.
         * How many primary replicas need to be available when retrieving the object.
         */
-       public static final Option<Quorum> PR = new Option<Quorum>("PR");
+       public static final Option<Quorum> PR = new Option<>("PR");
        /**
         * Basic Quorum.
         * Whether to return early in some failure cases (eg. when r=1 and you get
         * 2 errors and a success basic_quorum=true would return an error)
         */
-       public static final Option<Boolean> BASIC_QUORUM = new Option<Boolean>("BASIC_QUORUM");
+       public static final Option<Boolean> BASIC_QUORUM = new Option<>("BASIC_QUORUM");
        /**
         * Not Found OK.
         * Whether to treat notfounds as successful reads for the purposes of R
         */
-       public static final Option<Boolean> NOTFOUND_OK = new Option<Boolean>("NOTFOUND_OK");
+       public static final Option<Boolean> NOTFOUND_OK = new Option<>("NOTFOUND_OK");
        /**
         * If Modified.
         * When a vector clock is supplied with this option, only return the object
         * if the vector clocks don't match.
         */
-       public static final Option<VClock> IF_MODIFIED = new Option<VClock>("IF_MODIFIED");
+       public static final Option<VClock> IF_MODIFIED = new Option<>("IF_MODIFIED");
        /**
         * Head.
         * return the object with the value(s) set as empty. This allows you to get the
         * meta data without a potentially large value. Analogous to an HTTP HEAD request.
         */
-       public static final Option<Boolean> HEAD = new Option<Boolean>("HEAD");
+       public static final Option<Boolean> HEAD = new Option<>("HEAD");
        /**
         * Deleted VClock.
         * By default single tombstones are not returned by a fetch operations. This
         * will return a Tombstone if it is present.
         */
-       public static final Option<Boolean> DELETED_VCLOCK = new Option<Boolean>("DELETED_VCLOCK");
+       public static final Option<Boolean> DELETED_VCLOCK = new Option<>("DELETED_VCLOCK");
        /**
         * Timeout.
         * Sets the server-side timeout for this operation. The default in Riak is 60 seconds.
         */
-       public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
-       public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
-       public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+       public static final Option<Integer> TIMEOUT = new Option<>("TIMEOUT");
+       public static final Option<Boolean> SLOPPY_QUORUM = new Option<>("SLOPPY_QUORUM");
+       public static final Option<Integer> N_VAL = new Option<>("N_VAL");
 
        private Option(String name)
        {

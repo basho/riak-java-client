@@ -40,10 +40,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Brian Roach <roach at basho dot com>
  * @see com.basho.riak.client.core.query.RiakObject#getUserMeta()
  * @since 2.0
+ * @see com.basho.riak.client.core.query.RiakObject#getUserMeta()
  */
 public class RiakUserMetadata
 {
-    private final ConcurrentHashMap<BinaryValue, BinaryValue> meta = new ConcurrentHashMap<BinaryValue, BinaryValue>();
+    private final ConcurrentHashMap<BinaryValue, BinaryValue> meta = new ConcurrentHashMap<>();
 
     /**
      * Determine if usermeta is present.
@@ -192,7 +193,7 @@ public class RiakUserMetadata
      * counterpart all access to the user metadata raw bytes
      * </p>
      *
-     * @param key   the key for the user metadata entry
+     * @param key the key for the user metadata entry
      * @param value the value for the entry
      */
     public void put(BinaryValue key, BinaryValue value)

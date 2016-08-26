@@ -59,7 +59,7 @@ public class ITestORM extends ITestAutoCleanupBase
     @Before
     public void resetFactory()
     {
-        TypeReference<GenericPojo<Integer>> tr = 
+        TypeReference<GenericPojo<Integer>> tr =
             new TypeReference<GenericPojo<Integer>>(){};
 
         ConverterFactory.getInstance().unregisterConverterForClass(tr);
@@ -68,33 +68,33 @@ public class ITestORM extends ITestAutoCleanupBase
         ConverterFactory.getInstance().unregisterConverterForClass(Foo.class);
         ConflictResolverFactory.getInstance().unregisterConflictResolver(Foo.class);
     }
-    
+
     @Test
     public void storeParameterizedTypeJSON() throws ExecutionException, InterruptedException, JsonProcessingException
     {
         RiakClient client = new RiakClient(cluster);
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         Location loc = new Location(ns, "test_ORM_key1");
-        
-        GenericPojo<Foo> gpf = new GenericPojo<Foo>();
-        List<Foo> fooList = new ArrayList<Foo>();
+
+        GenericPojo<Foo> gpf = new GenericPojo<>();
+        List<Foo> fooList = new ArrayList<>();
         fooList.add(new Foo("Foo in list value"));
         gpf.value = new Foo("Foo in gp value");
         gpf.list = fooList;
-        
-        StoreValue sv = 
+
+        StoreValue sv =
             new StoreValue.Builder(gpf)
                 .withLocation(loc)
                 .withOption(Option.RETURN_BODY, true)
                 .build();
-        
+
         StoreValue.Response resp = client.execute(sv);
-        
-        
-        TypeReference<GenericPojo<Foo>> tr = 
+
+
+        TypeReference<GenericPojo<Foo>> tr =
             new TypeReference<GenericPojo<Foo>>(){};
         GenericPojo<Foo> gpf2 = resp.getValue(tr);
-        
+
         assertNotNull(gpf2);
         assertNotNull(gpf2.value);
         assertEquals(gpf.value, gpf2.value);
@@ -106,36 +106,36 @@ public class ITestORM extends ITestAutoCleanupBase
         String json = mapper.writeValueAsString(gpf2);
         RiakObject ro = resp.getValue(RiakObject.class);
         assertEquals(json, ro.getValue().toString());
-        
+
     }
-    
+
     @Test
     public void storeAndFetchParamterizedTypeJSON() throws ExecutionException, InterruptedException, JsonProcessingException
     {
         RiakClient client = new RiakClient(cluster);
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         Location loc = new Location(ns, "test_ORM_key2");
-        
-        GenericPojo<Foo> gpf = new GenericPojo<Foo>();
-        List<Foo> fooList = new ArrayList<Foo>();
+
+        GenericPojo<Foo> gpf = new GenericPojo<>();
+        List<Foo> fooList = new ArrayList<>();
         fooList.add(new Foo("Foo in list value"));
         gpf.value = new Foo("Foo in gp value");
         gpf.list = fooList;
-        
-        StoreValue sv = 
+
+        StoreValue sv =
             new StoreValue.Builder(gpf)
                 .withLocation(loc)
                 .build();
-        
+
         client.execute(sv);
-            
+
         FetchValue fv = new FetchValue.Builder(loc).build();
         FetchValue.Response resp = client.execute(fv);
-        
-        TypeReference<GenericPojo<Foo>> tr = 
+
+        TypeReference<GenericPojo<Foo>> tr =
             new TypeReference<GenericPojo<Foo>>(){};
         GenericPojo<Foo> gpf2 = resp.getValue(tr);
-        
+
         assertNotNull(gpf2);
         assertNotNull(gpf2.value);
         assertEquals(gpf.value, gpf2.value);
@@ -147,156 +147,156 @@ public class ITestORM extends ITestAutoCleanupBase
         String json = mapper.writeValueAsString(gpf2);
         RiakObject ro = resp.getValue(RiakObject.class);
         assertEquals(json, ro.getValue().toString());
-        
+
     }
-    
+
     @Test
     public void updateParameterizedTypeJSON() throws ExecutionException, InterruptedException, JsonProcessingException
     {
         RiakClient client = new RiakClient(cluster);
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         Location loc = new Location(ns, "test_ORM_key3");
-        
+
         MyUpdate update = new MyUpdate();
-        TypeReference<GenericPojo<Integer>> tr = 
+        TypeReference<GenericPojo<Integer>> tr =
             new TypeReference<GenericPojo<Integer>>(){};
-        
+
         UpdateValue uv = new UpdateValue.Builder(loc)
                         .withUpdate(update, tr)
                         .withStoreOption(Option.RETURN_BODY, true)
                         .build();
-        
+
         UpdateValue.Response resp = client.execute(uv);
-        
+
         GenericPojo<Integer> gpi = resp.getValue(tr);
-        
+
         assertNotNull(gpi);
         assertNotNull(gpi.value);
         assertEquals(1, gpi.value.intValue());
-        
+
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new RiakJacksonModule());
         String json = mapper.writeValueAsString(gpi);
         RiakObject ro = resp.getValue(RiakObject.class);
         assertEquals(json, ro.getValue().toString());
-        
+
         resp = client.execute(uv);
         gpi = resp.getValue(tr);
         assertNotNull(gpi);
         assertNotNull(gpi.value);
         assertEquals(2, gpi.value.intValue());
     }
-    
+
     @Test
     public void updateAndResolveParameterizedTypeJSON() throws ExecutionException, InterruptedException
     {
         // We're back to allow_mult=false as default
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
-        StoreBucketPropsOperation op = 
+        StoreBucketPropsOperation op =
             new StoreBucketPropsOperation.Builder(ns)
                 .withAllowMulti(true)
                 .build();
         cluster.execute(op);
         op.get();
-        
+
         RiakClient client = new RiakClient(cluster);
         Location loc = new Location(ns, "test_ORM_key4");
-        
+
         MyUpdate update = new MyUpdate();
-        TypeReference<GenericPojo<Integer>> tr = 
+        TypeReference<GenericPojo<Integer>> tr =
             new TypeReference<GenericPojo<Integer>>(){};
-        
+
         UpdateValue uv = new UpdateValue.Builder(loc)
                         .withUpdate(update, tr)
                         .build();
-        
+
         client.execute(uv);
-        
-        // Create a sibling 
+
+        // Create a sibling
         GenericPojo<Integer> gpi = update.apply(null);
-        StoreValue sv = 
+        StoreValue sv =
             new StoreValue.Builder(gpi)
                 .withLocation(loc)
                 .build();
-        
+
         client.execute(sv);
-        
+
         ConflictResolverFactory.getInstance().registerConflictResolver(tr, new MyResolver());
-        
+
         uv = new UpdateValue.Builder(loc)
                         .withUpdate(update, tr)
                         .withStoreOption(Option.RETURN_BODY, true)
                         .build();
-        
+
         UpdateValue.Response uvResp = client.execute(uv);
-        
+
         gpi = uvResp.getValue(tr);
         assertNotNull(gpi);
         assertNotNull(gpi.value);
         assertEquals(3, gpi.value.intValue());
-        
-        
+
+
     }
-    
+
     @Test
     public void updateAndResolveParameterizedTypeCustom() throws ExecutionException, InterruptedException
     {
         // We're back to allow_mult=false as default
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
-        StoreBucketPropsOperation op = 
+        StoreBucketPropsOperation op =
             new StoreBucketPropsOperation.Builder(ns)
                 .withAllowMulti(true)
                 .build();
         cluster.execute(op);
         op.get();
-        
-        
+
+
         RiakClient client = new RiakClient(cluster);
         Location loc = new Location(ns, "test_ORM_key5");
-        
-        TypeReference<GenericPojo<Integer>> tr = 
+
+        TypeReference<GenericPojo<Integer>> tr =
             new TypeReference<GenericPojo<Integer>>(){};
-        
+
         ConflictResolverFactory.getInstance().registerConflictResolver(tr, new MyResolver());
         ConverterFactory.getInstance().registerConverterForClass(tr, new MyConverter(tr.getType()));
-        
-        
+
+
         MyUpdate update = new MyUpdate();
-        
-        
+
+
         UpdateValue uv = new UpdateValue.Builder(loc)
                         .withUpdate(update, tr)
                         .build();
-        
+
         client.execute(uv);
-        
-        // Create a sibling 
+
+        // Create a sibling
         GenericPojo<Integer> gpi = update.apply(null);
-        StoreValue sv = 
+        StoreValue sv =
             new StoreValue.Builder(gpi, tr)
                 .withLocation(loc)
                 .build();
-        
+
         client.execute(sv);
-        
+
         uv = new UpdateValue.Builder(loc)
                         .withUpdate(update, tr)
                         .withStoreOption(Option.RETURN_BODY, true)
                         .build();
-        
+
         UpdateValue.Response uvResp = client.execute(uv);
-        
+
         gpi = uvResp.getValue(tr);
         assertNotNull(gpi);
         assertNotNull(gpi.value);
         assertEquals(3, gpi.value.intValue());
-        
+
         // Check to see that the custom conversion is right
         RiakObject ro = uvResp.getValue(RiakObject.class);
         assertEquals("3", ro.getValue().toString());
     }
-    
-    
+
+
     @Test
     public void updateAndResolveRawTypeJSON() throws ExecutionException, InterruptedException, JsonProcessingException
     {
@@ -305,104 +305,104 @@ public class ITestORM extends ITestAutoCleanupBase
         Location loc = new Location(ns, "test_ORM_key6");
         ConflictResolverFactory.getInstance().registerConflictResolver(Foo.class, new MyFooResolver());
         MyFooUpdate update = new MyFooUpdate();
-        
+
         UpdateValue uv = new UpdateValue.Builder(loc)
                         .withUpdate(update)
                         .build();
-        
+
         client.execute(uv);
-        
-        // Create a sibling 
+
+        // Create a sibling
         Foo f = update.apply(null);
-        StoreValue sv = 
+        StoreValue sv =
             new StoreValue.Builder(f)
                 .withLocation(loc)
                 .build();
-        
+
         client.execute(sv);
-        
+
         uv = new UpdateValue.Builder(loc)
                         .withUpdate(update)
                         .withStoreOption(Option.RETURN_BODY, true)
                         .build();
-        
+
         UpdateValue.Response uvResp = client.execute(uv);
-        
+
         f = uvResp.getValue(Foo.class);
         assertNotNull(f);
         assertEquals("Little bunny", f.fooValue);
-        
+
         uv = new UpdateValue.Builder(loc)
                         .withUpdate(update)
                         .withStoreOption(Option.RETURN_BODY, true)
                         .build();
-        
+
         uvResp = client.execute(uv);
-        
+
         f = uvResp.getValue(Foo.class);
         assertNotNull(f);
         assertEquals("Little bunny foo foo.", f.fooValue);
-        
+
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new RiakJacksonModule());
         String json = mapper.writeValueAsString(f);
         RiakObject ro = uvResp.getValue(RiakObject.class);
         assertEquals(json, ro.getValue().toString());
-        
+
     }
-    
+
     @Test
     public void updateAndResolveRawTypeCustom() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         Location loc = new Location(ns, "test_ORM_key7");
-        
+
         ConflictResolverFactory.getInstance().registerConflictResolver(Foo.class, new MyFooResolver());
         ConverterFactory.getInstance().registerConverterForClass(Foo.class, new MyFooConverter());
         MyFooUpdate update = new MyFooUpdate();
-        
+
         UpdateValue uv = new UpdateValue.Builder(loc)
                         .withUpdate(update)
                         .build();
-        
+
         client.execute(uv);
-        
-        // Create a sibling 
+
+        // Create a sibling
         Foo f = update.apply(null);
-        StoreValue sv = 
+        StoreValue sv =
             new StoreValue.Builder(f)
                 .withLocation(loc)
                 .build();
-        
+
         client.execute(sv);
-        
+
         uv = new UpdateValue.Builder(loc)
                         .withUpdate(update)
                         .withStoreOption(Option.RETURN_BODY, true)
                         .build();
-        
+
         UpdateValue.Response uvResp = client.execute(uv);
-        
+
         f = uvResp.getValue(Foo.class);
         assertNotNull(f);
         assertEquals("Little bunny", f.fooValue);
-        
+
         uv = new UpdateValue.Builder(loc)
                         .withUpdate(update)
                         .withStoreOption(Option.RETURN_BODY, true)
                         .build();
-        
+
         uvResp = client.execute(uv);
-        
+
         f = uvResp.getValue(Foo.class);
         assertNotNull(f);
         assertEquals("Little bunny foo foo.", f.fooValue);
-        
+
         RiakObject ro = uvResp.getValue(RiakObject.class);
         assertEquals("Little bunny foo foo.", ro.getValue().toString());
     }
-    
+
     @Test
     public void updateRiakObject() throws ExecutionException, InterruptedException
     {
@@ -420,29 +420,29 @@ public class ITestORM extends ITestAutoCleanupBase
                                     })
                         .withStoreOption(Option.RETURN_BODY, true)
                         .build();
-        
+
         UpdateValue.Response response = client.execute(uv);
         RiakObject ro = response.getValues().get(0);
         assertNotNull(ro.getVClock());
     }
-    
+
     public static class GenericPojo<T>
     {
         public T value;
         public List<T> list;
-        
+
         @RiakVClock
         public VClock vclock;
     }
-    
+
     public static class Foo
     {
         public String fooValue;
         @RiakVClock
         public VClock vclock;
-        
+
         public Foo() {}
-        
+
         public Foo(String v)
         {
             this.fooValue = v;
@@ -455,16 +455,16 @@ public class ITestORM extends ITestAutoCleanupBase
             hash = 89 * hash + (this.fooValue != null ? this.fooValue.hashCode() : 0);
             return hash;
         }
-        
+
         @Override
         public boolean equals(Object o)
         {
             Foo other = (Foo)o;
             return fooValue.equals(other.fooValue);
         }
-        
+
     }
-    
+
     public static class MyUpdate extends Update<GenericPojo<Integer>>
     {
 
@@ -473,18 +473,18 @@ public class ITestORM extends ITestAutoCleanupBase
         {
             if (original == null)
             {
-                original = new GenericPojo<Integer>();
+                original = new GenericPojo<>();
                 original.value = 1;
             }
             else
             {
                 original.value++;
             }
-            
+
             return original;
         }
     }
-    
+
     public static class MyResolver implements ConflictResolver<GenericPojo<Integer>>
     {
 
@@ -496,13 +496,13 @@ public class ITestORM extends ITestAutoCleanupBase
             {
                 total += gpi.value;
             }
-            GenericPojo<Integer> newObj = new GenericPojo<Integer>();
-            newObj.value = total;            
+            GenericPojo<Integer> newObj = new GenericPojo<>();
+            newObj.value = total;
             return newObj;
         }
-        
+
     }
-    
+
     public static class MyConverter extends Converter<GenericPojo<Integer>>
     {
 
@@ -510,11 +510,11 @@ public class ITestORM extends ITestAutoCleanupBase
         {
             super(t);
         }
-        
+
         @Override
         public GenericPojo<Integer> toDomain(BinaryValue value, String contentType) throws ConversionException
         {
-            GenericPojo<Integer> gpi = new GenericPojo<Integer>();
+            GenericPojo<Integer> gpi = new GenericPojo<>();
             gpi.value = Integer.valueOf(value.toString());
             return gpi;
         }
@@ -524,9 +524,9 @@ public class ITestORM extends ITestAutoCleanupBase
         {
             return new ContentAndType(BinaryValue.create(String.valueOf(domainObject.value)), "text/plain");
         }
-        
+
     }
-    
+
     public class MyFooUpdate extends Update<Foo>
     {
 
@@ -551,7 +551,7 @@ public class ITestORM extends ITestAutoCleanupBase
             return original;
         }
     }
-    
+
     public class MyFooResolver implements ConflictResolver<Foo>
     {
 
@@ -576,7 +576,7 @@ public class ITestORM extends ITestAutoCleanupBase
             }
         }
     }
-    
+
     public static class MyFooConverter extends Converter<Foo>
     {
         public MyFooConverter()
@@ -594,7 +594,7 @@ public class ITestORM extends ITestAutoCleanupBase
         {
             return new ContentAndType(BinaryValue.create(domainObject.fooValue), "text/plain");
         }
-        
+
     }
-    
+
 }

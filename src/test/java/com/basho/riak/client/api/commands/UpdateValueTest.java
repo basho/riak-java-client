@@ -64,7 +64,7 @@ public class UpdateValueTest
         riakObject = new RiakObject();
         riakObject.setValue(BinaryValue.create(new byte[]{'O', '_', 'o'}));
 
-        ArrayList<RiakObject> objects = new ArrayList<RiakObject>();
+        ArrayList<RiakObject> objects = new ArrayList<>();
         objects.add(riakObject);
 
         FetchOperation.Response fetchResponse = mock(FetchOperation.Response.class);
@@ -113,18 +113,14 @@ public class UpdateValueTest
         UpdateValue update = new UpdateValue.Builder(key).withUpdate(new NoopUpdate()).build();
 
         // Setup new client with 0 connections.
-        RiakClient client = RiakClient.newClient(1, new ArrayList<String>());
+        RiakClient client = RiakClient.newClient(1, new ArrayList<>());
         final RiakFuture<UpdateValue.Response, Location> updateFuture = client.executeAsync(update);
-        updateFuture.addListener(new RiakFutureListener<UpdateValue.Response, Location>()
-        {
-            @Override
-            public void handle(RiakFuture<UpdateValue.Response, Location> f)
-            {
-                // Assert that we fail
-                assertNotNull(f.cause());
-                assertFalse(f.isSuccess());
-            }
-        });
+        updateFuture.addListener(listenerFuture ->
+                                 {
+                                     // Assert that we fail
+                                     assertNotNull(listenerFuture.cause());
+                                     assertFalse(listenerFuture.isSuccess());
+                                 });
 
         updateFuture.await();
 

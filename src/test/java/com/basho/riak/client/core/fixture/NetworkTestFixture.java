@@ -29,16 +29,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  *
  * This test fixture is to allow for specific network conditions to
- * be created and test that the client core reacts appropriately. 
- * 
- * 
+ * be created and test that the client core reacts appropriately.
+ *
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
 public class NetworkTestFixture implements Runnable
 {
     public static int ACCEPT_THEN_CLOSE = 0;
-    
+
     public static int PB_CLOSE_BEFORE_WRITE = 1;
     public static int PB_FULL_WRITE_THEN_CLOSE = 2;
     public static int PB_PARTIAL_WRITE_THEN_CLOSE = 3;
@@ -46,78 +46,78 @@ public class NetworkTestFixture implements Runnable
     public static int PB_PARTIAL_WRITE_STAY_OPEN = 5;
     public static int PB_FULL_WRITE_ERROR_STAY_OPEN = 6;
     public static int NO_LISTENER = 7;
-    
+
     private final Selector selector;
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
-    
+
     public NetworkTestFixture() throws IOException
     {
         this(5000);
     }
-    
+
     public NetworkTestFixture(int startingPort) throws IOException
     {
         selector = Selector.open();
-        
+
         ServerSocketChannel server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + ACCEPT_THEN_CLOSE));
-        server.configureBlocking(false); 
-        server.register(selector, SelectionKey.OP_ACCEPT); 
+        server.configureBlocking(false);
+        server.register(selector, SelectionKey.OP_ACCEPT);
         SelectionKey key = server.keyFor(selector);
         key.attach(new AcceptThenClose(server));
-        
+
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + PB_CLOSE_BEFORE_WRITE ));
-        server.configureBlocking(false); 
-        server.register(selector, SelectionKey.OP_ACCEPT); 
+        server.configureBlocking(false);
+        server.register(selector, SelectionKey.OP_ACCEPT);
         key = server.keyFor(selector);
         key.attach(new AcceptReadThenClose(server));
-        
+
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + PB_FULL_WRITE_THEN_CLOSE ));
-        server.configureBlocking(false); 
-        server.register(selector, SelectionKey.OP_ACCEPT); 
+        server.configureBlocking(false);
+        server.register(selector, SelectionKey.OP_ACCEPT);
         key = server.keyFor(selector);
         key.attach(new AcceptReadWriteThenClose(server));
-        
+
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + PB_PARTIAL_WRITE_THEN_CLOSE));
-        server.configureBlocking(false); 
-        server.register(selector, SelectionKey.OP_ACCEPT); 
+        server.configureBlocking(false);
+        server.register(selector, SelectionKey.OP_ACCEPT);
         key = server.keyFor(selector);
         key.attach(new AcceptReadPartialWriteThenClose(server));
-        
+
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + PB_FULL_WRITE_STAY_OPEN ));
-        server.configureBlocking(false); 
-        server.register(selector, SelectionKey.OP_ACCEPT); 
+        server.configureBlocking(false);
+        server.register(selector, SelectionKey.OP_ACCEPT);
         key = server.keyFor(selector);
         key.attach(new AcceptReadWriteStayOpen(server));
-        
+
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + PB_PARTIAL_WRITE_STAY_OPEN));
-        server.configureBlocking(false); 
-        server.register(selector, SelectionKey.OP_ACCEPT); 
+        server.configureBlocking(false);
+        server.register(selector, SelectionKey.OP_ACCEPT);
         key = server.keyFor(selector);
         key.attach(new AcceptReadPartialWriteStayOpen(server));
-        
+
         server = ServerSocketChannel.open();
         server.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         server.socket().bind(new InetSocketAddress("127.0.0.1", startingPort + PB_FULL_WRITE_ERROR_STAY_OPEN ));
-        server.configureBlocking(false); 
-        server.register(selector, SelectionKey.OP_ACCEPT); 
+        server.configureBlocking(false);
+        server.register(selector, SelectionKey.OP_ACCEPT);
         key = server.keyFor(selector);
         key.attach(new AcceptReadWriteErrorStayOpen(server));
     }
-    
+
     @Override
-    public void run() 
+    public void run()
     {
         OUTER:
         while(true)
@@ -132,8 +132,8 @@ public class NetworkTestFixture implements Runnable
                         selector.select(1000);
                         for (Iterator<SelectionKey> i = selector.selectedKeys().iterator(); i.hasNext();)
                         {
-                            SelectionKey key = i.next(); 
-                            i.remove(); 
+                            SelectionKey key = i.next();
+                            i.remove();
 
                             if (key.isAcceptable())
                             {
@@ -144,7 +144,7 @@ public class NetworkTestFixture implements Runnable
                                     case ACCEPT_THEN_READ:
                                         client = h.getServerSocketChannel().accept();
                                         client.configureBlocking(false);
-                                        client.socket().setTcpNoDelay(true); 
+                                        client.socket().setTcpNoDelay(true);
                                         client.register(selector, SelectionKey.OP_READ);
                                         SelectionKey clientKey = client.keyFor(selector);
                                         clientKey.attach(h.duplicate());
@@ -157,7 +157,7 @@ public class NetworkTestFixture implements Runnable
                                 }
                             }
 
-                            if (key.isReadable()) { 
+                            if (key.isReadable()) {
                                 Acceptor h = (Acceptor) key.attachment();
                                 try
                                 {
@@ -168,21 +168,17 @@ public class NetworkTestFixture implements Runnable
                                     key.channel().close();
                                     key.cancel();
                                 }
-                            } 
+                            }
 
                         }
                     }
-                    catch (IOException ex)
+                    catch (IOException | InterruptedException ex)
                     {
                         ex.printStackTrace();
                     }
                     catch (ClosedSelectorException e)
                     {
                         // no op
-                    }
-                    catch (InterruptedException ex)
-                    {
-                        ex.printStackTrace();
                     }
                 }
                 else
@@ -196,17 +192,16 @@ public class NetworkTestFixture implements Runnable
             }
         }
     }
-    
+
     public void shutdown() throws IOException
     {
         try
         {
             lock.writeLock().lock();
             if (selector.isOpen())
-            {      
-                for (Iterator<SelectionKey> i = selector.keys().iterator(); i.hasNext();)
+            {
+                for (SelectionKey key : selector.keys())
                 {
-                    SelectionKey key = i.next(); 
                     key.cancel();
                     key.channel().close();
                 }

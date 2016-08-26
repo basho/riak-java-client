@@ -29,10 +29,9 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public abstract class ListenableFuture<T,S> implements RiakFuture<T,S>
 {
-    private final Set<RiakFutureListener<T,S>> listeners =
-        new HashSet<RiakFutureListener<T,S>>();
+    private final Set<RiakFutureListener<T,S>> listeners = new HashSet<>();
     private final ReentrantLock listenersLock = new ReentrantLock();
-    
+
     @Override
     public void addListener(RiakFutureListener<T, S> listener)
     {
@@ -48,7 +47,7 @@ public abstract class ListenableFuture<T,S> implements RiakFuture<T,S>
                 listeners.add(listener);
             }
         }
-        finally 
+        finally
         {
             listenersLock.unlock();
         }
@@ -67,7 +66,7 @@ public abstract class ListenableFuture<T,S> implements RiakFuture<T,S>
             listenersLock.unlock();
         }
     }
-    
+
     protected void notifyListeners()
     {
         listenersLock.lock();

@@ -43,7 +43,7 @@ public class ListBucketsTest
     public void init() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        when(mockResponse.getBuckets()).thenReturn(new ArrayList<BinaryValue>());
+        when(mockResponse.getBuckets()).thenReturn(new ArrayList<>());
         when(mockFuture.get()).thenReturn(mockResponse);
         when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
         when(mockFuture.getNow()).thenReturn(mockResponse);
