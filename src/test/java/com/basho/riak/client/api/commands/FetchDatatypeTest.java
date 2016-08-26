@@ -36,7 +36,8 @@ public class FetchDatatypeTest extends MockedResponseOperationTest<DtFetchOperat
 {
 	private Location key = new Location(new Namespace("type", "bucket"), "key");
 
-    public FetchDatatypeTest() {
+    public FetchDatatypeTest()
+    {
         super(DtFetchOperation.Response.class);
     }
 

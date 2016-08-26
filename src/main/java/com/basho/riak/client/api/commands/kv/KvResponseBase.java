@@ -48,6 +48,14 @@ abstract class KvResponseBase
     }
 
     /**
+     * Returns the {@link Location} affected by the operation that resulted in this response.
+     * @return the affected {@link Location}
+     */
+    public Location getLocation() {
+        return location;
+    }
+
+    /**
      * Determine if this response contains any returned values.
      * @return true if values are present, false otherwise.
      */
@@ -325,7 +333,8 @@ abstract class KvResponseBase
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         final int prime = 31;
         int result = 1;
         result = prime * result + (location != null ? location.hashCode() : 0);
@@ -334,29 +343,36 @@ abstract class KvResponseBase
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
             return true;
         }
-        if (obj == null) {
+        if (obj == null)
+        {
             return false;
         }
-        if (!(obj instanceof KvResponseBase)) {
+        if (!(obj instanceof KvResponseBase))
+        {
             return false;
         }
 
         final KvResponseBase other = (KvResponseBase) obj;
-        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location)))
+        {
             return false;
         }
-        if (this.values != other.values && (this.values == null || !this.values.equals(other.values))) {
+        if (this.values != other.values && (this.values == null || !this.values.equals(other.values)))
+        {
             return false;
         }
         return true;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("{location: %s, values: %s}", location, values);
     }
 }

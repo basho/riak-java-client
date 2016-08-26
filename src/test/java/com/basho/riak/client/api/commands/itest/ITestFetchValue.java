@@ -41,7 +41,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.junit.Assert.*;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -51,6 +54,8 @@ import org.junit.Test;
  */
 public class ITestFetchValue extends ITestAutoCleanupBase
 {
+    private RiakClient client = new RiakClient(cluster);
+
     @Test
     public void simpleTestDefaultType()
     {
@@ -68,7 +73,6 @@ public class ITestFetchValue extends ITestAutoCleanupBase
     {
         try
         {
-            RiakClient client = new RiakClient(cluster);
             Namespace ns = new Namespace(bucketType, bucketName.toString());
             Location loc = new Location(ns, "test_fetch_key1");
 
@@ -115,7 +119,6 @@ public class ITestFetchValue extends ITestAutoCleanupBase
 
     private void notFound(String bucketType) throws ExecutionException, InterruptedException
     {
-        RiakClient client = new RiakClient(cluster);
         Namespace ns = new Namespace(bucketType, bucketName.toString());
         Location loc = new Location(ns, "test_fetch_key2");
         FetchValue fv = new FetchValue.Builder(loc).build();
@@ -143,7 +146,6 @@ public class ITestFetchValue extends ITestAutoCleanupBase
         op.get();
 
 
-        RiakClient client = new RiakClient(cluster);
         Location loc = new Location(ns, "test_fetch_key3");
 
         Pojo pojo = new Pojo();
@@ -170,8 +172,23 @@ public class ITestFetchValue extends ITestAutoCleanupBase
     @Test
     public void resolveSiblingsDefaultType() throws ExecutionException, InterruptedException
     {
-        ConflictResolver<Pojo> resolver = new DefaultResolver<>();
-        resolveSiblings(Namespace.DEFAULT_BUCKET_TYPE, resolver);
+        ConflictResolver<Pojo> resolver = new MyResolver();
+        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
+
+        setAllowMultToTrue(ns);
+        resolveSiblings(ns, resolver);
+        resetAndEmptyBucket(ns);
+    }
+
+    private void setAllowMultToTrue(Namespace namespace) throws ExecutionException, InterruptedException
+    {
+        StoreBucketPropsOperation op =
+                new StoreBucketPropsOperation.Builder(namespace)
+                        .withAllowMulti(true)
+                        .withLastWriteWins(false)
+                        .build();
+        cluster.execute(op);
+        op.get();
     }
 
     @Test
@@ -179,15 +196,45 @@ public class ITestFetchValue extends ITestAutoCleanupBase
     {
         Assume.assumeTrue(testBucketType);
         ConflictResolver<Pojo> resolver = new MyResolver();
-        resolveSiblings(bucketType.toString(), resolver);
+
+        Namespace ns = new Namespace(bucketType.toString(), bucketName.toString());
+
+        resolveSiblings(ns, resolver);
     }
 
-    private void resolveSiblings(String bucketType, ConflictResolver<Pojo> resolver) throws ExecutionException, InterruptedException
+    private void resolveSiblings(Namespace ns, ConflictResolver<Pojo> resolver) throws ExecutionException, InterruptedException
     {
-        RiakClient client = new RiakClient(cluster);
-        Namespace ns = new Namespace(bucketType, bucketName.toString());
         Location loc = new Location(ns, "test_fetch_key4");
 
+        Pojo pojo = storeSiblings(loc);
+        TypeReference<Pojo>  pojoTypeRef = new TypeReference<Pojo>() {};
+
+        ConflictResolverFactory.getInstance()
+            .registerConflictResolver(Pojo.class, resolver);
+
+        ConflictResolverFactory.getInstance()
+            .registerConflictResolver(pojoTypeRef, resolver);
+
+        FetchValue fv = new FetchValue.Builder(loc).build();
+
+        FetchValue.Response fResp = client.execute(fv);
+
+        assertEquals(2, fResp.getNumberOfValues());
+        assertNotNull(fResp.getVectorClock());
+
+        assertEquals(pojo.value, fResp.getValue(Pojo.class).value);
+
+        JSONConverter<Pojo> converter = new JSONConverter<Pojo>(Pojo.class);
+
+        assertEquals(pojo.value, fResp.getValues(converter).get(0).value);
+        assertEquals(pojo.value, fResp.getValue(converter, resolver).value);
+        assertEquals(pojo.value, fResp.getValue(pojoTypeRef).value);
+
+        assertEquals(loc, fResp.getLocation());
+    }
+
+    private Pojo storeSiblings(Location loc) throws ExecutionException, InterruptedException
+    {
         Pojo pojo = new Pojo();
         pojo.value = "test value";
         StoreValue sv =
@@ -200,21 +247,7 @@ public class ITestFetchValue extends ITestAutoCleanupBase
         sv = new StoreValue.Builder(pojo).withLocation(loc).build();
 
         client.execute(sv);
-
-        ConflictResolverFactory.getInstance()
-            .registerConflictResolver(Pojo.class, new MyResolver());
-
-        FetchValue fv = new FetchValue.Builder(loc).build();
-
-        FetchValue.Response fResp = client.execute(fv);
-
-        assertEquals(pojo.value, fResp.getValue(Pojo.class).value);
-
-        JSONConverter<Pojo> converter = new JSONConverter<>(Pojo.class);
-
-        assertEquals(pojo.value, fResp.getValues(converter).get(0).value);
-        assertEquals(pojo.value, fResp.getValue(converter, resolver).value);
-
+        return pojo;
     }
 
     @Test
@@ -232,7 +265,6 @@ public class ITestFetchValue extends ITestAutoCleanupBase
 
     private void fetchAnnotatedPojo(String bucketType) throws ExecutionException, InterruptedException
     {
-        RiakClient client = new RiakClient(cluster);
         Namespace ns = new Namespace(bucketType, bucketName.toString());
         Location loc = new Location(ns, "test_fetch_key5");
 
@@ -270,7 +302,6 @@ public class ITestFetchValue extends ITestAutoCleanupBase
     @Test
     public void fetchAnnotatedPojoWIthIndexes() throws ExecutionException, InterruptedException
     {
-        RiakClient client = new RiakClient(cluster);
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         Location loc = new Location(ns,"test_fetch_key6");
 
@@ -294,9 +325,6 @@ public class ITestFetchValue extends ITestAutoCleanupBase
         assertNotNull(rap.emailIndx);
         assertTrue(rap.emailIndx.contains("roach@basho.com"));
         assertEquals(rap.userId.longValue(), 1L);
-
-
-
     }
 
     public static class Pojo
@@ -311,7 +339,6 @@ public class ITestFetchValue extends ITestAutoCleanupBase
 
     public static class MyResolver implements ConflictResolver<Pojo>
     {
-
         @Override
         public Pojo resolve(List<Pojo> objectList) throws UnresolvedConflictException
         {

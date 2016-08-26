@@ -25,6 +25,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class ISearchTestBase extends ITestBase
 {
+    public static final int DEFAULT_STORE_INDEX_TIMEOUT = 45000;
+
     public static void setupSearchEnvironment(String bucketName, String indexName) throws ExecutionException, InterruptedException
     {
         final RiakClient client = new RiakClient(cluster);
@@ -40,7 +42,7 @@ public class ISearchTestBase extends ITestBase
         {
             Namespace yokoNamespace = getYokoNamespace(bucketName);
 
-            setupYokoIndexAndBucketProps(client, yokoNamespace, indexName);
+            setupYokoIndexAndBucketProps(client, yokoNamespace, indexName, DEFAULT_STORE_INDEX_TIMEOUT);
             setupData(client, yokoNamespace);
         }
 
@@ -88,11 +90,14 @@ public class ISearchTestBase extends ITestBase
         assertFutureSuccess(future);
     }
 
-    private static void setupYokoIndexAndBucketProps(RiakClient client, Namespace namespace, String indexName)
+    private static void setupYokoIndexAndBucketProps(RiakClient client,
+                                                     Namespace namespace,
+                                                     String indexName,
+                                                     int indexCreateTimeout)
             throws ExecutionException, InterruptedException
     {
         YokozunaIndex index = new YokozunaIndex(indexName);
-        StoreIndex ssi = new StoreIndex.Builder(index).build();
+        StoreIndex ssi = new StoreIndex.Builder(index).withTimeout(indexCreateTimeout).build();
 
         final RiakFuture<Void, YokozunaIndex> indexCreateFuture = client.executeAsync(ssi);
         indexCreateFuture.await();

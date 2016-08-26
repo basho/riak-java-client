@@ -19,7 +19,7 @@ package com.basho.riak.client.core.query.indexes;
  * Enum that encapsulates the suffix used to determine and index type in Riak.
  * <p>
  * There are two types of Secondary Indexes (2i) in Riak; "Integer" and
- * "Binary". The current server API distinguishes between them via a 
+ * "Binary". The current server API distinguishes between them via a
  * suffix ({@code "_int"} and {@code "_bin"} respectively).
  * <p>
  * @author Brian Roach <roach at basho dot com>
@@ -31,7 +31,7 @@ public enum IndexType
     /**
      * Encapsulates the {@code "_int"} suffix for Riak index names.
      */
-    INT("_int"), 
+    INT("_int"),
     /**
      * Encapsulates the {@code "_bin"} suffix for Riak index names.
      */
@@ -44,14 +44,14 @@ public enum IndexType
      * Used for the special $key index
      */
     KEY("");
-    
+
     private final String suffix;
-    
+
     private IndexType(String suffix)
     {
         this.suffix = suffix;
     }
-    
+
     /**
      * Returns the suffix for this type.
      * @return a {@code String} containing the suffix for this index type.
@@ -60,7 +60,7 @@ public enum IndexType
     {
         return suffix;
     }
-    
+
     /**
      * Returns the index type from its fully qualified name <p> There are two
      * types of Secondary Indexes (2i) in Riak; "Integer" and "Binary". The
@@ -76,11 +76,11 @@ public enum IndexType
      */
     public static IndexType typeFromFullname(String fullname)
     {
-        if (fullname.equalsIgnoreCase("$bucket"))
+        if (fullname.equalsIgnoreCase(IndexNames.BUCKET))
         {
             return IndexType.BUCKET;
         }
-        else if (fullname.equalsIgnoreCase("$key"))
+        else if (fullname.equalsIgnoreCase(IndexNames.KEY))
         {
             return IndexType.KEY;
         }

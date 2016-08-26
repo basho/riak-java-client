@@ -102,7 +102,8 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
     }
     
     @Override
-    public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(final ChannelHandlerContext ctx) throws Exception
+    {
         logger.debug("HealthCheckDecoder Channel Active");
         init(ctx);
     }
@@ -122,7 +123,8 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
         future.setException(new IOException("Exception in channel while performing health check op.", cause));
     }
     
-    public RiakFuture<RiakMessage, Void> getFuture() {
+    public RiakFuture<RiakMessage, Void> getFuture()
+    {
         return future;
     }
     
@@ -216,9 +218,9 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
         }
 
         @Override
-        public void await(long timeout, TimeUnit unit) throws InterruptedException
+        public boolean await(long timeout, TimeUnit unit) throws InterruptedException
         {
-            latch.await(timeout, unit);
+            return latch.await(timeout, unit);
         }
 
         @Override

@@ -44,7 +44,7 @@ class TTBConverters
         @Override
         OtpOutputStream buildMessage()
         {
-            return TermToBinaryCodec.encodeTsPutRequest(builder.getTableName(), builder.getRows());
+            return TermToBinaryCodec.encodeTsPutRequest(builder.getTableName(), builder.getColumns(), builder.getRows());
         }
     }
 
@@ -78,7 +78,7 @@ class TTBConverters
         @Override
         OtpOutputStream buildMessage()
         {
-            return TermToBinaryCodec.encodeTsQueryRequest(builder.getQueryText());
+            return TermToBinaryCodec.encodeTsQueryRequest(builder.getQueryText(), builder.getCoverageContext());
         }
     }
 

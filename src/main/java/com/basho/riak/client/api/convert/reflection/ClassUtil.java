@@ -38,9 +38,10 @@ public final class ClassUtil
      * @return the member
      * @throws IllegalArgumentException if cannot set accessibility
      */
+    @SuppressWarnings("deprecation")
     public static <T extends Member> T checkAndFixAccess(T member)
     {
-        com.fasterxml.jackson.databind.util.ClassUtil.checkAndFixAccess(member, false);
+        com.fasterxml.jackson.databind.util.ClassUtil.checkAndFixAccess(member);
         return member;
     }
 

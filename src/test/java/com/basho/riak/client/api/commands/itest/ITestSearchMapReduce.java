@@ -44,6 +44,10 @@ public class ITestSearchMapReduce extends ISearchTestBase
     @BeforeClass
     public static void Setup() throws ExecutionException, InterruptedException
     {
+        Assume.assumeTrue(testYokozuna);
+        Assume.assumeTrue(testBucketType);
+        Assume.assumeFalse(security);
+
         setupSearchEnvironment(mrBucketName, indexName);
     }
 
@@ -54,11 +58,8 @@ public class ITestSearchMapReduce extends ISearchTestBase
     }
 
     @Test
-    public void searchMR() throws InterruptedException, ExecutionException {
-        Assume.assumeTrue(testYokozuna);
-        Assume.assumeTrue(testBucketType);
-        Assume.assumeFalse(security);
-
+    public void searchMR() throws InterruptedException, ExecutionException
+    {
         SearchMapReduce smr = new SearchMapReduce.Builder()
                 .withIndex(indexName)
                 .withQuery("doc_type_i:1 AND NOT leader_b:true")

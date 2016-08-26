@@ -73,17 +73,20 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     }
 
     @Override
-    protected FetchOperation.Response convert(List<RiakKvPB.RpbGetResp> responses)
-    {
+    protected FetchOperation.Response convert(List<RiakKvPB.RpbGetResp> responses) {
         // This is not a streaming op, there will only be one response
         if (responses.size() > 1)
         {
             logger.error("Received {} responses when only one was expected.", responses.size());
         }
 
-        RiakKvPB.RpbGetResp response = responses.get(0);
+        final RiakKvPB.RpbGetResp response = responses.get(0);
+        return convert(response);
+    }
 
-        FetchOperation.Response.Builder responseBuilder =
+    static FetchOperation.Response convert(RiakKvPB.RpbGetResp response)
+    {
+        FetchOperation.Response.Builder responseBuilder = 
                 new FetchOperation.Response.Builder();
 
         // If the response is null ... it means not found. Riak only sends

@@ -29,7 +29,8 @@ public class EndsWithFilter extends KeyFilter
      * Filter in keys that end with <code>endsWith</code>
      * @param pattern
      */
-    public EndsWithFilter(String pattern) {
+    public EndsWithFilter(String pattern)
+    {
         super(NAME);
 	    this.pattern = pattern;
     }

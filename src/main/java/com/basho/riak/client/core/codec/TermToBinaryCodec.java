@@ -7,11 +7,11 @@ import com.basho.riak.client.core.util.CharsetUtils;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.ericsson.otp.erlang.*;
 import com.google.protobuf.ByteString;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 public class TermToBinaryCodec
 {
@@ -41,7 +41,14 @@ public class TermToBinaryCodec
         }
         os.write_nil(); // NB: finishes the list
 
-        os.write_long(timeout);
+        if(timeout != 0)
+        {
+            os.write_long(timeout);
+        }
+        else
+        {
+            os.write_atom(UNDEFINED);
+        }
 
         return os;
     }
@@ -52,7 +59,7 @@ public class TermToBinaryCodec
         return decodeTsResponse(response);
     }
 
-    public static OtpOutputStream encodeTsQueryRequest(String queryText)
+    public static OtpOutputStream encodeTsQueryRequest(String queryText, byte[] coverageContext)
     {
         final OtpOutputStream os = new OtpOutputStream();
         os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value
@@ -72,26 +79,51 @@ public class TermToBinaryCodec
         // streaming is false for now
         os.write_boolean(false);
 
-        // cover_context is an undefined atom
-        os.write_atom(UNDEFINED);
+        if (coverageContext == null)
+        {
+            // cover_context is an undefined atom
+            os.write_atom(UNDEFINED);
+        }
+        else
+        {
+            os.write_binary(coverageContext);
+        }
 
         return os;
     }
 
     public static OtpOutputStream encodeTsPutRequest(String tableName, Collection<Row> rows)
     {
+        return encodeTsPutRequest(tableName, Collections.<String>emptyList(), rows);
+    }
+
+    public static OtpOutputStream encodeTsPutRequest(String tableName, Collection<String> columns, Collection<Row> rows)
+    {
         final OtpOutputStream os = new OtpOutputStream();
         os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value
 
-        // TsPutReq is a 4-tuple: {'tsputreq', tableName, [], [rows]}
-        // columns is empte
+        // TsPutReq is a 4-tuple: {'tsputreq', tableName, [columns], [rows]}
         os.write_tuple_head(4);
+
+        // tsputreq Atom
         os.write_atom(TS_PUT_REQ);
+
+        // Table Name Binary
         os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
-        // columns is an empty list
+
+        // Columns List
+        if(columns != null && !columns.isEmpty())
+        {
+            os.write_list_head(columns.size());
+
+            for (String column : columns)
+            {
+                os.write_binary(column.getBytes(StandardCharsets.UTF_8));
+            }
+        }
         os.write_nil();
 
-        // write a list of rows
+        // Rows List
         // each row is a tuple of cells
         os.write_list_head(rows.size());
         for (Row row : rows)
@@ -154,7 +186,7 @@ public class TermToBinaryCodec
         int firstByte = is.read1skip_version();
         is.reset();
 
-        if(firstByte != OtpExternal.smallTupleTag && firstByte != OtpExternal.largeTupleTag)
+        if (firstByte != OtpExternal.smallTupleTag && firstByte != OtpExternal.largeTupleTag)
         {
             return parseAtomResult(is);
         }
@@ -167,13 +199,13 @@ public class TermToBinaryCodec
     {
         final String responseAtom = is.read_atom();
 
-        if(Objects.equals(responseAtom, TS_QUERY_RESP))
+        if (Objects.equals(responseAtom, TS_QUERY_RESP))
         {
             return QueryResult.EMPTY;
         }
 
         throw new InvalidTermToBinaryException("Invalid Response atom encountered: " +
-                                                    responseAtom + ". Was expecting tsqueryresp");
+                                                       responseAtom + ". Was expecting tsqueryresp");
 
     }
 

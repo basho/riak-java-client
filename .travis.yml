@@ -1,10 +1,30 @@
+sudo: required
+dist: trusty
 language: java
-script: mvn -Pitest -DargLine="-Dcom.basho.riak.search=true -Dcom.basho.riak.2i=true" clean verify
-notifications:
-  # Email notifications are disabled to not annoy anybody.
-  # See http://about.travis-ci.org/docs/user/build-configuration/ to learn more
-  # about configuring notification recipients and more.
-  webhooks: http://basho-engbot.herokuapp.com/travis?key=a8f477c8cdaabc8118d2a650281ff4a71eff875f
-  email: false
+jdk: oraclejdk8
 services:
-  - riak
+- docker
+cache:
+  directories:
+  - "$HOME/.m2"
+before_script:
+- docker run --name $RIAK_FLAVOR -d -p 8087:8087 -p 8098:8098 basho/riak-ts
+- docker exec $RIAK_FLAVOR riak-admin wait-for-service riak_kv
+- tools/devrel/riak-cluster-config "docker exec $RIAK_FLAVOR riak-admin" 8098 false
+  false
+script:
+- if [ $RIAK_FLAVOR == "riak-kv" ]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false
+  verify; else echo "Not riak-kv flavor"; fi
+- if [ $RIAK_FLAVOR == "riak-ts" ]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false
+  -Dcom.basho.riak.timeseries=true verify; else echo "Not riak-ts flavor"; fi
+after_script:
+- docker rm -f $RIAK_FLAVOR
+env:
+  matrix:
+  - RIAK_FLAVOR=riak-ts
+  - RIAK_FLAVOR=riak-kv
+  global:
+  - RIAK_HOSTS=localhost:8087
+notifications:
+  slack:
+    secure: CQHpKSbvzvGOKfQ8GdYdK0Huaz0y2xLbwhUWNH/xkrxO/OuqvYvZn7SlJRCLIYobj+zSiwsQRrz9G19gXGZMaDCwtdVVgEnddzm15bLjsUsrWU0FgRufJuATre+AVFByngvhAmdDIvcxVVhobIYo+F6m/8/OWRGhnQvvWOVtnMA=

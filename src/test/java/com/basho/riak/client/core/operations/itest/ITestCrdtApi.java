@@ -16,6 +16,7 @@
 package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.api.commands.datatypes.*;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.core.query.Location;
@@ -27,6 +28,7 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -99,7 +101,7 @@ public class ITestCrdtApi extends ITestAutoCleanupBase
         cluster.execute(update);
         update.get();
 
-        
+
         DtFetchOperation fetch = new DtFetchOperation.Builder(location)
             .build();
         cluster.execute(fetch);
@@ -147,6 +149,44 @@ public class ITestCrdtApi extends ITestAutoCleanupBase
 	    assertEquals(1, shoppingCartElement.size());
 	    assertTrue(shoppingCartElement.get(0).isSet());
 
+    }
+
+    @Test
+    public void testNonExistingDatatypeReturnsBottomValueAndNotFoundFlag() throws ExecutionException, InterruptedException
+    {
+        RiakMap mapBottomValue = new RiakMap(Collections.<RiakMap.MapEntry>emptyList());
+        RiakCounter counterBottomValue = new RiakCounter(0);
+        RiakSet setBottomValue = new RiakSet(Collections.<BinaryValue>emptyList());
+
+        // Maps
+        Location mapLocation = new Location(new Namespace(mapBucketType, bucketName), "404");
+        DtFetchOperation mapFetch = new DtFetchOperation.Builder(mapLocation).build();
+        final RiakFuture<DtFetchOperation.Response, Location> mapFuture = cluster.execute(mapFetch);
+
+        final DtFetchOperation.Response mapResponse = mapFuture.get();
+        assertTrue(mapResponse.isNotFound());
+        assertTrue(mapResponse.hasCrdtElement());
+        assertEquals(mapBottomValue, mapResponse.getCrdtElement().getAsMap());
+
+        // Sets
+        Location setLocation = new Location(new Namespace(setBucketType, bucketName), "404");
+        DtFetchOperation setFetch = new DtFetchOperation.Builder(setLocation).build();
+        final RiakFuture<DtFetchOperation.Response, Location> setFuture = cluster.execute(setFetch);
+
+        final DtFetchOperation.Response setResponse = setFuture.get();
+        assertTrue(setResponse.isNotFound());
+        assertTrue(setResponse.hasCrdtElement());
+        assertEquals(setBottomValue, setResponse.getCrdtElement().getAsSet());
+
+        // Counters
+        Location counterLocation = new Location(new Namespace(counterBucketType, bucketName), "404");
+        DtFetchOperation counterFetch = new DtFetchOperation.Builder(counterLocation).build();
+        final RiakFuture<DtFetchOperation.Response, Location> counterFuture = cluster.execute(counterFetch);
+
+        final DtFetchOperation.Response counterResponse = counterFuture.get();
+        assertTrue(counterResponse.isNotFound());
+        assertTrue(counterResponse.hasCrdtElement());
+        assertEquals(counterBottomValue, counterResponse.getCrdtElement().getAsCounter());
     }
 
 }

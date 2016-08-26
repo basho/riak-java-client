@@ -16,13 +16,13 @@
 
 package com.basho.riak.client.api.commands.indexes;
 
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery.IndexConverter;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.DefaultCharset;
 
@@ -43,6 +43,7 @@ import java.util.List;
  * String key = "some_key";
  * BinIndexQuery q = new BinIndexQuery.Builder(ns, "my_index", key).build();
  * BinIndexQuery.Response resp = client.execute(q);}</pre>
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
@@ -51,24 +52,11 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
     private final Charset charset;
     private final IndexConverter<String> converter;
 
-    protected  BinIndexQuery(Init<String,?> builder)
+    protected BinIndexQuery(Init<String, ?> builder)
     {
         super(builder);
         this.charset = builder.charset;
-        this.converter = new IndexConverter<String>()
-        {
-            @Override
-            public String convert(BinaryValue input)
-            {
-                return input.toString(charset);
-            }
-
-            @Override
-            public BinaryValue convert(String input)
-            {
-                return BinaryValue.create(input, charset);
-            }
-        };
+        this.converter = new StringIndexConverter();
     }
 
     @Override
@@ -81,45 +69,80 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
     protected RiakFuture<Response, BinIndexQuery> executeAsync(RiakCluster cluster)
     {
         RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
-            executeCoreAsync(cluster);
+                executeCoreAsync(cluster);
 
         BinQueryFuture future = new BinQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
     }
 
-    protected final class BinQueryFuture extends CoreFutureAdapter<Response, BinIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+    @Override
+    public boolean equals(Object o)
     {
-        public BinQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        if (this == o)
         {
-            super(coreFuture);
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+        if (!super.equals(o))
+        {
+            return false;
         }
 
-        @Override
-        protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
+        BinIndexQuery that = (BinIndexQuery) o;
+
+        if (!charset.equals(that.charset))
         {
-            return new Response(namespace, coreResponse, converter);
+            return false;
+        }
+        if (!converter.equals(that.converter))
+        {
+            return false;
         }
 
-        @Override
-        protected BinIndexQuery convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo)
-        {
-            return BinIndexQuery.this;
-        }
+        return true;
     }
 
-    protected static abstract class Init<S, T extends Init<S,T>> extends SecondaryIndexQuery.Init<S,T>
+    @Override
+    public int hashCode()
+    {
+        int result = super.hashCode();
+        result = 31 * result + charset.hashCode();
+        result = 31 * result + converter.hashCode();
+        return result;
+    }
+
+    protected static abstract class Init<S, T extends Init<S, T>> extends SecondaryIndexQuery.Init<S, T>
     {
         private Charset charset = DefaultCharset.get();
 
         public Init(Namespace namespace, String indexName, S start, S end)
         {
-            super(namespace, indexName + Type._BIN, start, end);
+            super(namespace, generateIndexName(indexName), start, end);
         }
 
         public Init(Namespace namespace, String indexName, S match)
         {
-            super(namespace, indexName + Type._BIN, match);
+            super(namespace, generateIndexName(indexName), match);
+        }
+
+        public Init(Namespace namespace, String indexName, byte[] coverContext)
+        {
+            super(namespace, generateIndexName(indexName), coverContext);
+        }
+
+        private static String generateIndexName(String baseIndexName)
+        {
+            if(IndexNames.BUCKET.equalsIgnoreCase(baseIndexName) ||
+               IndexNames.KEY.equalsIgnoreCase(baseIndexName))
+            {
+                return baseIndexName;
+            }
+
+            return baseIndexName + Type._BIN;
         }
 
         T withCharacterSet(Charset charset)
@@ -135,6 +158,20 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
      */
     public static class Builder extends Init<String, Builder>
     {
+        /**
+         * Construct a Builder for a BinIndexQuery with a cover context.
+         * <p>
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension.
+         * <p>
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The name of the index in Riak.
+         * @param coverContext cover context.
+         */
+        public Builder(Namespace namespace, String indexName, byte[] coverContext)
+        {
+            super(namespace, indexName, coverContext);
+        }
 
         /**
          * Construct a Builder for a BinIndexQuery with a range.
@@ -142,10 +179,11 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
          * Note that your index name should not include the Riak {@literal _int} or
          * {@literal _bin} extension.
          * <p>
+         *
          * @param namespace The namespace in Riak to query.
          * @param indexName The index name in Riak to query.
-         * @param start The start of the 2i range.
-         * @param end The end of the 2i range.
+         * @param start     The start of the 2i range.
+         * @param end       The end of the 2i range.
          */
         public Builder(Namespace namespace, String indexName, String start, String end)
         {
@@ -158,9 +196,10 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
          * Note that your index name should not include the Riak {@literal _int} or
          * {@literal _bin} extension.
          * <p>
+         *
          * @param namespace The namespace in Riak to query.
          * @param indexName The name of the index in Riak.
-         * @param match the 2i key.
+         * @param match     the 2i key.
          */
         public Builder(Namespace namespace, String indexName, String match)
         {
@@ -175,6 +214,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
 
         /**
          * Construct the query.
+         *
          * @return a new BinIndexQuery
          */
         public BinIndexQuery build()
@@ -186,7 +226,9 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
 
     public static class Response extends SecondaryIndexQuery.Response<String>
     {
-        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<String> converter)
+        protected Response(Namespace queryLocation,
+                           SecondaryIndexQueryOperation.Response coreResponse,
+                           IndexConverter<String> converter)
         {
             super(queryLocation, coreResponse, converter);
         }
@@ -211,6 +253,68 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
                 super(riakObjectLocation, indexKey, converter);
             }
 
+        }
+    }
+
+    protected final class BinQueryFuture
+            extends CoreFutureAdapter<Response, BinIndexQuery, SecondaryIndexQueryOperation.Response,
+            SecondaryIndexQueryOperation.Query>
+    {
+        public BinQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+                                      coreFuture)
+        {
+            super(coreFuture);
+        }
+
+        @Override
+        protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
+        {
+            return new Response(namespace, coreResponse, converter);
+        }
+
+        @Override
+        protected BinIndexQuery convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo)
+        {
+            return BinIndexQuery.this;
+        }
+    }
+
+    private class StringIndexConverter implements IndexConverter<String>
+    {
+        @Override
+        public String convert(BinaryValue input)
+        {
+            return input.toString(charset);
+        }
+
+        @Override
+        public BinaryValue convert(String input)
+        {
+            if (input == null )
+            {
+                return null;
+            }
+            return BinaryValue.create(input, charset);
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+            {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass())
+            {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 0;
         }
     }
 }

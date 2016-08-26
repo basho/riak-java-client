@@ -66,7 +66,7 @@ public class FetchOperation extends TTBFutureOperation<QueryResult, String>
     {
         private final String tableName;
         private final Iterable<Cell> keyValues;
-        private int timeout = 0;
+        private int timeout;
 
         public Builder(String tableName, Iterable<Cell> keyValues)
         {
@@ -84,8 +84,22 @@ public class FetchOperation extends TTBFutureOperation<QueryResult, String>
             this.keyValues = keyValues;
         }
 
+        /**
+         * Set the Riak-side timeout value.
+         * <p>
+         * By default, Riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * </p>
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
         public Builder withTimeout(int timeout)
         {
+            if (timeout < 1)
+            {
+                throw new IllegalArgumentException("Timeout must be a positive integer");
+            }
+
             this.timeout = timeout;
             return this;
         }

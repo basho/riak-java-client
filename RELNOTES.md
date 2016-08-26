@@ -1,6 +1,37 @@
 Release Notes
 =============
 
+### 2.0.7
+
+**Notes**
+ * This will be the last version of Riak Java Client that supports Java 7.
+ * Some of the changes are binary-incompatible with RJC 2.0.6, so you will need to recompile your project with this new version.
+
+Following issues / PRs addressed:
+
+* [Fixed - Disallow 0 as a timeout value for TimeSeries operations](https://github.com/basho/riak-java-client/pull/662)
+* Fixed - In `RiakUserMetadata#containsKey()`, use the charset method parameter when encoding the key [[1]](https://github.com/basho/riak-java-client/pull/558), [[2]](https://github.com/basho/riak-java-client/pull/646)
+* Fixed - Don't return success to update future after fetch future error [[1]](https://github.com/basho/riak-java-client/pull/633), [[2]](https://github.com/basho/riak-java-client/pull/636)
+* [Fixed - Demoted "channel close" log messages to info level](https://github.com/basho/riak-java-client/pull/637)
+* [Fixed - Made domain name more invalid for `UnknownHostException` test](https://github.com/basho/riak-java-client/pull/641)
+* [Fixed - Separate Content-type and charset in `RiakObject`](https://github.com/basho/riak-java-client/pull/647)
+* [Fixed - BinaryValue JSON encoding for MapReduce inputs](https://github.com/basho/riak-java-client/pull/655)
+* [Fixed - Catch & handle `BlockingOperationException` in `RiakNode#execute`](https://github.com/basho/riak-java-client/pull/661)
+* Added Batch Delete Command [[1]](https://github.com/basho/riak-java-client/pull/487), [[2]](https://github.com/basho/riak-java-client/pull/650)
+* Added `equals()`, `hashCode()`, `toString()` to `RiakObject` and associated files [[1]](https://github.com/basho/riak-java-client/pull/557), [[2]](https://github.com/basho/riak-java-client/pull/648)
+* Added `getLocation()` to `KvResponseBase` [[1]](https://github.com/basho/riak-java-client/pull/606), [[2]](https://github.com/basho/riak-java-client/pull/643)
+* [Added creation of `RiakClient` from a collection of `HostAndPort` objects](https://github.com/basho/riak-java-client/pull/607)
+* Added overload of `RiakClient#execute` that accepts a timeout [[1]](https://github.com/basho/riak-java-client/pull/610), [[2]](https://github.com/basho/riak-java-client/pull/642)
+* [Added shortcut commands for $bucket and $key 2i indices](https://github.com/basho/riak-java-client/pull/652)
+* [Added `isNotFound()` field to data type responses](https://github.com/basho/riak-java-client/pull/654)
+* Added - Dataplatform / Riak Spark Connector changes merged back into main client [[1]](https://github.com/basho/riak-java-client/pull/621), [[2]](https://github.com/basho/riak-java-client/pull/626), [[3]](https://github.com/basho/riak-java-client/pull/644), [[4]](https://github.com/basho/riak-java-client/pull/659), [[5]](https://github.com/basho/riak-java-client/pull/665)
+* [Updated plugins and dependencies](https://github.com/basho/riak-java-client/pull/631)
+* [Updated TS objects and Commands for TS 1.4](https://github.com/basho/riak-java-client/pull/651)
+* [Enhanced - Made Integration Tests Great Again](https://github.com/basho/riak-java-client/pull/657)
+* [Removed Antlr dependency](https://github.com/basho/riak-java-client/pull/629)
+
+Special thanks to @bwittwer, @stela, @gerardstannard, @christopherfrieler, @guidomedina, @Tolsi, @hankipanky, @gfbett, @TimurFayruzov, @urzhumskov, @srgg, @aleksey-suprun, @jbrisbin, @christophermancini, and @lukebakken for all the PRs, reported issues, and reviews.
+
 ### 2.0.6
 Following issues / PRs addressed:
  * [Removed riak_pb external dependency](https://github.com/basho/riak-java-client/pull/615)

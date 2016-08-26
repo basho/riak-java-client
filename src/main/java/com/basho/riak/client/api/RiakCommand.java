@@ -18,12 +18,15 @@ package com.basho.riak.client.api;
 
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * The base class for all Riak Commands.
  * <p>
- * All the commands the {@link RiakClient} can execute extend this class. 
+ * All the commands the {@link RiakClient} can execute extend this class.
  * <h2>Client Commands</h2>
  * <h4>Fetching, storing and deleting objects</h4>
  * <ul>
@@ -65,8 +68,8 @@ import java.util.concurrent.ExecutionException;
  * <li>{@link com.basho.riak.client.api.commands.search.DeleteIndex}</li>
  * <li>{@link com.basho.riak.client.api.commands.search.FetchSchema}</li>
  * <li>{@link com.basho.riak.client.api.commands.search.StoreSchema}</li>
-* </ul>
-* <h4>Map-Reduce</h4>
+ * </ul>
+ * <h4>Map-Reduce</h4>
  * <ul>
  * <li>{@link com.basho.riak.client.api.commands.mapreduce.BucketMapReduce}</li>
  * <li>{@link com.basho.riak.client.api.commands.mapreduce.BucketKeyMapReduce}</li>
@@ -74,20 +77,29 @@ import java.util.concurrent.ExecutionException;
  * <li>{@link com.basho.riak.client.api.commands.mapreduce.SearchMapReduce}</li>
  * </ul>
  * </p>
- * @author Dave Rusek
- * @author Brian Roach <roach at basho.com>
+ *
  * @param <T> The response type
  * @param <S> The query info type
+ * @author Dave Rusek
+ * @author Brian Roach <roach at basho.com>
  * @since 2.0
  */
-public abstract class RiakCommand<T,S>
+public abstract class RiakCommand<T, S>
 {
     protected final T execute(RiakCluster cluster) throws ExecutionException, InterruptedException
     {
-        RiakFuture<T,S> future = executeAsync(cluster);
+        RiakFuture<T, S> future = executeAsync(cluster);
         future.await();
         return future.get();
     }
-    protected abstract RiakFuture<T,S> executeAsync(RiakCluster cluster);    
-} 
+
+    protected final T execute(RiakCluster cluster, long timeout, TimeUnit unit)
+            throws ExecutionException, InterruptedException, TimeoutException
+    {
+        RiakFuture<T, S> future = executeAsync(cluster);
+        return future.get(timeout, unit);
+    }
+
+    protected abstract RiakFuture<T, S> executeAsync(RiakCluster cluster);
+}
 

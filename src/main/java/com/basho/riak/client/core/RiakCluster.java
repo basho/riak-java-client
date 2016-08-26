@@ -16,16 +16,13 @@
 package com.basho.riak.client.core;
 
 
+import com.basho.riak.client.core.util.HostAndPort;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -50,16 +47,17 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     enum State { CREATED, RUNNING, QUEUING, SHUTTING_DOWN, SHUTDOWN }
     private final Logger logger = LoggerFactory.getLogger(RiakCluster.class);
     private final int executionAttempts;
-    private final int operationQueueMaxDepth;
     private final NodeManager nodeManager;
     private final AtomicInteger inFlightCount = new AtomicInteger();
     private final ScheduledExecutorService executor;
     private final Bootstrap bootstrap;
     private final List<RiakNode> nodeList;
     private final ReentrantReadWriteLock nodeListLock = new ReentrantReadWriteLock();
-    private final LinkedBlockingQueue<FutureOperation> retryQueue = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<FutureOperation> retryQueue =
+        new LinkedBlockingQueue<FutureOperation>();
     private final boolean queueOperations;
-    private final LinkedBlockingDeque<FutureOperation> operationQueue;
+    private final ConcurrentLinkedDeque<FutureOperation> operationQueue;
+    private final RiakNode.Sync operationQueuePermits;
     private final List<NodeStateListener> stateListeners =
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
 
@@ -110,7 +108,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
             executor = new ScheduledThreadPoolExecutor(poolSize);
         }
 
-        nodeList = new ArrayList<>(builder.riakNodes.size());
+        nodeList = new ArrayList<RiakNode>(builder.riakNodes.size());
         for (RiakNode node : builder.riakNodes)
         {
             node.setExecutor(executor);
@@ -121,16 +119,17 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
         if (this.queueOperations)
         {
-            this.operationQueueMaxDepth = builder.operationQueueMaxDepth;
-            this.operationQueue = new LinkedBlockingDeque<>();
+            this.operationQueue = new ConcurrentLinkedDeque<>();
+            this.operationQueuePermits = new RiakNode.Sync(builder.operationQueueMaxDepth);
 
-            for (RiakNode node : nodeList) {
+            for (RiakNode node : nodeList)
+            {
                 node.setBlockOnMaxConnections(false);
             }
         }
         else
         {
-            this.operationQueueMaxDepth = 0;
+            this.operationQueuePermits = new RiakNode.Sync(0);
             this.operationQueue = null;
         }
 
@@ -193,7 +192,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                                                          500, 500,
                                                          TimeUnit.MILLISECONDS);
 
-        return new Future<Boolean>() {
+        return new Future<Boolean>()
+        {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning)
             {
@@ -244,7 +244,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
             // Queue it up, run next from queue
             if (this.queueOperations)
             {
-                executeWithQueueStrategy(operation, null);
+                executeWithQueueStrategy(operation);
             }
             else // Out of connections, retrier will pick it up later.
             {
@@ -255,15 +255,17 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         return operation;
     }
 
-    private boolean notQueuingOrQueueIsEmpty() {
+    private boolean notQueuingOrQueueIsEmpty()
+    {
         return !this.queueOperations || this.operationQueue.size() == 0;
     }
 
-    private void executeWithQueueStrategy(FutureOperation operation, RiakNode previousNode)
+    private void executeWithQueueStrategy(FutureOperation operation)
     {
-        if (operationQueue.size() >= operationQueueMaxDepth)
+        if (!operationQueuePermits.tryAcquire())
         {
-            logger.warn("No Nodes Available, and Operation Queue at Max Depth");
+            logger.warn("Can't execute operation {}, no connections available, and Operation Queue at Max Depth",
+                        System.identityHashCode(operation));
             operation.setRetrier(this, 1);
             operation.setException(new NoNodesAvailableException("No Nodes Available, and Operation Queue at Max Depth"));
             return;
@@ -284,12 +286,20 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
     private boolean executeWithRequeueOnNoConnection(FutureOperation operation)
     {
+        logger.debug("Queued operation {} attempting to be executed.", System.identityHashCode(operation));
         // Attempt to run
         boolean gotConnection = this.execute(operation, null);
 
         // If we can't get a connection, put it back at the beginning of the queue
-        if (!gotConnection) {
+        if (!gotConnection)
+        {
+            logger.debug("Queued operation {} wasn't executed, no connection available, requeuing operation.",
+                         System.identityHashCode(operation));
             operationQueue.offerFirst(operation);
+        }
+        else
+        {
+            operationQueuePermits.release();
         }
 
         verifyQueueStatus();
@@ -297,18 +307,18 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         return gotConnection;
     }
 
-    private void verifyQueueStatus()
+    private synchronized void verifyQueueStatus()
     {
-        Integer queueSize = operationQueue.size();
+        Integer queueSize = operationQueuePermits.getMaxPermits() - operationQueuePermits.availablePermits();
 
         if (queueSize > 0 && state == State.RUNNING)
         {
             state = State.QUEUING;
-            logger.debug("RiakCluster queuing operations.");
+            logger.debug("RiakCluster state change: Now Queuing operations.");
         }
         else if (queueSize == 0 && (state == State.QUEUING || state == State.SHUTTING_DOWN))
         {
-            logger.debug("RiakCluster cleared operation queue.");
+            logger.debug("RiakCluster state change: Cleared operation queue.");
             if (state == State.QUEUING)
             {
                 state = State.RUNNING;
@@ -391,7 +401,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         try
         {
             nodeListLock.readLock().lock();
-            return new ArrayList<>(nodeList);
+            return new ArrayList<RiakNode>(nodeList);
         }
         finally
         {
@@ -423,7 +433,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                 {
                     this.state = State.SHUTDOWN;
                     executor.shutdown();
-                    bootstrap.group().shutdownGracefully();
+                    bootstrap.config().group().shutdownGracefully();
                     logger.debug("RiakCluster shut down bootstrap");
                     logger.info("RiakCluster has shut down");
                     shutdownLatch.countDown();
@@ -439,7 +449,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     @Override
     public void operationFailed(FutureOperation operation, int remainingRetries)
     {
-        logger.debug("operation failed; remaining retries: {}", remainingRetries);
+        logger.debug("operation {} failed; remaining retries: {}", System.identityHashCode(operation), remainingRetries);
         if (remainingRetries > 0)
         {
             retryQueue.add(operation);
@@ -454,7 +464,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     public void operationComplete(FutureOperation operation, int remainingRetries)
     {
         inFlightCount.decrementAndGet();
-        logger.debug("operation complete; remaining retries: {}", remainingRetries);
+        logger.debug("operation {} complete; remaining retries: {}", System.identityHashCode(operation), remainingRetries);
     }
 
     private void retryOperation() throws InterruptedException
@@ -471,7 +481,14 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
     private void queueDrainOperation() throws InterruptedException
     {
-        FutureOperation operation = operationQueue.take();
+        logger.debug("QueueDrainer - Polling for queued operations.");
+        FutureOperation operation = operationQueue.poll();
+        if(operation == null)
+        {
+            logger.debug("QueueDrainer - No queued operation available, sleeping.");
+            Thread.sleep(50);
+            return;
+        }
 
         boolean connectionSuccess = executeWithRequeueOnNoConnection(operation);
 
@@ -479,6 +496,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         // Sleep for a bit so we don't spinwait our CPUs to death
         if (!connectionSuccess)
         {
+            logger.debug("QueueDrainer - Pulled queued operation {}, but no connection available, sleeping.", System.identityHashCode(operation));
+
             // TODO: should this timeout be configurable, or based on an
             // average command execution time?
             Thread.sleep(50);
@@ -648,7 +667,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
          */
         public Builder(List<RiakNode> riakNodes)
         {
-            this.riakNodes = new ArrayList<>(riakNodes);
+            this.riakNodes = new ArrayList<RiakNode>(riakNodes);
         }
 
         /**
@@ -660,6 +679,17 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         public Builder(RiakNode.Builder nodeBuilder, List<String> remoteAddresses) throws UnknownHostException
         {
             riakNodes = RiakNode.Builder.buildNodes(nodeBuilder, remoteAddresses );
+        }
+
+        /**
+         * Instantiate a Builder containing the {@link RiakNode}s that will be build by using provided builder.
+         * The RiakNode.Builder is used for setting common properties among the nodes.
+         * @since 2.0.6
+         * @see com.basho.riak.client.core.RiakNode.Builder#buildNodes(Collection, RiakNode.Builder)
+         */
+        public Builder(Collection<HostAndPort> remoteHosts, RiakNode.Builder nodeBuilder) throws UnknownHostException
+        {
+            riakNodes = RiakNode.Builder.buildNodes(remoteHosts, nodeBuilder);
         }
 
         /**
@@ -679,7 +709,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
          */
         public Builder(RiakNode node)
         {
-            this.riakNodes = new ArrayList<>(1);
+            this.riakNodes = new ArrayList<RiakNode>(1);
             this.riakNodes.add(node);
         }
 
@@ -745,6 +775,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
          * Set the maximum number of operations to queue.
          * A value of 0 disables the command queue.
          * <b>Setting this will override any of this clusters @{link RiakNode}s blockOnMaxConnection settings.</b>
+         * <p>Please note that while using the Operation Queue, operations may be executed out of the order that they were added in.</p>
          *
          * @param operationQueueMaxDepth - maximum number of operations to queue if all connections are busy
          * @return this

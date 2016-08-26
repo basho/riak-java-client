@@ -21,9 +21,9 @@ import com.basho.riak.client.core.util.DefaultCharset;
 import java.nio.charset.Charset;
 
 /**
- * Models a link from one object to another in Riak. 
- * <p> 
- * Links are metadata that establish one-way relationships between objects in Riak. 
+ * Models a link from one object to another in Riak.
+ * <p>
+ * Links are metadata that establish one-way relationships between objects in Riak.
  * They can be used to loosely model graph like relationships between objects in Riak.
  * </p>
  * <p>
@@ -38,7 +38,6 @@ import java.nio.charset.Charset;
  */
 public class RiakLink
 {
-
     private final BinaryValue bucket;
     private final BinaryValue key;
     private final BinaryValue tag;
@@ -49,9 +48,10 @@ public class RiakLink
      * The values are stored internally as bytes. The default {@code Charset} will
      * be used to convert the supplied {@code String}s
      * <p>
+     *
      * @param bucket the bucket name
-     * @param key the key
-     * @param tag the link tag
+     * @param key    the key
+     * @param tag    the link tag
      */
     public RiakLink(String bucket, String key, String tag)
     {
@@ -64,9 +64,10 @@ public class RiakLink
      * The values are stored internally as bytes. The supplied {@code Charset} will
      * be used to convert the supplied {@code String}s
      * </p>
-     * @param bucket the bucket
-     * @param key the key
-     * @param tag the link tag
+     *
+     * @param bucket  the bucket
+     * @param key     the key
+     * @param tag     the link tag
      * @param charset the character asSet for the supplied {@code String}s
      */
     public RiakLink(String bucket, String key, String tag, Charset charset)
@@ -75,12 +76,13 @@ public class RiakLink
         this.key = BinaryValue.unsafeCreate(key.getBytes(charset));
         this.tag = BinaryValue.unsafeCreate(tag.getBytes(charset));
     }
-    
+
     /**
      * Create a RiakLink from the specified parameters.
+     *
      * @param bucket the bucket name
-     * @param key the key
-     * @param tag the link tag
+     * @param key    the key
+     * @param tag    the link tag
      */
     public RiakLink(BinaryValue bucket, BinaryValue key, BinaryValue tag)
     {
@@ -88,7 +90,7 @@ public class RiakLink
         this.key = key;
         this.tag = tag;
     }
-    
+
     /**
      * Create a RiakLink that is a copy of another RiakLink.
      *
@@ -107,76 +109,83 @@ public class RiakLink
      * The bucket is stored internally as bytes. The default {@code Charset}
      * is used to convert to a {@code String}
      * </p>
+     *
      * @return the bucket as a {@code String} encoded using the default {@code Charset}
      */
     public String getBucket()
     {
         return bucket.toString();
     }
-    
+
     /**
      * Get the bucket for this RiakLink as a String
      * </p>
      * The bucket is stored internally as bytes. The supplied {@code Charset}
      * is used to convert to a {@code String}
      * </p>
+     *
      * @return the bucket as a {@code String} encoded using the supplied {@code Charset}
      */
     public String getBucket(Charset charset)
     {
         return bucket.toString(charset);
     }
-    
+
     /**
      * Get the bucket as a wrapped byte array
+     *
      * @return the bucket name in a {@link BinaryValue}
      */
     public BinaryValue getBucketAsBytes()
     {
         return bucket;
     }
-    
+
     /**
      * Get the key for this RiakLink as a String
      * </p>
      * The key is stored internally as bytes. The default {@code Charset}
      * is used to convert to a {@code String}
      * </p>
+     *
      * @return the key as a {@code String} encoded using the default {@code Charset}
      */
     public String getKey()
     {
         return key.toString();
     }
-    
+
     /**
      * Get the key for this RiakLink as a String
      * </p>
      * The key is stored internally as bytes. The supplied {@code Charset}
      * is used to convert to a {@code String}
      * </p>
+     *
      * @return the key as a {@code String} encoded using the supplied {@code Charset}
      */
     public String getKey(Charset charset)
     {
         return key.toString(charset);
     }
-    
+
     /**
      * Return the key as a wrapped byte array
+     *
      * @return the key in a {@link BinaryValue}
      */
     public BinaryValue getKeyAsBytes()
     {
         return key;
     }
-    
+
     /**
      * Get the tag for this RiakLink as a String
      * </p>
      * The tag is stored internally as bytes. The default {@code Charset}
      * is used to convert to a {@code String}
      * </p>
+     *
      * @return the tag as a {@code String} encoded using the default {@code Charset}
      */
     public String getTag()
@@ -190,22 +199,24 @@ public class RiakLink
      * The tag is stored internally as bytes. The supplied {@code Charset}
      * is used to convert to a {@code String}
      * </p>
+     *
      * @return the tag as a {@code String} encoded using the supplied {@code Charset}
      */
     public String getTag(Charset charset)
     {
         return tag.toString(charset);
     }
-    
+
     /**
      * Get the tag as bytes
+     *
      * @return the tag in a {@link BinaryValue}
      */
     public BinaryValue getTagAsBytes()
     {
         return tag;
     }
-    
+
     @Override
     public int hashCode()
     {
@@ -271,7 +282,7 @@ public class RiakLink
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#toString()
      */
     @Override

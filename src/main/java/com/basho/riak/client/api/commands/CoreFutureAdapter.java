@@ -34,12 +34,12 @@ import java.util.concurrent.TimeoutException;
 public abstract class CoreFutureAdapter<T2,S2,T,S> extends ListenableFuture<T2,S2> implements RiakFutureListener<T,S>
 {
     private final RiakFuture<T,S> coreFuture;
-    
+
     public CoreFutureAdapter(RiakFuture<T,S> coreFuture)
     {
         this.coreFuture = coreFuture;
     }
-    
+
     @Override
     public boolean cancel(boolean mayInterruptIfRunning)
     {
@@ -71,7 +71,7 @@ public abstract class CoreFutureAdapter<T2,S2,T,S> extends ListenableFuture<T2,S
             return null;
         }
     }
-    
+
     @Override
     public boolean isCancelled()
     {
@@ -91,9 +91,9 @@ public abstract class CoreFutureAdapter<T2,S2,T,S> extends ListenableFuture<T2,S
     }
 
     @Override
-    public void await(long timeout, TimeUnit unit) throws InterruptedException
+    public boolean await(long timeout, TimeUnit unit) throws InterruptedException
     {
-        coreFuture.await(timeout, unit);
+        return coreFuture.await(timeout, unit);
     }
 
     @Override
@@ -113,13 +113,13 @@ public abstract class CoreFutureAdapter<T2,S2,T,S> extends ListenableFuture<T2,S
     {
         return convertQueryInfo(coreFuture.getQueryInfo());
     }
-    
+
     @Override
     public void handle(RiakFuture<T,S> f)
     {
         notifyListeners();
     }
-    
+
     protected abstract T2 convertResponse(T coreResponse);
     protected abstract S2 convertQueryInfo(S coreQueryInfo);
 }

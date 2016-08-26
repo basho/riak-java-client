@@ -18,6 +18,7 @@ package com.basho.riak.client.core.operations.ts;
 import com.basho.riak.client.core.operations.PBFutureOperation;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.FullColumnDescription;
+import com.basho.riak.client.core.query.timeseries.Quantum;
 import com.basho.riak.client.core.query.timeseries.TableDefinition;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakTsPB;
@@ -83,10 +84,10 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
             }
 
             this.tableDefinition = tableDefinition;
+            findQuantumInfoInColumnDescriptions();
         }
 
         public abstract R build();
-
 
         public CreateTableOperation buildOperation()
         {
@@ -105,35 +106,35 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
             return new CreateTableOperation(this);
         }
 
-
+        /**
+         * Sets the quantum information for the partition key.
+         * If this method is used, it will override any quantum information included in
+         * the original TableDefinition passed into the Builder constructor.
+         * @param quantum The quantum interval
+         * @param tu The quantum time unit
+         * @return a reference to this object.
+         */
         @SuppressWarnings("unchecked")
         public THIS withQuantum(int quantum, TimeUnit tu)
         {
-            switch (tu)
-            {
-                case SECONDS:
-                    quantumUnit = 's';
-                    break;
-
-                case MINUTES:
-                    quantumUnit = 'm';
-                    break;
-
-                case HOURS:
-                    quantumUnit = 'h';
-                    break;
-
-                case DAYS:
-                    quantumUnit = 'd';
-                    break;
-
-                    default:
-                        throw new IllegalArgumentException("Unsupported quantum unit '"+ tu.name() +"', at the moment the only:" +
-                                " seconds, minutes, hours and days are supported.");
-            }
-
+            this.quantumUnit = Quantum.getTimeUnitChar(tu);
             this.quantum = quantum;
             return (THIS)this;
+        }
+
+        private void findQuantumInfoInColumnDescriptions()
+        {
+            for (FullColumnDescription fullColumnDescription : this.tableDefinition.getPartitionKeyColumnDescriptions())
+            {
+                if(!fullColumnDescription.hasQuantum())
+                {
+                    continue;
+                }
+
+                final Quantum quantum = fullColumnDescription.getQuantum();
+                this.quantum = quantum.getInterval();
+                this.quantumUnit = quantum.getUnitAsChar();
+            }
         }
 
         private static StringBuilder generateColumns(TableDefinition tableDefinition)
@@ -151,7 +152,8 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
                         .append(' ')
                         .append(fd.getType().name());
 
-                if (!fd.isNullable()) {
+                if (!fd.isNullable())
+                {
                     sb.append(" not null");
                 }
             }
@@ -175,7 +177,9 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
                 if (sb.length() > 0)
                 {
                     sb.append(", ");
-                } else {
+                }
+                else
+                {
                     sb.append('(');
                 }
 

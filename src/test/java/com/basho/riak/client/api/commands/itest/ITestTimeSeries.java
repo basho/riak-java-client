@@ -8,7 +8,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
-import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.operations.itest.ts.ITestTsBase;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.timeseries.*;
@@ -20,7 +19,6 @@ import org.junit.runners.MethodSorters;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -53,27 +51,13 @@ import static org.junit.Assume.assumeTrue;
 public class ITestTimeSeries extends ITestTsBase
 {
     private final static String tableName = "GeoHash" + new Random().nextInt(Integer.MAX_VALUE);
-
-    private static List<FullColumnDescription> tableFields = Arrays.asList(
-            new FullColumnDescription("geohash", ColumnDescription.ColumnType.VARCHAR,  false, 1),
-            new FullColumnDescription("user", ColumnDescription.ColumnType.VARCHAR,  false, 2),
-            new FullColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP,  false, 3),
-            new FullColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR,  false),
-            new FullColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE, true),
-            new FullColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64,  true),
-            new FullColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN,  false)
-    );
-
     private static final String BAD_TABLE_NAME = "GeoChicken";
 
-    private RiakFuture<Void, String> createTableAsync(final RiakClient client, String tableName) throws InterruptedException {
-        final TableDefinition tableDef = new TableDefinition(tableName, tableFields);
+    private RiakFuture<Void, String> createTableAsync(final RiakClient client, String tableName) throws InterruptedException
+    {
+        final TableDefinition tableDef = new TableDefinition(tableName, GeoCheckinWideTableDefinition.getFullColumnDescriptions());
 
-        final CreateTable cmd = new CreateTable.Builder(tableDef)
-                .withQuantum(15, TimeUnit.MINUTES)
-                .build();
-
-        return client.executeAsync(cmd);
+        return createTableAsync(client, tableDef);
     }
 
     @Rule
@@ -257,7 +241,8 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        Row row = new Row(com.basho.riak.client.core.query.timeseries.Cell.newTimestamp(fifteenMinsAgo), new Cell("hash1"), new Cell("user1"), new Cell("cloudy"), new Cell(79.0));
+        Row row = new Row(Cell.newTimestamp(fifteenMinsAgo), new Cell("hash1"), new Cell("user1"),
+                          new Cell("cloudy"), new Cell(79.0));
         Store store = new Store.Builder(BAD_TABLE_NAME).withRow(row).build();
 
         RiakFuture<Void, String> future = client.executeAsync(store);
@@ -271,9 +256,8 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"), com.basho.riak.client.core
-                .query.timeseries.Cell
-                .newTimestamp(fifteenMinsAgo));
+        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"),
+                                                  Cell.newTimestamp(fifteenMinsAgo));
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
 
         QueryResult queryResult = client.execute(fetch);
@@ -289,8 +273,8 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), com.basho.riak.client.core.query.timeseries.Cell
-                .newTimestamp(fifteenMinsAgo));
+        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"),
+                                                  Cell.newTimestamp(fifteenMinsAgo));
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
 
         QueryResult queryResult = client.execute(fetch);
@@ -300,8 +284,8 @@ public class ITestTimeSeries extends ITestTsBase
     @Test
     public void test_n_TestDeletingRowRemovesItFromQueries() throws ExecutionException, InterruptedException
     {
-        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"), com.basho.riak.client.core.query.timeseries.Cell
-                .newTimestamp(fiveMinsAgo));
+        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"),
+                                                  Cell.newTimestamp(fiveMinsAgo));
 
         RiakClient client = new RiakClient(cluster);
 
@@ -329,7 +313,7 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), com.basho.riak.client.core.query.timeseries.Cell
+        final List<Cell> keyCells = Arrays.asList(new Cell("nohash"), new Cell("nouser"), Cell
                 .newTimestamp(fifteenMinsAgo));
         Delete delete = new Delete.Builder(tableName, keyCells).build();
 
@@ -353,7 +337,8 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult tableDescription = resultFuture.get();
         assertEquals(7, tableDescription.getRowsCount());
-        assertEquals(5, tableDescription.getColumnDescriptionsCopy().size());
+        int numColumnDesc = tableDescription.getColumnDescriptionsCopy().size();
+        assertTrue(numColumnDesc == 5 || numColumnDesc == 7);
     }
 
     @Test
@@ -409,7 +394,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         Query query = new Query.Builder("DESCRIBE " + tableName).build();
 
-        final QueryResult result = client.execute(query);
+        client.execute(query);
     }
 
     private static List<FullColumnDescription> GetCreatedTableFullDescriptions()

@@ -61,8 +61,15 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             responseBuilder.withContext(ctxWrapper);
         }
 
-        return responseBuilder.build();
+        // If we don't have a value set, then the Data Type is considered "New" or "Not Found"
+        // A null context could be misleading, since the request might specify to not return a context.
+        // See riak_dt.proto#DtFetchResp L113-132
+        if(!response.hasValue())
+        {
+            responseBuilder.withNotFound(true);
+        }
 
+        return responseBuilder.build();
     }
 
     @Override
@@ -97,7 +104,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         private final Location location;
 
         /**
-         * Construct a Builder for a DtFetchOperaiton
+         * Construct a Builder for a DtFetchOperation
          * @param location the location of the object in Riak.
          */
         public Builder(Location location)
@@ -242,11 +249,13 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
     {
         private final BinaryValue context;
         private final RiakDatatype crdtElement;
+        private final boolean isNotFound;
 
         protected Response(Init<?> builder)
         {
             this.context = builder.context;
             this.crdtElement = builder.crdtElement;
+            this.isNotFound = builder.isNotFound;
         }
 
         public boolean hasContext()
@@ -269,10 +278,16 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             return crdtElement;
         }
 
+        public boolean isNotFound()
+        {
+            return this.isNotFound;
+        }
+
         protected static abstract class Init<T extends Init<T>>
         {
             private BinaryValue context;
             private RiakDatatype crdtElement;
+            private boolean isNotFound;
 
             protected abstract T self();
             protected abstract Response build();
@@ -296,6 +311,12 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
             T withCrdtElement(RiakDatatype crdtElement)
             {
                 this.crdtElement = crdtElement;
+                return self();
+            }
+
+            T withNotFound(boolean notFound)
+            {
+                this.isNotFound = notFound;
                 return self();
             }
         }

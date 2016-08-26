@@ -45,7 +45,8 @@ package com.basho.riak.client.api.cap;
  * @since 2.0
  * @see <a href="http://docs.basho.com/riak/latest/dev/advanced/cap-controls/">CAP Controls</a>
  */
-public final class Quorum {
+public final class Quorum
+{
     
     public static final String ONE = "one";
     public static final String QUORUM = "quorum";
@@ -59,7 +60,8 @@ public final class Quorum {
      * 
      * @param i the quorum value
      */
-    public Quorum(int i) {
+    public Quorum(int i)
+    {
         if (i < -5 || i == -1)
         {
             throw new IllegalArgumentException("Illegal value for quorum: " + i);
@@ -108,7 +110,8 @@ public final class Quorum {
      * @return true if this Quorum represents a symbolic value, false if literal
      *         integer value
      */
-    public boolean isSymbolic() {
+    public boolean isSymbolic()
+    {
         switch(i)
         {
             case -2: // "one"
@@ -127,7 +130,8 @@ public final class Quorum {
      * 
      * @return the int value. Will be a negative number for symbolic values.
      */
-    public int getIntValue() {
+    public int getIntValue()
+    {
         return i;
     }
 
@@ -164,25 +168,31 @@ public final class Quorum {
         return quorum;
     }
 
-    @Override public int hashCode() {
+    @Override public int hashCode()
+    {
         final int prime = 31;
         int result = 1;
         result = prime * result + i;
         return result;
     }
 
-    @Override public boolean equals(Object obj) {
-        if (this == obj) {
+    @Override public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
             return true;
         }
-        if (obj == null) {
+        if (obj == null)
+        {
             return false;
         }
-        if (!(obj instanceof Quorum)) {
+        if (!(obj instanceof Quorum))
+        {
             return false;
         }
         Quorum other = (Quorum) obj;
-        if (i != other.i) {
+        if (i != other.i)
+        {
             return false;
         }
         

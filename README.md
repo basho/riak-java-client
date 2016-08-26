@@ -10,8 +10,9 @@ Please see the [Release Notes](https://github.com/basho/riak-java-client/blob/de
 1. [Installation](#installation)
 2. [Documentation](#documentation)
 3. [Contributing](#contributing)
-    * [`riak_pb` dependency](#riak_pb-dependency)
-    * [Security Tests](security-tests)
+    * [Integration Tests Setup](#integration-tests-setup)
+    * [Running Integration Tests](#running-integration-tests)
+    * [Security Tests](#security-tests)
 	* [An honest disclaimer](#an-honest-disclaimer)
 4. [Roadmap](#roadmap)
 5. [License and Authors](#license-and-authors)
@@ -39,7 +40,7 @@ This client is published to Maven Central and can be included in your project by
   <dependency>
     <groupId>com.basho.riak</groupId>
     <artifactId>riak-client</artifactId>
-    <version>2.0.4</version>
+    <version>2.0.7</version>
   </dependency>
   ...
 </dependencies>
@@ -57,55 +58,111 @@ Also see [the Javadoc site](http://basho.github.io/riak-java-client/) for more i
 
 ## Contributing
 
-#### `riak_pb` dependency
-To build the Riak Java Client, you must have the correct version of the riak_pb dependency installed to your local Maven repository.
+#### Integration Tests Setup
 
+We've included Basho's [riak-client-tools](https://github.com/basho/riak-client-tools/) as a git submodule to help with Riak test setup and teardown.
+You can find these tools in the `/tools` subdirectory. 
+
+To configure your single riak instance, you may use the [riak-cluster-config](https://github.com/basho/riak-client-tools/blob/master/devrel/riak-cluster-config) script to setup the node with the appropriate bucket types.
+You can use it by running `tools/devrel/riak-cluster-config $PATH_TO_RIAK_ADMIN $RIAK_HTTP_PORT false false` with the appropriate paths and values filled in.
+
+To configure a devrel for multiple node testing, please see the instructions located at [basho/riak-client-tools](https://github.com/basho/riak-client-tools/blob/master/devrel/README.md) on how to use the `devrel/setup-dev-cluster` command.
+
+#### Running Integration Tests
+
+To run the Riak KV integration test suite, execute: 
 ```
-git clone https://github.com/basho/riak_pb
-git checkout java-2.1.1.0
-mvn clean install
+make RIAK_PORT=8087 integration-test
 ```
+
+To run the Riak TimeSeries test suite, execute:
+```
+make RIAK_PORT=8087 integration-test-timeseries
+```
+
+When running tests directly from Maven, you may also turn feature sets on and off with system properties:
+```
+mvn -Pitest,default -Dcom.basho.riak.timeseries=true -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
+```
+
+The supported test flags are:
+
+System Property | Default Value | Note
+--------------- | ------------- | ----
+com.basho.riak.buckettype | true | Riak KV 2.0 Bucket Type Tests
+com.basho.riak.yokozuna | true | Riak KV 2.0 Solr/Yokozuna Search Tests
+com.basho.riak.2i | true | Riak KV Secondary Index Tests
+com.basho.riak.mr | true | Riak KV MapReduce Tests
+com.basho.riak.crdt | true | Riak KV 2.0 Data Type Tests
+com.basho.riak.lifecycle | true | Java Client Node/Cluster Lifecycle Tests
+com.basho.riak.timeseries | false | Riak TS TimeSeries Tests
+com.basho.riak.riakSearch | false | Riak KV 1.0 Legacy Search Tests
+com.basho.riak.coveragePlan | false | Riak KV/TS Coverage Plan Tests <br>(need cluster to run these )
+com.basho.riak.security | false | Riak Security Tests
+com.basho.riak.clientcert | false | Riak Security Tests with Certificates
+
+Some tests may require more than one feature to run, so please check the test to see which ones are required before running.
+
+Connection Options
+
+System Property | Default Value | Note 
+--- | --- | --- 
+com.basho.riak.host | `127.0.0.1` | The hostname to connect to for tests 
+com.basho.riak.pbcport | `8087` | The Protocol Buffers port to connect to for tests 
 
 #### Security tests
 To run the security-related integration tests, you will need to:
 
- 1) Setup the certs by running the buildbot makefile's "configure-security-certs" target
-     cd buildbot;
-     make configure-security-certs;
-     cd ../;
+ 1) Setup the certs by running the buildbot makefile's `configure-security-certs` target.
+ ```
+cd buildbot;
+make configure-security-certs;
+cd ../;
+```
 
- 2) Copy the certs to your Riak's etc dir, and configure the riak.conf file to use them
-     resources_dir=./src/test/resources
-     riak_etc_dir=/fill/in/this/path/
+ 2) Copy the certs to your Riak's etc dir, and configure the riak.conf file to use them.
 
-     # Shell
-     cp $resources_dir/cacert.pem $riak_etc_dir
-     cp $resources_dir/riak-test-cert.pem $riak_etc_dir
-     cp $resources_dir/riakuser-client-cert.pem $riak_etc_dir
+ ```
+resources_dir=./src/test/resources
+riak_etc_dir=/fill/in/this/path/
 
-     # riak.conf file additions
-     ssl.certfile = (riak_etc_dir)/cert.pem
-     ssl.keyfile = (riak_etc_dir)/key.pem
-     ssl.cacertfile = (riak_etc_dir)/cacert.pem
+# Shell
+cp $resources_dir/cacert.pem $riak_etc_dir
+cp $resources_dir/riak-test-cert.pem $riak_etc_dir
+cp $resources_dir/riakuser-client-cert.pem $riak_etc_dir
 
- 3) Enable Riak Security
-     riak-admin security enable
+# riak.conf file additions
+ssl.certfile = (riak_etc_dir)/cert.pem
+ssl.keyfile = (riak_etc_dir)/key.pem
+ssl.cacertfile = (riak_etc_dir)/cacert.pem
+```
 
- 4) create a user "riakuser" with the password "riak_cert_user" and configure it with certificate as a source
-     riak-admin security add-user riakuser
-     riak-admin security add-source riakuser 0.0.0.0/0 certificate
+ 3) Enable Riak Security.
+```
+riak-admin security enable
+```
+ 4) Create a user "riakuser" with the password "riak_cert_user" and configure it with certificate as a source
+```
+riak-admin security add-user riakuser
+riak-admin security add-source riakuser 0.0.0.0/0 certificate
+```
 
- 5) create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a
- source
-     riak-admin security add-user riak_trust_user password=riak_trust_user
-     riak-admin security add-source riak_trust_user 0.0.0.0/0 trust
+ 5) Create a user "riak_trust_user" with the password "riak_trust_user" and configure it with trust as a source.
+```
+riak-admin security add-user riak_trust_user password=riak_trust_user
+riak-admin security add-source riak_trust_user 0.0.0.0/0 trust
+```
 
- 6) create a user "riakpass" with the password "riak_passwd_user" and configure it with password as a source
-     riak-admin security add-user riakpass password=Test1234
-     riak-admin security add-source riakpass 0.0.0.0/0 password
+ 6) Create a user "riakpass" with the password "riak_passwd_user" and configure it with password as a source.
+```
+riak-admin security add-user riakpass password=Test1234
+riak-admin security add-source riakpass 0.0.0.0/0 password
+```
 
- 7) Run the Test suit with the com.basho.riak.security and com.basho.riak.security.clientcert flags set to
- true
+ 7) Run `integration-test-security` target of the makefile.
+ ```
+ make integration-test-security
+ ```
 
 
 This repository's maintainers are engineers at Basho and we welcome your contribution to the project! Review the details in [CONTRIBUTING.md](CONTRIBUTING.md) in order to give back to this project.
@@ -123,7 +180,7 @@ Thank you for being part of the community!
 TODO
 
 ## License and Authors
-**The Riak Java** Client is Open Source software released under the Apache 2.0 License. Please see the [LICENSE](LICENSE) file for full license details.
+**The Riak Java Client** is Open Source software released under the Apache 2.0 License. Please see the [LICENSE](LICENSE) file for full license details.
 
 * Author: [Alex Moore](https://github.com/alexmoore)
 * Author: [Brian Roach](https://github.com/broach)

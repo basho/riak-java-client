@@ -68,7 +68,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 {
 
     private final Location location;
-    private final Map<Option<?>, Object> options = new HashMap<>();
+    private final Map<RiakOption<?>, Object> options = new HashMap<>();
     private final VClock vClock;
 
     public DeleteValue(Builder builder)
@@ -112,10 +112,10 @@ public final class DeleteValue extends RiakCommand<Void, Location>
             builder.withVclock(vClock);
         }
 
-        for (Map.Entry<Option<?>, Object> optPair : options.entrySet())
+        for (Map.Entry<RiakOption<?>, Object> optPair : options.entrySet())
         {
 
-            Option<?> option = optPair.getKey();
+            RiakOption<?> option = optPair.getKey();
 
             if (option == Option.DW)
             {
@@ -208,11 +208,8 @@ public final class DeleteValue extends RiakCommand<Void, Location>
     /**
      * Used to construct a DeleteValue command.
      */
-    public static class Builder
+    public static class Builder extends KvBuilderBase<DeleteValue>
     {
-
-        private final Location location;
-        private final Map<Option<?>, Object> options = new HashMap<>();
         private VClock vClock;
 
         /**
@@ -221,11 +218,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
          */
         public Builder(Location location)
         {
-            if (location == null)
-            {
-                throw new IllegalArgumentException("Location cannot be null");
-            }
-            this.location = location;
+            super(location);
         }
 
         /**
@@ -273,6 +266,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
          * Construct a DeleteValue object.
          * @return a new DeleteValue instance.
          */
+        @Override
         public DeleteValue build()
         {
             return new DeleteValue(this);
@@ -292,32 +286,40 @@ public final class DeleteValue extends RiakCommand<Void, Location>
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
             return true;
         }
-        if (obj == null) {
+        if (obj == null)
+        {
             return false;
         }
-        if (!(obj instanceof DeleteValue)) {
+        if (!(obj instanceof DeleteValue))
+        {
             return false;
         }
 
         final DeleteValue other = (DeleteValue) obj;
-        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location)))
+        {
             return false;
         }
-        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options)))
+        {
             return false;
         }
-        if (this.vClock != other.vClock && (this.vClock == null || !this.vClock.equals(other.vClock))) {
+        if (this.vClock != other.vClock && (this.vClock == null || !this.vClock.equals(other.vClock)))
+        {
             return false;
         }
         return true;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("{location: %s, options: %s, vClock: %s}",
                 location, options, vClock);
     }

@@ -75,7 +75,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 {
 
     private final Location location;
-    private final Map<Option<?>, Object> options = new HashMap<>();
+    private final Map<RiakOption<?>, Object> options = new HashMap<>();
 
     FetchValue(Builder builder)
     {
@@ -117,7 +117,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     {
         FetchOperation.Builder builder = new FetchOperation.Builder(location);
 
-        for (Map.Entry<Option<?>, Object> opPair : options.entrySet())
+        for (Map.Entry<RiakOption<?>, Object> opPair : options.entrySet())
         {
 
             RiakOption<?> option = opPair.getKey();
@@ -317,23 +317,15 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     /**
      * Used to construct a FetchValue command.
      */
-    public static class Builder
+    public static class Builder extends KvBuilderBase<FetchValue>
     {
-
-        private final Location location;
-        private final Map<Option<?>, Object> options = new HashMap<>();
-
         /**
          * Constructs a builder for a FetchValue operation using the supplied location.
          * @param location the location of the object you want to fetch from Riak.
          */
         public Builder(Location location)
         {
-            if (location == null)
-            {
-                throw new IllegalArgumentException("Location cannot be null");
-            }
-            this.location = location;
+            super(location);
         }
 
         /**
@@ -347,7 +339,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
          */
         public <U> Builder withOption(Option<U> option, U value)
         {
-            options.put(option, value);
+            addOption(option, value);
             return this;
         }
 
@@ -371,6 +363,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
          *
          * @return a FetchValue command
          */
+        @Override
         public FetchValue build()
         {
             return new FetchValue(this);
@@ -378,7 +371,8 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         final int prime = 31;
         int result = 1;
         result = prime * result + (location != null ? location.hashCode() : 0);;
@@ -387,29 +381,36 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
             return true;
         }
-        if (obj == null) {
+        if (obj == null)
+        {
             return false;
         }
-        if (!(obj instanceof FetchValue)) {
+        if (!(obj instanceof FetchValue))
+        {
             return false;
         }
 
         final FetchValue other = (FetchValue) obj;
-        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location)))
+        {
             return false;
         }
-        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options)))
+        {
             return false;
         }
         return true;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("{location: %s, options: %s}", location, options);
     }
 }
