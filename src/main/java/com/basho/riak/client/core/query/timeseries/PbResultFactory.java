@@ -53,14 +53,7 @@ public final class PbResultFactory
 
         FlatteningIterable<RiakTsPB.TsListKeysResp, RiakTsPB.TsRow> flatIterable =
                 new FlatteningIterable<RiakTsPB.TsListKeysResp, RiakTsPB.TsRow>(responseChunks,
-                    new FlatteningIterable.InnerIterableProvider<RiakTsPB.TsListKeysResp, RiakTsPB.TsRow>()
-                    {
-                        @Override
-                        public Iterator<RiakTsPB.TsRow> getInnerIterator(RiakTsPB.TsListKeysResp provider)
-                        {
-                            return provider.getKeysList().iterator();
-                        }
-                    });
+                    provider -> provider.getKeysList().iterator());
 
         return new QueryResult(flatIterable, totalKeyCount);
     }

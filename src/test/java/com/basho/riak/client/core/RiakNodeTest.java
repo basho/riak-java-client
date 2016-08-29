@@ -552,23 +552,20 @@ public class RiakNodeTest
         RiakCluster cluster = RiakCluster.builder(node).withExecutionAttempts(1)
                                          .withBootstrap(setup.getBootstrap()).build();
 
-        Runnable secondCmdSetup = new Runnable()
+        Runnable secondCmdSetup;
+        secondCmdSetup = () ->
         {
-            @Override
-            public void run()
+            try
             {
-                try
-                {
-                    Deque<?> available = Whitebox.getInternalState(node, "available");
+                Deque<?> available = Whitebox.getInternalState(node, "available");
 
-                    // throw away connection, imitate that they are all used.
-                    available.poll();
+                // throw away connection, imitate that they are all used.
+                available.poll();
 
-                    // throw a BlockingOperationException when a new connection opened.
-                    doThrow(BlockingOperationException.class).when(setup.getChannelFuture()).await(); //
-                }
-                catch (InterruptedException ignored) {}
+                // throw a BlockingOperationException when a new connection opened.
+                doThrow(BlockingOperationException.class).when(setup.getChannelFuture()).await(); //
             }
+            catch (InterruptedException ignored) {}
         };
 
         // Throw away all connections before second command is run, and throw a BlockingOperationException when a new one is opened.
@@ -595,20 +592,16 @@ public class RiakNodeTest
                                          .withExecutionAttempts(1)
                                          .withBootstrap(setup.getBootstrap()).build();
 
-        Runnable secondCmdSetup = new Runnable()
+        Runnable secondCmdSetup = () ->
         {
-            @Override
-            public void run()
+            try
             {
-                try
-                {
-                    RiakNode.Sync permits = Whitebox.getInternalState(node, "permits");
+                RiakNode.Sync permits = Whitebox.getInternalState(node, "permits");
 
-                    // Use up permit, imitate that they are all used.
-                    permits.acquire();
-                }
-                catch (InterruptedException ignored) {}
+                // Use up permit, imitate that they are all used.
+                permits.acquire();
             }
+            catch (InterruptedException ignored) {}
         };
 
         // Throw away all connections before second command is run, and throw a BlockingOperationException when a new one is opened.
@@ -754,17 +747,12 @@ public class RiakNodeTest
 
             final RiakFuture<String, Void> firstFuture = firstCommand.executeAsync(cluster);
 
-            RiakFutureListener<String, Void> listener =
-                    new RiakFutureListener<String, Void>()
-                    {
-                        @Override
-                        public void handle(RiakFuture<String, Void> f)
-                        {
-                            final RiakFuture<String, Void> secondFuture =
-                                    secondCommand.executeAsync(cluster);
-                            secondFuture.addListener(cf);
-                        }
-                    };
+            RiakFutureListener<String, Void> listener = f ->
+            {
+                final RiakFuture<String, Void> secondFuture =
+                        secondCommand.executeAsync(cluster);
+                secondFuture.addListener(cf);
+            };
 
             firstFuture.addListener(listener);
 
