@@ -30,12 +30,12 @@ public class TableDefinition
         {
             this.fullColumnDescriptions.put(col.getName(), col);
 
-            if(col.isPartitionKeyMember())
+            if (col.isPartitionKeyMember())
             {
                 this.partitionKeys.add(col);
             }
 
-            if(col.isLocalKeyMember())
+            if (col.isLocalKeyMember())
             {
                 this.localKeys.add(col);
             }
@@ -93,12 +93,12 @@ public class TableDefinition
 
     private void checkObjectInput(String tableName, Iterable<FullColumnDescription> fullColumnDescriptions)
     {
-        if(tableName == null || tableName.isEmpty())
+        if (tableName == null || tableName.isEmpty())
         {
             throw new IllegalArgumentException("tableName must not be null or empty.");
         }
 
-        if(fullColumnDescriptions == null || !fullColumnDescriptions.iterator().hasNext())
+        if (fullColumnDescriptions == null || !fullColumnDescriptions.iterator().hasNext())
         {
             throw new IllegalArgumentException("fullColumnDescriptions must not be null or empty.");
         }
@@ -113,15 +113,15 @@ public class TableDefinition
         @Override
         public int compare(FullColumnDescription o1, FullColumnDescription o2)
         {
-            if(!o1.isLocalKeyMember() && !o2.isLocalKeyMember())
+            if (!o1.isLocalKeyMember() && !o2.isLocalKeyMember())
             {
                 return 0;
             }
-            else if(!o1.isLocalKeyMember() && o2.isLocalKeyMember())
+            else if (!o1.isLocalKeyMember() && o2.isLocalKeyMember())
             {
                 return 1;
             }
-            else if(o1.isLocalKeyMember() && !o2.isLocalKeyMember())
+            else if (o1.isLocalKeyMember() && !o2.isLocalKeyMember())
             {
                 return -1;
             }
@@ -141,15 +141,15 @@ public class TableDefinition
         @Override
         public int compare(FullColumnDescription o1, FullColumnDescription o2)
         {
-            if(!o1.isPartitionKeyMember() && !o2.isPartitionKeyMember())
+            if (!o1.isPartitionKeyMember() && !o2.isPartitionKeyMember())
             {
                 return 0;
             }
-            else if(!o1.isPartitionKeyMember() && o2.isPartitionKeyMember())
+            else if (!o1.isPartitionKeyMember() && o2.isPartitionKeyMember())
             {
                 return 1;
             }
-            else if(o1.isPartitionKeyMember() && !o2.isPartitionKeyMember())
+            else if (o1.isPartitionKeyMember() && !o2.isPartitionKeyMember())
             {
                 return -1;
             }

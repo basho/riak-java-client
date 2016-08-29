@@ -332,7 +332,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         {
             converted = convert(rawResponse);
         }
-        catch(IllegalArgumentException ex)
+        catch (IllegalArgumentException ex)
         {
             exception = ex;
             throwExceptionIfSet();

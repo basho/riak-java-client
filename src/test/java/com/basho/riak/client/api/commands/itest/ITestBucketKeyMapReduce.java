@@ -138,8 +138,8 @@ public class ITestBucketKeyMapReduce extends ITestBase
                         "function(v, key_data) {" +
                                 "  var m = v.values[0].data.toLowerCase().match(/\\w*/g);" +
                                 "  var r = [];" +
-                                "  for(var i in m) {" +
-                                "    if(m[i] != '') {" +
+                                "  for (var i in m) {" +
+                                "    if (m[i] != '') {" +
                                 "      var o = {};" +
                                 "      o[m[i]] = 1;" +
                                 "      r.push(o);" +
@@ -151,9 +151,9 @@ public class ITestBucketKeyMapReduce extends ITestBase
                 .withReducePhase(Function.newAnonymousJsFunction(
                         "function(v, key_data) {" +
                                 "  var r = {};" +
-                                "  for(var i in v) {" +
-                                "    for(var w in v[i]) {" +
-                                "      if(w in r)" +
+                                "  for (var i in v) {" +
+                                "    for (var w in v[i]) {" +
+                                "      if (w in r)" +
                                 "        r[w] += v[i][w];" +
                                 "      else" +
                                 "        r[w] = v[i][w];" +

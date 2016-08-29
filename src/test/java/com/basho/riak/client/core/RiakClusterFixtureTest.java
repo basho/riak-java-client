@@ -96,7 +96,7 @@ public class RiakClusterFixtureTest
             assertEquals(response.getObjectList().get(0).getValue().toString(), "This is a value!");
             assertTrue(!response.isNotFound());
         }
-        catch(InterruptedException ignored)
+        catch (InterruptedException ignored)
         {
 
         }
@@ -276,7 +276,7 @@ public class RiakClusterFixtureTest
         @Override
         public void nodeStateChanged(RiakNode node, RiakNode.State state)
         {
-            switch(state)
+            switch (state)
             {
                 case CREATED:
                     stateCreated++;

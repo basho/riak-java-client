@@ -57,7 +57,7 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
 
         public Builder withCoverageContext(byte[] coverageContext)
         {
-            if(coverageContext != null)
+            if (coverageContext != null)
             {
                 this.coverageContext = coverageContext;
             }

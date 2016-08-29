@@ -94,7 +94,7 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
 
         final CoveragePlan.Response response = client.execute(cmd);
         final List<CoverageEntry> lst = new LinkedList<>();
-        for(CoverageEntry ce: response)
+        for (CoverageEntry ce: response)
         {
             lst.add(ce);
         }
@@ -118,7 +118,7 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
 
         final CoveragePlan.Response response = client.execute(cmd);
 
-        if(logger.isInfoEnabled())
+        if (logger.isInfoEnabled())
         {
             StringBuilder sbld = new StringBuilder("Got the following list of Coverage Entries:");
             for (CoverageEntry ce: response)
@@ -135,7 +135,7 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
         final Map<CoverageEntry, List<BinIndexQuery.Response.Entry>> chunkedKeys
                 = new HashMap<>();
 
-        for(HostAndPort host: response.hosts())
+        for (HostAndPort host: response.hosts())
         {
             final RiakNode node= new RiakNode.Builder()
                     .withRemoteHost(host)
@@ -150,7 +150,7 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
             final RiakClient rc = new RiakClient(cl);
             try
             {
-                for(CoverageEntry ce: response.hostEntries(host))
+                for (CoverageEntry ce: response.hostEntries(host))
                 {
                     final BucketIndexQuery query =
                             new BucketIndexQuery.Builder(defaultNamespace(), ce.getCoverageContext())
@@ -170,10 +170,10 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
         }
 
         final Set<String> keys = new HashSet<>(NUMBER_OF_TEST_VALUES);
-        for(Map.Entry<CoverageEntry, List<BinIndexQuery.Response.Entry>> e: chunkedKeys.entrySet())
+        for (Map.Entry<CoverageEntry, List<BinIndexQuery.Response.Entry>> e: chunkedKeys.entrySet())
         {
             final CoverageEntry ce = e.getKey();
-            if(e.getValue().isEmpty())
+            if (e.getValue().isEmpty())
             {
                 logger.debug("Nothing was returned for CE {}", ce);
             }
@@ -181,7 +181,7 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
             {
                 final List<String> lst = new ArrayList<>(e.getValue().size());
 
-                for(BinIndexQuery.Response.Entry re: e.getValue())
+                for (BinIndexQuery.Response.Entry re: e.getValue())
                 {
                     lst.add(re.getRiakObjectLocation().getKeyAsString());
                 }

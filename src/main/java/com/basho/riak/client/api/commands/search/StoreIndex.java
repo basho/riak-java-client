@@ -55,7 +55,7 @@ public final class StoreIndex extends RiakCommand<Void, YokozunaIndex>
     {
         final YzPutIndexOperation.Builder opBuilder = new YzPutIndexOperation.Builder(cmdBuilder.index);
 
-        if(cmdBuilder.timeout != null)
+        if (cmdBuilder.timeout != null)
         {
             opBuilder.withTimeout(cmdBuilder.timeout);
         }

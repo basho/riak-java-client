@@ -268,7 +268,7 @@ public abstract class ITestBase
 
     protected static void assertFutureSuccess(RiakFuture<?, ?> resultFuture)
     {
-        if(resultFuture.cause() == null)
+        if (resultFuture.cause() == null)
         {
             assertTrue(resultFuture.isSuccess());
         }

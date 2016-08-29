@@ -31,14 +31,14 @@ public class ISearchTestBase extends ITestBase
     {
         final RiakClient client = new RiakClient(cluster);
 
-        if(legacyRiakSearch)
+        if (legacyRiakSearch)
         {
             Namespace legacyNamespace = getLegacyNamespace(bucketName);
             setupLegacySearchBucketProps(client, legacyNamespace);
             setupData(client, legacyNamespace);
         }
 
-        if(testYokozuna && testBucketType)
+        if (testYokozuna && testBucketType)
         {
             Namespace yokoNamespace = getYokoNamespace(bucketName);
 
@@ -65,13 +65,13 @@ public class ISearchTestBase extends ITestBase
     {
         final RiakClient client = new RiakClient(cluster);
 
-        if(legacyRiakSearch)
+        if (legacyRiakSearch)
         {
             Namespace legacyNamespace = getLegacyNamespace(bucketName);
             cleanupBucket(legacyNamespace);
         }
 
-        if(testYokozuna && testBucketType)
+        if (testYokozuna && testBucketType)
         {
             Namespace yokoNamespace = getYokoNamespace(bucketName);
             cleanupBucket(yokoNamespace);

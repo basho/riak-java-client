@@ -112,7 +112,7 @@ public final class Quorum
      */
     public boolean isSymbolic()
     {
-        switch(i)
+        switch (i)
         {
             case -2: // "one"
             case -3: // "quorum"
@@ -146,7 +146,7 @@ public final class Quorum
         else
         {
 
-            switch(i)
+            switch (i)
             {
                 case -2:
                     quorum = ONE;

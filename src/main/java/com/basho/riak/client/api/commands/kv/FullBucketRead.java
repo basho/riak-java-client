@@ -240,7 +240,7 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
         @Override
         public List<Entry> getEntries()
         {
-            if(convertedList != null)
+            if (convertedList != null)
             {
                 return convertedList;
             }

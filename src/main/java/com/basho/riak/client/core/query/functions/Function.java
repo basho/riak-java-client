@@ -36,7 +36,7 @@ public class Function
 
     private Function(Builder builder)
     {
-        switch(builder.type)
+        switch (builder.type)
         {
             case NAMED_JS:
             case STORED_JS:
@@ -274,7 +274,7 @@ public class Function
         public Builder withName(String name)
         {
             stringCheck(name);
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                 case NAMED_JS:
@@ -296,7 +296,7 @@ public class Function
         public Builder withBucket(String bucket)
         {
             stringCheck(bucket);
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                 case STORED_JS:
@@ -318,7 +318,7 @@ public class Function
         public Builder withKey(String key)
         {
             stringCheck(key);
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                 case STORED_JS:
@@ -339,7 +339,7 @@ public class Function
         public Builder withSource(String source)
         {
             stringCheck(source);
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                     this.source = source;
@@ -359,7 +359,7 @@ public class Function
         public Builder withModule(String module)
         {
             stringCheck(module);
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                 case ERLANG:
@@ -380,7 +380,7 @@ public class Function
         public Builder withFunction(String function)
         {
             stringCheck(function);
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                 case ERLANG:
@@ -407,7 +407,7 @@ public class Function
          */
         public Function build()
         {
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                     throw new IllegalStateException("Nothing to build.");

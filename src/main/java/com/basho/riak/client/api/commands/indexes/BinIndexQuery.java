@@ -136,7 +136,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
 
         private static String generateIndexName(String baseIndexName)
         {
-            if(IndexNames.BUCKET.equalsIgnoreCase(baseIndexName) ||
+            if (IndexNames.BUCKET.equalsIgnoreCase(baseIndexName) ||
                IndexNames.KEY.equalsIgnoreCase(baseIndexName))
             {
                 return baseIndexName;

@@ -54,7 +54,7 @@ public final class HostAndPort implements Serializable
 
     public int getPortOrDefault(int defaultPort)
     {
-        if(!hasPort())
+        if (!hasPort())
         {
             return defaultPort;
         }
@@ -68,7 +68,7 @@ public final class HostAndPort implements Serializable
 
     public InetSocketAddress asInetSocketAddress()
     {
-        if(inetAddress == null)
+        if (inetAddress == null)
         {
             inetAddress = new InetSocketAddress(getHost(), getPort());
         }
@@ -83,7 +83,7 @@ public final class HostAndPort implements Serializable
 
         List<HostAndPort> retVal = new ArrayList<>(rawHosts.length);
 
-        for( String s: rawHosts)
+        for ( String s: rawHosts)
         {
             retVal.add(HostAndPort.fromString(s, defaultPort));
         }
@@ -99,7 +99,7 @@ public final class HostAndPort implements Serializable
         final int idx = hostPortStr.indexOf(':');
         final HostAndPort retVal;
 
-        if( idx == -1 )
+        if ( idx == -1 )
         {
             retVal = fromParts(hostPortStr, defaultPort);
         }
@@ -128,7 +128,7 @@ public final class HostAndPort implements Serializable
 
     private static void checkHost(String host) throws IllegalArgumentException
     {
-        if(host == null || host.isEmpty())
+        if (host == null || host.isEmpty())
         {
             throw new IllegalArgumentException("Host must be provided, it can't be null or empty");
         }

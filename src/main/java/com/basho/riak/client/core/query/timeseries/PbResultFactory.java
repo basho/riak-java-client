@@ -19,7 +19,7 @@ public final class PbResultFactory
 
     public static QueryResult convertPbQueryResp(RiakTsPB.TsQueryResp response)
     {
-        if(response == null)
+        if (response == null)
         {
             return QueryResult.EMPTY;
         }

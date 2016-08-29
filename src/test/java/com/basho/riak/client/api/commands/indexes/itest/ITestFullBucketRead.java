@@ -145,7 +145,7 @@ public class ITestFullBucketRead extends ITestBase
         final Map<String, RiakObject> results = performFBReadWithCoverageContext(false, false);
         assertEquals(NUMBER_OF_TEST_VALUES, results.size());
 
-        for(int i=0; i<NUMBER_OF_TEST_VALUES; ++i)
+        for (int i=0; i<NUMBER_OF_TEST_VALUES; ++i)
         {
             final String key = "k"+i;
             assertTrue(results.containsKey(key));
@@ -161,7 +161,7 @@ public class ITestFullBucketRead extends ITestBase
         final Map<String, RiakObject> results = performFBReadWithCoverageContext(true, true);
         assertEquals(NUMBER_OF_TEST_VALUES, results.size());
 
-        for(int i=0; i<NUMBER_OF_TEST_VALUES; ++i)
+        for (int i=0; i<NUMBER_OF_TEST_VALUES; ++i)
         {
             final String key = "k"+i;
             assertTrue(results.containsKey(key));
@@ -205,7 +205,7 @@ public class ITestFullBucketRead extends ITestBase
         final Map<String, RiakObject> riakObjectsAlternative = readDataForCoverageEntry(alternativeEntry);
         assertEquals("Key set queried by alternative coverage entry does not match original keys",
                 riakObjects.keySet(), riakObjectsAlternative.keySet());
-        for(Map.Entry<String,RiakObject> entry : riakObjects.entrySet())
+        for (Map.Entry<String,RiakObject> entry : riakObjects.entrySet())
         {
             assertEquals(entry.getValue().getValue(), riakObjectsAlternative.get(entry.getKey()).getValue());
         }

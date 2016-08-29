@@ -47,7 +47,7 @@ public class ITestClusterLifecycle extends ITestBase
                                                .withMinConnections(1)
                                                .withMaxConnections(1);
 
-        if(security)
+        if (security)
         {
             setupUsernamePasswordSecurity(builder);
         }

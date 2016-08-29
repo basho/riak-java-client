@@ -60,7 +60,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
         setupIndexTestData(defaultTypeNamespace);
 
-        if(testBucketType)
+        if (testBucketType)
         {
             setupIndexTestData(typedNamespace);
         }
@@ -426,7 +426,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
             fail("Didn't throw IllegalArgumentException");
         }
-        catch(IllegalArgumentException ex)
+        catch (IllegalArgumentException ex)
         {
             assertNotNull(ex);
         }
@@ -497,7 +497,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
             fail("Didn't throw IllegalArgumentException");
         }
-        catch(IllegalArgumentException ex)
+        catch (IllegalArgumentException ex)
         {
             assertNotNull(ex);
         }

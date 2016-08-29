@@ -247,7 +247,7 @@ public class ITestBucketMapReduce extends ITestBase
                 .withMapPhase(Function.newAnonymousJsFunction(
                     "function(value, keydata, arg) {" +
                         "  var data = value.values[0].data;" +
-                        "  if(data > 20)" +
+                        "  if (data > 20)" +
                         "    return [data];" +
                         "  else" +
                         "    return[];" +

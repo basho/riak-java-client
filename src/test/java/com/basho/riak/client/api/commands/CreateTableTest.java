@@ -56,7 +56,7 @@ public class CreateTableTest extends OperationTestBase<CreateTableOperation>
                                      TimeUnit tm, String expected) throws ExecutionException, InterruptedException
     {
         final CreateTable.Builder cmdBuilder = new CreateTable.Builder(td);
-        if(quantum != null && tm != null)
+        if (quantum != null && tm != null)
         {
             cmdBuilder.withQuantum(quantum, tm);
         }
