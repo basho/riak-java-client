@@ -25,7 +25,7 @@ public class DescribeTable extends RiakCommand<TableDefinition, String>
      */
     public DescribeTable(String tableName)
     {
-        if(tableName == null || tableName.isEmpty())
+        if (tableName == null || tableName.isEmpty())
         {
             throw new IllegalArgumentException("Table Name must not be null or empty.");
         }

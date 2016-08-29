@@ -162,20 +162,20 @@ import java.util.concurrent.TimeoutException;
 public class RiakClient
 {
 
-	private final RiakCluster cluster;
+    private final RiakCluster cluster;
 
     /**
-	 * Create a new RiakClient to perform operations on the given cluster.
+     * Create a new RiakClient to perform operations on the given cluster.
      * <p>
      * The RiakClient provides a user API on top of the client core. Once
      * instantiated, commands are submitted to it for execution on Riak.
      * </p>
      * @param cluster the started RiakCluster to use.
-	 */
-	public RiakClient(RiakCluster cluster)
-	{
-		this.cluster = cluster;
-	}
+     */
+    public RiakClient(RiakCluster cluster)
+    {
+        this.cluster = cluster;
+    }
 
     /**
      * Static factory method to create a new client instance.
@@ -334,27 +334,27 @@ public class RiakClient
                 .withMinConnections(10);
     }
 
-	/**
-	 * Execute a RiakCommand synchronously.
+    /**
+     * Execute a RiakCommand synchronously.
      * <p>
      * Calling this method causes the client to execute the provided RiakCommand synchronously.
      * It will block until the operation completes then either return the response
      * on success or throw an exception on failure.
-	 * </p>
+     * </p>
      *
-	 * @param command
-	 * 	The RiakCommand to execute.
-	 * @param <T>
-	 * 	The RiakCommand's return type.
+     * @param command
+     *  The RiakCommand to execute.
+     * @param <T>
+     *  The RiakCommand's return type.
      * @param <S> The RiakCommand's query info type.
-	 * @return a response from Riak.
-	 * @throws ExecutionException if the command fails for any reason.
-	 * @throws InterruptedException
-	 */
-	public <T,S> T execute(RiakCommand<T,S> command) throws ExecutionException, InterruptedException
-	{
-		return command.execute(cluster);
-	}
+     * @return a response from Riak.
+     * @throws ExecutionException if the command fails for any reason.
+     * @throws InterruptedException
+     */
+    public <T,S> T execute(RiakCommand<T,S> command) throws ExecutionException, InterruptedException
+    {
+        return command.execute(cluster);
+    }
 
     /**
      * Execute a RiakCommand synchronously with a specified client timeout.
@@ -405,19 +405,19 @@ public class RiakClient
         return command.executeAsync(cluster);
     }
 
-	/**
-	 * Shut down the client and the underlying RiakCluster.
-	 * <p>
+    /**
+     * Shut down the client and the underlying RiakCluster.
+     * <p>
      * The underlying client core (RiakCluster) uses a number of threads as
      * does Netty. Calling this method will shut down all those threads cleanly.
      * Failure to do so may prevent your application from exiting.
      * </p>
-	 * @return a future that will complete when shutdown
-	 */
-	public Future<Boolean> shutdown()
-	{
-		return cluster.shutdown();
-	}
+     * @return a future that will complete when shutdown
+     */
+    public Future<Boolean> shutdown()
+    {
+        return cluster.shutdown();
+    }
 
     /**
      * Get the RiakCluster being used by this client.

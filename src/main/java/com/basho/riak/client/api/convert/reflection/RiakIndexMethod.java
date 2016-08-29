@@ -27,12 +27,12 @@ import java.math.BigInteger;
  */
 public class RiakIndexMethod
 {
-    public enum MethodType { LONG_SETTER, LONG_GETTER, SET_LONG_GETTER, SET_LONG_SETTER, 
+    public enum MethodType { LONG_SETTER, LONG_GETTER, SET_LONG_GETTER, SET_LONG_SETTER,
                             STRING_GETTER, STRING_SETTER, SET_STRING_GETTER, SET_STRING_SETTER,
                             RAW_SETTER, RAW_GETTER, SET_RAW_SETTER, SET_RAW_GETTER,
                             BIG_INT_SETTER, BIG_INT_GETTER, SET_BIG_INT_GETTER, SET_BIG_INT_SETTER
     }
-    
+
     private final Method method;
     private final String indexName;
     private final MethodType methodType;
@@ -45,10 +45,10 @@ public class RiakIndexMethod
     public RiakIndexMethod(final Method method)
     {
         methodType = validateAndGetReturnType(method);
-        
+
         this.method = method;
         this.indexName = method.getAnnotation(RiakIndex.class).name();
-        
+
         if (indexName.isEmpty())
         {
             throw new IllegalArgumentException("@RiakIndex must have 'name' parameter");
@@ -84,7 +84,7 @@ public class RiakIndexMethod
     {
         return methodType;
     }
-    
+
     private MethodType validateAndGetReturnType(Method m)
     {
         if (m != null)
@@ -118,7 +118,7 @@ public class RiakIndexMethod
                         }
                     }
                 }
-                else 
+                else
                 {
                     Class<?> c = m.getParameterTypes()[0];
                     if (c.equals(String.class))
@@ -140,7 +140,7 @@ public class RiakIndexMethod
                 }
                 throw new IllegalArgumentException("@RiakIndex setter must take a single or Set<> of String, Long, or byte[]: " + m);
             }
-            else 
+            else
             {
                 // It's a getter
                 Type t = m.getGenericReturnType();

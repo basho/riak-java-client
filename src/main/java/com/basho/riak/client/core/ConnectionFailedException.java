@@ -23,12 +23,12 @@ package com.basho.riak.client.core;
 public class ConnectionFailedException extends Exception
 {
     private static final long serialVersionUID = -382975266386787678L;
-    
+
     public ConnectionFailedException(Throwable cause)
     {
         super(cause);
     }
- 
+
     public ConnectionFailedException(String message, Throwable cause)
     {
         super(message, cause);

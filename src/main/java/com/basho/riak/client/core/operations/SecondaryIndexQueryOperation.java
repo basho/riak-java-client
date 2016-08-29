@@ -234,7 +234,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 pbReqBuilder.setKey(ByteString.copyFrom(query.indexKey.unsafeGetValue()))
                             .setQtype(RiakKvPB.RpbIndexReq.IndexQueryType.eq);
             }
-            else if(query.getRangeStart() != null)
+            else if (query.getRangeStart() != null)
             {
                 pbReqBuilder.setRangeMin(ByteString.copyFrom(query.rangeStart.unsafeGetValue()))
                             .setRangeMax(ByteString.copyFrom(query.rangeEnd.unsafeGetValue()))

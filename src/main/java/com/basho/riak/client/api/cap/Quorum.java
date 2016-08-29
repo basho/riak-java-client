@@ -17,9 +17,9 @@ package com.basho.riak.client.api.cap;
 
 /**
  * Encapsulates a r/w/dw/rw/pr/pw quorum.
- * 
+ *
  * <p><h4>Symbolic Consistency Names</h4>
- * Riak 0.12 introduced “symbolic” consistency options for R and W 
+ * Riak 0.12 introduced “symbolic” consistency options for R and W
  * that can be easier to use and understand. They are:
  * </p>
  * <ul>
@@ -30,16 +30,16 @@ package com.basho.riak.client.api.cap;
  * one - This is the same as sending 1 as the R or W value.
  * </li>
  * <li>
- * quorum - A majority of the replicas must respond, that is, “half plus one”. 
+ * quorum - A majority of the replicas must respond, that is, “half plus one”.
  *          For the default N value of 3, this calculates to 2.
  * </li>
  * <li>
- * default - Uses whatever the per-bucket consistency property is for R or W, 
+ * default - Uses whatever the per-bucket consistency property is for R or W,
  *          which may be any of the above values, or an integer.
  * </li>
  * </ul>
  * <p>
- * Static factory methods are provided as a convenience for using these. 
+ * Static factory methods are provided as a convenience for using these.
  * </p>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
@@ -47,17 +47,17 @@ package com.basho.riak.client.api.cap;
  */
 public final class Quorum
 {
-    
+
     public static final String ONE = "one";
     public static final String QUORUM = "quorum";
     public static final String ALL = "all";
     public static final String DEFAULT = "default";
-    
+
     private final int i;
-    
+
     /**
      * Construct an instance using an integer value.
-     * 
+     *
      * @param i the quorum value
      */
     public Quorum(int i)
@@ -77,7 +77,7 @@ public final class Quorum
     {
         return new Quorum(-2);
     }
-    
+
     /**
      * Static factory method for a quorum of "quorum"
      * @return a new Quorum with an integer value of -3
@@ -86,7 +86,7 @@ public final class Quorum
     {
         return new Quorum(-3);
     }
-    
+
     /**
      * Static factory method for a quorum of "all"
      * @return a new Quorum with an integer value of -4
@@ -95,7 +95,7 @@ public final class Quorum
     {
         return new Quorum(-4);
     }
-    
+
     /**
      * Static factory method for a quorum of "default"
      * @return a new Quorum with an integer value of -5
@@ -104,7 +104,7 @@ public final class Quorum
     {
         return new Quorum(-5);
     }
-    
+
     /**
      * Determine if the quorum has a symbolic value.
      * @return true if this Quorum represents a symbolic value, false if literal
@@ -112,7 +112,7 @@ public final class Quorum
      */
     public boolean isSymbolic()
     {
-        switch(i)
+        switch (i)
         {
             case -2: // "one"
             case -3: // "quorum"
@@ -127,7 +127,7 @@ public final class Quorum
     /**
      * The int value of the quorum. Call isSymbolic to determine if you should
      * use this.
-     * 
+     *
      * @return the int value. Will be a negative number for symbolic values.
      */
     public int getIntValue()
@@ -145,8 +145,8 @@ public final class Quorum
         }
         else
         {
-            
-            switch(i)
+
+            switch (i)
             {
                 case -2:
                     quorum = ONE;
@@ -164,7 +164,7 @@ public final class Quorum
                     break;
             }
         }
-        
+
         return quorum;
     }
 
@@ -195,7 +195,7 @@ public final class Quorum
         {
             return false;
         }
-        
+
         return true;
     }
 }

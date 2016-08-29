@@ -126,12 +126,12 @@ public class RiakBeanSerializerModifierTest
         public String someOtherField = "THREE";
     }
 
-	@SuppressWarnings("unused") private static final class RiakAnnotatedClassWithJsonProp
+    @SuppressWarnings("unused") private static final class RiakAnnotatedClassWithJsonProp
     {
         @JsonProperty
-		@RiakKey private String keyField = "key";
+        @RiakKey private String keyField = "key";
         @JsonProperty
-		@RiakUsermeta(key = "metaKey1") public String metaValueField = "ONE";
+        @RiakUsermeta(key = "metaKey1") public String metaValueField = "ONE";
         @RiakUsermeta public Map<String, String> usermeta = new HashMap<>();
 
         public String someField = "TWO";

@@ -29,8 +29,8 @@ import com.basho.riak.client.core.util.BinaryValue;
  * <b>Important note when using this HealthCheckDecoder:</b>
  * </p>
  * <p>
- * If security is enabled in Riak, the user the client is configured 
- * for must have access rights to the supplied location. 
+ * If security is enabled in Riak, the user the client is configured
+ * for must have access rights to the supplied location.
  * </p>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
@@ -39,14 +39,14 @@ public class StoreValueHealthCheck extends HealthCheckDecoder implements HealthC
 {
     private final Location location;
     private final BinaryValue value;
-      
-    
+
+
     public StoreValueHealthCheck(Location location, BinaryValue value)
     {
         this.location = location;
         this.value = value;
     }
-    
+
     @Override
     protected FutureOperation<?, ?, ?> buildOperation()
     {
@@ -60,5 +60,5 @@ public class StoreValueHealthCheck extends HealthCheckDecoder implements HealthC
     {
         return new StoreValueHealthCheck(location, value);
     }
-    
+
 }

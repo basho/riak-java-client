@@ -113,20 +113,20 @@ public class ITestBucketKeyMapReduce extends ITestBase
         client.execute(new StoreValue.Builder(obj).withLocation(location).build());
 
     }
-    
+
     @Test
     public void JsBucketKeyMRDefaultType() throws InterruptedException, ExecutionException, IOException
     {
         JsBucketKeyMR(Namespace.DEFAULT_BUCKET_TYPE);
     }
-    
+
     @Test
     public void JsBucketKeyMRTestType() throws InterruptedException, ExecutionException, IOException
     {
         Assume.assumeTrue(testBucketType);
         JsBucketKeyMR(mapReduceBucketType.toString());
     }
-    
+
     private void JsBucketKeyMR(String bucketType) throws InterruptedException, ExecutionException, IOException
     {
         Namespace ns = new Namespace(bucketType, mrBucketName);
@@ -138,8 +138,8 @@ public class ITestBucketKeyMapReduce extends ITestBase
                         "function(v, key_data) {" +
                                 "  var m = v.values[0].data.toLowerCase().match(/\\w*/g);" +
                                 "  var r = [];" +
-                                "  for(var i in m) {" +
-                                "    if(m[i] != '') {" +
+                                "  for (var i in m) {" +
+                                "    if (m[i] != '') {" +
                                 "      var o = {};" +
                                 "      o[m[i]] = 1;" +
                                 "      r.push(o);" +
@@ -151,9 +151,9 @@ public class ITestBucketKeyMapReduce extends ITestBase
                 .withReducePhase(Function.newAnonymousJsFunction(
                         "function(v, key_data) {" +
                                 "  var r = {};" +
-                                "  for(var i in v) {" +
-                                "    for(var w in v[i]) {" +
-                                "      if(w in r)" +
+                                "  for (var i in v) {" +
+                                "    for (var w in v[i]) {" +
+                                "      if (w in r)" +
                                 "        r[w] += v[i][w];" +
                                 "      else" +
                                 "        r[w] = v[i][w];" +
@@ -171,23 +171,23 @@ public class ITestBucketKeyMapReduce extends ITestBase
         ArrayNode resultList = response.getResultForPhase(1);
 
         assertEquals(1, response.getResultsFromAllPhases().size());
-        
+
         String json = resultList.get(0).toString();
         ObjectMapper oMapper = new ObjectMapper();
-        
+
         TypeReference<Map<String,Integer>> type = new TypeReference<Map<String,Integer>>(){};
         Map<String, Integer> resultMap = oMapper.readValue(json, type);
 
         assertNotNull(resultMap.containsKey("the"));
         assertEquals(Integer.valueOf(8), resultMap.get("the"));
     }
-    
+
     @Test
     public void erlangBucketKeyMRDefaultType() throws ExecutionException, InterruptedException
     {
         erlangBucketKeyMR(Namespace.DEFAULT_BUCKET_TYPE);
     }
-    
+
     // This will fail due to a bug in Riak. Named functions in a type other than default are
     // broken.
     @Test
@@ -196,22 +196,22 @@ public class ITestBucketKeyMapReduce extends ITestBase
         Assume.assumeTrue(testBucketType);
         erlangBucketKeyMR(mapReduceBucketType.toString());
     }
-    
+
     private void erlangBucketKeyMR(String bucketType) throws ExecutionException, InterruptedException
     {
         Namespace ns = new Namespace(bucketType, mrBucketName);
-        
+
         MapReduce mr = new BucketKeyMapReduce.Builder()
                 .withLocation(new Location(ns, "p1"))
                 .withLocation(new Location(ns, "p2"))
                 .withLocation(new Location(ns, "p3"))
-                .withMapPhase(Function.newErlangFunction("riak_kv_mapreduce", "map_object_value"), false) 
+                .withMapPhase(Function.newErlangFunction("riak_kv_mapreduce", "map_object_value"), false)
                 .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce","reduce_sort"), true)
                 .build();
-        
+
         MapReduce.Response response = client.execute(mr);
-        
+
         assertEquals(3, response.getResultsFromAllPhases().size());
     }
-    
+
 }

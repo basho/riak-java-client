@@ -647,7 +647,7 @@ public class RiakNodeTest
         @Override
         public void acquire() throws InterruptedException
         {
-            if(this.availablePermits() == 0)
+            if (this.availablePermits() == 0)
             {
                 throw new BlockingOperationException();
             }
@@ -721,7 +721,7 @@ public class RiakNodeTest
         @Override
         protected RiakFuture<String, Void> executeAsync(RiakCluster cluster)
         {
-            if(testSetup != null)
+            if (testSetup != null)
             {
                 testSetup.run();
             }
@@ -792,7 +792,7 @@ public class RiakNodeTest
 
                 if (exception != null)
                 {
-                    if(exception.getClass() == ExecutionException.class)
+                    if (exception.getClass() == ExecutionException.class)
                     {
                         throw (ExecutionException) exception;
                     }
@@ -817,7 +817,7 @@ public class RiakNodeTest
                 }
                 else if (exception != null)
                 {
-                    if(exception.getClass() == ExecutionException.class)
+                    if (exception.getClass() == ExecutionException.class)
                     {
                         throw (ExecutionException) exception;
                     }

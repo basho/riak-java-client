@@ -23,11 +23,11 @@ import com.basho.riak.client.core.util.BinaryValue;
 
 /**
  * Converter that passes Strings through unmodified.
- * 
+ *
  * Worth noting is that when using String directly with StoreValue
  * there's no way to determine the character set. This converter uses the
- * default character set for conversion. 
- * 
+ * default character set for conversion.
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
@@ -38,13 +38,13 @@ public class StringConverter extends Converter<String>
     {
         super(String.class);
     }
-    
+
     @Override
     public String toDomain(RiakObject obj, Location location)
     {
         return obj.getValue().toString();
     }
-    
+
     @Override
     public Converter.OrmExtracted fromDomain(String domainObject, Namespace namespace, BinaryValue key)
     {
@@ -53,7 +53,7 @@ public class StringConverter extends Converter<String>
                         .setContentType("text/plain");
         return new Converter.OrmExtracted(obj, namespace, key);
     }
-    
+
     @Override
     public String toDomain(BinaryValue value, String contentType) throws ConversionException
     {
@@ -66,6 +66,6 @@ public class StringConverter extends Converter<String>
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    
-    
+
+
 }

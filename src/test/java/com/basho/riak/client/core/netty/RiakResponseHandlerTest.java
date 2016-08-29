@@ -46,7 +46,7 @@ public class RiakResponseHandlerTest
     private Channel mockChannel;
     private ChannelPipeline mockPipeline;
     private RiakResponseListener mockListener;
-    
+
     @Before
     public void setUp()
     {
@@ -58,29 +58,29 @@ public class RiakResponseHandlerTest
         mockListener = mock(RiakResponseListener.class);
         handler = new RiakResponseHandler(mockListener);
     }
-    
+
     @Test
     public void registersListener()
     {
         RiakResponseListener listener = Whitebox.getInternalState(handler, "listener");
         assertEquals(listener, mockListener);
     }
-    
+
     @Test
     public void notifiesListenerOnException() throws Exception
     {
         handler.exceptionCaught(mockContext, null);
         verify(mockListener).onException(mockChannel, null);
     }
-    
+
     @Test
     public void notifiesListenerOnComplete() throws Exception
     {
         RiakMessage message = PowerMockito.mock(RiakMessage.class);
         doReturn((byte)10).when(message).getCode();
         handler.channelRead(mockContext, message);
-        
+
         verify(mockListener).onSuccess(mockChannel, message);
     }
-    
+
 }

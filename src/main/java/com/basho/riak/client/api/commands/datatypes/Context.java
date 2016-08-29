@@ -20,7 +20,7 @@ import com.basho.riak.client.core.util.BinaryValue;
  /**
   * Encapsulates a context returned from a datatype fetch command.
   * <p>
-  * When performing an update to a datatype, the Context from the 
+  * When performing an update to a datatype, the Context from the
   * previous fetch is used.
   * </p>
   * @author Dave Rusek <drusek at basho dot com>
@@ -33,13 +33,13 @@ public class Context
 
     /**
      * Construct a new Context.
-     * @param value 
+     * @param value
      */
     public Context(BinaryValue value)
     {
         this.value = value;
     }
-    
+
     /**
      * Returns the context as a BinaryValue.
      * @return the context.

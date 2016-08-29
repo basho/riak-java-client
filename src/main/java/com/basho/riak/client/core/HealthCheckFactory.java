@@ -22,7 +22,7 @@ import com.basho.riak.client.core.netty.HealthCheckDecoder;
  * Provides a simple factory method for HealhCheckDecoders.
  * <p>
  * Because of the stateful nature of the codec used for performing health checks,
- * a new instance needs to be created each time. When configuring a RiakNode, a 
+ * a new instance needs to be created each time. When configuring a RiakNode, a
  * HealthCheckFactory is suppled for this purpose.
  * <p>
  * @author Brian Roach <roach at basho dot com>

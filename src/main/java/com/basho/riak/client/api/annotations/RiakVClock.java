@@ -26,24 +26,24 @@ import java.lang.annotation.Target;
  * This annotation can be used with either {@code byte[]} or {@code VClock} types.
  * </p>
  * <pre>
- * public class MyPojo 
+ * public class MyPojo
  * {
- *     {@literal @}RiakVClock 
+ *     {@literal @}RiakVClock
  *     public VClock vclock;
  * }
- * 
- * public class AnotherPojo 
+ *
+ * public class AnotherPojo
  * {
  *     private VClock vclock;
- *     
- *     {@literal @}RiakVClock 
- *     public VClock getVClock() 
+ *
+ *     {@literal @}RiakVClock
+ *     public VClock getVClock()
  *     {
  *         return vclock;
  *     }
- * 
- *     {@literal @}RiakVClock 
- *     public void setVClock(VClock vclock) 
+ *
+ *     {@literal @}RiakVClock
+ *     public void setVClock(VClock vclock)
  *     {
  *         this.vclock = vclock;
  *     }

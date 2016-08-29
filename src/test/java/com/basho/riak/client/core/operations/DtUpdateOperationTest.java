@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 public class DtUpdateOperationTest
 {
     private final Namespace namespace = new Namespace("type", "bucket");
-    
+
 
     @Test
     public void testGetCounterOp()
@@ -81,7 +81,7 @@ public class DtUpdateOperationTest
         RiakDtPB.MapUpdate.FlagOp flagOp = operation.getFlagOp(op);
 
         assertEquals(RiakDtPB.MapUpdate.FlagOp.ENABLE, flagOp);
- 
+
     }
 
     @Test

@@ -21,16 +21,16 @@ import java.nio.charset.Charset;
 
 /**
  * {@code RiakIndex} implementation used to access a Riak {@code _int} Secondary Index using {@code Long} values.
- * 
+ *
  * <p>
- * Data in Riak including secondary indexes is stored as bytes. This implementation 
- * of {@code RiakIndex} provides access to those bytes by converting to 
- * and from {@code Long} values. Its type is {@link IndexType#INT} 
+ * Data in Riak including secondary indexes is stored as bytes. This implementation
+ * of {@code RiakIndex} provides access to those bytes by converting to
+ * and from {@code Long} values. Its type is {@link IndexType#INT}
  * </p>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  * @see RiakIndexes
- * @see RiakObject#getIndexes() 
+ * @see RiakObject#getIndexes()
  */
 public class LongIntIndex extends RiakIndex<Long>
 {
@@ -43,7 +43,7 @@ public class LongIntIndex extends RiakIndex<Long>
     protected BinaryValue convert(Long value)
     {
         // The Protocol Buffers API takes the bytes for the textual representation
-        // of the number rather than an actual bytes for the number :/ 
+        // of the number rather than an actual bytes for the number :/
         return BinaryValue.unsafeCreate(value.toString().getBytes(Charset.forName("UTF-8")));
     }
 
@@ -51,17 +51,17 @@ public class LongIntIndex extends RiakIndex<Long>
     protected Long convert(BinaryValue value)
     {
         // The Protocol Buffers API returns the bytes for the textual representation
-        // of the number rather than an actual bytes for the number :/ 
+        // of the number rather than an actual bytes for the number :/
         return Long.valueOf(value.toString(Charset.forName("UTF-8")));
     }
-    
+
     public static Name named(String name)
     {
         return new Name(name);
     }
-    
+
     /**
-     * Encapsulates the name and {@code IndexType} for a {@code LongIntIndex} 
+     * Encapsulates the name and {@code IndexType} for a {@code LongIntIndex}
      */
     public static class Name extends RiakIndex.Name<LongIntIndex>
     {
@@ -73,12 +73,12 @@ public class LongIntIndex extends RiakIndex<Long>
         {
             super(name, IndexType.INT);
         }
-        
+
         @Override
         LongIntIndex createIndex()
         {
             return new LongIntIndex(this);
         }
-        
+
     }
 }

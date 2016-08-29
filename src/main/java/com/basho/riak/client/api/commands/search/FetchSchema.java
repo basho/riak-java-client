@@ -30,19 +30,19 @@ import com.basho.riak.client.core.operations.YzGetSchemaOperation;
  */
 public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response, String>
 {
-	private final String schema;
+    private final String schema;
 
-	FetchSchema(Builder builder)
-	{
-		this.schema = builder.schema;
-	}
+    FetchSchema(Builder builder)
+    {
+        this.schema = builder.schema;
+    }
 
-	@Override
+    @Override
     protected RiakFuture<YzGetSchemaOperation.Response, String> executeAsync(RiakCluster cluster)
     {
         RiakFuture<YzGetSchemaOperation.Response, String> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<YzGetSchemaOperation.Response, String, YzGetSchemaOperation.Response, String> future =
             new CoreFutureAdapter<YzGetSchemaOperation.Response, String, YzGetSchemaOperation.Response, String>(coreFuture)
             {
@@ -61,7 +61,7 @@ public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response
         coreFuture.addListener(future);
         return future;
     }
-    
+
     private YzGetSchemaOperation buildCoreOperation()
     {
         return new YzGetSchemaOperation.Builder(schema).build();
@@ -70,27 +70,27 @@ public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response
     /**
      * Builder for a FetchSchema command.
      */
-	public static class Builder
-	{
-		private final String schema;
+    public static class Builder
+    {
+        private final String schema;
 
         /**
          * Construct a Builder for a FetchSchema command.
          *
          * @param schema The name of the schema to fetch.
          */
-		public Builder(String schema)
-		{
-			this.schema = schema;
-		}
+        public Builder(String schema)
+        {
+            this.schema = schema;
+        }
 
         /**
          * Construct the FetchSchema command.
          * @return the new FetchSchema command.
          */
-		public FetchSchema build()
-		{
-			return new FetchSchema(this);
-		}
-	}
+        public FetchSchema build()
+        {
+            return new FetchSchema(this);
+        }
+    }
 }

@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -27,39 +27,39 @@ import java.lang.annotation.Target;
  * </p>
  * <p>
  * <pre>
- * public class MyClass 
+ * public class MyClass
  * {
- *     
+ *
  *     {@literal @}RiakUsermeta
  *     private {@literal Map<String, String>} usermetaData;
- *     
- *     {@literal @}RiakUsermeta("usermeta-data-key1") 
+ *
+ *     {@literal @}RiakUsermeta("usermeta-data-key1")
  *     private String usermetaDataItem1;
  * }
- * 
+ *
  * public class MyClass
  * {
  *     private {@literal Map<String, String>} usermetaData;
  *     private String usermetaDataItem1;
- * 
+ *
  *     {@literal @}RiakUsermeta
  *     public {@literal Map<String, String>} getMeta()
  *     {
  *         return usermetaData;
  *     }
- * 
+ *
  *     {@literal @}RiakUsermeta
  *     public void setMeta({@literal Map<String,String>} meta)
  *     {
  *         usermetaData = meta;
  *     }
- * 
- *     {@literal @}RiakUsermeta("usermeta-data-key1") 
+ *
+ *     {@literal @}RiakUsermeta("usermeta-data-key1")
  *     public String getSingleMeta()
  *     {
  *          return usermetaDataItem1;
  *     }
- * 
+ *
  *     {@literal @}RiakUsermeta("usermeta-data-key1")
  *     public void setSingleMeta(String meta)
  *     {
@@ -68,8 +68,8 @@ import java.lang.annotation.Target;
  *  }
  * </pre>
  * </p>
- * 
- * 
+ *
+ *
  * @author Russel Brown <russelldb at basho dot com>
  * @author Brian Roach <roach at basho dot com>
  * @since 1.0

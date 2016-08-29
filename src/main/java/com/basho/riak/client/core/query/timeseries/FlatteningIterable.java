@@ -44,11 +44,11 @@ public class FlatteningIterable<O,I> implements Iterable<I>
         @Override
         public boolean hasNext()
         {
-            if(currentIteratorHasMore())
+            if (currentIteratorHasMore())
             {
                 return true;
             }
-            else if(currentIteratorIsEmptyButSourceHasMore())
+            else if (currentIteratorIsEmptyButSourceHasMore())
             {
                 loadNextIterator();
                 return hasNext();
@@ -62,11 +62,11 @@ public class FlatteningIterable<O,I> implements Iterable<I>
         @Override
         public I next()
         {
-            if(currentIteratorHasMore())
+            if (currentIteratorHasMore())
             {
                 return currentIterator.next();
             }
-            else if(currentIteratorIsEmptyButSourceHasMore())
+            else if (currentIteratorIsEmptyButSourceHasMore())
             {
                 loadNextIterator();
                 return next();
@@ -98,7 +98,7 @@ public class FlatteningIterable<O,I> implements Iterable<I>
 
         private void loadNextIterator()
         {
-            if(this.iteratorSource.hasNext())
+            if (this.iteratorSource.hasNext())
             {
                 this.currentIterator = innerIterableProvider.getInnerIterator(this.iteratorSource.next());
             }

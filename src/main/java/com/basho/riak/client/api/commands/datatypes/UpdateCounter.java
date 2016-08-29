@@ -33,15 +33,15 @@ import com.basho.riak.client.core.util.BinaryValue;
  * To update or create a counter in Riak you construct a {@link CounterUpdate} and use
  * this command to send it to Riak.
  * <pre class="prettyprint">
- * {@code 
+ * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * Location loc = new Location(ns, "my_key");
  * CounterUpdate update = new CounterUpdate(10L);
- * 
+ *
  * UpdateCounter uc = new UpdateCounter.Builder(loc, update).withReturnDatatype(true).build();
  * UpdateCounter.Response resp = client.execute(uc);
  * RiakCounter counter = resp.getDatatype();
- * 
+ *
  * }
  * </pre>
  * </p>
@@ -52,7 +52,7 @@ import com.basho.riak.client.core.util.BinaryValue;
 public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Response, Location>
 {
     private final CounterUpdate update;
-    
+
     private UpdateCounter(Builder builder)
     {
         super(builder);
@@ -62,9 +62,9 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
     @Override
     protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<DtUpdateOperation.Response, Location> coreFuture = 
+        RiakFuture<DtUpdateOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation(update));
-        
+
         CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location> future =
             new CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location>(coreFuture)
             {
@@ -80,13 +80,13 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
                     BinaryValue returnedKey = coreResponse.hasGeneratedKey()
                         ? coreResponse.getGeneratedKey()
                         : null;
-                    
+
                     Context returnedCtx = null;
                     if (coreResponse.hasContext())
                     {
                         returnedCtx = new Context(coreResponse.getContext());
                     }
-                    
+
                     return new Response(returnedCtx, counter, returnedKey);
                 }
 
@@ -95,12 +95,12 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
                 {
                     return coreQueryInfo;
                 }
-                
+
             };
         coreFuture.addListener(future);
         return future;
     }
-    
+
     /**
      * A response from an UpdateCounter command.
      */
@@ -110,16 +110,16 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
         {
             super(context, datatype, generatedKey);
         }
-        
+
     }
-    
+
     /**
      * Builder used to construct an UpdateCounter command.
      */
     public static final class Builder extends UpdateDatatype.Builder<Builder>
     {
         private final CounterUpdate update;
-        
+
         /**
          * Construct a Builder for an UpdateCounter command.
          * @param location the location of the counter in Riak.
@@ -138,13 +138,13 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
         /**
          * Constructs a builder for an UpdateCounter command with only a Namespace.
          * <p>
-         * By providing only a Namespace with the update, Riak will create the 
-         * counter, generate the key, 
-         * and return it in the response. 
+         * By providing only a Namespace with the update, Riak will create the
+         * counter, generate the key,
+         * and return it in the response.
          * </p>
          * @param namespace the namespace to create the datatype.
          * @param update the CounterUpdate to apply
-         * @see Response#getGeneratedKey() 
+         * @see Response#getGeneratedKey()
          */
         public Builder(Namespace namespace, CounterUpdate update)
         {
@@ -155,7 +155,7 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
             }
             this.update = update;
         }
-        
+
         /**
          * Construct the UpdateCounter command.
          * @return a new UpdateCounter Command.
@@ -165,12 +165,12 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
         {
             return new UpdateCounter(this);
         }
-        
+
         @Override
         protected Builder self()
         {
             return this;
         }
-        
+
     }
 }

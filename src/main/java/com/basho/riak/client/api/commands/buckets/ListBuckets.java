@@ -49,8 +49,8 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 
     ListBuckets(Builder builder)
     {
-		this.timeout = builder.timeout;
-	    this.type = builder.type;
+        this.timeout = builder.timeout;
+        this.type = builder.type;
     }
 
     @Override
@@ -58,7 +58,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
     {
         RiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<ListBuckets.Response, BinaryValue, ListBucketsOperation.Response, BinaryValue> future =
             new CoreFutureAdapter<ListBuckets.Response, BinaryValue, ListBucketsOperation.Response, BinaryValue>(coreFuture)
             {
@@ -96,7 +96,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 
     /**
      * A response from a ListBuckets command.
-     * <p>This encapsulates an immutable list of bucket names 
+     * <p>This encapsulates an immutable list of bucket names
      * and is Iterable:
      * <pre>
      * {@code
@@ -161,28 +161,28 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
     /**
      * Builder for a ListBuckets command.
      */
-	public static class Builder
-	{
-		private int timeout;
-		private final BinaryValue type;
+    public static class Builder
+    {
+        private int timeout;
+        private final BinaryValue type;
 
         /**
          * Construct a Builder for a ListBuckets command.
          * @param type the bucket type.
          */
-		public Builder(String type)
-		{
-			this.type = BinaryValue.create(type);
-		}
+        public Builder(String type)
+        {
+            this.type = BinaryValue.create(type);
+        }
 
         /**
          * Construct a Builder for a ListBuckets command.
          * @param type the bucket type.
          */
-		public Builder(BinaryValue type)
-		{
-			this.type = type;
-		}
+        public Builder(BinaryValue type)
+        {
+            this.type = type;
+        }
 
         /**
          * Set the Riak-side timeout value.
@@ -193,20 +193,20 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
          * @param timeout the timeout in milliseconds to be sent to riak.
          * @return a reference to this object.
          */
-		public Builder withTimeout(int timeout)
-		{
-			this.timeout = timeout;
-			return this;
-		}
+        public Builder withTimeout(int timeout)
+        {
+            this.timeout = timeout;
+            return this;
+        }
 
         /**
          * Construct a new ListBuckets command.
          * @return a new ListBuckets command.
          */
-		public ListBuckets build()
-		{
-			return new ListBuckets(this);
-		}
-	}
+        public ListBuckets build()
+        {
+            return new ListBuckets(this);
+        }
+    }
 
 }

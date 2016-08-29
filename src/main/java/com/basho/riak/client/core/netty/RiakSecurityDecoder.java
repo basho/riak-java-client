@@ -84,10 +84,10 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                 byte[] protobuf = new byte[length - 1];
                 in.readBytes(protobuf);
 
-                switch(state)
+                switch (state)
                 {
                     case TLS_WAIT:
-                        switch(code)
+                        switch (code)
                         {
                             case RiakMessageCodes.MSG_StartTls:
                                 logger.debug("Received MSG_RpbStartTls reply");
@@ -113,7 +113,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                         break;
                     case AUTH_WAIT:
                         chc.channel().pipeline().remove(this);
-                        switch(code)
+                        switch (code)
                         {
                             case RiakMessageCodes.MSG_AuthResp:
                                 logger.debug("Received MSG_RpbAuthResp reply");

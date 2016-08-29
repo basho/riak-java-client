@@ -499,7 +499,7 @@ public class AnnotationInfo
     {
         for (UsermetaField uf : usermetaFields)
         {
-            switch(uf.getFieldType())
+            switch (uf.getFieldType())
             {
                 case MAP:
                     @SuppressWarnings("unchecked")
@@ -526,7 +526,7 @@ public class AnnotationInfo
 
         for (UsermetaMethod um : usermetaMethods)
         {
-            switch(um.getMethodType())
+            switch (um.getMethodType())
             {
                 case MAP_GETTER:
                     @SuppressWarnings("unchecked")
@@ -564,7 +564,7 @@ public class AnnotationInfo
         Field mapField = null;
         for (UsermetaField uf : usermetaFields)
         {
-            switch(uf.getFieldType())
+            switch (uf.getFieldType())
             {
                 case STRING:
                     if (userMetadata.containsKey(uf.getUsermetaDataKey()))
@@ -584,7 +584,7 @@ public class AnnotationInfo
         Method mapSetter = null;
         for (UsermetaMethod um : usermetaMethods)
         {
-            switch(um.getMethodType())
+            switch (um.getMethodType())
             {
                 case STRING_SETTER:
                     if (userMetadata.containsKey(um.getUsermetaDataKey()))
@@ -634,7 +634,7 @@ public class AnnotationInfo
         for (RiakIndexField f : indexFields)
         {
             final Object val = getFieldValue(f.getField(), obj);
-            switch(f.getFieldType())
+            switch (f.getFieldType())
             {
                 case SET_LONG:
                 case LONG:
@@ -805,7 +805,7 @@ public class AnnotationInfo
         for (RiakIndexField f : indexFields)
         {
             Set<?> val = null;
-            switch(f.getFieldType())
+            switch (f.getFieldType())
             {
                 case SET_LONG:
                 case LONG:
@@ -861,7 +861,7 @@ public class AnnotationInfo
         {
             Set<?> val = null;
 
-            switch(m.getMethodType())
+            switch (m.getMethodType())
             {
                 case SET_LONG_SETTER:
                 case LONG_SETTER:

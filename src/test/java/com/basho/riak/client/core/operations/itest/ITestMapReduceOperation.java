@@ -42,13 +42,13 @@ public class ITestMapReduceOperation extends ITestAutoCleanupBase
     @Test
     public void testBasicMRDefaultType() throws InterruptedException, ExecutionException, IOException
     {
-        // This will currently fail as the 4 arity input in broken in Riak. Specifying 
-        // "default" doesn't work. I've worked around this in the User API. 
+        // This will currently fail as the 4 arity input in broken in Riak. Specifying
+        // "default" doesn't work. I've worked around this in the User API.
         Map<String, Integer> resultMap = testBasicMR(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString()));
         assertNotNull(resultMap.containsKey("the"));
         assertNull(resultMap.get("the"));
     }
-    
+
     @Test
     public void testBasicMRTestType() throws InterruptedException, ExecutionException, IOException
     {
@@ -57,7 +57,7 @@ public class ITestMapReduceOperation extends ITestAutoCleanupBase
         assertNotNull(resultMap.containsKey("the"));
         assertEquals(Integer.valueOf(8), resultMap.get("the"));
     }
-    
+
     private Map<String, Integer> testBasicMR(Namespace namespace) throws InterruptedException, ExecutionException, IOException
     {
         RiakObject obj = new RiakObject();
@@ -106,35 +106,35 @@ public class ITestMapReduceOperation extends ITestAutoCleanupBase
 
         String bName = namespace.getBucketNameAsString();
         String bType = namespace.getBucketTypeAsString();
-        
+
         String query = "{\"inputs\":[[\"" + bName + "\",\"p1\",\"\",\"" + bType + "\"]," +
             "[\"" + bName + "\",\"p2\",\"\",\"" + bType + "\"]," +
             "[\"" + bName + "\",\"p3\",\"\",\"" + bType + "\"]]," +
             "\"query\":[{\"map\":{\"language\":\"javascript\",\"source\":\"" +
             "function(v) {var m = v.values[0].data.toLowerCase().match(/\\w*/g); var r = [];" +
-            "for(var i in m) {if(m[i] != '') {var o = {};o[m[i]] = 1;r.push(o);}}return r;}" +
+            "for (var i in m) {if (m[i] != '') {var o = {};o[m[i]] = 1;r.push(o);}}return r;}" +
             "\"}},{\"reduce\":{\"language\":\"javascript\",\"source\":\"" +
-            "function(v) {var r = {};for(var i in v) {for(var w in v[i]) {if(w in r) r[w] += v[i][w];" +
+            "function(v) {var r = {};for (var i in v) {for(var w in v[i]) {if (w in r) r[w] += v[i][w];" +
             "else r[w] = v[i][w];}}return [r];}\"}}]}";
-        
-        MapReduceOperation mrOp = 
+
+        MapReduceOperation mrOp =
             new MapReduceOperation.Builder(BinaryValue.unsafeCreate(query.getBytes()))
                 .build();
-        
+
         cluster.execute(mrOp);
         mrOp.await();
         assertTrue(mrOp.isSuccess());
         ArrayNode resultList = mrOp.get().getResults().get(1);
-        
-        // The query should return one result which is a JSON array containing a 
+
+        // The query should return one result which is a JSON array containing a
         // single JSON object that is a asSet of word counts.
         assertEquals(resultList.size(), 1);
-        
+
         String json = resultList.get(0).toString();
-        ObjectMapper oMapper = new ObjectMapper(); 
+        ObjectMapper oMapper = new ObjectMapper();
         @SuppressWarnings("unchecked")
         Map<String, Integer> resultMap = oMapper.readValue(json, Map.class);
-        
+
         resetAndEmptyBucket(namespace);
 
         return resultMap;

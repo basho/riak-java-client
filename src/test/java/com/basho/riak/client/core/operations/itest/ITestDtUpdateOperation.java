@@ -270,8 +270,8 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
 
         map = fetchMap(mapBucketType, bucketName, key);
         assertEquals(1, map.view().size());
-	    assertNotNull(map.view().get(mapKey));
-	    assertEquals(1, map.view().get(mapKey).size());
+        assertNotNull(map.view().get(mapKey));
+        assertEquals(1, map.view().get(mapKey).size());
         assertTrue(map.view().get(mapKey).get(0).isSet());
         RiakSet set = map.view().get(mapKey).get(0).getAsSet();
         assertTrue(set.view().contains(setValue));
@@ -288,8 +288,8 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
 
         map = fetchMap(mapBucketType, bucketName, key);
         assertEquals(2, map.view().size());
-	    assertNotNull(map.view().get(mapKey));
-	    assertEquals(1, map.view().get(mapKey).size());
+        assertNotNull(map.view().get(mapKey));
+        assertEquals(1, map.view().get(mapKey).size());
         assertTrue(map.view().get(mapKey).get(0).isCounter());
         RiakCounter counter = map.view().get(mapKey).get(0).getAsCounter();
         assertEquals((Long) 1L, counter.view());
@@ -307,8 +307,8 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
 
         map = fetchMap(mapBucketType, bucketName, key);
         assertEquals(3, map.view().size());
-	    assertNotNull(map.view().get(mapKey));
-	    assertEquals(1, map.view().get(mapKey).size());
+        assertNotNull(map.view().get(mapKey));
+        assertEquals(1, map.view().get(mapKey).size());
         assertTrue(map.view().get(mapKey).get(0).isFlag());
         RiakFlag flag = map.view().get(mapKey).get(0).getAsFlag();
         assertTrue(flag.getEnabled());
@@ -325,8 +325,8 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
 
         map = fetchMap(mapBucketType, bucketName, key);
         assertEquals(4, map.view().size());
-	    assertNotNull(map.view().get(mapKey));
-	    assertEquals(1, map.view().get(mapKey).size());
+        assertNotNull(map.view().get(mapKey));
+        assertEquals(1, map.view().get(mapKey).size());
         RiakRegister register = map.view().get(mapKey).get(0).getAsRegister();
         assertEquals(mapKey, register.getValue());
 
@@ -345,16 +345,16 @@ public class ITestDtUpdateOperation extends ITestAutoCleanupBase
         assertEquals(5, mapView.size());
 
         assertTrue(mapView.containsKey(mapKey));
-	    assertNotNull(map.view().get(mapKey));
-	    assertEquals(1, map.view().get(mapKey).size());
+        assertNotNull(map.view().get(mapKey));
+        assertEquals(1, map.view().get(mapKey).size());
         assertTrue(mapView.get(mapKey).get(0).isMap());
         RiakMap nestedMap = mapView.get(mapKey).get(0).getAsMap();
         Map<BinaryValue, List<RiakDatatype>> nestedMapView = nestedMap.view();
         assertEquals(1, nestedMapView.size());
 
         assertTrue(nestedMapView.containsKey(mapKey));
-	    assertNotNull(map.view().get(mapKey));
-	    assertEquals(1, map.view().get(mapKey).size());
+        assertNotNull(map.view().get(mapKey));
+        assertEquals(1, map.view().get(mapKey).size());
         assertTrue(nestedMapView.get(mapKey).get(0).isFlag());
         RiakFlag nestedFlag = nestedMapView.get(mapKey).get(0).getAsFlag();
         assertFalse(nestedFlag.getEnabled());

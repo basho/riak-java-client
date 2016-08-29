@@ -64,7 +64,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         if (response.hasKey())
         {
             BinaryValue key = BinaryValue.unsafeCreate(response.getKey().toByteArray());
-	        responseBuilder.withGeneratedKey(key);
+            responseBuilder.withGeneratedKey(key);
         }
 
         if (response.hasContext())

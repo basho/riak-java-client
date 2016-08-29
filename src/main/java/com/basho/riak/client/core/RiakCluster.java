@@ -482,7 +482,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     {
         logger.debug("QueueDrainer - Polling for queued operations.");
         FutureOperation operation = operationQueue.poll();
-        if(operation == null)
+        if (operation == null)
         {
             logger.debug("QueueDrainer - No queued operation available, sleeping.");
             Thread.sleep(50);

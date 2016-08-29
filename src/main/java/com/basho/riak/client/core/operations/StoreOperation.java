@@ -174,10 +174,10 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * @return a reference to this object.
          */
         public Builder withW(int w)
-		{
-			reqBuilder.setW(w);
-			return this;
-		}
+        {
+            reqBuilder.setW(w);
+            return this;
+        }
 
         /**
          * Set the DW value for this StoreOperation.
@@ -185,11 +185,11 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * @param dw the DW value.
          * @return a reference to this object.
          */
-		public Builder withDw(int dw)
-		{
-			reqBuilder.setDw(dw);
-			return this;
-		}
+        public Builder withDw(int dw)
+        {
+            reqBuilder.setDw(dw);
+            return this;
+        }
 
         /**
          * Set the PW value for this StoreOperation.
@@ -197,22 +197,22 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * @param pw the PW value.
          * @return a reference to this object.
          */
-		public Builder withPw(int pw)
-		{
-			reqBuilder.setPw(pw);
-			return this;
-		}
+        public Builder withPw(int pw)
+        {
+            reqBuilder.setPw(pw);
+            return this;
+        }
 
         /**
          * Return the object after storing (including any siblings).
          * @param returnBody true to return the object.
          * @return a reference to this object.
          */
-		public Builder withReturnBody(boolean returnBody)
-		{
-			reqBuilder.setReturnBody(returnBody);
-			return this;
-		}
+        public Builder withReturnBody(boolean returnBody)
+        {
+            reqBuilder.setReturnBody(returnBody);
+            return this;
+        }
 
         /**
          * Return the metadata after storing the value.
@@ -222,11 +222,11 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * @param returnHead true to return only metadata.
          * @return a reference to this object.
          */
-		public Builder withReturnHead(boolean returnHead)
-		{
-			reqBuilder.setReturnHead(returnHead);
-			return this;
-		}
+        public Builder withReturnHead(boolean returnHead)
+        {
+            reqBuilder.setReturnHead(returnHead);
+            return this;
+        }
 
         /**
          * Set the if_not_modified flag for this StoreOperation.
@@ -241,11 +241,11 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * @param ifNotModified
          * @return a reference to this object.
          */
-		public Builder withIfNotModified(boolean ifNotModified)
-		{
-			reqBuilder.setIfNotModified(ifNotModified);
-			return this;
-		}
+        public Builder withIfNotModified(boolean ifNotModified)
+        {
+            reqBuilder.setIfNotModified(ifNotModified);
+            return this;
+        }
 
         /**
          * Set the if_none_match flag value for this StoreOperation.
@@ -260,11 +260,11 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * @param ifNoneMatch the if_non-match value.
          * @return a reference to this object.
          */
-		public Builder withIfNoneMatch(boolean ifNoneMatch)
-		{
-			reqBuilder.setIfNoneMatch(ifNoneMatch);
-			return this;
-		}
+        public Builder withIfNoneMatch(boolean ifNoneMatch)
+        {
+            reqBuilder.setIfNoneMatch(ifNoneMatch);
+            return this;
+        }
 
         /**
          * Set the asis value for this operation.
@@ -274,22 +274,22 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * @param asis the asis value
          * @return a reference to this object.
          */
-		public Builder withAsis(boolean asis)
-		{
-			reqBuilder.setAsis(asis);
-			return this;
-		}
+        public Builder withAsis(boolean asis)
+        {
+            reqBuilder.setAsis(asis);
+            return this;
+        }
 
         /**
          * Set a timeout for this operation.
          * @param timeout a timeout in milliseconds.
          * @return a reference to this object.
          */
-		public Builder withTimeout(int timeout)
-		{
-			reqBuilder.setTimeout(timeout);
-			return this;
-		}
+        public Builder withTimeout(int timeout)
+        {
+            reqBuilder.setTimeout(timeout);
+            return this;
+        }
 
         /**
          * Set the n_val value for this operation.
@@ -299,11 +299,11 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * @param nval the n_val value
          * @return a reference to this object.
          */
-		public Builder withNVal(int nval)
-		{
+        public Builder withNVal(int nval)
+        {
             reqBuilder.setNVal(nval);
             return this;
-		}
+        }
 
         /**
          * Set whether to use sloppy_quorum.
@@ -313,11 +313,11 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
          * @param sloppyQuorum true to use sloppy_quorum
          * @return a reference to this object.
          */
-		public Builder withSloppyQuorum(boolean sloppyQuorum)
-		{
-			reqBuilder.setSloppyQuorum(sloppyQuorum);
-			return this;
-		}
+        public Builder withSloppyQuorum(boolean sloppyQuorum)
+        {
+            reqBuilder.setSloppyQuorum(sloppyQuorum);
+            return this;
+        }
 
         public StoreOperation build()
         {

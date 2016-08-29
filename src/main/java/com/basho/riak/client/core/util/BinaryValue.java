@@ -22,39 +22,39 @@ import java.util.Arrays;
  * Lightweight utility class for byte arrays.
  * <p>
  * In almost all cases Riak is character asSet agnostic when it comes to data; buckets,
- * keys, values and metadata are all stored in Riak simply as bytes. 
+ * keys, values and metadata are all stored in Riak simply as bytes.
  * </p>
  * <p>
- * This utility class is used throughout the client in order to encapsulate 
+ * This utility class is used throughout the client in order to encapsulate
  * and allow access to those bytes by the user when the data is generally
  * representative of a {@code String} so that any character asSet may be used.
  * </p>
  * <br/><b>Thread Safety:</b><br/> If you are using this class directly keep in mind that any modification to the
- * wrapped <code>byte[]</code> post creation via either a retained reference to the 
- * array after calling <code>unsafeCreate()</code> or accessing the array directly via 
+ * wrapped <code>byte[]</code> post creation via either a retained reference to the
+ * array after calling <code>unsafeCreate()</code> or accessing the array directly via
  * <code>unsafeGetValue()</code> will lead to undefined behavior in regard to thread
  * safety and visibility.
  * <p>
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
 public final class BinaryValue
 {
     private final byte[] data;
-    
+
     private BinaryValue(byte[] data)
     {
         this.data = data;
     }
-    
+
     /**
      * Create a BinaryValue containing a copy of the supplied {@code byte[]}
      * <p>
      * A copy of the supplied {@code byte[]} is made.
      * </p>
-     * 
-     * @param data the {@code byte[]} to copy 
+     *
+     * @param data the {@code byte[]} to copy
      * @return a new {@code BinaryValue}
      */
     public static BinaryValue create(byte[] data)
@@ -77,7 +77,7 @@ public final class BinaryValue
     {
         return create(data, DefaultCharset.get());
     }
-    
+
     /**
      * Create a BinaryValue containing a copy of the supplied String
  encoded using UTF-8.
@@ -89,7 +89,7 @@ public final class BinaryValue
     {
         return create(data, Charset.forName("UTF-8"));
     }
-    
+
     /**
      * Create a BinaryValue containing a copy of the supplied string
  encoded using the supplied Charset.
@@ -107,7 +107,7 @@ public final class BinaryValue
         }
         return new BinaryValue(bytes);
     }
-    
+
     /**
      * Create a BinaryValue containing the supplied {@code byte[]}
      * <p>
@@ -118,13 +118,13 @@ public final class BinaryValue
      * <br/><b>Thread Safety:</b><br/> The supplied <code>byte[]</code> is not copied and the reference is used
      * directly. Retaining a reference to this array and making subsequent
      * changes will lead to undefined behavior in regard to thread safety and
-     * visibility. 
+     * visibility.
      */
     public static BinaryValue unsafeCreate(byte[] data)
     {
         return new BinaryValue(data);
     }
-    
+
     /**
      * Return a copy of the wrapped {@code byte[]}
      * <p>
@@ -143,19 +143,19 @@ public final class BinaryValue
             return null;
         }
     }
-    
+
     /**
      * Return the wrapped {@code byte[]}
      * @return the internal {@code byte[]}
      * <br/><b>Thread Safety:</b><br/> This method exposes the internal <code>byte[]</code> directly.
-     * Modifying the contents of this array will lead to undefined behavior in 
+     * Modifying the contents of this array will lead to undefined behavior in
      * regard to thread safety and visibility.
      */
     public byte[] unsafeGetValue()
     {
         return data;
     }
-        
+
     @Override
     public boolean equals(Object other)
     {
@@ -163,7 +163,7 @@ public final class BinaryValue
         {
             return false;
         }
-        else 
+        else
         {
             return Arrays.equals(data, ((BinaryValue)other).data);
         }
@@ -174,7 +174,7 @@ public final class BinaryValue
     {
         return Arrays.hashCode(data);
     }
-    
+
     /**
      * Return the wrapped {@code byte[]} as a String.
      * <p>
@@ -187,7 +187,7 @@ public final class BinaryValue
     {
         return toString(DefaultCharset.get());
     }
-    
+
     /**
      * Return the wrapped {@code byte[]} as a String.
      * <p>
@@ -199,7 +199,7 @@ public final class BinaryValue
     {
         return toString(Charset.forName("UTF-8"));
     }
-    
+
     /**
      * Return the wrapped {@code byte[]} as a String
      * <p>
@@ -208,7 +208,7 @@ public final class BinaryValue
      */
     public String toString(Charset charset)
     {
-        if (data != null) 
+        if (data != null)
         {
             return new String(data, charset);
         }
@@ -217,7 +217,7 @@ public final class BinaryValue
             return null;
         }
     }
-    
+
     /**
      * Return the length of the wrapped {@code byte[]}
      * @return the length.
