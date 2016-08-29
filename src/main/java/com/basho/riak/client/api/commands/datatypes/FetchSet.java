@@ -43,10 +43,10 @@ import com.basho.riak.client.core.query.crdt.types.RiakSet;
  */
 public final class FetchSet extends FetchDatatype<RiakSet, FetchSet.Response, Location>
 {
-	private FetchSet(Builder builder)
-	{
-		super(builder);
-	}
+    private FetchSet(Builder builder)
+    {
+        super(builder);
+    }
 
     @Override
     protected final RiakFuture<FetchSet.Response, Location> executeAsync(RiakCluster cluster)
@@ -83,42 +83,42 @@ public final class FetchSet extends FetchDatatype<RiakSet, FetchSet.Response, Lo
         return future;
     }
     
-	@Override
-	public RiakSet extractDatatype(RiakDatatype element)
-	{
-		return element.getAsSet();
-	}
+    @Override
+    public RiakSet extractDatatype(RiakDatatype element)
+    {
+        return element.getAsSet();
+    }
 
     /**
      * Builder used to construct a FetchSet command.
      */
-	public static class Builder extends FetchDatatype.Builder<Builder>
-	{
+    public static class Builder extends FetchDatatype.Builder<Builder>
+    {
 
-		/**
+        /**
          * Construct a builder for a FetchSet command.
          * @param location the location of the set in Riak.
          */
         public Builder(Location location)
-		{
-			super(location);
-		}
+        {
+            super(location);
+        }
 
-		@Override
-		protected Builder self()
-		{
-			return this;
-		}
+        @Override
+        protected Builder self()
+        {
+            return this;
+        }
 
         /**
          * Construct a FetchSet command.
          * @return a new FetchSet Command.
          */
-		public FetchSet build()
-		{
-			return new FetchSet(this);
-		}
-	}
+        public FetchSet build()
+        {
+            return new FetchSet(this);
+        }
+    }
     
     /**
      * Response from a FetchSet command.

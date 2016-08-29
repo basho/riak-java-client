@@ -22,20 +22,20 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
 public class MatchFilter extends KeyFilter
 {
 
-	private static final String NAME = "matches";
-	private final String value;
+    private static final String NAME = "matches";
+    private final String value;
 
-	/**
-	 * @param value a Reg Exp
-	 */
-	public MatchFilter(String value)
-	{
-		super(NAME);
-		this.value = value;
-	}
+    /**
+     * @param value a Reg Exp
+     */
+    public MatchFilter(String value)
+    {
+        super(NAME);
+        this.value = value;
+    }
 
-	public String getValue()
-	{
-		return value;
-	}
+    public String getValue()
+    {
+        return value;
+    }
 }

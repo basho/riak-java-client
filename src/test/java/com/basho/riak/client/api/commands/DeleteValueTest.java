@@ -39,7 +39,7 @@ public class DeleteValueTest extends OperationTestBase<DeleteOperation>
     public void testDelete() throws Exception
     {
         DeleteValue.Builder delete = new DeleteValue.Builder(key)
-	        .withVClock(vClock)
+            .withVClock(vClock)
             .withOption(Option.DW, new Quorum(1))
             .withOption(Option.N_VAL, 1)
             .withOption(Option.PR, new Quorum(1))

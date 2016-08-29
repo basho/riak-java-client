@@ -11,17 +11,17 @@ import java.io.IOException;
  */
 public class SearchInputSerializer extends JsonSerializer<SearchInput>
 {
-	@Override
-	public void serialize(SearchInput input, JsonGenerator jg, SerializerProvider sp) throws IOException
-	{
-	 	jg.writeStartObject();
+    @Override
+    public void serialize(SearchInput input, JsonGenerator jg, SerializerProvider sp) throws IOException
+    {
+        jg.writeStartObject();
         jg.writeObjectField("module", "yokozuna");
         jg.writeObjectField("function", "mapred_search");
-		
+        
         jg.writeArrayFieldStart("arg");
         jg.writeString(input.getIndex());
-		jg.writeString(input.getSearch());
+        jg.writeString(input.getSearch());
         jg.writeEndArray();
-		jg.writeEndObject();
-	}
+        jg.writeEndObject();
+    }
 }

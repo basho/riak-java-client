@@ -115,39 +115,39 @@ public class ITestCrdtApi extends ITestAutoCleanupBase
         // username
         List<RiakDatatype> usernameElement = usersMap.get(BinaryValue.create(username));
         assertNotNull(usernameElement);
-	    assertEquals(1, usernameElement.size());
+        assertEquals(1, usernameElement.size());
         assertTrue(usernameElement.get(0).isMap());
         RiakMap usernameMap = usernameElement.get(0).getAsMap();
 
         // logins - counter
         List<RiakDatatype> numLoginsElement = usernameMap.get(BinaryValue.create(numLogins));
         assertNotNull(numLoginsElement);
-	    assertEquals(1, numLoginsElement.size());
-	    assertTrue(numLoginsElement.get(0).isCounter());
+        assertEquals(1, numLoginsElement.size());
+        assertTrue(numLoginsElement.get(0).isCounter());
         RiakCounter numLoginsCounter = numLoginsElement.get(0).getAsCounter();
         assertEquals((Long) 1L, numLoginsCounter.view());
 
         // last-login - register
         List<RiakDatatype> lastLoginTimeElement = usernameMap.get(BinaryValue.create(lastLoginTime));
         assertNotNull(lastLoginTimeElement);
-	    assertEquals(1, lastLoginTimeElement.size());
-	    assertTrue(lastLoginTimeElement.get(0).isRegister());
+        assertEquals(1, lastLoginTimeElement.size());
+        assertTrue(lastLoginTimeElement.get(0).isRegister());
         RiakRegister lastLoginTimeRegister = lastLoginTimeElement.get(0).getAsRegister();
         assertTrue(Arrays.equals(now, lastLoginTimeRegister.getValue().getValue()));
 
         // logged-in - flag
         List<RiakDatatype> loggedInElement = usernameMap.get(BinaryValue.create(loggedIn));
         assertNotNull(loggedInElement);
-	    assertEquals(1, loggedInElement.size());
-	    assertTrue(loggedInElement.get(0).isFlag());
+        assertEquals(1, loggedInElement.size());
+        assertTrue(loggedInElement.get(0).isFlag());
         RiakFlag loggedInFlag = loggedInElement.get(0).getAsFlag();
         assertEquals(true, loggedInFlag.getEnabled());
 
         // cart - asSet
         List<RiakDatatype> shoppingCartElement = usernameMap.get(BinaryValue.create(shoppingCart));
         assertNotNull(shoppingCartElement);
-	    assertEquals(1, shoppingCartElement.size());
-	    assertTrue(shoppingCartElement.get(0).isSet());
+        assertEquals(1, shoppingCartElement.size());
+        assertTrue(shoppingCartElement.get(0).isSet());
 
     }
 

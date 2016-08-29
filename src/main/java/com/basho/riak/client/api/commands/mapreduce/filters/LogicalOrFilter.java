@@ -21,14 +21,14 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
 public class LogicalOrFilter extends LogicalFilter
 {
 
-	private static final String NAME = "or";
+    private static final String NAME = "or";
 
-	/**
-	 * @param filters
-	 */
-	public LogicalOrFilter(KeyFilter... filters)
-	{
-		super(NAME, filters);
-	}
+    /**
+     * @param filters
+     */
+    public LogicalOrFilter(KeyFilter... filters)
+    {
+        super(NAME, filters);
+    }
 
 }

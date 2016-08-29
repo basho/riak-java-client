@@ -22,10 +22,10 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
 public class ToUpperFilter extends KeyFilter
 {
 
-	private static final String NAME = "to_upper";
+    private static final String NAME = "to_upper";
 
-	public ToUpperFilter()
-	{
-		super(NAME);
-	}
+    public ToUpperFilter()
+    {
+        super(NAME);
+    }
 }

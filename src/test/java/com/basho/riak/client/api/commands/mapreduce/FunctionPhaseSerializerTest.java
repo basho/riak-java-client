@@ -23,47 +23,47 @@ import static org.junit.Assert.assertEquals;
 public class FunctionPhaseSerializerTest
 {
 
-	private StringWriter out;
-	private JsonGenerator jg;
+    private StringWriter out;
+    private JsonGenerator jg;
 
-	@Before
-	public void init() throws IOException
-	{
-		this.out = new StringWriter();
-		this.jg = new JsonFactory().createGenerator(out);
+    @Before
+    public void init() throws IOException
+    {
+        this.out = new StringWriter();
+        this.jg = new JsonFactory().createGenerator(out);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
-		specModule.addSerializer(PhaseFunction.class, new PhaseFunctionSerializer());
-		specModule.addSerializer(FunctionPhase.class, new FunctionPhaseSerializer());
-		objectMapper.registerModule(specModule);
+        ObjectMapper objectMapper = new ObjectMapper();
+        SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
+        specModule.addSerializer(PhaseFunction.class, new PhaseFunctionSerializer());
+        specModule.addSerializer(FunctionPhase.class, new FunctionPhaseSerializer());
+        objectMapper.registerModule(specModule);
 
-		jg.setCodec(objectMapper);
+        jg.setCodec(objectMapper);
 
-	}
+    }
 
-	@Test
-	public void testSerializeMapPhase() throws IOException
-	{
+    @Test
+    public void testSerializeMapPhase() throws IOException
+    {
 
-		Function function = Function.newNamedJsFunction("the_func");
-		MapPhase phase = new MapPhase(function, "Arg", true);
+        Function function = Function.newNamedJsFunction("the_func");
+        MapPhase phase = new MapPhase(function, "Arg", true);
 
-		jg.writeObject(phase);
+        jg.writeObject(phase);
 
-		assertEquals("{\"map\":{\"language\":\"javascript\",\"name\":\"the_func\",\"keep\":true,\"arg\":\"Arg\"}}", out.toString());
+        assertEquals("{\"map\":{\"language\":\"javascript\",\"name\":\"the_func\",\"keep\":true,\"arg\":\"Arg\"}}", out.toString());
 
-	}
+    }
 
-	@Test
-	public void testSerializeReducePhase() throws IOException
-	{
-		Function function = Function.newNamedJsFunction("the_func");
-		ReducePhase phase = new ReducePhase(function, "Arg", true);
+    @Test
+    public void testSerializeReducePhase() throws IOException
+    {
+        Function function = Function.newNamedJsFunction("the_func");
+        ReducePhase phase = new ReducePhase(function, "Arg", true);
 
-		jg.writeObject(phase);
+        jg.writeObject(phase);
 
-		assertEquals("{\"reduce\":{\"language\":\"javascript\",\"name\":\"the_func\",\"keep\":true,\"arg\":\"Arg\"}}", out.toString());
-	}
+        assertEquals("{\"reduce\":{\"language\":\"javascript\",\"name\":\"the_func\",\"keep\":true,\"arg\":\"Arg\"}}", out.toString());
+    }
 
 }

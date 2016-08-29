@@ -20,20 +20,20 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class GreaterThanOrEqualFilter<T> extends KeyFilter
 {
-	private static final String NAME = "greater_than_eq";
-	private final T value;
+    private static final String NAME = "greater_than_eq";
+    private final T value;
 
-	/**
-	 * @param value
-	 */
-	public GreaterThanOrEqualFilter(T value)
-	{
-		super(NAME);
-		this.value = value;
-	}
+    /**
+     * @param value
+     */
+    public GreaterThanOrEqualFilter(T value)
+    {
+        super(NAME);
+        this.value = value;
+    }
 
-	public T getValue()
-	{
-		return value;
-	}
+    public T getValue()
+    {
+        return value;
+    }
 }

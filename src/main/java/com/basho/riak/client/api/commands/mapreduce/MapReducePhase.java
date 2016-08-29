@@ -21,61 +21,61 @@ package com.basho.riak.client.api.commands.mapreduce;
 public abstract class MapReducePhase
 {
 
-	/**
-	 * Possible phase types.
-	 */
-	public enum PhaseType
-	{
-		LINK("link"), MAP("map"), REDUCE("reduce");
+    /**
+     * Possible phase types.
+     */
+    public enum PhaseType
+    {
+        LINK("link"), MAP("map"), REDUCE("reduce");
 
-		private final String phaseName;
+        private final String phaseName;
 
-		private PhaseType(String phaseName)
-		{
-			this.phaseName = phaseName;
-		}
+        private PhaseType(String phaseName)
+        {
+            this.phaseName = phaseName;
+        }
 
-		public String toString()
-		{
-			return this.phaseName;
-		}
-	}
+        public String toString()
+        {
+            return this.phaseName;
+        }
+    }
 
-	private final PhaseType type;
-	private boolean keep;
+    private final PhaseType type;
+    private boolean keep;
 
-	protected MapReducePhase(PhaseType type)
-	{
-		this.type = type;
-	}
+    protected MapReducePhase(PhaseType type)
+    {
+        this.type = type;
+    }
 
-	/**
-	 * Is this phase's output to be returned or only passed as input to the next phase.
-	 *
-	 * @return true if the results are returned, false otherwise.
-	 */
-	Boolean isKeep()
-	{
-		return keep;
-	}
+    /**
+     * Is this phase's output to be returned or only passed as input to the next phase.
+     *
+     * @return true if the results are returned, false otherwise.
+     */
+    Boolean isKeep()
+    {
+        return keep;
+    }
 
-	/**
-	 * Set whether this should be kept.
-	 *
-	 * @param keep
-	 */
-	void setKeep(boolean keep)
-	{
-		this.keep = keep;
-	}
+    /**
+     * Set whether this should be kept.
+     *
+     * @param keep
+     */
+    void setKeep(boolean keep)
+    {
+        this.keep = keep;
+    }
 
-	/**
-	 * The PhaseType of this {@link MapReducePhase} implementation.
-	 *
-	 * @return a PhaseType.
-	 */
-	PhaseType getType()
-	{
-		return type;
-	}
+    /**
+     * The PhaseType of this {@link MapReducePhase} implementation.
+     *
+     * @return a PhaseType.
+     */
+    PhaseType getType()
+    {
+        return type;
+    }
 }

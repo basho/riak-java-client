@@ -198,11 +198,11 @@ public class RiakIndexes implements Iterable<RiakIndex<?>>
         indexes.clear();
     }
 
-		@Override
-		public Iterator<RiakIndex<?>> iterator()
-		{
-				return indexes.values().iterator();
-		}
+        @Override
+        public Iterator<RiakIndex<?>> iterator()
+        {
+                return indexes.values().iterator();
+        }
 
     @Override
     public boolean equals(Object o) {

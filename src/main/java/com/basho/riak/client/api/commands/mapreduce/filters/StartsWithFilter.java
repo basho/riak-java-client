@@ -22,20 +22,20 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
 public class StartsWithFilter extends KeyFilter
 {
 
-	private static final String NAME = "starts_with";
-	private final String value;
+    private static final String NAME = "starts_with";
+    private final String value;
 
-	/**
-	 * @param value
-	 */
-	public StartsWithFilter(String value)
-	{
-		super(NAME);
-		this.value = value;
-	}
+    /**
+     * @param value
+     */
+    public StartsWithFilter(String value)
+    {
+        super(NAME);
+        this.value = value;
+    }
 
-	public String getValue()
-	{
-		return value;
-	}
+    public String getValue()
+    {
+        return value;
+    }
 }
