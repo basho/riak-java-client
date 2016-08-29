@@ -39,8 +39,8 @@ public class CoveragePlanOperation extends PBFutureOperation<CoveragePlanResult,
 
     private CoveragePlanOperation(AbstractBuilder builder)
     {
-        super(RiakMessageCodes.MSG_TsCoverageReq, 
-                RiakMessageCodes.MSG_TsCoverageResp, 
+        super(RiakMessageCodes.MSG_TsCoverageReq,
+                RiakMessageCodes.MSG_TsCoverageResp,
                 builder.reqBuilder,
                 RiakTsPB.TsCoverageResp.PARSER);
 
@@ -99,9 +99,9 @@ public class CoveragePlanOperation extends PBFutureOperation<CoveragePlanResult,
 
         public AbstractBuilder<R> withUnavailableCoverageContext(Iterable<byte[]> coverageContext)
         {
-            for (Iterator<byte[]> iterator = coverageContext.iterator(); iterator.hasNext();)
+            for (byte[] aCoverageContext : coverageContext)
             {
-                withUnavailableCoverageContext(iterator.next());
+                withUnavailableCoverageContext(aCoverageContext);
             }
             return this;
         }

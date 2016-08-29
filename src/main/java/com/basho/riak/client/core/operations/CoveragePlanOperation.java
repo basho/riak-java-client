@@ -138,9 +138,9 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
 
         public AbstractBuilder<R> withUnavailableCoverageContext(Iterable<byte[]> coverageContext)
         {
-            for(Iterator<byte[]> iterator=coverageContext.iterator(); iterator.hasNext();)
+            for (byte[] aCoverageContext : coverageContext)
             {
-                withUnavailableCoverageContext(iterator.next());
+                withUnavailableCoverageContext(aCoverageContext);
             }
             return this;
         }

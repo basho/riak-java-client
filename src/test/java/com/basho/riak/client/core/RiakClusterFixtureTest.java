@@ -60,9 +60,9 @@ public class RiakClusterFixtureTest
     @After
     public void tearDown() throws IOException
     {
-        for (int i = 0; i < fixtures.length; i++)
+        for (NetworkTestFixture fixture : fixtures)
         {
-            fixtures[i].shutdown();
+            fixture.shutdown();
         }
     }
 
