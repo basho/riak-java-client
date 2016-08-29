@@ -17,7 +17,7 @@ public class SearchInputSerializer extends JsonSerializer<SearchInput>
         jg.writeStartObject();
         jg.writeObjectField("module", "yokozuna");
         jg.writeObjectField("function", "mapred_search");
-        
+
         jg.writeArrayFieldStart("arg");
         jg.writeString(input.getIndex());
         jg.writeString(input.getSearch());

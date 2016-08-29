@@ -25,24 +25,24 @@ import java.lang.annotation.Target;
  * Annotates a field or getter/setter method pair in a class to server as the bucket type.
  * <p>
  * The type must be a {@code String}.
- * 
+ *
  * <pre>
  * class MyPojo
  * {
  *     {@literal @}RiakBucketType
  *     String bucketType;
  * }
- * 
+ *
  * class MyPojo
  * {
  *     private String bucketType;
- * 
+ *
  *     {@literal @}RiakBucketType
  *     public void setBucketType(String bucketType)
  *     {
  *         this.bucketType = bucketType;
  *     }
- * 
+ *
  *     {@literal @}RiakBucketType
  *     public String getBucketType()
  *     {
@@ -56,5 +56,5 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakBucketType
 {
-    
+
 }

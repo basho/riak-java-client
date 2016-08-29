@@ -16,23 +16,23 @@
 package com.basho.riak.client.core.netty;
 
 /**
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
  */
 public class RiakResponseException extends Exception
 {
     private static final long serialVersionUID = 2843706291883485752L;
     private final int code;
-    
+
     public RiakResponseException(int code, String message)
     {
         super(message);
         this.code = code;
     }
-    
+
     public int getCode()
     {
         return code;
     }
-    
+
 }

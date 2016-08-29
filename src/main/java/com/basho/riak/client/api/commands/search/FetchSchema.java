@@ -42,7 +42,7 @@ public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response
     {
         RiakFuture<YzGetSchemaOperation.Response, String> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<YzGetSchemaOperation.Response, String, YzGetSchemaOperation.Response, String> future =
             new CoreFutureAdapter<YzGetSchemaOperation.Response, String, YzGetSchemaOperation.Response, String>(coreFuture)
             {
@@ -61,7 +61,7 @@ public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response
         coreFuture.addListener(future);
         return future;
     }
-    
+
     private YzGetSchemaOperation buildCoreOperation()
     {
         return new YzGetSchemaOperation.Builder(schema).build();

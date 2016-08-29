@@ -36,14 +36,14 @@ import com.basho.riak.client.core.util.BinaryValue;
  * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * Location loc = new Location(ns, "my_key");
- * 
+ *
  * CounterUpdate cUpdate = new CounterUpdate(10L);
  * MapUpdate update = new MapUpdate().update("my_key", cUpdate);
- * 
+ *
  * UpdateMap um = new UpdateMap.Builder(loc, update).withReturnDatatype(true).build();
  * UpdateMap.Response resp = client.execute(um);
  * RiakMap map = resp.getDatatype();
- * 
+ *
  * }
  * </pre>
  * </p>
@@ -53,7 +53,7 @@ import com.basho.riak.client.core.util.BinaryValue;
 public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Location>
 {
     private final MapUpdate update;
-    
+
     private UpdateMap(Builder builder)
     {
         super(builder);
@@ -63,9 +63,9 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
     @Override
     protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<DtUpdateOperation.Response, Location> coreFuture = 
+        RiakFuture<DtUpdateOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation(update));
-        
+
         CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location> future =
             new CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location>(coreFuture)
             {
@@ -81,13 +81,13 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
                     BinaryValue returnedKey = coreResponse.hasGeneratedKey()
                         ? coreResponse.getGeneratedKey()
                         : null;
-                    
+
                     Context returnedCtx = null;
                     if (coreResponse.hasContext())
                     {
                         returnedCtx = new Context(coreResponse.getContext());
                     }
-                    
+
                     return new Response(returnedCtx, map, returnedKey);
                 }
 
@@ -96,28 +96,28 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
                 {
                     return coreQueryInfo;
                 }
-                
+
             };
         coreFuture.addListener(future);
         return future;
     }
-    
+
     public static final class Response extends UpdateDatatype.Response<RiakMap>
     {
         private Response(Context context, RiakMap datatype, BinaryValue generatedKey)
         {
             super(context, datatype, generatedKey);
         }
-        
+
     }
-    
+
     /**
      * Builder used to construct an UpdateMap command.
      */
     public static final class Builder extends UpdateDatatype.Builder<Builder>
     {
         private final MapUpdate update;
-        
+
         /**
          * Construct a Builder for an UpdateMap command.
          * @param location the location of the map in Riak.
@@ -136,13 +136,13 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
         /**
          * Constructs a builder for an UpdateMap command with only a Namespace.
          * <p>
-         * By providing only a Namespace with the update, Riak will create the 
-         * map, generate the key, 
-         * and return it in the response. 
+         * By providing only a Namespace with the update, Riak will create the
+         * map, generate the key,
+         * and return it in the response.
          * </p>
          * @param namespace the namespace to create the datatype.
          * @param update the update to apply
-         * @see Response#getGeneratedKey() 
+         * @see Response#getGeneratedKey()
          */
         public Builder(Namespace namespace, MapUpdate update)
         {
@@ -153,7 +153,7 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
             }
             this.update = update;
         }
-        
+
         @Override
         protected Builder self()
         {
@@ -171,5 +171,5 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
         }
 
     }
-    
+
 }

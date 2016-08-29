@@ -23,7 +23,7 @@ public class YokozunaSchema
 {
     private final String name;
     private final String content;
-    
+
     /**
      * Constructs a YokozunaSchema.
      * Both name and content must be UTF-8 encoded strings.
@@ -37,11 +37,11 @@ public class YokozunaSchema
         {
             throw new IllegalArgumentException("Name and schema cannot be null or zero length");
         }
-        
+
         this.name = name;
         this.content = content;
     }
-    
+
     /**
      * Returns the name of this schema.
      * @return a UTF-8 string containing the name of this schema
@@ -50,7 +50,7 @@ public class YokozunaSchema
     {
         return name;
     }
-    
+
     /**
      * Returns the XML that defines this schema.
      * @return A UTF-8 encoded string containing the XML that defines this schema.
@@ -59,5 +59,5 @@ public class YokozunaSchema
     {
         return content;
     }
-    
+
 }

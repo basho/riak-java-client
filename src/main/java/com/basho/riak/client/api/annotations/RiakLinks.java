@@ -23,34 +23,34 @@ import java.lang.annotation.Target;
 /**
  * Annotates a field or getter/setter method pair in a class to serve as a set of links.
  * <p>
- * The type must be {@literal Collection<RiakLink>}. 
+ * The type must be {@literal Collection<RiakLink>}.
  * <pre>
  * class MyPojo
  * {
  *     {@literal @}RiakLinks
  *     {@literal Collection<RiakLink>} riakLinks;
  * }
- * 
+ *
  * class MyPojo
  * {
  *     private {@literal Collection<RiakLink>} riakLinks;
- * 
+ *
  *     {@literal @}RiakLinks
  *     public void setRiakLinks({@literal Collection<RiakLink>} riakLinks)
  *     {
  *         this.riakLinks = riakLinks;
  *     }
- * 
+ *
  *     {@literal @}RiakLinks
  *     public {@literal Collection<RiakLink>} getRiakLinks()
  *     {
  *         return riakLinks;
  *     }
  * }
- * 
+ *
  * </pre>
- * 
- * 
+ *
+ *
  * @author Russell Brown <russelldb at basho dot com>
  * @author Brian Roach <roach at basho dot com>
  * @since 1.0

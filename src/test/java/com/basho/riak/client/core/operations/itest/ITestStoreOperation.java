@@ -36,99 +36,99 @@ public class ITestStoreOperation extends ITestAutoCleanupBase
 {
     final private BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
     final private String value = "{\"value\":\"some value\"}";
-    
+
     @Test
     public void testSimpleStoreDefaultType() throws InterruptedException, ExecutionException
     {
         testSimpleStore(Namespace.DEFAULT_BUCKET_TYPE);
     }
-    
+
     @Test
     public void testSimpleStoreTestType() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
         testSimpleStore(bucketType.toString());
     }
-    
+
     private void testSimpleStore(String bucketType) throws InterruptedException, ExecutionException
     {
-        
+
         RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
         Namespace ns = new Namespace(bucketType, bucketName.toString());
         Location location = new Location(ns, key);
-        StoreOperation storeOp = 
+        StoreOperation storeOp =
             new StoreOperation.Builder(location)
                 .withContent(obj)
                 .build();
-        
+
         cluster.execute(storeOp);
         storeOp.get();
-        
-        FetchOperation fetchOp = 
+
+        FetchOperation fetchOp =
                 new FetchOperation.Builder(location).build();
-                
+
         cluster.execute(fetchOp);
         RiakObject obj2 = fetchOp.get().getObjectList().get(0);
-        
+
         assertEquals(obj.getValue(), obj2.getValue());
-               
+
     }
-    
+
     @Test
     public void testStoreWithVClockAndReturnbodyDefaultType() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
         testStoreWithVClockAndReturnbody(bucketType.toString());
     }
-    
+
     @Test
     public void testStoreWithVClockAndReturnbodyTestType() throws InterruptedException, ExecutionException
     {
         testStoreWithVClockAndReturnbody(Namespace.DEFAULT_BUCKET_TYPE);
     }
-    
+
     private void testStoreWithVClockAndReturnbody(String bucketType) throws InterruptedException, ExecutionException
     {
-        // Enable allow_multi, store a new item, then do a read/modify/write 
+        // Enable allow_multi, store a new item, then do a read/modify/write
         // using the vclock
-        
+
         Namespace ns = new Namespace(bucketType, bucketName.toString() + "_1");
-        StoreBucketPropsOperation op = 
+        StoreBucketPropsOperation op =
             new StoreBucketPropsOperation.Builder(ns)
                 .withAllowMulti(true)
                 .build();
         cluster.execute(op);
         op.get();
-        
+
         RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
         Location location = new Location(ns, key);
-       
-        StoreOperation storeOp = 
+
+        StoreOperation storeOp =
             new StoreOperation.Builder(location)
                 .withContent(obj)
                 .withReturnBody(true)
                 .build();
-        
+
         cluster.execute(storeOp);
         StoreOperation.Response response = storeOp.get();
         obj = response.getObjectList().get(0);
-        
+
         assertNotNull(obj.getVClock());
-        
+
         obj.setValue(BinaryValue.create("changed"));
 
         storeOp = new StoreOperation.Builder(location)
                 .withContent(obj)
                 .withReturnBody(true)
                 .build();
-        
+
         cluster.execute(storeOp);
         response = storeOp.get();
         obj = response.getObjectList().get(0);
-        
+
         assertEquals(obj.getValue().toString(), "changed");
-        
+
         resetAndEmptyBucket(ns);
     }
-    
+
 }

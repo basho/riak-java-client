@@ -58,7 +58,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
     {
         RiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<ListBuckets.Response, BinaryValue, ListBucketsOperation.Response, BinaryValue> future =
             new CoreFutureAdapter<ListBuckets.Response, BinaryValue, ListBucketsOperation.Response, BinaryValue>(coreFuture)
             {
@@ -96,7 +96,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
 
     /**
      * A response from a ListBuckets command.
-     * <p>This encapsulates an immutable list of bucket names 
+     * <p>This encapsulates an immutable list of bucket names
      * and is Iterable:
      * <pre>
      * {@code

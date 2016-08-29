@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -22,26 +22,26 @@ import java.util.Map;
 /**
  * Convenience wrapper for a String field that is annotated with
  * {@link RiakUsermeta}
- * 
+ *
  * @author Russell Brown <russelldb at basho dot com>
  * @author Brian Roach <roach at basho dot com>
  */
 public class UsermetaField
 {
-    
+
     public enum FieldType
     {
         STRING,
         MAP
     }
-    
+
     private final Field field;
     private final String usermetaDataKey;
     private final FieldType fieldType;
 
     /**
      * The field that is to be wrapped
-     * 
+     *
      * @param field
      */
     public UsermetaField(final Field field)
@@ -49,12 +49,12 @@ public class UsermetaField
         this.fieldType = validateAndGetType(field);
         this.field = field;
         this.usermetaDataKey = field.getAnnotation(RiakUsermeta.class).key();
-        
+
         if (fieldType == FieldType.STRING && "".equals(usermetaDataKey))
         {
             throw new IllegalArgumentException("@RiakUsermeta annotated String must include key: " + field);
         }
-        
+
     }
 
     /**
@@ -73,7 +73,7 @@ public class UsermetaField
     {
         return fieldType;
     }
-        
+
     /**
      * @return the usermetaDataKey
      */
@@ -81,7 +81,7 @@ public class UsermetaField
     {
         return usermetaDataKey;
     }
-    
+
     private FieldType validateAndGetType(Field f)
     {
         if (f != null)
@@ -98,21 +98,21 @@ public class UsermetaField
                         return FieldType.MAP;
                     }
                 }
-            
+
             }
             else
             {
-                if (f.getType().equals(String.class)) 
+                if (f.getType().equals(String.class))
                 {
                     return FieldType.STRING;
                 }
             }
-            
+
             throw new IllegalArgumentException("@RiakUsermeta must be a Map<String,String> or single String: " +
                                             f);
         }
         throw new IllegalArgumentException("Field can not be null.");
-        
+
     }
 
 }

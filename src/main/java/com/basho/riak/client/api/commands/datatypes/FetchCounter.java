@@ -52,7 +52,7 @@ public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.
     {
         RiakFuture<DtFetchOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<FetchCounter.Response, Location, DtFetchOperation.Response, Location> future =
             new CoreFutureAdapter<FetchCounter.Response, Location, DtFetchOperation.Response, Location>(coreFuture)
             {
@@ -81,7 +81,7 @@ public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.
         coreFuture.addListener(future);
         return future;
     }
-    
+
     @Override
     public RiakCounter extractDatatype(RiakDatatype element)
     {
@@ -118,13 +118,13 @@ public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.
             return new FetchCounter(this);
         }
     }
-    
+
     /**
      * Response from a FetchCounter command.
      * <p>
-     * Encapsulates a RiakCounter returned from the command. 
+     * Encapsulates a RiakCounter returned from the command.
      * <pre>
-     * {@code 
+     * {@code
      * ...
      * RiakCounter counter = response.getDatatype();
      * Long value = counter.view();

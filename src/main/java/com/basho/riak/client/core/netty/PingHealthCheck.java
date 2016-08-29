@@ -39,5 +39,5 @@ public class PingHealthCheck extends HealthCheckDecoder implements HealthCheckFa
     {
         return new PingHealthCheck();
     }
-    
+
 }

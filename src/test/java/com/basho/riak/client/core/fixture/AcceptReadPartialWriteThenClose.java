@@ -34,7 +34,7 @@ public class AcceptReadPartialWriteThenClose extends Acceptor
     {
         super(server);
     }
-    
+
     @Override
     Acceptor duplicate()
     {
@@ -51,5 +51,5 @@ public class AcceptReadPartialWriteThenClose extends Acceptor
         ((WritableByteChannel)key.channel()).write(bb);
         return true;
     }
-    
+
 }

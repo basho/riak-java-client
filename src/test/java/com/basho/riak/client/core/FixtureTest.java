@@ -28,14 +28,14 @@ public class FixtureTest
 {
     static NetworkTestFixture fixture;
     static int startingPort = 5000;
-    
+
     @BeforeClass
     public static void installFixture() throws IOException
     {
         fixture = new NetworkTestFixture(startingPort);
         new Thread(fixture).start();
     }
-    
+
     @AfterClass
     public static void teardownFixture() throws IOException
     {

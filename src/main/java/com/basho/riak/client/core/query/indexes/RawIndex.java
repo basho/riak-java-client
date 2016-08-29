@@ -18,11 +18,11 @@ package com.basho.riak.client.core.query.indexes;
 import com.basho.riak.client.core.util.BinaryValue;
 
 /**
- * {@code RiakIndex} implementation used to access a Riak {@code _int} or {@code _bin} 
+ * {@code RiakIndex} implementation used to access a Riak {@code _int} or {@code _bin}
  * Secondary Index using {@code BinaryValue} ({@code byte[]}) values.
  * <p>
- * Data in Riak including secondary indexes is stored as bytes. This implementation 
- * of {@code RiakIndex} provides direct access to those bytes. 
+ * Data in Riak including secondary indexes is stored as bytes. This implementation
+ * of {@code RiakIndex} provides direct access to those bytes.
  * </p>
  *
  * @author Brian Roach <roach at basho dot com>
@@ -34,7 +34,7 @@ public class RawIndex extends RiakIndex<BinaryValue>
     {
         super(name);
     }
-    
+
     @Override
     protected BinaryValue convert(BinaryValue value)
     {
@@ -45,7 +45,7 @@ public class RawIndex extends RiakIndex<BinaryValue>
     {
         return new Name(name, type);
     }
-    
+
     /**
      * Encapsulates the name and {@code IndexType} for a {@code RawIndex}
      */
@@ -60,13 +60,13 @@ public class RawIndex extends RiakIndex<BinaryValue>
         {
             super(name, type);
         }
-        
+
         @Override
         RawIndex createIndex()
         {
             return new RawIndex(this);
         }
-        
+
     }
-    
+
 }

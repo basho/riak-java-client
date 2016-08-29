@@ -30,30 +30,30 @@ public class BigIntIndex extends RiakIndex<BigInteger>
     {
         super(name);
     }
-    
+
     @Override
     protected BinaryValue convert(BigInteger value)
     {
         // The Protocol Buffers API takes the bytes for the textual representation
-        // of the number rather than an actual bytes for the number :/ 
+        // of the number rather than an actual bytes for the number :/
         return BinaryValue.unsafeCreate(value.toString().getBytes(Charset.forName("UTF-8")));
     }
-    
+
     @Override
     protected BigInteger convert(BinaryValue value)
     {
         // The Protocol Buffers API returns the bytes for the textual representation
-        // of the number rather than an actual bytes for the number :/ 
+        // of the number rather than an actual bytes for the number :/
         return new BigInteger(value.toString(Charset.forName("UTF-8")));
     }
-    
+
     public static Name named(String name)
     {
         return new Name(name);
     }
-    
+
     /**
-     * Encapsulates the name and {@code IndexType} for a {@code BigIntIndex} 
+     * Encapsulates the name and {@code IndexType} for a {@code BigIntIndex}
      */
     public static class Name extends RiakIndex.Name<BigIntIndex>
     {
@@ -65,13 +65,13 @@ public class BigIntIndex extends RiakIndex<BigInteger>
         {
             super(name, IndexType.INT);
         }
-        
+
         @Override
         BigIntIndex createIndex()
         {
             return new BigIntIndex(this);
         }
-        
+
     }
-    
+
 }

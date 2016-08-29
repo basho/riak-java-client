@@ -38,43 +38,43 @@ public class ConflictResolverFactoryTest
         ConflictResolverFactory factory = ConflictResolverFactory.getInstance();
         factory.unregisterConflictResolver(Pojo.class);
     }
-    
+
     @Test
     public void getDefaultResolver() throws UnresolvedConflictException
     {
         ConflictResolverFactory factory = ConflictResolverFactory.getInstance();
         ConflictResolver<Pojo> resolver = factory.getConflictResolver(Pojo.class);
-        
+
         assertTrue(resolver instanceof DefaultResolver);
-        
+
         resolver.resolve(Arrays.asList(new Pojo()));
     }
-    
+
     @Test
     public void registerResolverClass() throws UnresolvedConflictException
     {
         ConflictResolverFactory factory = ConflictResolverFactory.getInstance();
         MyResolver resolver = new MyResolver();
         factory.registerConflictResolver(Pojo.class, resolver);
-        
+
         ConflictResolver<Pojo> resolver2 = factory.getConflictResolver(Pojo.class);
-        
+
         assertTrue(resolver2 instanceof MyResolver);
         assertEquals(resolver, resolver2);
-        
+
     }
-    
-    
-    
-    
+
+
+
+
     public static class Pojo
     {
         public Pojo(){}
-        
+
         String foo;
         int bar;
     }
-    
+
     public static class MyResolver implements ConflictResolver<Pojo>
     {
 
@@ -83,7 +83,7 @@ public class ConflictResolverFactoryTest
         {
             return objectList.get(0);
         }
-            
+
     }
-    
+
 }

@@ -29,21 +29,21 @@ import java.util.Map;
 public class UsermetaMethod
 {
     public enum MethodType { STRING_GETTER, STRING_SETTER, MAP_GETTER, MAP_SETTER }
-    
+
     private final Method method;
     private final String usermetaDataKey;
     private final MethodType methodType;
-    
-    public UsermetaMethod(Method method) 
+
+    public UsermetaMethod(Method method)
     {
         this.methodType = validateAndGetReturnType(method);
         this.method = method;
         this.usermetaDataKey = method.getAnnotation(RiakUsermeta.class).key();
-        
-        if ((methodType == MethodType.STRING_GETTER || methodType == MethodType.STRING_SETTER) && 
+
+        if ((methodType == MethodType.STRING_GETTER || methodType == MethodType.STRING_SETTER) &&
             "".equals(usermetaDataKey))
         {
-            throw new IllegalArgumentException("@RiakUsermeta annotated method must include key: " 
+            throw new IllegalArgumentException("@RiakUsermeta annotated method must include key: "
                 + method);
         }
     }
@@ -63,7 +63,7 @@ public class UsermetaMethod
     {
         return usermetaDataKey;
     }
-    
+
     /**
      * Get the return type.
      * @return the return type for this method.
@@ -72,7 +72,7 @@ public class UsermetaMethod
     {
         return methodType;
     }
-    
+
     private MethodType validateAndGetReturnType(Method m)
     {
         if (m != null)
@@ -117,8 +117,8 @@ public class UsermetaMethod
                             return MethodType.MAP_GETTER;
                         }
                     }
-                
-                } 
+
+                }
                 else
                 {
                     if (m.getReturnType().equals(String.class))
@@ -126,12 +126,12 @@ public class UsermetaMethod
                         return MethodType.STRING_GETTER;
                     }
                 }
-                
+
                 throw new IllegalArgumentException("@RiakUsermeta getter must return a Map<String,String> or String: " + m);
             }
         }
         throw new IllegalArgumentException("Method can not be null.");
-        
+
     }
-    
+
 }

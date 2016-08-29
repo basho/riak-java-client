@@ -60,10 +60,10 @@ public class ITestSearchOperation extends ISearchTestBase
         Assume.assumeTrue(legacyRiakSearch);
 
         SearchOperation searchOp = new SearchOperation.Builder(BinaryValue.create(bucketName), "content_s:Alice*").build();
-        
+
         cluster.execute(searchOp);
         SearchOperation.Response result = searchOp.get();
-        
+
         assertEquals(2, result.numResults());
         for (Map<String, List<String>> map : result.getAllResults())
         {
@@ -71,24 +71,24 @@ public class ITestSearchOperation extends ISearchTestBase
             assertEquals(3, map.size()); // id, doc_type_i, and content_s fields
         }
     }
-    
+
     @Test
     public void testYokozunaSearch() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testYokozuna);
-        
+
         SearchOperation searchOp = new SearchOperation.Builder(BinaryValue.create(indexName), "multi_ss:t*").build();
-        
+
         cluster.execute(searchOp);
         searchOp.await();
         assertTrue(searchOp.isSuccess());
-        SearchOperation.Response result = searchOp.get();        
+        SearchOperation.Response result = searchOp.get();
         for (Map<String, List<String>> map : result.getAllResults())
         {
             assertFalse(map.isEmpty());
             assertEquals(8, map.size()); // [_yz_rk, _yz_rb, multi_ss, content_s, _yz_rt, score, _yz_id, doc_type_i]
             assertTrue(map.containsKey("multi_ss"));
-            assertEquals(2, map.get("multi_ss").size()); 
+            assertEquals(2, map.get("multi_ss").size());
         }
     }
 }

@@ -26,11 +26,11 @@ public final class DeleteIndex extends RiakCommand<Void, String>
     {
         RiakFuture<Void, String> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<Void, String, Void, String> future =
             new CoreFutureAdapter<Void, String, Void, String>(coreFuture)
     {
-        
+
         @Override
         protected Void convertResponse(Void coreResponse)
         {
@@ -46,12 +46,12 @@ public final class DeleteIndex extends RiakCommand<Void, String>
         coreFuture.addListener(future);
         return future;
     }
-    
+
     private YzDeleteIndexOperation buildCoreOperation()
     {
         return new YzDeleteIndexOperation.Builder(index).build();
     }
-    
+
     /**
      * Builder for a DeleteIndex command.
      */
