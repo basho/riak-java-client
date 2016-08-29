@@ -38,8 +38,8 @@ public class ITestYzAdminOperations extends ITestBase
     private static final String deleteIndex = "delete_index_ITestYzAdminOperations";
     private static final String timeoutIndex = "timeout_index_ITestYzAdminOperations";
 
-    @BeforeClass
-    public static void Setup()
+    @Before
+    public void BeforeTests()
     {
         Assume.assumeTrue(testYokozuna);
     }
@@ -47,6 +47,7 @@ public class ITestYzAdminOperations extends ITestBase
     @AfterClass
     public static void Cleanup() throws ExecutionException, InterruptedException
     {
+        Assume.assumeTrue(testYokozuna);
         DeleteIndex(fetchIndex);
         DeleteIndex(deleteIndex);
         DeleteIndex(timeoutIndex);
