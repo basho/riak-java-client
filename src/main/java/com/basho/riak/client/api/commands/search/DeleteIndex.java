@@ -14,14 +14,14 @@ import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
  */
 public final class DeleteIndex extends RiakCommand<Void, String>
 {
-	private final String index;
+    private final String index;
 
-	DeleteIndex(Builder builder)
-	{
-		this.index = builder.index;
-	}
+    DeleteIndex(Builder builder)
+    {
+        this.index = builder.index;
+    }
 
-	@Override
+    @Override
     protected final RiakFuture<Void, String> executeAsync(RiakCluster cluster)
     {
         RiakFuture<Void, String> coreFuture =
@@ -55,28 +55,28 @@ public final class DeleteIndex extends RiakCommand<Void, String>
     /**
      * Builder for a DeleteIndex command.
      */
-	public static class Builder
-	{
+    public static class Builder
+    {
 
-		private final String index;
+        private final String index;
 
         /**
          * Construct a Builder for a DeleteIndex command.
          *
          * @param index The name of the search index to delete from Riak.
          */
-		public Builder(String index)
-		{
-			this.index = index;
-		}
+        public Builder(String index)
+        {
+            this.index = index;
+        }
 
         /**
          * Construct the DeleteIndex command.
          * @return the new DeleteIndex command.
          */
-		public DeleteIndex build()
-		{
-			return new DeleteIndex(this);
-		}
-	}
+        public DeleteIndex build()
+        {
+            return new DeleteIndex(this);
+        }
+    }
 }

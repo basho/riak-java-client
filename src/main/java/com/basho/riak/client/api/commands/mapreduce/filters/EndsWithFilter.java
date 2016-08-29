@@ -32,11 +32,11 @@ public class EndsWithFilter extends KeyFilter
     public EndsWithFilter(String pattern)
     {
         super(NAME);
-	    this.pattern = pattern;
+        this.pattern = pattern;
     }
 
-	public String getPattern()
-	{
-		return pattern;
-	}
+    public String getPattern()
+    {
+        return pattern;
+    }
 }

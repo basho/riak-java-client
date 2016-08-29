@@ -21,20 +21,20 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class NotEqualToFilter<T> extends KeyFilter
 {
-	private final static String NAME = "neq";
-	private final T value;
+    private final static String NAME = "neq";
+    private final T value;
 
-	/**
-	 * @param value
-	 */
-	public NotEqualToFilter(T value)
-	{
-		super(NAME);
-		this.value = value;
-	}
+    /**
+     * @param value
+     */
+    public NotEqualToFilter(T value)
+    {
+        super(NAME);
+        this.value = value;
+    }
 
-	public T getValue()
-	{
-		return value;
-	}
+    public T getValue()
+    {
+        return value;
+    }
 }

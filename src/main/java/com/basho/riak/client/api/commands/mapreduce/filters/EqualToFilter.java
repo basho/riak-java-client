@@ -30,13 +30,13 @@ public class EqualToFilter<T> extends KeyFilter
      * @param value
      */
     public EqualToFilter(T value)
-	{
-	    super(NAME);
-	    this.value = value;
+    {
+        super(NAME);
+        this.value = value;
     }
 
-	public T getValue()
-	{
-		return value;
-	}
+    public T getValue()
+    {
+        return value;
+    }
 }

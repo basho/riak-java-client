@@ -12,10 +12,10 @@ import java.io.IOException;
  */
 public class BucketInputSerializer extends JsonSerializer<BucketInput>
 {
-	@Override
-	public void serialize(BucketInput input, JsonGenerator jg, SerializerProvider sp) throws IOException
-	{
-		if (input.hasFilters())
+    @Override
+    public void serialize(BucketInput input, JsonGenerator jg, SerializerProvider sp) throws IOException
+    {
+        if (input.hasFilters())
         {
             jg.writeStartObject();
             if (!input.getNamespace().getBucketType().toStringUtf8().equals(Namespace.DEFAULT_BUCKET_TYPE))
@@ -46,6 +46,6 @@ public class BucketInputSerializer extends JsonSerializer<BucketInput>
             jg.writeString(input.getNamespace().getBucketNameAsString());
         }
 
-		
-	}
+        
+    }
 }

@@ -44,16 +44,16 @@ import com.basho.riak.client.core.query.crdt.types.RiakMap;
  */
 public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Location>
 {
-	private FetchMap(Builder builder)
-	{
-		super(builder);
-	}
+    private FetchMap(Builder builder)
+    {
+        super(builder);
+    }
 
-	@Override
-	public RiakMap extractDatatype(RiakDatatype element)
-	{
-		return element.getAsMap();
-	}
+    @Override
+    public RiakMap extractDatatype(RiakDatatype element)
+    {
+        return element.getAsMap();
+    }
 
     @Override
     protected final RiakFuture<FetchMap.Response, Location> executeAsync(RiakCluster cluster)
@@ -93,34 +93,34 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
     /**
      * Builder used to construct a FetchMap command.
      */
-	public static class Builder extends FetchDatatype.Builder<Builder>
-	{
+    public static class Builder extends FetchDatatype.Builder<Builder>
+    {
 
         /**
          * Construct a Builder for a FetchMap command.
          * @param location the location of the map in Riak.
          */
-		public Builder(Location location)
-		{
-			super(location);
-		}
+        public Builder(Location location)
+        {
+            super(location);
+        }
 
-		@Override
-		protected Builder self()
-		{
-			return this;
-		}
+        @Override
+        protected Builder self()
+        {
+            return this;
+        }
 
         /**
          * Construct a new FetchMap command.
          * @return a new FetchMap command.
          */
-		public FetchMap build()
-		{
-			return new FetchMap(this);
-		}
+        public FetchMap build()
+        {
+            return new FetchMap(this);
+        }
 
-	}
+    }
 
     /**
      * Response from a FetchMap command.

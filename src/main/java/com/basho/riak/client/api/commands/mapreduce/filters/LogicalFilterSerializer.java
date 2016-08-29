@@ -8,17 +8,17 @@ import java.io.IOException;
 
 class LogicalFilterSerializer extends JsonSerializer<LogicalFilter>
 {
-	@Override
-	public void serialize(LogicalFilter value, JsonGenerator jgen, SerializerProvider provider) throws IOException
-	{
-		jgen.writeStartArray();
-		jgen.writeString(value.getName());
-		for (KeyFilter filter : value.getFilters())
-		{
-			jgen.writeStartArray();
-			jgen.writeObject(filter);
-			jgen.writeEndArray();
-		}
-		jgen.writeEndArray();
-	}
+    @Override
+    public void serialize(LogicalFilter value, JsonGenerator jgen, SerializerProvider provider) throws IOException
+    {
+        jgen.writeStartArray();
+        jgen.writeString(value.getName());
+        for (KeyFilter filter : value.getFilters())
+        {
+            jgen.writeStartArray();
+            jgen.writeObject(filter);
+            jgen.writeEndArray();
+        }
+        jgen.writeEndArray();
+    }
 }

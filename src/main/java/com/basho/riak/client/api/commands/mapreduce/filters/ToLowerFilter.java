@@ -22,10 +22,10 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
 public class ToLowerFilter extends KeyFilter
 {
 
-	private static final String NAME = "to_lower";
+    private static final String NAME = "to_lower";
 
-	public ToLowerFilter()
-	{
-		super(NAME);
-	}
+    public ToLowerFilter()
+    {
+        super(NAME);
+    }
 }

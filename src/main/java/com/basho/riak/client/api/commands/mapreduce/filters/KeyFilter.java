@@ -24,15 +24,15 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @JsonFormat(shape = JsonFormat.Shape.ARRAY)
 public abstract class KeyFilter
 {
-	private final String name;
+    private final String name;
 
-	protected KeyFilter(String name)
-	{
-		this.name = name;
-	}
+    protected KeyFilter(String name)
+    {
+        this.name = name;
+    }
 
-	public String getName()
-	{
-		return name;
-	}
+    public String getName()
+    {
+        return name;
+    }
 }

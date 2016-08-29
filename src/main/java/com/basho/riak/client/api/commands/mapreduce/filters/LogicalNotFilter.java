@@ -21,14 +21,14 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class LogicalNotFilter extends LogicalFilter
 {
-	private static final String NAME = "not";
+    private static final String NAME = "not";
 
-	/**
-	 * @param filters
-	 */
-	public LogicalNotFilter(KeyFilter... filters)
-	{
-		super(NAME, filters);
-	}
+    /**
+     * @param filters
+     */
+    public LogicalNotFilter(KeyFilter... filters)
+    {
+        super(NAME, filters);
+    }
 
 }

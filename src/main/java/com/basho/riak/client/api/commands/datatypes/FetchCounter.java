@@ -42,10 +42,10 @@ import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
  */
 public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.Response, Location>
 {
-	private FetchCounter(Builder builder)
-	{
-		super(builder);
-	}
+    private FetchCounter(Builder builder)
+    {
+        super(builder);
+    }
 
     @Override
     protected final RiakFuture<FetchCounter.Response, Location> executeAsync(RiakCluster cluster)
@@ -82,42 +82,42 @@ public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.
         return future;
     }
     
-	@Override
-	public RiakCounter extractDatatype(RiakDatatype element)
-	{
-		return element.getAsCounter();
-	}
+    @Override
+    public RiakCounter extractDatatype(RiakDatatype element)
+    {
+        return element.getAsCounter();
+    }
 
     /**
      * Builder used to construct a FetchCounter command.
      */
-	public static class Builder extends FetchDatatype.Builder<Builder>
-	{
+    public static class Builder extends FetchDatatype.Builder<Builder>
+    {
 
         /**
          * Construct a builder for a FetchCounter command.
          * @param location the location of the counter in Riak.
          */
-		public Builder(Location location)
-		{
-			super(location);
-		}
+        public Builder(Location location)
+        {
+            super(location);
+        }
 
-		@Override
-		protected Builder self()
-		{
-			return this;
-		}
+        @Override
+        protected Builder self()
+        {
+            return this;
+        }
 
         /**
          * Build a FetchCounter command.
          * @return a new FetchCounter command.
          */
-		public FetchCounter build()
-		{
-			return new FetchCounter(this);
-		}
-	}
+        public FetchCounter build()
+        {
+            return new FetchCounter(this);
+        }
+    }
     
     /**
      * Response from a FetchCounter command.

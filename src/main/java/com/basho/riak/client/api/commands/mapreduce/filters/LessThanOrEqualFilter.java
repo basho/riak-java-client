@@ -21,20 +21,20 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class LessThanOrEqualFilter<T> extends KeyFilter
 {
-	private static final String NAME = "less_than_eq";
-	private final T value;
+    private static final String NAME = "less_than_eq";
+    private final T value;
 
-	/**
-	 * @param value
-	 */
-	public LessThanOrEqualFilter(T value)
-	{
-		super(NAME);
-		this.value = value;
-	}
+    /**
+     * @param value
+     */
+    public LessThanOrEqualFilter(T value)
+    {
+        super(NAME);
+        this.value = value;
+    }
 
-	public T getValue()
-	{
-		return value;
-	}
+    public T getValue()
+    {
+        return value;
+    }
 }

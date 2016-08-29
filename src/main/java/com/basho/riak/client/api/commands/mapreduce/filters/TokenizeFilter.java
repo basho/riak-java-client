@@ -22,29 +22,29 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
 public class TokenizeFilter extends KeyFilter implements KeyTransformFilter
 {
 
-	private static final String NAME = "tokenize";
-	private final String separator;
-	private final int tokens;
+    private static final String NAME = "tokenize";
+    private final String separator;
+    private final int tokens;
 
-	/**
-	 * @param separator
-	 * @param tokens
-	 */
-	public TokenizeFilter(String separator, int tokens)
-	{
-		super(NAME);
-		this.separator = separator;
-		this.tokens = tokens;
-	}
+    /**
+     * @param separator
+     * @param tokens
+     */
+    public TokenizeFilter(String separator, int tokens)
+    {
+        super(NAME);
+        this.separator = separator;
+        this.tokens = tokens;
+    }
 
-	public String getSeparator()
-	{
-		return separator;
-	}
+    public String getSeparator()
+    {
+        return separator;
+    }
 
-	public int getTokens()
-	{
-		return tokens;
-	}
+    public int getTokens()
+    {
+        return tokens;
+    }
 
 }

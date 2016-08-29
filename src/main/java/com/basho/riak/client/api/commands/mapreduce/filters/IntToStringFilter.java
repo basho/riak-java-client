@@ -22,10 +22,10 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
 public class IntToStringFilter extends KeyFilter
 {
 
-	private static final String NAME = "int_to_string";
+    private static final String NAME = "int_to_string";
 
-	public IntToStringFilter()
-	{
-		super(NAME);
-	}
+    public IntToStringFilter()
+    {
+        super(NAME);
+    }
 }

@@ -31,11 +31,11 @@ public class IndexMapReduce extends MapReduce
             return this;
         }
 
-		/**
-		 * Add the namespace that the index resides in to the builder.
-		 * @param namespace the namespace that the index resides in
-		 * @return a reference to this object.
-		 */
+        /**
+         * Add the namespace that the index resides in to the builder.
+         * @param namespace the namespace that the index resides in
+         * @return a reference to this object.
+         */
         public Builder withNamespace(Namespace namespace)
         {
             this.namespace = namespace;

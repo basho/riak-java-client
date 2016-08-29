@@ -43,14 +43,14 @@ import com.basho.riak.client.core.query.Namespace;
 public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOperation.Response, Namespace>
 {
 
-	private final Namespace namespace;
+    private final Namespace namespace;
 
-	public FetchBucketProperties(Builder builder)
-	{
-		this.namespace = builder.namespace;
-	}
+    public FetchBucketProperties(Builder builder)
+    {
+        this.namespace = builder.namespace;
+    }
 
-	@Override
+    @Override
     protected final RiakFuture<FetchBucketPropsOperation.Response, Namespace> executeAsync(RiakCluster cluster)
     {
         RiakFuture<FetchBucketPropsOperation.Response, Namespace> coreFuture =
@@ -83,31 +83,31 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
     /**
      * Builder used to construct a FetchBucketPoperties command.
      */
-	public static class Builder
-	{
-		private final Namespace namespace;
+    public static class Builder
+    {
+        private final Namespace namespace;
 
         /**
          * Construct a Builder for a FetchBucketProperties command.
          * @param namespace The namespace for the bucket. 
          */
-		public Builder(Namespace namespace)
-		{
-			if (namespace == null)
+        public Builder(Namespace namespace)
+        {
+            if (namespace == null)
             {
                 throw new IllegalArgumentException("Namespace cannot be null");
             }
             this.namespace = namespace;
-		}
+        }
 
         /**
          * Construct a new FetchBucketProperties command.
          * @return a new FetchBucketProperties command.
          */
-		public FetchBucketProperties build()
-		{
-			return new FetchBucketProperties(this);
-		}
-	}
+        public FetchBucketProperties build()
+        {
+            return new FetchBucketProperties(this);
+        }
+    }
 
 }

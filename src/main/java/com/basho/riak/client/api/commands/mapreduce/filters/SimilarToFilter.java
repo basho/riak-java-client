@@ -21,28 +21,28 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class SimilarToFilter extends KeyFilter
 {
-	private static final String NAME = "similar_to";
-	private final String value;
-	private final int distance;
+    private static final String NAME = "similar_to";
+    private final String value;
+    private final int distance;
 
-	/**
-	 * @param value           the string to compare to
-	 * @param maxEditDistance
-	 */
-	public SimilarToFilter(String value, int maxEditDistance)
-	{
-		super(NAME);
-		this.value = value;
-		this.distance = maxEditDistance;
-	}
+    /**
+     * @param value           the string to compare to
+     * @param maxEditDistance
+     */
+    public SimilarToFilter(String value, int maxEditDistance)
+    {
+        super(NAME);
+        this.value = value;
+        this.distance = maxEditDistance;
+    }
 
-	public String getValue()
-	{
-		return value;
-	}
+    public String getValue()
+    {
+        return value;
+    }
 
-	public int getDistance()
-	{
-		return distance;
-	}
+    public int getDistance()
+    {
+        return distance;
+    }
 }

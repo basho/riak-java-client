@@ -337,13 +337,13 @@ public abstract class RiakIndex<T> implements Iterable<T>
         return true;
     }
 
-		@Override
-		public String toString()
-		{
-				return String.format("RiakIndex [name=%s, type=%s]", name, type);
-		}
+        @Override
+        public String toString()
+        {
+                return String.format("RiakIndex [name=%s, type=%s]", name, type);
+        }
 
-	/**
+    /**
      * Abstract base class used to encapsulate a {@code RiakIndex} name and type.
      *
      * This class serves two purposes; encapsulating the name and type of an

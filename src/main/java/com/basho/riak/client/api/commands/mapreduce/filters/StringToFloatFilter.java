@@ -22,10 +22,10 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
 public class StringToFloatFilter extends KeyFilter
 {
 
-	private static final String NAME = "string_to_float";
+    private static final String NAME = "string_to_float";
 
-	public StringToFloatFilter()
-	{
-		super(NAME);
-	}
+    public StringToFloatFilter()
+    {
+        super(NAME);
+    }
 }

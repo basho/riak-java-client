@@ -22,14 +22,14 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
 public class LogicalAndFilter extends LogicalFilter
 {
 
-	private static final String NAME = "and";
+    private static final String NAME = "and";
 
-	/**
-	 * @param filters
-	 */
-	public LogicalAndFilter(KeyFilter... filters)
-	{
-		super(NAME, filters);
-	}
+    /**
+     * @param filters
+     */
+    public LogicalAndFilter(KeyFilter... filters)
+    {
+        super(NAME, filters);
+    }
 
 }
