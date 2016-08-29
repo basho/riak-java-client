@@ -33,7 +33,7 @@ public class AcceptReadPartialWriteStayOpen extends Acceptor
     {
         super(server);
     }
-    
+
     @Override
     Acceptor duplicate()
     {
@@ -50,5 +50,5 @@ public class AcceptReadPartialWriteStayOpen extends Acceptor
         ((WritableByteChannel)key.channel()).write(bb);
         return false;
     }
-    
+
 }

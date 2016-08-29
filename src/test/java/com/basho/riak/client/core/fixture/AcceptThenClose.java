@@ -31,7 +31,7 @@ public class AcceptThenClose extends Acceptor
         super(server);
         this.type = AcceptorType.ACCEPT_THEN_CLOSE;
     }
-    
+
     @Override
     Acceptor duplicate()
     {
@@ -44,6 +44,6 @@ public class AcceptThenClose extends Acceptor
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    
-    
+
+
 }

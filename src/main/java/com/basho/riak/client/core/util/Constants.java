@@ -88,7 +88,7 @@ public interface Constants
 
     // List bucket operation parameters
     public static String LIST_BUCKETS = "true";
-    
+
     // Netty Channel handler constants
     public static final String MESSAGE_CODEC = "codec";
     public static final String OPERATION_ENCODER = "operationEncoder";

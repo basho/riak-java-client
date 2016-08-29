@@ -29,7 +29,7 @@ public class AcceptReadThenClose extends Acceptor
     {
         super(server);
     }
-    
+
     @Override
     Acceptor duplicate()
     {
@@ -42,6 +42,6 @@ public class AcceptReadThenClose extends Acceptor
         return true;
     }
 
-    
-    
+
+
 }

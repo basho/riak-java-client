@@ -23,7 +23,7 @@ import com.basho.riak.client.core.util.BinaryValue;
 
 /**
  * For working with {@link RiakObject} rather than domain types.
- * 
+ *
  * @author Russel Brown <russelldb at basho dot com>
  * @since 1.0
  */
@@ -33,31 +33,31 @@ public final class PassThroughConverter extends Converter<RiakObject>
     {
         super(RiakObject.class);
     }
-    
+
     @Override
     public RiakObject toDomain(RiakObject obj, Location location)
     {
         return obj;
     }
-    
+
     @Override
     public Converter.OrmExtracted fromDomain(RiakObject domainObject, Namespace namespace, BinaryValue key)
     {
         return new Converter.OrmExtracted(domainObject, namespace, key);
     }
-    
-    
+
+
 
     @Override
     public RiakObject toDomain(BinaryValue value, String contentType)
     {
-        throw new UnsupportedOperationException("Not supported"); 
+        throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
     public ContentAndType fromDomain(RiakObject domainObject)
     {
-        throw new UnsupportedOperationException("Not supported"); 
+        throw new UnsupportedOperationException("Not supported");
     }
-    
+
 }

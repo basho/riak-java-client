@@ -25,24 +25,24 @@ import java.lang.annotation.Target;
  * Annotates a field or getter/setter method pair in a class to serve as the bucket name.
  * <p>
  * The type must be a {@code String}.
- * 
+ *
  * <pre>
  * class MyPojo
  * {
  *     {@literal @}RiakBucketName
  *     String bucketName;
  * }
- * 
+ *
  * class MyPojo
  * {
  *     private String bucketName;
- * 
+ *
  *     {@literal @}RiakBucketName
  *     public void setBucketName(String bucketName)
  *     {
  *         this.bucketName = bucketName;
  *     }
- * 
+ *
  *     {@literal @}RiakBucketName
  *     public String getBucketName()
  *     {
@@ -56,5 +56,5 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakBucketName
 {
-    
+
 }

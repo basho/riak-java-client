@@ -32,7 +32,7 @@ public class AcceptReadWriteThenClose extends Acceptor
     {
         super(server);
     }
-    
+
     @Override
     Acceptor duplicate()
     {
@@ -49,5 +49,5 @@ public class AcceptReadWriteThenClose extends Acceptor
         ((WritableByteChannel)key.channel()).write(bb);
         return true;
     }
-    
+
 }

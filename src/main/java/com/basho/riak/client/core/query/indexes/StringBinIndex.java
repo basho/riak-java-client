@@ -24,21 +24,21 @@ import java.nio.charset.Charset;
 /**
  * {@code RiakIndex} implementation used to access a Riak {@code _bin} Secondary Index using {@code String} values.
  * <p>
- * Data in Riak including secondary indexes is stored as bytes. This implementation 
- * of {@code RiakIndex} provides access to those bytes by converting to 
- * and from {@code String} values.  Its type is {@link IndexType#BIN} 
+ * Data in Riak including secondary indexes is stored as bytes. This implementation
+ * of {@code RiakIndex} provides access to those bytes by converting to
+ * and from {@code String} values.  Its type is {@link IndexType#BIN}
  * </p>
  * <h6>Riak 2i _bin indexes and sorting</h6>
  * <p>
- * One of the key features of 2i is the ability to do range queries. As previously 
+ * One of the key features of 2i is the ability to do range queries. As previously
  * noted the values are stored in Riak as bytes. Comparison is done byte-by-byte. UTF-8
  * lends itself well to this as its byte ordering is the same as its lexical ordering.
- * </p> 
+ * </p>
  * <p>
  * If you are using a character asSet whose byte ordering differs from its lexical ordering,
  * range queries will be affected.
  * </p>
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  * @see RiakIndexes
@@ -47,13 +47,13 @@ import java.nio.charset.Charset;
 public class StringBinIndex extends RiakIndex<String>
 {
     private final Charset charset;
-    
+
     private StringBinIndex(Name name)
     {
         super(name);
         this.charset = name.charset;
     }
-    
+
     @Override
     protected BinaryValue convert(String value)
     {
@@ -65,24 +65,24 @@ public class StringBinIndex extends RiakIndex<String>
     {
         return value.toString(charset);
     }
-    
+
     public static Name named(String name)
     {
         return named(name, DefaultCharset.get());
     }
-    
+
     public static Name named(String name, Charset charset)
     {
         return new Name(name, charset);
     }
-    
+
     /**
      * Encapsulates the name, character asSet, and {@code IndexType} for a {@code StringBinIndex}
      */
     public static class Name extends RiakIndex.Name<StringBinIndex>
     {
         private final Charset charset;
-        
+
         /**
          * Constructs a RiakIndex.Name to be used with {@link RiakIndexes}
          * The default character asSet is used for encoding the values.
@@ -109,9 +109,9 @@ public class StringBinIndex extends RiakIndex<String>
         {
             return new StringBinIndex(this);
         }
-        
-        
+
+
 
     }
-    
+
 }

@@ -32,11 +32,11 @@ import java.lang.reflect.Type;
  * The default Converter used when storing and fetching domain objects from Riak.
  * <p>
  * This uses the Jackson JSON library to serialize / deserialize objects to JSON.
- * The reulsting JSON is then stored in Riak. 
+ * The reulsting JSON is then stored in Riak.
  * </p>
  * @author Brian Roach <roach at basho dot com>
  * @param <T> type to convert to/from
- * 
+ *
  */
 public class JSONConverter<T> extends Converter<T>
 {
@@ -48,12 +48,12 @@ public class JSONConverter<T> extends Converter<T>
         OBJECT_MAPPER.registerModule(new RiakJacksonModule());
         OBJECT_MAPPER.registerModule(new JodaModule());
     }
-    
+
     /**
      * Create a JSONConverter for creating instances of <code>type</code> from
      * JSON and instances of {@literal RiakObject} with a JSON payload from
      * instances of <code>clazz</code>
-     * 
+     *
      * @param type
      */
     public JSONConverter(Type type)
@@ -67,7 +67,7 @@ public class JSONConverter<T> extends Converter<T>
         super(typeReference.getType());
         this.typeReference = typeReference;
     }
-    
+
     /**
      * Returns the {@link ObjectMapper} being used.
      * This is a convenience method to allow changing its behavior.
@@ -103,9 +103,9 @@ public class JSONConverter<T> extends Converter<T>
                     ? (Class<?>) type
                     : (Class<?>) ((ParameterizedType) type).getRawType();
                return OBJECT_MAPPER.readValue(value.unsafeGetValue(), (Class<T>) rawType);
-                
+
             }
-            
+
         }
         catch (IOException ex)
         {
@@ -116,7 +116,7 @@ public class JSONConverter<T> extends Converter<T>
     @Override
     public ContentAndType fromDomain(T domainObject)
     {
-        try    
+        try
         {
             return new ContentAndType(BinaryValue.unsafeCreate(OBJECT_MAPPER.writeValueAsBytes(domainObject)),
                                         "application/json");

@@ -31,7 +31,7 @@ import com.basho.riak.client.core.query.functions.Function;
  * <pre class="prettyprint">
  * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
- * StoreBucketProperties sbp = 
+ * StoreBucketProperties sbp =
  *  new StoreBucketProperties.Builder(ns)
  *      .withAllowMulti(true)
  *      .build();
@@ -101,7 +101,7 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
     {
         RiakFuture<Void, Namespace> coreFuture =
             cluster.execute(buildCoreOperation());
-    
+
         CoreFutureAdapter<Void, Namespace, Void, Namespace> future =
             new CoreFutureAdapter<Void, Namespace, Void, Namespace>(coreFuture)
             {
@@ -120,13 +120,13 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
         coreFuture.addListener(future);
         return future;
     }
-    
-    
+
+
     private StoreBucketPropsOperation buildCoreOperation()
     {
-        StoreBucketPropsOperation.Builder builder = 
+        StoreBucketPropsOperation.Builder builder =
             new StoreBucketPropsOperation.Builder(namespace);
-        
+
         if (allowMulti != null)
         {
             builder.withAllowMulti(allowMulti);
@@ -327,7 +327,7 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
          *
          * @param bigVClock a long representing a epoch time value.
          * @return a reference to this object.
-         * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a> 
+         * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a>
          */
         public Builder withBigVClock(Long bigVClock)
         {
@@ -527,7 +527,7 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
          *
          * @param smallVClock a long representing a epoch time value.
          * @return a reference to this object.
-         * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a> 
+         * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a>
          */
         public Builder withSmallVClock(Long smallVClock)
         {

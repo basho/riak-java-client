@@ -31,7 +31,7 @@ public final class StoreSchema extends RiakCommand<Void, YokozunaSchema>
     {
         RiakFuture<Void, YokozunaSchema> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<Void, YokozunaSchema,Void, YokozunaSchema> future =
             new CoreFutureAdapter<Void, YokozunaSchema,Void, YokozunaSchema>(coreFuture)
             {

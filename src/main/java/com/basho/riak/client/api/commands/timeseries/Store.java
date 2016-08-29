@@ -52,7 +52,7 @@ public class Store extends RiakCommand<Void,String>
     public static class Builder
     {
         private final String tableName;
-        // TODO: Think about using a flattening iterable here. 
+        // TODO: Think about using a flattening iterable here.
         private final List<Row> rows = new LinkedList<>();
 
         /**

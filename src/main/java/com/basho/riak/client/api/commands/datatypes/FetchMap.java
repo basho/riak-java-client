@@ -60,7 +60,7 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
     {
         RiakFuture<DtFetchOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<FetchMap.Response, Location, DtFetchOperation.Response, Location> future =
             new CoreFutureAdapter<FetchMap.Response, Location, DtFetchOperation.Response, Location>(coreFuture)
             {
@@ -89,7 +89,7 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
         coreFuture.addListener(future);
         return future;
     }
-    
+
     /**
      * Builder used to construct a FetchMap command.
      */
@@ -131,7 +131,7 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
      * ...
      * RiakMap rMap = response.getDatatype();
      * Map<BinaryValue, List<RiakDatatype>> map = rMap.view();
-     * 
+     *
      * }
      * </pre>
      * </p>
@@ -143,5 +143,5 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
             super(datatype, context);
         }
     }
-    
+
 }

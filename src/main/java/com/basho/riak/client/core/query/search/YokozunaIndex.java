@@ -16,8 +16,8 @@
 package com.basho.riak.client.core.query.search;
 
 /**
- * Represents a Yokozuna Index. 
- * 
+ * Represents a Yokozuna Index.
+ *
  * @author Brian Roach <roach at basho dot com>
  */
 public class YokozunaIndex
@@ -28,24 +28,24 @@ public class YokozunaIndex
 
     /**
      * Constructs a Yokozuna index without naming the schema.
-     * 
+     *
      * Due to an implementation detail on the Riak side, the index name is restricted
-     * to US-ASCII characters. The supplied String is converted to bytes 
-     * using the UTF-8 Charset.   
-     * 
+     * to US-ASCII characters. The supplied String is converted to bytes
+     * using the UTF-8 Charset.
+     *
      * @param name The name for this index.
      */
     public YokozunaIndex(String name)
     {
         this(name, null);
     }
-    
+
     /**
-     * Constructs a Yokozuna index. 
+     * Constructs a Yokozuna index.
      * Due to an implementation detail on the Riak side, the index name is restricted
-     * to US-ASCII characters. The supplied String is converted to bytes 
-     * using the UTF-8 Charset.   
-     * 
+     * to US-ASCII characters. The supplied String is converted to bytes
+     * using the UTF-8 Charset.
+     *
      * @param name The name of the index.
      * @param schema The name of a schema
      */
@@ -78,15 +78,15 @@ public class YokozunaIndex
     }
 
     /**
-     * Returns the name of this index as a UTF-8. 
-     * 
+     * Returns the name of this index as a UTF-8.
+     *
      * @return The name of the index as UTF-8 encoded String.
      */
     public String getName()
     {
         return name;
     }
-    
+
     /**
      * Returns the schema name for this index.
      * @return The schema name.

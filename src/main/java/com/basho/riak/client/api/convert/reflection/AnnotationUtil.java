@@ -31,7 +31,7 @@ import com.basho.riak.client.core.util.BinaryValue;
 public class AnnotationUtil
 {
     private AnnotationUtil() {}
-    
+
     /**
      * Attempts to inject <code>key</code> as the value of the {@literal @RiakKey}
      * annotated member of <code>domainObject</code>
@@ -91,39 +91,39 @@ public class AnnotationUtil
     {
         return AnnotationHelper.getInstance().setRiakBucketName(domainObject, bucketName);
     }
-    
+
     public static <T> BinaryValue getBucketName(T domainObject, BinaryValue defaultBucketName)
     {
         BinaryValue bucketName = getBucketName(domainObject);
         return bucketName != null ? bucketName : defaultBucketName;
     }
-    
+
     public static <T> BinaryValue getBucketName(T domainObject)
     {
         return AnnotationHelper.getInstance().getRiakBucketName(domainObject);
     }
-    
+
     public static <T> T setBucketType(T domainObject, BinaryValue bucketType)
     {
         return AnnotationHelper.getInstance().setRiakBucketType(domainObject, bucketType);
     }
-    
+
     public static <T> BinaryValue getBucketType(T domainObject, BinaryValue defaultBucketType)
     {
         BinaryValue bucketType = getBucketType(domainObject);
         return bucketType != null ? bucketType : defaultBucketType;
     }
-    
+
     public static <T> BinaryValue getBucketType(T domainObject)
     {
         return AnnotationHelper.getInstance().getRiakBucketType(domainObject);
     }
-    
+
     public static <T> boolean hasVClockAnnotation(T domainObject)
     {
         return AnnotationHelper.getInstance().hasRiakVClockAnnotation(domainObject);
     }
-    
+
     /**
      * Attempts to inject <code>vclock</code> as the value of the
      * {@literal @RiakVClock} annotated member of <code>domainObject</code>
@@ -147,7 +147,7 @@ public class AnnotationUtil
         VClock vclock = getVClock(domainObject);
         return vclock != null ? vclock : defaultVClock;
     }
-    
+
     /**
      * Attempts to get a vector clock from <code>domainObject</code> by looking
      * for a {@literal @RiakVClock} annotated member. If non-present it simply
@@ -280,31 +280,31 @@ public class AnnotationUtil
     {
         return AnnotationHelper.getInstance().setUsermetaData(usermetaData, domainObject);
     }
-    
+
     public static <T> String getContentType(T domainObject, String defaultContentType)
     {
         String type = getContentType(domainObject);
         return type != null ? type : defaultContentType;
     }
-    
+
     public static <T> String getContentType(T domainObject)
     {
         return AnnotationHelper.getInstance().getRiakContentType(domainObject);
     }
-    
+
     public static <T> T setContentType(T domainObject, String contentType)
     {
         return AnnotationHelper.getInstance().setRiakContentType(domainObject, contentType);
     }
-    
+
     public static <T> T setVTag(T domainObject, String vtag)
     {
         return AnnotationHelper.getInstance().setRiakVTag(domainObject, vtag);
     }
-    
+
     public static <T> T setLastModified(T domainObject, Long lastModified)
     {
         return AnnotationHelper.getInstance().setRiakLastModified(domainObject, lastModified);
     }
-    
+
 }

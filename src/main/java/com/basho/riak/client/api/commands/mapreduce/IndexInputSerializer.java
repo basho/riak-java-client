@@ -16,7 +16,7 @@ public class IndexInputSerializer extends JsonSerializer<IndexInput>
     public void serialize(IndexInput input, JsonGenerator jg, SerializerProvider sp) throws IOException
     {
         jg.writeStartObject();
-        
+
         // Riak bug ... explicitly specifying "default" as the type breaks things
         if (!input.getNamespace().getBucketTypeAsString().equals(Namespace.DEFAULT_BUCKET_TYPE))
         {
@@ -29,7 +29,7 @@ public class IndexInputSerializer extends JsonSerializer<IndexInput>
         {
             jg.writeStringField("bucket", input.getNamespace().getBucketNameAsString());
         }
-        
+
         jg.writeStringField("index", input.getIndex());
         IndexInput.IndexCriteria criteria = input.getCriteria();
         if (criteria instanceof IndexInput.MatchCriteria)

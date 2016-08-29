@@ -45,42 +45,42 @@ public class ITestIntIndexQuery extends ITestAutoCleanupBase
     public void testMatchQuery() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
-        
+
         RiakClient client = new RiakClient(cluster);
-        
+
         IndexedPojo ip = new IndexedPojo();
         ip.key = "index_test_object_key";
         ip.bucketName = bucketName.toString();
         ip.indexKey = 123456L;
         ip.value = "My Object Value!";
-        
+
         StoreValue sv = new StoreValue.Builder(ip).build();
         RiakFuture<StoreValue.Response, Location> svFuture = client.executeAsync(sv);
-        
+
         svFuture.await();
         assertTrue(svFuture.isSuccess());
-        
+
         IndexedPojo ip2 = new IndexedPojo();
         ip2.key = "index_test_object_key2";
         ip2.bucketName = bucketName.toString();
         ip2.indexKey = 123456L;
         ip2.value = "My Object Value!";
-        
+
         sv = new StoreValue.Builder(ip2).build();
         svFuture = client.executeAsync(sv);
-        
+
         svFuture.await();
         assertTrue(svFuture.isSuccess());
-        
+
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
-        
-        IntIndexQuery iiq = 
+
+        IntIndexQuery iiq =
             new IntIndexQuery.Builder(ns, "test_index", 123456L).withKeyAndIndex(true).build();
         IntIndexQuery.Response iResp = client.execute(iiq);
-        
+
         assertTrue(iResp.hasEntries());
         assertEquals(2, iResp.getEntries().size());
-        
+
         boolean found = false;
         for (IntIndexQuery.Response.Entry e : iResp.getEntries())
         {
@@ -90,53 +90,53 @@ public class ITestIntIndexQuery extends ITestAutoCleanupBase
                 assertEquals(ip.indexKey, e.getIndexKey());
             }
         }
-        
+
         assertTrue(found);
 
     }
-    
+
     @Test
     public void testRangeQuery() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
-        
+
         RiakClient client = new RiakClient(cluster);
-        
+
         IndexedPojo ip = new IndexedPojo();
         ip.key = "index_test_object_key1";
         ip.bucketName = bucketName.toString();
         ip.indexKey = 1L;
         ip.value = "My Object Value!";
-        
+
         StoreValue sv = new StoreValue.Builder(ip).build();
         RiakFuture<StoreValue.Response, Location> svFuture = client.executeAsync(sv);
-        
+
         svFuture.await();
         assertTrue(svFuture.isSuccess());
-        
+
         IndexedPojo ip2 = new IndexedPojo();
         ip2.key = "index_test_object_key2";
         ip2.bucketName = bucketName.toString();
         ip2.indexKey = 25L;
         ip2.value = "My Object Value!";
-        
+
         sv = new StoreValue.Builder(ip2).build();
         svFuture = client.executeAsync(sv);
-        
+
         svFuture.await();
         assertTrue(svFuture.isSuccess());
-        
+
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
-        
-        IntIndexQuery iiq = 
+
+        IntIndexQuery iiq =
             new IntIndexQuery.Builder(ns, "test_index", Long.MIN_VALUE, Long.MAX_VALUE)
                 .withKeyAndIndex(true)
                 .build();
-        
+
         IntIndexQuery.Response iResp = client.execute(iiq);
         assertTrue(iResp.hasEntries());
         assertEquals(2, iResp.getEntries().size());
-        
+
         boolean found = false;
         for (IntIndexQuery.Response.Entry e : iResp.getEntries())
         {
@@ -146,25 +146,25 @@ public class ITestIntIndexQuery extends ITestAutoCleanupBase
                 assertEquals(ip.indexKey, e.getIndexKey());
             }
         }
-        
+
         assertTrue(found);
-        
+
     }
-    
+
     public static class IndexedPojo
     {
         @RiakKey
         public String key;
-        
+
         @RiakBucketName
         public String bucketName;
-        
+
         @RiakIndex(name="test_index")
         Long indexKey;
-        
+
         @RiakVClock
         VClock vclock;
-        
+
         public String value;
     }
 }

@@ -65,9 +65,9 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
     @Override
     protected final RiakFuture<ListKeys.Response, Namespace> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<ListKeysOperation.Response, Namespace> coreFuture = 
+        RiakFuture<ListKeysOperation.Response, Namespace> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<ListKeys.Response, Namespace, ListKeysOperation.Response, Namespace> future =
             new CoreFutureAdapter<ListKeys.Response, Namespace, ListKeysOperation.Response, Namespace>(coreFuture)
             {
@@ -86,7 +86,7 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
         coreFuture.addListener(future);
         return future;
     }
-    
+
     private ListKeysOperation buildCoreOperation()
     {
         ListKeysOperation.Builder builder = new ListKeysOperation.Builder(namespace);
@@ -98,7 +98,7 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
 
         return builder.build();
     }
-    
+
     public static class Response implements Iterable<Location>
     {
 

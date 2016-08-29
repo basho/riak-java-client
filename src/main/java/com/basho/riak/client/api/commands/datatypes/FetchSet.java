@@ -53,7 +53,7 @@ public final class FetchSet extends FetchDatatype<RiakSet, FetchSet.Response, Lo
     {
         RiakFuture<DtFetchOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<FetchSet.Response, Location, DtFetchOperation.Response, Location> future =
             new CoreFutureAdapter<FetchSet.Response, Location, DtFetchOperation.Response, Location>(coreFuture)
             {
@@ -82,7 +82,7 @@ public final class FetchSet extends FetchDatatype<RiakSet, FetchSet.Response, Lo
         coreFuture.addListener(future);
         return future;
     }
-    
+
     @Override
     public RiakSet extractDatatype(RiakDatatype element)
     {
@@ -119,7 +119,7 @@ public final class FetchSet extends FetchDatatype<RiakSet, FetchSet.Response, Lo
             return new FetchSet(this);
         }
     }
-    
+
     /**
      * Response from a FetchSet command.
      * <p>

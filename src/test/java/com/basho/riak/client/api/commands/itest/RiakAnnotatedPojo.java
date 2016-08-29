@@ -57,15 +57,15 @@ public class RiakAnnotatedPojo
 
     @RiakTombstone
     public boolean deleted;
-    
+
     @RiakIndex(name="email")
     public Set<String> emailIndx;
-    
+
     @RiakIndex(name="user_id")
     public Long userId;
-    
+
     public String value;
-    
-    
+
+
 
 }
