@@ -121,79 +121,85 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
         RiakFuture<FetchValue.Response, Location> fetchFuture = fetchBuilder.build().executeAsync(cluster);
 
         // Anonymous listener that will do the work
-        RiakFutureListener<FetchValue.Response, Location> fetchListener = f ->
-        {
-            if (!f.isSuccess())
+        // NB: Don't make this a lambda, Maven Shade Plugin breaks the build for some reason.
+        RiakFutureListener<FetchValue.Response, Location> fetchListener =
+            new RiakFutureListener<FetchValue.Response, Location>()
             {
-                updateFuture.setException(f.cause());
-                return;
-            }
-
-            FetchValue.Response fetchResponse;
-            try
-            {
-                fetchResponse = f.get();
-                Object resolved = null;
-                VClock vclock = null;
-
-                if (!fetchResponse.isNotFound())
+                @Override
+                public void handle(RiakFuture<FetchValue.Response, Location> f)
                 {
-                    if (typeReference == null)
+                    if (!f.isSuccess())
                     {
-                        // Steal the type from the Update. Yes, Really.
-                        ParameterizedType pType =
-                                (ParameterizedType) update.getClass().getGenericSuperclass();
-                        Type t = pType.getActualTypeArguments()[0];
-                        if (t instanceof ParameterizedType)
+                        updateFuture.setException(f.cause());
+                        return;
+                    }
+
+                    FetchValue.Response fetchResponse;
+                    try
+                    {
+                        fetchResponse = f.get();
+                        Object resolved = null;
+                        VClock vclock = null;
+
+                        if (!fetchResponse.isNotFound())
                         {
-                            t = ((ParameterizedType) t).getRawType();
+                            if (typeReference == null)
+                            {
+                                // Steal the type from the Update. Yes, Really.
+                                ParameterizedType pType =
+                                        (ParameterizedType) update.getClass().getGenericSuperclass();
+                                Type t = pType.getActualTypeArguments()[0];
+                                if (t instanceof ParameterizedType)
+                                {
+                                    t = ((ParameterizedType) t).getRawType();
+                                }
+
+                                resolved = fetchResponse.getValue((Class<?>) t);
+                            }
+                            else
+                            {
+                                resolved = fetchResponse.getValue(typeReference);
+                            }
+
+                            // We get the vclock so we can inject it into the updated object.
+                            // This is so the end user doesn't have to worry about vclocks
+                            // in the Update.
+                            vclock = fetchResponse.getVectorClock();
                         }
 
-                        resolved = fetchResponse.getValue((Class<?>) t);
+                        Object updated = ((Update<Object>) update).apply(resolved);
+
+                        if (update.isModified())
+                        {
+                            AnnotationUtil.setVClock(updated, vclock);
+
+                            StoreValue.Builder store = new StoreValue.Builder(updated, typeReference).withLocation(
+                                    location).withVectorClock(vclock);
+
+                            for (Map.Entry<StoreValue.Option<?>, Object> optPair : storeOptions.entrySet())
+                            {
+                                store.withOption((StoreValue.Option<Object>) optPair.getKey(), optPair.getValue());
+                            }
+
+                            RiakFuture<StoreValue.Response, Location> storeFuture = store.build().executeAsync(
+                                    cluster);
+                            storeFuture.addListener(updateFuture);
+                        }
+                        else
+                        {
+                            Response updateResponse = new Response.Builder().withLocation(f.getQueryInfo())
+                                                                            .withUpdated(false)
+                                                                            .build();
+                            updateFuture.setResponse(updateResponse);
+                        }
                     }
-                    else
+                    catch (InterruptedException | ConversionException | ExecutionException ex)
                     {
-                        resolved = fetchResponse.getValue(typeReference);
+                        updateFuture.setException(ex);
                     }
 
-                    // We get the vclock so we can inject it into the updated object.
-                    // This is so the end user doesn't have to worry about vclocks
-                    // in the Update.
-                    vclock = fetchResponse.getVectorClock();
                 }
-
-                Object updated = ((Update<Object>) update).apply(resolved);
-
-                if (update.isModified())
-                {
-                    AnnotationUtil.setVClock(updated, vclock);
-
-                    StoreValue.Builder store = new StoreValue.Builder(updated, typeReference)
-                                                   .withLocation(location)
-                                                   .withVectorClock(vclock);
-
-                    for (Map.Entry<StoreValue.Option<?>, Object> optPair : storeOptions.entrySet())
-                    {
-                        store.withOption((StoreValue.Option<Object>) optPair.getKey(), optPair.getValue());
-                    }
-
-                    RiakFuture<StoreValue.Response, Location> storeFuture = store.build().executeAsync(cluster);
-                    storeFuture.addListener(updateFuture);
-                }
-                else
-                {
-                    Response updateResponse = new Response.Builder().withLocation(f.getQueryInfo())
-                                                                    .withUpdated(false)
-                                                                    .build();
-                    updateFuture.setResponse(updateResponse);
-                }
-            }
-            catch (InterruptedException | ConversionException | ExecutionException ex)
-            {
-                updateFuture.setException(ex);
-            }
-
-        };
+            };
 
         fetchFuture.addListener(fetchListener);
         return updateFuture;

@@ -51,8 +51,17 @@ public final class PbResultFactory
             totalKeyCount += responseChunk.getKeysCount();
         }
 
+        // NB: Don't make this a lambda, Maven Shade Plugin breaks the build for some reason.
         FlatteningIterable<RiakTsPB.TsListKeysResp, RiakTsPB.TsRow> flatIterable =
-            new FlatteningIterable<>(responseChunks, provider -> provider.getKeysList().iterator());
+            new FlatteningIterable<>(responseChunks,
+                new FlatteningIterable.InnerIterableProvider<RiakTsPB.TsListKeysResp, RiakTsPB.TsRow>()
+                {
+                    @Override
+                    public Iterator<RiakTsPB.TsRow> getInnerIterator(RiakTsPB.TsListKeysResp provider)
+                    {
+                        return provider.getKeysList().iterator();
+                    }
+                });
 
         return new QueryResult(flatIterable, totalKeyCount);
     }
