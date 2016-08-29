@@ -51,7 +51,7 @@ public class FetchOpTest
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfKeysAreMissing()
     {
-        new FetchOperation.Builder(tableName, new ArrayList<Cell>(0)).build();
+        new FetchOperation.Builder(tableName, new ArrayList<>(0)).build();
     }
 
 }

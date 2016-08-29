@@ -53,8 +53,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     private final Bootstrap bootstrap;
     private final List<RiakNode> nodeList;
     private final ReentrantReadWriteLock nodeListLock = new ReentrantReadWriteLock();
-    private final LinkedBlockingQueue<FutureOperation> retryQueue =
-        new LinkedBlockingQueue<FutureOperation>();
+    private final LinkedBlockingQueue<FutureOperation> retryQueue = new LinkedBlockingQueue<>();
     private final boolean queueOperations;
     private final ConcurrentLinkedDeque<FutureOperation> operationQueue;
     private final RiakNode.Sync operationQueuePermits;
@@ -108,7 +107,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
             executor = new ScheduledThreadPoolExecutor(poolSize);
         }
 
-        nodeList = new ArrayList<RiakNode>(builder.riakNodes.size());
+        nodeList = new ArrayList<>(builder.riakNodes.size());
         for (RiakNode node : builder.riakNodes)
         {
             node.setExecutor(executor);
@@ -401,7 +400,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         try
         {
             nodeListLock.readLock().lock();
-            return new ArrayList<RiakNode>(nodeList);
+            return new ArrayList<>(nodeList);
         }
         finally
         {
@@ -667,7 +666,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
          */
         public Builder(List<RiakNode> riakNodes)
         {
-            this.riakNodes = new ArrayList<RiakNode>(riakNodes);
+            this.riakNodes = new ArrayList<>(riakNodes);
         }
 
         /**
@@ -709,7 +708,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
          */
         public Builder(RiakNode node)
         {
-            this.riakNodes = new ArrayList<RiakNode>(1);
+            this.riakNodes = new ArrayList<>(1);
             this.riakNodes.add(node);
         }
 

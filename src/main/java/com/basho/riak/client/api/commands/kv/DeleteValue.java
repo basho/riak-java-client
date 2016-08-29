@@ -68,8 +68,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 {
 
     private final Location location;
-    private final Map<Option<?>, Object> options =
-        new HashMap<Option<?>, Object>();
+    private final Map<Option<?>, Object> options = new HashMap<>();
     private final VClock vClock;
 
     public DeleteValue(Builder builder)
@@ -166,39 +165,39 @@ public final class DeleteValue extends RiakCommand<Void, Location>
          * Read Write Quorum.
          * Quorum for both operations (get and put) involved in deleting an object
          */
-        public static final Option<Quorum> RW = new Option<Quorum>("RW");
+        public static final Option<Quorum> RW = new Option<>("RW");
         /**
          * Read Quorum.
          * How many replicas need to agree when fetching the object.
          */
-        public static final Option<Quorum> R = new Option<Quorum>("R");
+        public static final Option<Quorum> R = new Option<>("R");
         /**
          * Write Quorum.
          * How many replicas to write to before returning a successful response.
          */
-        public static final Option<Quorum> W = new Option<Quorum>("W");
+        public static final Option<Quorum> W = new Option<>("W");
         /**
          * Primary Read Quorum.
          * How many primary replicas need to be available when retrieving the object.
          */
-        public static final Option<Quorum> PR = new Option<Quorum>("PR");
+        public static final Option<Quorum> PR = new Option<>("PR");
         /**
          * Primary Write Quorum.
          * How many primary nodes must be up when the write is attempted
          */
-        public static final Option<Quorum> PW = new Option<Quorum>("PW");
+        public static final Option<Quorum> PW = new Option<>("PW");
         /**
          * Durable Write Quorum.
          * How many replicas to commit to durable storage before returning a successful response.
          */
-        public static final Option<Quorum> DW = new Option<Quorum>("DW");
+        public static final Option<Quorum> DW = new Option<>("DW");
         /**
          * Timeout.
          * Sets the server-side timeout for this operation. The default is 60 seconds.
          */
-        public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
-        public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
-        public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+        public static final Option<Integer> TIMEOUT = new Option<>("TIMEOUT");
+        public static final Option<Boolean> SLOPPY_QUORUM = new Option<>("SLOPPY_QUORUM");
+        public static final Option<Integer> N_VAL = new Option<>("N_VAL");
 
         private Option(String name)
         {
@@ -211,8 +210,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
      */
     public static class Builder extends KvBuilderBase<DeleteValue>
     {
-        private final Map<Option<?>, Object> options =
-            new HashMap<Option<?>, Object>();
+        private final Map<Option<?>, Object> options = new HashMap<>();
         private VClock vClock;
 
         /**

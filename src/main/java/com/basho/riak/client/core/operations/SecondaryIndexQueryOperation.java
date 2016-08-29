@@ -723,8 +723,7 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         static class Builder
         {
             private BinaryValue continuation;
-            private List<Response.Entry> entryList =
-                new ArrayList<Response.Entry>();
+            private List<Response.Entry> entryList = new ArrayList<>();
 
             Builder withContinuation(BinaryValue continuation)
             {

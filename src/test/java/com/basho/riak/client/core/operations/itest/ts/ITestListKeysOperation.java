@@ -58,7 +58,7 @@ public class ITestListKeysOperation extends ITestTsBase
 
     private static List<Row> getKeyHeads()
     {
-        List<Row> keyHeads = new ArrayList<Row>(rows.size());
+        List<Row> keyHeads = new ArrayList<>(rows.size());
 
         for (Row row : rows)
         {

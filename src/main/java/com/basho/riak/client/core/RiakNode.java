@@ -58,14 +58,11 @@ public class RiakNode implements RiakResponseListener
 
     private final Logger logger = LoggerFactory.getLogger(RiakNode.class);
 
-    private final LinkedBlockingDeque<ChannelWithIdleTime> available =
-        new LinkedBlockingDeque<ChannelWithIdleTime>();
-    private final ConcurrentLinkedQueue<ChannelWithIdleTime> recentlyClosed =
-        new ConcurrentLinkedQueue<ChannelWithIdleTime>();
+    private final LinkedBlockingDeque<ChannelWithIdleTime> available = new LinkedBlockingDeque<>();
+    private final ConcurrentLinkedQueue<ChannelWithIdleTime> recentlyClosed = new ConcurrentLinkedQueue<>();
     private final List<NodeStateListener> stateListeners =
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
-    private final Map<Channel, FutureOperation> inProgressMap =
-        new ConcurrentHashMap<Channel, FutureOperation>();
+    private final Map<Channel, FutureOperation> inProgressMap = new ConcurrentHashMap<>();
 
     private final Sync permits;
     private final String remoteAddress;
@@ -260,7 +257,7 @@ public class RiakNode implements RiakResponseListener
 
         if (minConnections > 0)
         {
-            List<Channel> minChannels = new LinkedList<Channel>();
+            List<Channel> minChannels = new LinkedList<>();
             for (int i = 0; i < minConnections; i++)
             {
                 Channel channel;
@@ -770,7 +767,7 @@ public class RiakNode implements RiakResponseListener
 
         SSLEngine engine = context.createSSLEngine();
 
-        Set<String> protocols = new HashSet<String>(Arrays.asList(engine.getSupportedProtocols()));
+        Set<String> protocols = new HashSet<>(Arrays.asList(engine.getSupportedProtocols()));
 
         if (protocols.contains("TLSv1.2"))
         {
@@ -1605,7 +1602,7 @@ public class RiakNode implements RiakResponseListener
          */
         public static List<RiakNode> buildNodes(Builder builder, List<String> remoteAddresses)
         {
-            final Set<HostAndPort> hps = new HashSet<HostAndPort>();
+            final Set<HostAndPort> hps = new HashSet<>();
             for (String remoteAddress: remoteAddresses)
             {
                 hps.addAll( HostAndPort.hostsFromString(remoteAddress, builder.port) );
@@ -1637,7 +1634,7 @@ public class RiakNode implements RiakResponseListener
                 hps = (Set<HostAndPort>) remoteHosts;
             }
 
-            final List<RiakNode> nodes = new ArrayList<RiakNode>(hps.size());
+            final List<RiakNode> nodes = new ArrayList<>(hps.size());
             for (HostAndPort hp : hps)
             {
                 builder.withRemoteAddress(hp);

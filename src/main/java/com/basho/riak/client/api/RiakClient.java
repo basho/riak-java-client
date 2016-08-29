@@ -42,18 +42,18 @@ import java.util.concurrent.TimeoutException;
  * <img src="doc-files/client-image.png">
  * </p>
  * <p>
- * The easiest way to get started with the client API is using one of the static 
+ * The easiest way to get started with the client API is using one of the static
  * methods provided to instantiate and start the client:
  * </p>
  * <pre class="prettyprint">
  * {@code
- * RiakClient client = 
+ * RiakClient client =
  *     RiakClient.newClient("192.168.1.1","192.168.1.2","192.168.1.3"); } </pre>
- * 
- * Note that the Riak Java client uses the Riak Protocol Buffers API exclusively. 
+ *
+ * Note that the Riak Java client uses the Riak Protocol Buffers API exclusively.
  * <p>
  * For more complex configurations you will instantiate one or more {@link com.basho.riak.client.core.RiakNode}s
- * and build a {@link com.basho.riak.client.core.RiakCluster} to supply to the 
+ * and build a {@link com.basho.riak.client.core.RiakCluster} to supply to the
  * RiakClient constructor.
  * </p>
  * <pre class="prettyprint">
@@ -61,12 +61,12 @@ import java.util.concurrent.TimeoutException;
  * RiakNode.Builder builder = new RiakNode.Builder();
  * builder.withMinConnections(10);
  * builder.withMaxConnections(50);
- * 
+ *
  * List<String> addresses = new LinkedList<String>();
  * addresses.add("192.168.1.1");
  * addresses.add("192.168.1.2");
  * addresses.add("192.168.1.3");
- * 
+ *
  * List<RiakNode> nodes = RiakNode.Builder.buildNodes(builder, addresses);
  * RiakCluster cluster = new RiakCluster.Builder(nodes).build();
  * cluster.start();
@@ -83,7 +83,7 @@ import java.util.concurrent.TimeoutException;
  * RiakObject obj = response.getValue(RiakObject.class);}</pre>
  * </p>
  * <p>
- * You can also execute all {@literal RiakCommand}s asynchronously. A 
+ * You can also execute all {@literal RiakCommand}s asynchronously. A
  * {@link RiakFuture} for the operation is immediately returned:
  * <pre class="prettyprint">
  * {@code
@@ -167,8 +167,8 @@ public class RiakClient
     /**
 	 * Create a new RiakClient to perform operations on the given cluster.
      * <p>
-     * The RiakClient provides a user API on top of the client core. Once 
-     * instantiated, commands are submitted to it for execution on Riak. 
+     * The RiakClient provides a user API on top of the client core. Once
+     * instantiated, commands are submitted to it for execution on Riak.
      * </p>
      * @param cluster the started RiakCluster to use.
 	 */
@@ -181,9 +181,9 @@ public class RiakClient
      * Static factory method to create a new client instance.
      * This method produces a client that connects to 127.0.0.1 on the default
      * protocol buffers port (8087).
-     *  
+     *
      * @return a new client instance.
-     * @throws UnknownHostException 
+     * @throws UnknownHostException
      */
     public static RiakClient newClient() throws UnknownHostException
     {
@@ -192,9 +192,9 @@ public class RiakClient
         RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
         return new RiakClient(cluster);
-        
+
     }
-    
+
     /**
      * Static factory method to create a new client instance.
      * This method produces a client connected to the supplied addresses on
@@ -208,7 +208,7 @@ public class RiakClient
      {
          return newClient(port, Arrays.asList(remoteAddresses));
      }
-    
+
     /**
      * Static factory method to create a new client instance.
      * This method produces a client connected to the supplied addresses on
@@ -221,7 +221,7 @@ public class RiakClient
     {
         return newClient(RiakNode.Builder.DEFAULT_REMOTE_PORT, remoteAddresses);
     }
-    
+
     /**
      * Static factory method to create a new client instance.
      * This method produces a client connected to the supplied addresses on
@@ -234,7 +234,7 @@ public class RiakClient
     {
         return newClient(RiakNode.Builder.DEFAULT_REMOTE_PORT, Arrays.asList(remoteAddresses));
     }
-    
+
     /**
      * Static factory method to create a new client instance.
      * This method produces a client connected to the supplied addresses on
@@ -250,17 +250,17 @@ public class RiakClient
                                         .withRemotePort(port);
         return newClient(builder, remoteAddresses);
     }
-    
+
     /**
-     * Static factory method to create a new client instance. 
+     * Static factory method to create a new client instance.
      * This method produces a client connected to the supplied addresses.
      * @param addresses one or more addresses to connect to.
-     * @return a new RiakClient instance. 
+     * @return a new RiakClient instance.
      * @throws java.net.UnknownHostException if a supplied hostname cannot be resolved.
      */
     public static RiakClient newClient(InetSocketAddress... addresses) throws UnknownHostException
     {
-        final List<String> remoteAddresses = new ArrayList<String>(addresses.length);
+        final List<String> remoteAddresses = new ArrayList<>(addresses.length);
 
         for (InetSocketAddress addy : addresses)
         {
@@ -337,11 +337,11 @@ public class RiakClient
 	/**
 	 * Execute a RiakCommand synchronously.
      * <p>
-     * Calling this method causes the client to execute the provided RiakCommand synchronously. 
-     * It will block until the operation completes then either return the response 
+     * Calling this method causes the client to execute the provided RiakCommand synchronously.
+     * It will block until the operation completes then either return the response
      * on success or throw an exception on failure.
 	 * </p>
-     * 
+     *
 	 * @param command
 	 * 	The RiakCommand to execute.
 	 * @param <T>
@@ -359,12 +359,12 @@ public class RiakClient
     /**
      * Execute a RiakCommand synchronously with a specified client timeout.
      * <p>
-     * Calling this method causes the client to execute the provided RiakCommand synchronously. 
+     * Calling this method causes the client to execute the provided RiakCommand synchronously.
      * It will block until the operation completes or up to the given timeout.
      * It will either return the response on success or throw an
      * exception on failure.
-     * Note: Using this timeout is different that setting a timeout on the command 
-     * itself using the timeout() method of the command's associated builder. 
+     * Note: Using this timeout is different that setting a timeout on the command
+     * itself using the timeout() method of the command's associated builder.
      * The command timeout is a Riak-side timeout value. This timeout is client-side.
      * </p>
      *
@@ -387,13 +387,13 @@ public class RiakClient
     InterruptedException, TimeoutException {
         return command.execute(cluster, timeout, unit);
     }
-    
+
     /**
      * Execute a RiakCommand asynchronously.
      * <p>
      * Calling this method  causes the client to execute the provided RiakCommand
-     * asynchronously. It will immediately return a RiakFuture that contains the 
-     * running operation. 
+     * asynchronously. It will immediately return a RiakFuture that contains the
+     * running operation.
      * @param <T> RiakCommand's return type.
      * @param <S> The RiakCommand's query info type.
      * @param command The RiakCommand to execute.
@@ -404,12 +404,12 @@ public class RiakClient
     {
         return command.executeAsync(cluster);
     }
-    
+
 	/**
 	 * Shut down the client and the underlying RiakCluster.
 	 * <p>
-     * The underlying client core (RiakCluster) uses a number of threads as 
-     * does Netty. Calling this method will shut down all those threads cleanly. 
+     * The underlying client core (RiakCluster) uses a number of threads as
+     * does Netty. Calling this method will shut down all those threads cleanly.
      * Failure to do so may prevent your application from exiting.
      * </p>
 	 * @return a future that will complete when shutdown
@@ -418,7 +418,7 @@ public class RiakClient
 	{
 		return cluster.shutdown();
 	}
-    
+
     /**
      * Get the RiakCluster being used by this client.
      * <p>

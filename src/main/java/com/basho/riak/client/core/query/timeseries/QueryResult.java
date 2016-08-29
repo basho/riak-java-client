@@ -101,7 +101,7 @@ public class QueryResult implements Iterable<Row>
      */
     public List<Row> getRowsCopy()
     {
-        final List<Row> rows = new ArrayList<Row>(this.getRowsCount());
+        final List<Row> rows = new ArrayList<>(this.getRowsCount());
 
         for (Row cells : this)
         {

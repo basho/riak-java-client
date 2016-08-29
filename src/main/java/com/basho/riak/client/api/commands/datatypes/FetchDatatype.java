@@ -34,7 +34,7 @@ import java.util.Map;
 public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakCommand<S,U>
 {
     private final Location location;
-    private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+    private final Map<Option<?>, Object> options = new HashMap<>();
 
     public Location getLocation()
     {
@@ -112,40 +112,40 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
          * Read Quorum.
          * How many replicas need to agree when fetching the object.
          */
-        public static final Option<Quorum> R = new Option<Quorum>("R");
+        public static final Option<Quorum> R = new Option<>("R");
 
         /**
          * Primary Read Quorum.
          * How many primary replicas need to be available when retrieving the object.
          */
-        public static final Option<Quorum> PR = new Option<Quorum>("PR");
+        public static final Option<Quorum> PR = new Option<>("PR");
 
         /**
          * Basic Quorum.
          * Whether to return early in some failure cases (eg. when r=1 and you get
          * 2 errors and a success basic_quorum=true would return an error)
          */
-        public static final Option<Boolean> BASIC_QUORUM = new Option<Boolean>("BASIC_QUORUM");
+        public static final Option<Boolean> BASIC_QUORUM = new Option<>("BASIC_QUORUM");
 
         /**
          * Not Found OK.
          * Whether to treat notfounds as successful reads for the purposes of R
          */
-        public static final Option<Boolean> NOTFOUND_OK = new Option<Boolean>("NOTFOUND_OK");
+        public static final Option<Boolean> NOTFOUND_OK = new Option<>("NOTFOUND_OK");
 
         /**
          * Timeout.
          * Sets the server-side timeout for this operation. The default in Riak is 60 seconds.
          */
-        public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
-        public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
-        public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+        public static final Option<Integer> TIMEOUT = new Option<>("TIMEOUT");
+        public static final Option<Boolean> SLOPPY_QUORUM = new Option<>("SLOPPY_QUORUM");
+        public static final Option<Integer> N_VAL = new Option<>("N_VAL");
 
         /**
          * Whether to return a context.
          * The default is true. Use this option if you're planning on only reading the datatype.
          */
-        public static final Option<Boolean> INCLUDE_CONTEXT = new Option<Boolean>("INCLUDE_CONTEXT");
+        public static final Option<Boolean> INCLUDE_CONTEXT = new Option<>("INCLUDE_CONTEXT");
 
         public Option(String name)
         {
@@ -160,7 +160,7 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
     protected static abstract class Builder<T extends Builder<T>>
     {
         private final Location location;
-        private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+        private final Map<Option<?>, Object> options = new HashMap<>();
 
         protected Builder(Location location)
         {

@@ -64,7 +64,7 @@ public class UpdateValueTest
         riakObject = new RiakObject();
         riakObject.setValue(BinaryValue.create(new byte[]{'O', '_', 'o'}));
 
-        ArrayList<RiakObject> objects = new ArrayList<RiakObject>();
+        ArrayList<RiakObject> objects = new ArrayList<>();
         objects.add(riakObject);
 
         FetchOperation.Response fetchResponse = mock(FetchOperation.Response.class);
@@ -73,9 +73,9 @@ public class UpdateValueTest
         StoreOperation.Response storeResponse = mock(StoreOperation.Response.class);
         when(storeResponse.getObjectList()).thenReturn(objects);
 
-        when(mockCluster.execute(any(FutureOperation.class))).thenReturn(new ImmediateRiakFuture<FetchOperation
-                .Response, Location>(
-                fetchResponse)).thenReturn(new ImmediateRiakFuture<StoreOperation.Response, Location>(storeResponse));
+        when(mockCluster.execute(any(FutureOperation.class)))
+                .thenReturn(new ImmediateRiakFuture<FetchOperation.Response, Location>(fetchResponse))
+                .thenReturn(new ImmediateRiakFuture<StoreOperation.Response, Location>(storeResponse));
 
         client = new RiakClient(mockCluster);
 
@@ -113,7 +113,7 @@ public class UpdateValueTest
         UpdateValue update = new UpdateValue.Builder(key).withUpdate(new NoopUpdate()).build();
 
         // Setup new client with 0 connections.
-        RiakClient client = RiakClient.newClient(1, new ArrayList<String>());
+        RiakClient client = RiakClient.newClient(1, new ArrayList<>());
 
         RiakFutureListener<UpdateValue.Response, Location> failureListener = f ->
         {

@@ -42,8 +42,8 @@ import java.util.concurrent.CountDownLatch;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public class RiakSecurityDecoder extends ByteToMessageDecoder 
-    
+public class RiakSecurityDecoder extends ByteToMessageDecoder
+
 {
     private final CountDownLatch promiseLatch = new CountDownLatch(1);
     private final SSLEngine sslEngine;
@@ -51,18 +51,18 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
     private final String password;
     private final Logger logger = LoggerFactory.getLogger(RiakSecurityDecoder.class);
     private volatile DefaultPromise<Void> promise;
-    
+
     private enum State { TLS_START, TLS_WAIT, SSL_WAIT, AUTH_WAIT }
-    
+
     private volatile State state = State.TLS_START;
-    
+
     public RiakSecurityDecoder(SSLEngine engine, String username, String password)
     {
         this.sslEngine = engine;
         this.username = username;
         this.password = password;
     }
-    
+
     @Override
     protected void decode(ChannelHandlerContext chc, ByteBuf in, List<Object> out) throws Exception
     {
@@ -72,7 +72,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
         {
             in.markReaderIndex();
             int length = in.readInt();
-            
+
             // See if we have the full frame.
             if (in.readableBytes() < length)
             {
@@ -83,7 +83,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                 byte code = in.readByte();
                 byte[] protobuf = new byte[length - 1];
                 in.readBytes(protobuf);
-                
+
                 switch(state)
                 {
                     case TLS_WAIT:
@@ -136,7 +136,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
             }
         }
     }
-    
+
     private RiakResponseException riakErrorToException(byte[] protobuf)
     {
         try
@@ -149,33 +149,33 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
             return null;
         }
     }
-    
+
     private void init(ChannelHandlerContext ctx)
     {
         state = State.TLS_WAIT;
-        promise = new DefaultPromise<Void>(ctx.executor());
+        promise = new DefaultPromise<>(ctx.executor());
         promiseLatch.countDown();
-        ctx.channel().writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_StartTls, 
+        ctx.channel().writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_StartTls,
                                     new byte[0]));
     }
-    
+
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception
     {
-        
+
         logger.debug("Handler Added");
         if (ctx.channel().isActive())
         {
             init(ctx);
         }
     }
-    
+
     @Override
     public void channelActive(final ChannelHandlerContext ctx) throws Exception
     {
         logger.debug("Channel Active");
     }
-    
+
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception
     {
@@ -183,12 +183,12 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
 
         promise.tryFailure(new IOException("Channel closed during auth"));
         ctx.fireChannelInactive();
-       
+
     }
-    
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception 
+            throws Exception
     {
         logger.debug("Exception Caught: {}", cause);
 
@@ -201,13 +201,13 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
             ctx.fireExceptionCaught(cause);
         }
     }
-    
+
     public DefaultPromise<Void> getPromise() throws InterruptedException
     {
         promiseLatch.await();
         return promise;
     }
-    
+
     private class SslListener implements GenericFutureListener<Future<Channel>>
     {
         @Override
@@ -218,14 +218,14 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                 logger.debug("SSL Handshake success!");
                 Channel c = future.getNow();
                 state = State.AUTH_WAIT;
-                RiakPB.RpbAuthReq authReq = 
+                RiakPB.RpbAuthReq authReq =
                 RiakPB.RpbAuthReq.newBuilder()
                     .setUser(ByteString.copyFromUtf8(username))
                     .setPassword(ByteString.copyFromUtf8(password))
                     .build();
-                c.writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_AuthReq, 
+                c.writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_AuthReq,
                                 authReq.toByteArray()));
-                
+
             }
             else
             {
@@ -234,7 +234,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
             }
         }
     }
-    
-    
-    
+
+
+
 }

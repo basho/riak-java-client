@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -57,7 +57,7 @@ public class AnnotationScanner implements Callable<AnnotationInfo>
 
         // This allows us to start at the top and walk down so that
         // annotations are overridden in subsclasses
-        LinkedList<Class> classList = new LinkedList<Class>();
+        LinkedList<Class> classList = new LinkedList<>();
         Class currentClass = classToScan;
         while (currentClass != Object.class)
         {

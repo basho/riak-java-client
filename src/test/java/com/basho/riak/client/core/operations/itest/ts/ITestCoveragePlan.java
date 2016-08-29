@@ -47,7 +47,7 @@ public class ITestCoveragePlan extends ITestTsBase
 
     private static void createData() throws ExecutionException, InterruptedException
     {
-        List<Row> rows1 = new ArrayList<Row>();
+        List<Row> rows1 = new ArrayList<>();
         for (long time = from; time <= to; time += quantum)
         {
             rows1.add(new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(time), new Cell("cloudy"), new Cell(
@@ -69,7 +69,7 @@ public class ITestCoveragePlan extends ITestTsBase
 
         final RiakFuture<CoveragePlanResult, String> response = client.executeAsync(cmd);
         response.await();
-        final List<CoverageEntry> coverageEntries = new LinkedList<CoverageEntry>();
+        final List<CoverageEntry> coverageEntries = new LinkedList<>();
         for (CoverageEntry ce : response.get())
         {
             coverageEntries.add(ce);
@@ -89,7 +89,7 @@ public class ITestCoveragePlan extends ITestTsBase
 
         final RiakFuture<CoveragePlanResult, String> response = client.executeAsync(cmd);
         response.await();
-        final List<CoverageEntry> coverageEntries = new LinkedList<CoverageEntry>();
+        final List<CoverageEntry> coverageEntries = new LinkedList<>();
         for (CoverageEntry ce : response.get())
         {
             coverageEntries.add(ce);
@@ -129,7 +129,7 @@ public class ITestCoveragePlan extends ITestTsBase
 
         final RiakFuture<CoveragePlanResult, String> response = client.executeAsync(cmd);
         response.await();
-        final List<CoverageEntry> lst = new LinkedList<CoverageEntry>();
+        final List<CoverageEntry> lst = new LinkedList<>();
         for (CoverageEntry ce : response.get())
         {
             lst.add(ce);

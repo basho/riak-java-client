@@ -247,7 +247,7 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
             }
         }
 
-        private HashMap<HostAndPort, List<CoverageEntry>> perHostCoverage = new HashMap<HostAndPort, List<CoverageEntry>>();
+        private HashMap<HostAndPort, List<CoverageEntry>> perHostCoverage = new HashMap<>();
 
         protected Response()
         {
@@ -339,7 +339,7 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
             List<CoverageEntry> lst =  perHostCoverage.get(key);
             if(lst == null)
             {
-                lst = new LinkedList<CoverageEntry>();
+                lst = new LinkedList<>();
                 perHostCoverage.put(key, lst);
             }
             lst.add(coverageEntry);
