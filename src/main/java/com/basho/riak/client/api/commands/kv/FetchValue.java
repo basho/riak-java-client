@@ -75,8 +75,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 {
 
     private final Location location;
-    private final Map<RiakOption<?>, Object> options =
-            new HashMap<>();
+    private final Map<RiakOption<?>, Object> options = new HashMap<>();
 
     FetchValue(Builder builder)
     {
