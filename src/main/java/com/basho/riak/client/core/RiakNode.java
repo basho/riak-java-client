@@ -692,7 +692,7 @@ public class RiakNode implements RiakResponseListener
             }
         }
 
-        if(forceAddressRefresh)
+        if (forceAddressRefresh)
         {
             refreshBootstrapRemoteAddress();
         }
@@ -746,7 +746,7 @@ public class RiakNode implements RiakResponseListener
             TrustManagerFactory tmf =
                 TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(trustStore);
-                if(keyStore!=null)
+                if (keyStore!=null)
             {
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 kmf.init(keyStore, keyPassword==null?"".toCharArray():keyPassword.toCharArray());
@@ -932,11 +932,11 @@ public class RiakNode implements RiakResponseListener
         final boolean propertyUndefined = property == null;
         boolean logWarning = false;
 
-        if(propertyUndefined && usingSecurityMgr)
+        if (propertyUndefined && usingSecurityMgr)
         {
             logWarning = true;
         }
-        else if(!propertyUndefined)
+        else if (!propertyUndefined)
         {
             final int cacheTTL = Integer.parseInt(property);
             logWarning = (cacheTTL == -1);

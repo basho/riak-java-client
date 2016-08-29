@@ -126,7 +126,7 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
         {
             for (FullColumnDescription fullColumnDescription : this.tableDefinition.getPartitionKeyColumnDescriptions())
             {
-                if(!fullColumnDescription.hasQuantum())
+                if (!fullColumnDescription.hasQuantum())
                 {
                     continue;
                 }

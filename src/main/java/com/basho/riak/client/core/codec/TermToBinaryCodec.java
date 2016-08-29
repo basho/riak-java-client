@@ -41,7 +41,7 @@ public class TermToBinaryCodec
         }
         os.write_nil(); // NB: finishes the list
 
-        if(timeout != 0)
+        if (timeout != 0)
         {
             os.write_long(timeout);
         }
@@ -112,7 +112,7 @@ public class TermToBinaryCodec
         os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
 
         // Columns List
-        if(columns != null && !columns.isEmpty())
+        if (columns != null && !columns.isEmpty())
         {
             os.write_list_head(columns.size());
 

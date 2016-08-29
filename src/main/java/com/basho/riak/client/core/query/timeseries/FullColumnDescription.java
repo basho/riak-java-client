@@ -134,15 +134,15 @@ public class FullColumnDescription extends ColumnDescription
 
     private void validateQuantumUsage(ColumnType type, Integer partitionKeyOrdinal, Quantum quantum)
     {
-        if(quantum != null)
+        if (quantum != null)
         {
-            if(type != ColumnType.TIMESTAMP)
+            if (type != ColumnType.TIMESTAMP)
             {
                 throw new IllegalArgumentException(
                         String.format("Cannot apply a quantum to a non-Timestamp type column, current column is %s.",
                                       type));
             }
-            if(partitionKeyOrdinal == null)
+            if (partitionKeyOrdinal == null)
             {
                 throw new IllegalArgumentException("Cannot apply a quantum to a column that is not part of the partition key.");
             }

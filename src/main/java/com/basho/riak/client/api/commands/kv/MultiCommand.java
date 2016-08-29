@@ -306,7 +306,7 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
             futures = Collections.synchronizedList(new LinkedList<RiakFuture<BaseResponseType, Location>>());
 
             // If we have no locations, then we have no work to do.
-            if(this.locations.isEmpty())
+            if (this.locations.isEmpty())
             {
                 setCompleted();
             }

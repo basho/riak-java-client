@@ -412,7 +412,7 @@ public class ITestTimeSeries extends ITestTsBase
     {
         final List<T> r = new LinkedList<>();
 
-        while(itor.hasNext())
+        while (itor.hasNext())
         {
             r.add(itor.next());
         }
