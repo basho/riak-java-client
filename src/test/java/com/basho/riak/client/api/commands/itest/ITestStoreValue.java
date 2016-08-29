@@ -47,50 +47,50 @@ public class ITestStoreValue extends ITestAutoCleanupBase
         Location loc = new Location(ns, "test_store_key");
         Pojo pojo = new Pojo();
         pojo.value = "test store value";
-        StoreValue sv = 
+        StoreValue sv =
             new StoreValue.Builder(pojo).withLocation(loc)
                 .withOption(Option.RETURN_BODY, true)
                 .build();
-        
+
         StoreValue.Response resp = client.execute(sv);
-        
+
         Pojo pojo2 = resp.getValue(Pojo.class);
-        
+
         assertEquals(pojo.value, pojo2.value);
-        
+
         FetchValue fv = new FetchValue.Builder(loc)
-                            .build(); 
-        
+                            .build();
+
         FetchValue.Response fResp = client.execute(fv);
-        
+
         assertEquals(pojo.value, fResp.getValue(Pojo.class).value);
-        
+
     }
-    
-    
-    
+
+
+
     @Test
     public void storeAnnotatedPojo() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        
+
         RiakAnnotatedPojo pojo = new RiakAnnotatedPojo();
-        
+
         pojo.bucketType = "default";
         pojo.bucketName = bucketName.toString();
         pojo.key = "test_store_key_3";
         pojo.contentType = null; // converter will set
         pojo.value = "my value";
-        
-         StoreValue sv = 
+
+         StoreValue sv =
             new StoreValue.Builder(pojo)
                 .withOption(Option.RETURN_BODY, true)
                 .build();
-        
+
         StoreValue.Response resp = client.execute(sv);
-        
+
         RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
-        
+
         assertNotNull(rap.bucketName);
         assertEquals(pojo.bucketName, rap.bucketName);
         assertNotNull(rap.key);
@@ -107,79 +107,79 @@ public class ITestStoreValue extends ITestAutoCleanupBase
         assertNotNull(rap.value);
         assertEquals(pojo.value, rap.value);
     }
-    
+
     @Test
     public void storeAnnotatedPojoWithIndexes() throws ExecutionException, InterruptedException
     {
         Assume.assumeTrue(test2i);
-        
+
         RiakClient client = new RiakClient(cluster);
-        
+
         RiakAnnotatedPojo pojo = new RiakAnnotatedPojo();
-        
+
         pojo.bucketType = "default";
         pojo.bucketName = bucketName.toString();
         pojo.key = "test_store_key_3";
         pojo.contentType = null; // converter will set
         pojo.value = "my value";
-        
-        Set<String> emailAddys = new HashSet<String>();
+
+        Set<String> emailAddys = new HashSet<>();
         emailAddys.add("roach@basho.com");
-        
+
         pojo.emailIndx = emailAddys;
         pojo.userId = 1L;
-        
-        StoreValue sv = 
+
+        StoreValue sv =
             new StoreValue.Builder(pojo)
                 .withOption(Option.RETURN_BODY, true)
                 .build();
-        
+
         StoreValue.Response resp = client.execute(sv);
-        
+
         RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
-        
+
         assertTrue(rap.emailIndx.containsAll(emailAddys));
         assertEquals(rap.userId, pojo.userId);
-        
-        
+
+
     }
-    
+
     @Test
     public void riakGeneratesKey() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        
+
         RiakAnnotatedPojo pojo = new RiakAnnotatedPojo();
-        
+
         pojo.bucketType = "default";
         pojo.bucketName = bucketName.toString();
         pojo.contentType = null; // converter will set
         pojo.value = "my value";
-        
-         StoreValue sv = 
+
+         StoreValue sv =
             new StoreValue.Builder(pojo)
                 .withOption(Option.RETURN_BODY, true)
                 .build();
-        
+
         StoreValue.Response resp = client.execute(sv);
-        
+
         RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
-        
+
         assertNotNull(rap.key);
         assertFalse(rap.key.isEmpty());
         assertTrue(resp.hasGeneratedKey());
         assertNotNull(resp.hasGeneratedKey());
         assertFalse(resp.getGeneratedKey().length() == 0);
     }
-    
+
     public static class Pojo
     {
         @JsonProperty
         String value;
-        
+
         @RiakVClock
         VClock vclock;
-        
+
     }
-    
+
 }

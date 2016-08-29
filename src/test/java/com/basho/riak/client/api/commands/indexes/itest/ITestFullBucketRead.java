@@ -104,7 +104,7 @@ public class ITestFullBucketRead extends ITestBase
         final List<FullBucketRead.Response.Entry> entries = response.getEntries();
         assertEquals(NUMBER_OF_TEST_VALUES, entries.size());
 
-        final HashSet<String> returnedKeys = new HashSet<String>(NUMBER_OF_TEST_VALUES);
+        final HashSet<String> returnedKeys = new HashSet<>(NUMBER_OF_TEST_VALUES);
         for (FullBucketRead.Response.Entry e : entries)
         {
             assertFalse(e.hasFetchedValue());
@@ -215,7 +215,7 @@ public class ITestFullBucketRead extends ITestBase
             throws UnknownHostException, ExecutionException, InterruptedException
     {
 
-        final Map<CoverageEntry, List<Entry>> chunkedKeys = new HashMap<CoveragePlanOperation.Response.CoverageEntry, List<FullBucketRead.Response.Entry>>();
+        final Map<CoverageEntry, List<Entry>> chunkedKeys = new HashMap<>();
 
         // -- perform Full Bucket read and gather all results preserving partitioning by CoverageEntry
         for (HostAndPort host : coveragePlan.hosts())

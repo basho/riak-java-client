@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technoilogies Inc. 
+ * Copyright 2013 Basho Technoilogies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -300,7 +300,7 @@ public class BucketProperties
      *
      * @return a List containing the pre-commit hooks.
      * @see
-     * BucketProperties.Builder#withPrecommitHook(com.basho.riak.client.core.query.functions.Function) 
+     * BucketProperties.Builder#withPrecommitHook(com.basho.riak.client.core.query.functions.Function)
      */
     public List<Function> getPrecommitHooks()
     {
@@ -322,7 +322,7 @@ public class BucketProperties
      *
      * @return a List containing the post-commit hooks
      * @see
-     * BucketProperties.Builder#withPostcommitHook(com.basho.riak.client.core.query.functions.Function) 
+     * BucketProperties.Builder#withPostcommitHook(com.basho.riak.client.core.query.functions.Function)
      */
     public List<Function> getPostcommitHooks()
     {
@@ -653,10 +653,8 @@ public class BucketProperties
         private Quorum pw;
         private Boolean notFoundOk;
         private Boolean basicQuorum;
-        private final List<Function> precommitHooks
-            = new LinkedList<Function>();
-        private final List<Function> postcommitHooks
-            = new LinkedList<Function>();
+        private final List<Function> precommitHooks = new LinkedList<>();
+        private final List<Function> postcommitHooks = new LinkedList<>();
         private Long oldVClock;
         private Long youngVClock;
         private Long bigVClock;
@@ -1032,7 +1030,7 @@ public class BucketProperties
          * hook to be added.
          *
          * <b>Note this is only for legacy Riak (&lt; v2.0) Search support.</b>
-         * 
+         *
          * @param enable add/remove (true/false) the pre-commit hook for Riak
          * Search.
          * @return a reference to this object.
@@ -1059,7 +1057,7 @@ public class BucketProperties
             this.yokozunaIndex = indexName;
             return this;
         }
-        
+
         public BucketProperties build()
         {
             return new BucketProperties(this);

@@ -245,7 +245,7 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
                 return convertedList;
             }
 
-            convertedList = new ArrayList<Entry>(coreResponse.getEntryList().size());
+            convertedList = new ArrayList<>(coreResponse.getEntryList().size());
             for (SecondaryIndexQueryOperation.Response.Entry e : coreResponse.getEntryList())
             {
                 final Location loc = getLocationFromCoreEntry(e);

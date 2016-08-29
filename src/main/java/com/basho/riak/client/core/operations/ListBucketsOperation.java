@@ -47,7 +47,7 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
     @Override
     protected ListBucketsOperation.Response convert(List<RiakKvPB.RpbListBucketsResp> rawResponse)
     {
-        List<BinaryValue> buckets = new ArrayList<BinaryValue>(rawResponse.size());
+        List<BinaryValue> buckets = new ArrayList<>(rawResponse.size());
         for (RiakKvPB.RpbListBucketsResp resp : rawResponse)
         {
             for (ByteString bucket : resp.getBucketsList())

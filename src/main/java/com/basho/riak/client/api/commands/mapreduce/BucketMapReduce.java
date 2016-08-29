@@ -26,7 +26,7 @@ public class BucketMapReduce extends MapReduce
 	{
 
 		private Namespace namespace;
-		private final List<KeyFilter> filters = new ArrayList<KeyFilter>();
+		private final List<KeyFilter> filters = new ArrayList<>();
 
 		@Override
 		protected Builder self()
@@ -45,7 +45,7 @@ public class BucketMapReduce extends MapReduce
             filters.add(filter);
 			return this;
 		}
-        
+
 		public BucketMapReduce build()
 		{
 			if (namespace == null)

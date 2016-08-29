@@ -115,7 +115,7 @@ public class RiakLinks implements Iterable<RiakLink>
      */
     public Set<RiakLink> getLinks()
     {
-        return new HashSet<RiakLink>(links);
+        return new HashSet<>(links);
     }
 
     /**

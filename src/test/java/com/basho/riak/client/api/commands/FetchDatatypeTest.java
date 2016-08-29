@@ -46,7 +46,7 @@ public class FetchDatatypeTest extends MockedResponseOperationTest<DtFetchOperat
     {
         super.setupResponse(mockedResponse);
 
-        when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<RiakMap.MapEntry>()));
+        when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<>()));
         when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[]{'1'}));
     }
 

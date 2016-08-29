@@ -93,7 +93,7 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
                 .build();
 
         final CoveragePlan.Response response = client.execute(cmd);
-        final List<CoverageEntry> lst = new LinkedList<CoverageEntry>();
+        final List<CoverageEntry> lst = new LinkedList<>();
         for(CoverageEntry ce: response)
         {
             lst.add(ce);
@@ -133,7 +133,7 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
         }
 
         final Map<CoverageEntry, List<BinIndexQuery.Response.Entry>> chunkedKeys
-                = new HashMap<CoverageEntry, List<BinIndexQuery.Response.Entry>>();
+                = new HashMap<>();
 
         for(HostAndPort host: response.hosts())
         {
@@ -169,7 +169,7 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
             }
         }
 
-        final Set<String> keys = new HashSet<String>(NUMBER_OF_TEST_VALUES);
+        final Set<String> keys = new HashSet<>(NUMBER_OF_TEST_VALUES);
         for(Map.Entry<CoverageEntry, List<BinIndexQuery.Response.Entry>> e: chunkedKeys.entrySet())
         {
             final CoverageEntry ce = e.getKey();
@@ -179,7 +179,7 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
             }
             else
             {
-                final List<String> lst = new ArrayList<String>(e.getValue().size());
+                final List<String> lst = new ArrayList<>(e.getValue().size());
 
                 for(BinIndexQuery.Response.Entry re: e.getValue())
                 {

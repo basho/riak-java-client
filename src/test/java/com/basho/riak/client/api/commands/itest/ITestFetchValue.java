@@ -224,7 +224,7 @@ public class ITestFetchValue extends ITestAutoCleanupBase
 
         assertEquals(pojo.value, fResp.getValue(Pojo.class).value);
 
-        JSONConverter<Pojo> converter = new JSONConverter<Pojo>(Pojo.class);
+        JSONConverter<Pojo> converter = new JSONConverter<>(Pojo.class);
 
         assertEquals(pojo.value, fResp.getValues(converter).get(0).value);
         assertEquals(pojo.value, fResp.getValue(converter, resolver).value);

@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RiakUserMetadata
 {
-    private final ConcurrentHashMap<BinaryValue, BinaryValue> meta = new ConcurrentHashMap<BinaryValue, BinaryValue>();
+    private final ConcurrentHashMap<BinaryValue, BinaryValue> meta = new ConcurrentHashMap<>();
 
     /**
      * Determine if usermeta is present.

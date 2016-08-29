@@ -157,7 +157,7 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
     protected static abstract class Builder<T extends Builder<T>>
     {
 
-        protected final List<MapReducePhase> phases = new LinkedList<MapReducePhase>();
+        protected final List<MapReducePhase> phases = new LinkedList<>();
         protected Long timeout;
 
         /**

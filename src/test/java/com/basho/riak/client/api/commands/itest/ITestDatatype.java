@@ -127,7 +127,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
 		// cart - asSet
 		RiakSet shoppingCartSet = usernameMap.getSet(shoppingCart);
 		Set<BinaryValue> setView = shoppingCartSet.view();
-		Set<BinaryValue> expectedSet = new HashSet<BinaryValue>();
+		Set<BinaryValue> expectedSet = new HashSet<>();
 		for (int i = 0; i < 10; ++i)
 		{
 			ByteBuffer b = ByteBuffer.allocate(4);
@@ -147,7 +147,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
 
         MapUpdate innerMapUpdate = new MapUpdate().update("flag", new FlagUpdate(true));
         CounterUpdate innerCounterUpdate = new CounterUpdate(1);
-        
+
 		// Insert a Map and Counter into logins and observe both counter and map returned
 		UpdateMap conflictedUpdateCmd =
 			new UpdateMap.Builder(carts, new MapUpdate().update(numLogins, innerMapUpdate).update(numLogins, innerCounterUpdate))

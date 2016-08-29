@@ -86,7 +86,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
 
     static FetchOperation.Response convert(RiakKvPB.RpbGetResp response)
     {
-        FetchOperation.Response.Builder responseBuilder = 
+        FetchOperation.Response.Builder responseBuilder =
                 new FetchOperation.Response.Builder();
 
         // If the response is null ... it means not found. Riak only sends
@@ -317,8 +317,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
 
         protected static abstract class Init<T extends Init<T>>
         {
-            private final List<RiakObject> objectList =
-                new LinkedList<RiakObject>();
+            private final List<RiakObject> objectList = new LinkedList<>();
             protected abstract T self();
             protected abstract KvResponseBase build();
 

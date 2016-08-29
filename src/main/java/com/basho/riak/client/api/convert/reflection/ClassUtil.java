@@ -78,15 +78,7 @@ public final class ClassUtil
         {
             value = m.invoke(obj);
         }
-        catch (IllegalAccessException e)
-        {
-            throw new IllegalStateException("Unable to get Riak annotated method value", e);
-        }
-        catch (IllegalArgumentException e)
-        {
-            throw new IllegalStateException("Unable to get Riak annotated method value", e);
-        }
-        catch (InvocationTargetException e)
+        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
         {
             throw new IllegalStateException("Unable to get Riak annotated method value", e);
         }
@@ -100,15 +92,7 @@ public final class ClassUtil
         {
             m.invoke(obj, value);
         }
-        catch (IllegalAccessException e)
-        {
-            throw new IllegalStateException("Unable to set Riak annotated method value", e);
-        }
-        catch (IllegalArgumentException e)
-        {
-            throw new IllegalStateException("Unable to set Riak annotated method value", e);
-        }
-        catch (InvocationTargetException e)
+        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
         {
             throw new IllegalStateException("Unable to set Riak annotated method value", e);
         }

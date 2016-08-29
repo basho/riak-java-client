@@ -20,10 +20,7 @@ import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.*;
 import com.basho.riak.client.core.query.search.YokozunaIndex;
 import com.basho.riak.client.core.query.search.YokozunaSchema;
-import org.junit.AfterClass;
-import org.junit.Assume;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -41,9 +38,16 @@ public class ITestYzAdminOperations extends ITestBase
     private static final String deleteIndex = "delete_index_ITestYzAdminOperations";
     private static final String timeoutIndex = "timeout_index_ITestYzAdminOperations";
 
+    @Before
+    public void BeforeTests()
+    {
+        Assume.assumeTrue(testYokozuna);
+    }
+
     @AfterClass
     public static void Cleanup() throws ExecutionException, InterruptedException
     {
+        Assume.assumeTrue(testYokozuna);
         DeleteIndex(fetchIndex);
         DeleteIndex(deleteIndex);
         DeleteIndex(timeoutIndex);
@@ -66,16 +70,15 @@ public class ITestYzAdminOperations extends ITestBase
     @Test
     public void testStoreandFetchSchema() throws InterruptedException, ExecutionException
     {
-        Assume.assumeTrue(testYokozuna);
-        YokozunaSchema yzSchema = new YokozunaSchema("test_schema", 
+        YokozunaSchema yzSchema = new YokozunaSchema("test_schema",
             "<schema name=\"test_schema\" version=\"1.0\">"
             + "<fields>"
             + "<field name=\"_version_\" type=\"long\" indexed=\"true\" stored=\"true\" multiValued=\"false\"/>"
             + "<field name=\"_yz_id\" type=\"_yz_str\" indexed=\"true\" stored=\"true\" multiValued=\"false\" required=\"true\"/>"
-            + "<field name=\"_yz_ed\" type=\"_yz_str\" indexed=\"true\" stored=\"true\" multiValued=\"false\"/>" 
+            + "<field name=\"_yz_ed\" type=\"_yz_str\" indexed=\"true\" stored=\"true\" multiValued=\"false\"/>"
             + "<field name=\"_yz_pn\" type=\"_yz_str\" indexed=\"true\" stored=\"true\" multiValued=\"false\"/>"
             + "<field name=\"_yz_fpn\" type=\"_yz_str\" indexed=\"true\" stored=\"true\" multiValued=\"false\"/>"
-            + "<field name=\"_yz_vtag\" type=\"_yz_str\" indexed=\"true\" stored=\"true\" multiValued=\"false\"/>" 
+            + "<field name=\"_yz_vtag\" type=\"_yz_str\" indexed=\"true\" stored=\"true\" multiValued=\"false\"/>"
             + "<field name=\"_yz_rk\" type=\"_yz_str\" indexed=\"true\" stored=\"true\" multiValued=\"false\"/>"
             + "<field name=\"_yz_rb\" type=\"_yz_str\" indexed=\"true\" stored=\"true\" multiValued=\"false\"/>"
             + "</fields>"
@@ -85,7 +88,7 @@ public class ITestYzAdminOperations extends ITestBase
             + "<fieldType name=\"long\" class=\"solr.TrieLongField\" precisionStep=\"0\" positionIncrementGap=\"0\"/>"
             + "</types>"
             + "</schema>");
-        
+
 
         YzPutSchemaOperation putOp = new YzPutSchemaOperation.Builder(yzSchema).build();
         cluster.execute(putOp);
@@ -102,7 +105,6 @@ public class ITestYzAdminOperations extends ITestBase
     @Test
     public void fetchAndStoreDefaultSchema() throws InterruptedException, ExecutionException
     {
-        Assume.assumeTrue(testYokozuna);
         YzGetSchemaOperation getOp = new YzGetSchemaOperation.Builder("_yz_default").build();
 
         cluster.execute(getOp);
@@ -119,7 +121,6 @@ public class ITestYzAdminOperations extends ITestBase
     @Test
     public void testStoreAndFetchIndex() throws InterruptedException, ExecutionException
     {
-        Assume.assumeTrue(testYokozuna);
         YokozunaIndex index = new YokozunaIndex(fetchIndex).withNVal(2);
         YzPutIndexOperation putOp = new YzPutIndexOperation.Builder(index).build();
 
@@ -149,7 +150,6 @@ public class ITestYzAdminOperations extends ITestBase
     @Test
     public void testDeleteIndex() throws InterruptedException, ExecutionException
     {
-        Assume.assumeTrue(testYokozuna);
         YokozunaIndex index = new YokozunaIndex(deleteIndex);
         YzPutIndexOperation putOp = new YzPutIndexOperation.Builder(index).build();
 
@@ -162,8 +162,6 @@ public class ITestYzAdminOperations extends ITestBase
     @Test
     public void testCreateIndexTimeout() throws InterruptedException, ExecutionException
     {
-        Assume.assumeTrue(testYokozuna);
-
         YokozunaIndex index = new YokozunaIndex(timeoutIndex);
 
         YzPutIndexOperation putOp = new YzPutIndexOperation.Builder(index).withTimeout(1).build();

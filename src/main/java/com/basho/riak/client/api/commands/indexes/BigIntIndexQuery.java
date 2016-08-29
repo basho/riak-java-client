@@ -213,7 +213,7 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
         @Override
         public List<Entry> getEntries()
         {
-            List<Entry> convertedList = new ArrayList<Entry>();
+            List<Entry> convertedList = new ArrayList<>();
             for (SecondaryIndexQueryOperation.Response.Entry e : coreResponse.getEntryList())
             {
                 Location loc = getLocationFromCoreEntry(e);

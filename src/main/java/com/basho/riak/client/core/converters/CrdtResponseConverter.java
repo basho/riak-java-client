@@ -32,7 +32,7 @@ public class CrdtResponseConverter
 {
     private RiakDatatype parseSet(List<ByteString> setValues)
     {
-        List<BinaryValue> entries = new ArrayList<BinaryValue>(setValues.size());
+        List<BinaryValue> entries = new ArrayList<>(setValues.size());
         for (ByteString bstring : setValues)
         {
             entries.add(BinaryValue.unsafeCreate(bstring.toByteArray()));
@@ -42,7 +42,7 @@ public class CrdtResponseConverter
 
     private RiakDatatype parseMap(List<RiakDtPB.MapEntry> mapEntries)
     {
-        List<RiakMap.MapEntry> entries = new ArrayList<RiakMap.MapEntry>(mapEntries.size());
+        List<RiakMap.MapEntry> entries = new ArrayList<>(mapEntries.size());
         for (RiakDtPB.MapEntry entry : mapEntries)
         {
 
