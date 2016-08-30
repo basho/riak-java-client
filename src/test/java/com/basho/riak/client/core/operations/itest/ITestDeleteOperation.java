@@ -69,7 +69,6 @@ public class ITestDeleteOperation extends ITestAutoCleanupBase
         FetchOperation fetchOp =
             new FetchOperation.Builder(location).build();
 
-
         cluster.execute(fetchOp);
         FetchOperation.Response response = fetchOp.get();
 

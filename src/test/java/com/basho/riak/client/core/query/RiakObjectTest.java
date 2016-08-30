@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 
 public class RiakObjectTest
 {
-    static VClock vClock = new BasicVClock(new byte[]{'1'});
+    static VClock vClock = new BasicVClock(new byte[] {'1'});
 
     @Test
     public void testEqualsWithRiakObject()
@@ -26,7 +26,7 @@ public class RiakObjectTest
     public static RiakObject CreateFilledObject()
     {
         final RiakObject result = new RiakObject();
-        result.setValue(BinaryValue.create(new byte[]{'O', '_', 'o'}));
+        result.setValue(BinaryValue.create(new byte[] {'O', '_', 'o'}));
         result.getIndexes().getIndex(StringBinIndex.named("foo")).add("bar");
         result.getLinks().addLink(new RiakLink("bucket", "linkkey", "linktag"));
         result.getUserMeta().put("foo", "bar");

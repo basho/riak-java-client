@@ -47,7 +47,6 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
 
         return new Response(new YokozunaSchema(response.getSchema().getName().toStringUtf8(),
                                     response.getSchema().getContent().toStringUtf8()));
-
     }
 
     @Override
@@ -55,7 +54,6 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
     {
         RiakYokozunaPB.RpbYokozunaSchemaGetReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_YokozunaSchemaGetReq, req.toByteArray());
-
     }
 
     @Override
@@ -70,7 +68,6 @@ public class YzGetSchemaOperation extends FutureOperation<YzGetSchemaOperation.R
         {
             throw new IllegalArgumentException("Invalid message received", ex);
         }
-
     }
 
     @Override

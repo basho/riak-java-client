@@ -68,7 +68,6 @@ public class Cell
         }
 
         initVarchar(varcharValue.toStringUtf8());
-
     }
 
     /**
@@ -373,7 +372,6 @@ public class Cell
             return false;
         }
         return varcharValue.equals(cell.varcharValue);
-
     }
 
     @Override

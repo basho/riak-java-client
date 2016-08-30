@@ -21,33 +21,32 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 
-
 /**
  * Annotates a field or getter/setter method pair in a class to serve as the content-type.
  * <p>
- * The type must be a {@code String}. 
+ * The type must be a {@code String}.
  * </p>
  * <p>
  * In most cases this is not needed as the {@link com.basho.riak.client.api.convert.Converter}
  * will supply the appropriate content-type during serialization.
- * 
+ *
  * <pre>
  * class MyPojo
  * {
  *     {@literal @}RiakContentType
  *     String contentType;
  * }
- * 
+ *
  * class MyPojo
  * {
  *     private String contentType;
- * 
+ *
  *     {@literal @}RiakContentType
  *     public void setContentType(String contentType)
  *     {
  *         this.contentType = contentType;
  *     }
- * 
+ *
  *     {@literal @}RiakContentType
  *     public String getContentType()
  *     {
@@ -61,5 +60,4 @@ import java.lang.annotation.ElementType;
  */
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakContentType
 {
-    
 }

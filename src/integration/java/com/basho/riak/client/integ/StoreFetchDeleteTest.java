@@ -36,99 +36,92 @@ import java.util.concurrent.ExecutionException;
 
 public class StoreFetchDeleteTest
 {
+    private final Converter<RiakObject> domainObjectConverter = new PassThroughConverter();
+    private static RiakCluster cluster;
+    private BinaryValue bucket = BinaryValue.create("bucket");
 
-	private final Converter<RiakObject> domainObjectConverter = new PassThroughConverter();
-	private static RiakCluster cluster;
-	private BinaryValue bucket = BinaryValue.create("bucket");
+    @BeforeClass
+    public static void setup() throws UnknownHostException
+    {
+        RiakNode node = new RiakNode.Builder()
+            .withRemoteAddress("localhost")
+            .withRemotePort(8087)
+            .build();
 
-	@BeforeClass
-	public static void setup() throws UnknownHostException
-	{
-		RiakNode node = new RiakNode.Builder()
-			.withRemoteAddress("localhost")
-			.withRemotePort(8087)
-			.build();
+        cluster = RiakCluster.builder(node).build();
+        cluster.start();
+    }
 
-		cluster = RiakCluster.builder(node).build();
-		cluster.start();
-	}
+    @AfterClass
+    public static void teardown()
+    {
+        cluster.stop();
+    }
 
-	@AfterClass
-	public static void teardown()
-	{
-		cluster.stop();
-	}
+    @Test
+    public void testStoreFetchDelete() throws ExecutionException, InterruptedException
+    {
+        RiakObject o = RiakObject.create(bucket.unsafeGetValue()).setValue("test value");
+        StoreMeta storeMeta = new StoreMeta.Builder().returnBody(true).build();
 
-	@Test
-	public void testStoreFetchDelete() throws ExecutionException, InterruptedException
-	{
+        StoreOperation<RiakObject> store =
+            new StoreOperation<RiakObject>(bucket, o)
+                .withConverter(domainObjectConverter)
+                .withStoreMeta(storeMeta);
 
-		RiakObject o = RiakObject.create(bucket.unsafeGetValue()).setValue("test value");
-		StoreMeta storeMeta = new StoreMeta.Builder().returnBody(true).build();
+        cluster.execute(store);
 
-		StoreOperation<RiakObject> store =
-			new StoreOperation<RiakObject>(bucket, o)
-				.withConverter(domainObjectConverter)
-				.withStoreMeta(storeMeta);
+        RiakObject storeReturn = store.get();
 
-		cluster.execute(store);
+        BinaryValue returnedKey = BinaryValue.create(storeReturn.getBucketAsBytes());
+        FetchOperation<RiakObject> fetch =
+            new FetchOperation<RiakObject>(bucket, returnedKey)
+            .withConverter(domainObjectConverter);
 
-		RiakObject storeReturn = store.get();
+        cluster.execute(fetch);
 
-		BinaryValue returnedKey = BinaryValue.create(storeReturn.getBucketAsBytes());
-		FetchOperation<RiakObject> fetch =
-			new FetchOperation<RiakObject>(bucket, returnedKey)
-			.withConverter(domainObjectConverter);
+        RiakObject fetchReturn = fetch.get();
 
-		cluster.execute(fetch);
+        DeleteOperation delete = new DeleteOperation(bucket, returnedKey);
 
-		RiakObject fetchReturn = fetch.get();
+        cluster.execute(delete);
 
-		DeleteOperation delete = new DeleteOperation(bucket, returnedKey);
+        delete.get();
 
-		cluster.execute(delete);
+        FetchOperation<RiakObject> tombstoneFetch =
+            new FetchOperation<RiakObject>(bucket, returnedKey)
+            .withConverter(domainObjectConverter);
 
-		delete.get();
+        cluster.execute(tombstoneFetch);
 
-		FetchOperation<RiakObject> tombstoneFetch =
-			new FetchOperation<RiakObject>(bucket, returnedKey)
-			.withConverter(domainObjectConverter);
+        RiakObject tombstone = tombstoneFetch.get();
 
-		cluster.execute(tombstoneFetch);
+        Assert.assertTrue(tombstone.isNotFound());
+    }
 
-		RiakObject tombstone = tombstoneFetch.get();
+    @Test
+    public void testSiblings() throws ExecutionException, InterruptedException
+    {
+        RiakObject o = RiakObject.create(bucket.unsafeGetValue()).setValue("test value");
+        StoreMeta storeMeta = new StoreMeta.Builder().returnBody(true).build();
 
-		Assert.assertTrue(tombstone.isNotFound());
+        StoreOperation<RiakObject> store1 =
+            new StoreOperation<RiakObject>(bucket, o)
+                .withConverter(domainObjectConverter)
+                .withStoreMeta(storeMeta);
 
-	}
+        cluster.execute(store1);
 
-	@Test
-	public void testSiblings() throws ExecutionException, InterruptedException
-	{
+        RiakObject storeReturn1 = store1.get();
 
-		RiakObject o = RiakObject.create(bucket.unsafeGetValue()).setValue("test value");
-		StoreMeta storeMeta = new StoreMeta.Builder().returnBody(true).build();
+        BinaryValue key = BinaryValue.create(storeReturn1.getKeyAsBytes());
+        StoreOperation<RiakObject> store2 =
+            new StoreOperation<RiakObject>(bucket, key, o)
+                .withConverter(domainObjectConverter)
+                .withStoreMeta(storeMeta);
 
-		StoreOperation<RiakObject> store1 =
-			new StoreOperation<RiakObject>(bucket, o)
-				.withConverter(domainObjectConverter)
-				.withStoreMeta(storeMeta);
+        cluster.execute(store2);
 
-		cluster.execute(store1);
-
-		RiakObject storeReturn1 = store1.get();
-
-		BinaryValue key = BinaryValue.create(storeReturn1.getKeyAsBytes());
-		StoreOperation<RiakObject> store2 =
-			new StoreOperation<RiakObject>(bucket, key, o)
-				.withConverter(domainObjectConverter)
-				.withStoreMeta(storeMeta);
-
-		cluster.execute(store2);
-
-		RiakObject storeReturn2 = store2.get();
-
-
-	}
-
+        RiakObject storeReturn2 = store2.get();
+    }
 }

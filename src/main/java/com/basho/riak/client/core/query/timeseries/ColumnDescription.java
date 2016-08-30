@@ -21,12 +21,12 @@ public class ColumnDescription
      */
     public ColumnDescription(String name, ColumnType type)
     {
-        if(name == null || name.isEmpty())
+        if (name == null || name.isEmpty())
         {
             throw new IllegalArgumentException("Column Name must not be null or empty.");
         }
 
-        if(type == null)
+        if (type == null)
         {
             throw new IllegalArgumentException("Column Type must not be null.");
         }
@@ -84,7 +84,6 @@ public class ColumnDescription
             return false;
         }
         return type == that.type;
-
     }
 
     @Override

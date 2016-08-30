@@ -36,7 +36,6 @@ import java.util.Map;
  */
 public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCommand<S,U>
 {
-
     protected final Namespace namespace;
     protected final BinaryValue key;
     private final Context ctx;
@@ -48,7 +47,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
         this.namespace = builder.namespace;
         this.key = builder.key;
         this.ctx = builder.ctx;
-	    this.options.putAll(builder.options);
+        this.options.putAll(builder.options);
     }
 
     protected final DtUpdateOperation buildCoreOperation(DatatypeUpdate update)
@@ -105,7 +104,6 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
         }
 
         return builder.build();
-
     }
 
     /**
@@ -115,7 +113,6 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
     */
    public static final class Option<T> extends RiakOption<T>
    {
-
        /**
         * Durable Write Quorum.
         * How many replicas to commit to durable storage before returning a successful response.
@@ -154,25 +151,25 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
     * Base abstract builder for all datatype update builders.
     */
     public static abstract class Builder<T extends Builder<T>>
-	{
-		private final Namespace namespace;
+    {
+        private final Namespace namespace;
         private BinaryValue key;
-		private Context ctx;
-		private Map<Option<?>, Object> options = new HashMap<>();
+        private Context ctx;
+        private Map<Option<?>, Object> options = new HashMap<>();
 
         /**
          * Constructs a builder for a datatype update.
          * @param location the location of the datatype object in Riak.
          */
-		Builder(Location location)
-		{
-			if (location == null)
+        Builder(Location location)
+        {
+            if (location == null)
             {
                 throw new IllegalArgumentException("Location cannot be null.");
             }
             this.namespace = location.getNamespace();
             this.key = location.getKey();
-		}
+        }
 
         /**
          * Constructs a builder for a datatype update with only a Namespace.
@@ -203,30 +200,30 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
          * @return a reference to this object.
          */
         public T withContext(Context context)
-		{
-			if (context == null)
+        {
+            if (context == null)
             {
                 throw new IllegalArgumentException("Context cannot be null.");
             }
             this.ctx = context;
-			return self();
-		}
+            return self();
+        }
 
         /**
-		 * Add an optional setting for this command.
+         * Add an optional setting for this command.
          * This will be passed along with the request to Riak to tell it how
-		 * to behave when servicing the request.
-		 *
-		 * @param option the option
-		 * @param value the value for the option
-		 * @return a reference to this object.
+         * to behave when servicing the request.
+         *
+         * @param option the option
+         * @param value the value for the option
+         * @return a reference to this object.
          * @see Option
-		 */
-		public <U> T withOption(Option<U> option, U value)
-		{
-			this.options.put(option, value);
-			return self();
-		}
+         */
+        public <U> T withOption(Option<U> option, U value)
+        {
+            this.options.put(option, value);
+            return self();
+        }
 
         /**
          * Set the Riak-side timeout value.

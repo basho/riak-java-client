@@ -115,8 +115,13 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
         RiakClient client = new RiakClient(cluster);
 
         RawIndexQuery biq  =
-            new RawIndexQuery.Builder(sharedNamespace, IndexNames.KEY, Type._KEY, BinaryValue.create("my_key10"), BinaryValue.create("my_key19"))
+            new RawIndexQuery.Builder(sharedNamespace,
+                                      IndexNames.KEY,
+                                      Type._KEY,
+                                      BinaryValue.create("my_key10"),
+                                      BinaryValue.create("my_key19"))
                 .withKeyAndIndex(true).build();
+
         RawIndexQuery.Response iResp = client.execute(biq);
         assertTrue(iResp.hasEntries());
         assertEquals(iResp.getEntries().size(), 10);
@@ -166,7 +171,6 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
         assertTrue(bqResp.hasEntries());
         assertEquals(100, bqResp.getEntries().size());
     }
-
 
     public static class IndexedPojo
     {

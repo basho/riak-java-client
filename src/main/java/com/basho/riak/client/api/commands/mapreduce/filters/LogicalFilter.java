@@ -26,17 +26,16 @@ import java.util.LinkedList;
 @JsonSerialize(using = LogicalFilterSerializer.class)
 public abstract class LogicalFilter extends KeyFilter
 {
-	private final LinkedList<KeyFilter> filters = new LinkedList<>();
+    private final LinkedList<KeyFilter> filters = new LinkedList<>();
 
-	protected LogicalFilter(String name, KeyFilter... filters)
-	{
-		super(name);
-		this.filters.addAll(Arrays.asList(filters));
-	}
+    protected LogicalFilter(String name, KeyFilter... filters)
+    {
+        super(name);
+        this.filters.addAll(Arrays.asList(filters));
+    }
 
-	public LinkedList<KeyFilter> getFilters()
-	{
-		return filters;
-	}
-
+    public LinkedList<KeyFilter> getFilters()
+    {
+        return filters;
+    }
 }

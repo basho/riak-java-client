@@ -93,5 +93,4 @@ public abstract class ConvertibleIterable<S,D> implements Iterable<D>
     {
         return new ImmutableIterableCell(iterable);
     }
-
 }

@@ -12,7 +12,6 @@ import static org.junit.Assert.assertNotNull;
 
 public class ITestPemSecuredConnection
 {
-
     private static boolean security;
     private static boolean securityClientCert;
     private RiakCluster cluster;

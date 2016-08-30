@@ -20,7 +20,6 @@ public class IndexMapReduce extends MapReduce
      */
     public static class Builder extends MapReduce.Builder<Builder>
     {
-
         private Namespace namespace;
         private String index;
         private IndexInput.IndexCriteria criteria;
@@ -31,11 +30,11 @@ public class IndexMapReduce extends MapReduce
             return this;
         }
 
-		/**
-		 * Add the namespace that the index resides in to the builder.
-		 * @param namespace the namespace that the index resides in
-		 * @return a reference to this object.
-		 */
+        /**
+         * Add the namespace that the index resides in to the builder.
+         * @param namespace the namespace that the index resides in
+         * @return a reference to this object.
+         */
         public Builder withNamespace(Namespace namespace)
         {
             this.namespace = namespace;
@@ -109,7 +108,6 @@ public class IndexMapReduce extends MapReduce
          */
         public IndexMapReduce build()
         {
-
             if (namespace == null)
             {
                 throw new IllegalStateException("A namespace must be specified");
@@ -127,7 +125,5 @@ public class IndexMapReduce extends MapReduce
 
             return new IndexMapReduce(new IndexInput(namespace, index, criteria), this);
         }
-
     }
-
 }

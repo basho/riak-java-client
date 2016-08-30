@@ -116,7 +116,6 @@ public class ITestCoveragePlan extends ITestTsBase
         {
             rc.shutdown();
         }
-
     }
 
     @Test
@@ -137,5 +136,4 @@ public class ITestCoveragePlan extends ITestTsBase
         logger.info("Got {} Coverage Entries", lst.size());
         assertEquals(6, lst.size());
     }
-
 }

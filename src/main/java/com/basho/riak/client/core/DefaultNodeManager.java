@@ -175,7 +175,6 @@ public class DefaultNodeManager implements NodeManager, NodeStateListener
         {
             lock.writeLock().unlock();
         }
-
     }
 
     @Override

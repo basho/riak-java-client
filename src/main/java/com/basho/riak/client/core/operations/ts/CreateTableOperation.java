@@ -102,7 +102,6 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
                             ByteString.copyFromUtf8(queryText)
                     ));
 
-
             return new CreateTableOperation(this);
         }
 
@@ -126,7 +125,7 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
         {
             for (FullColumnDescription fullColumnDescription : this.tableDefinition.getPartitionKeyColumnDescriptions())
             {
-                if(!fullColumnDescription.hasQuantum())
+                if (!fullColumnDescription.hasQuantum())
                 {
                     continue;
                 }
@@ -163,7 +162,6 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
 
         private static StringBuilder generateKeys(TableDefinition tableDefinition, int quantum, char quantumUnit)
         {
-
             final Collection<FullColumnDescription> pks = tableDefinition.getPartitionKeyColumnDescriptions();
             if (pks == null || pks.isEmpty())
             {

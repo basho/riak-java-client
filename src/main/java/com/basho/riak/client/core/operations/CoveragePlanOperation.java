@@ -156,7 +156,7 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
 
         public AbstractBuilder<R> withUnavailableCoverageContext(byte[]...coverageContext)
         {
-            for(byte[] cc: coverageContext)
+            for (byte[] cc: coverageContext)
             {
                 reqBuilder.addUnavailableCover(ByteString.copyFrom(cc));
             }
@@ -178,7 +178,6 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
 
     public static class Response implements Iterable<Response.CoverageEntry>
     {
-
         public static class CoverageEntry implements Serializable
         {
             private static final long serialVersionUID = 0;
@@ -226,7 +225,6 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
                 if (getPort() != that.getPort()) return false;
                 if (!getHost().equals(that.getHost())) return false;
                 return Arrays.equals(getCoverageContext(), that.getCoverageContext());
-
             }
 
             @Override
@@ -267,7 +265,7 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
         {
             final List<CoverageEntry> lst = perHostCoverage.get(host);
 
-            if(lst == null)
+            if (lst == null)
             {
                 return Collections.emptyList();
             }
@@ -297,9 +295,9 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
                 @Override
                 public boolean hasNext()
                 {
-                    if(subIterator == null || !subIterator.hasNext())
+                    if (subIterator == null || !subIterator.hasNext())
                     {
-                        if(itor.hasNext())
+                        if (itor.hasNext())
                         {
                             subIterator = itor.next().iterator();
                         }
@@ -316,7 +314,7 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
                 @Override
                 public CoverageEntry next()
                 {
-                    if(!hasNext())
+                    if (!hasNext())
                     {
                         throw new NoSuchElementException();
                     }
@@ -337,7 +335,7 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
         {
             final HostAndPort key = HostAndPort.fromParts(coverageEntry.getHost(), coverageEntry.getPort());
             List<CoverageEntry> lst =  perHostCoverage.get(key);
-            if(lst == null)
+            if (lst == null)
             {
                 lst = new LinkedList<>();
                 perHostCoverage.put(key, lst);

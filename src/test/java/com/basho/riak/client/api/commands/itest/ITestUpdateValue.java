@@ -46,18 +46,17 @@ public class ITestUpdateValue extends ITestAutoCleanupBase
                             .withStoreOption(Option.RETURN_BODY, true)
                             .withUpdate(new UpdatePojo())
                             .build();
-        
+
         UpdateValue.Response resp = client.execute(uv);
         Pojo pojo = resp.getValue(Pojo.class);
         assertEquals(1, pojo.value);
-        
+
         resp = client.execute(uv);
         pojo = resp.getValue(Pojo.class);
-        
+
         assertEquals(2, pojo.value);
-        
     }
-    
+
     @Test
     public void updateAnnotatedPojo() throws ExecutionException, InterruptedException
     {
@@ -68,10 +67,10 @@ public class ITestUpdateValue extends ITestAutoCleanupBase
                             .withStoreOption(Option.RETURN_BODY, true)
                             .withUpdate(new UpdateAnnotatedPojo())
                             .build();
-        
+
         UpdateValue.Response resp = client.execute(uv);
         RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
-        
+
         assertNotNull(rap.bucketName);
         assertEquals(ns.getBucketNameAsString(), rap.bucketName);
         assertNotNull(rap.key);
@@ -87,13 +86,10 @@ public class ITestUpdateValue extends ITestAutoCleanupBase
         assertFalse(rap.deleted);
         assertNotNull(rap.value);
         assertEquals("updated value", rap.value);
-        
-        
     }
-    
+
     public static class UpdatePojo extends Update<Pojo>
     {
-
         @Override
         public Pojo apply(Pojo original)
         {
@@ -101,25 +97,23 @@ public class ITestUpdateValue extends ITestAutoCleanupBase
             {
                 original = new Pojo();
             }
-            
+
             original.value++;
             return original;
         }
-        
     }
-    
+
     public static class Pojo
     {
         @JsonProperty
         int value;
-        
+
         @RiakVClock
         VClock vclock;
     }
-    
+
     public static class UpdateAnnotatedPojo extends Update<RiakAnnotatedPojo>
     {
-
         @Override
         public RiakAnnotatedPojo apply(RiakAnnotatedPojo original)
         {
@@ -130,6 +124,5 @@ public class ITestUpdateValue extends ITestAutoCleanupBase
             }
             return original;
         }
-        
     }
 }

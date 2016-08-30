@@ -27,18 +27,18 @@ import java.lang.annotation.Target;
  * This value is only populated when fetching an object from riak. Setting it when
  * storing an object has no effect. A getter method is not supported; only a setter
  * method may be annotated. The type must be {@literal String}.
- * 
+ *
  * <pre>
  * class MyPojo
  * {
  *     {@literal @}RiakVTag
  *     String vtag;
  * }
- * 
+ *
  * class MyPojo
  * {
  *     private String vtag;
- * 
+ *
  *     {@literal @}RiakVTag
  *     public void setVTag(String vtag)
  *     {
@@ -46,11 +46,10 @@ import java.lang.annotation.Target;
  *     }
  * }
  * </pre>
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakVTag
 {
-    
 }

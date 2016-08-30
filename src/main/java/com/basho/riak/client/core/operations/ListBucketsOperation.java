@@ -76,7 +76,6 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
         {
             throw new IllegalArgumentException("Invalid message received", e);
         }
-
     }
 
     @Override
@@ -133,7 +132,6 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
         {
             return new ListBucketsOperation(this);
         }
-
     }
 
     public static class Response
@@ -157,5 +155,4 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
             return buckets;
         }
     }
-
 }

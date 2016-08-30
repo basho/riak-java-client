@@ -192,7 +192,6 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
             {
                 updateFuture.setException(ex);
             }
-
         };
 
         fetchFuture.addListener(fetchListener);
@@ -318,7 +317,6 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                 return new Response(this);
             }
         }
-
     }
 
     /**
@@ -328,7 +326,6 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
      */
     public abstract static class Update<T>
     {
-
         private boolean modified = true;
 
         /**
@@ -360,7 +357,6 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
         {
             this.modified = modified;
         }
-
     }
 
     /**
@@ -620,7 +616,6 @@ public final class UpdateValue extends RiakCommand<UpdateValue.Response, Locatio
                                                           .withUpdated(true)
                                                           .build();
                 setResponse(response);
-
             }
             catch (InterruptedException | ExecutionException ex)
             {

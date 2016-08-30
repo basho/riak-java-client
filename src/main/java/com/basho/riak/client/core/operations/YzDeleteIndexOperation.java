@@ -48,7 +48,6 @@ public class YzDeleteIndexOperation extends FutureOperation<Void, Void, String>
     {
         RiakYokozunaPB.RpbYokozunaIndexDeleteReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_YokozunaIndexDeleteReq, req.toByteArray());
-
     }
 
     @Override

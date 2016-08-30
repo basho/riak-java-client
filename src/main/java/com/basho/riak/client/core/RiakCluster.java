@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core;
 
-
 import com.basho.riak.client.core.util.HostAndPort;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -60,7 +59,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     private final List<NodeStateListener> stateListeners =
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
 
-
     private volatile ScheduledFuture<?> shutdownFuture;
     private volatile ScheduledFuture<?> retrierFuture;
     private volatile ScheduledFuture<?> queueDrainFuture;
@@ -92,7 +90,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                 .group(new NioEventLoopGroup())
                 .channel(NioSocketChannel.class);
         }
-
 
         if (builder.executor != null)
         {
@@ -219,9 +216,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
             {
                 return shutdownLatch.getCount() <= 0;
             }
-
         };
-
     }
 
     public <V,S> RiakFuture<V,S> execute(FutureOperation<V, ?, S> operation)
@@ -406,7 +401,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         {
             nodeListLock.readLock().unlock();
         }
-
     }
 
     int inFlightCount()
@@ -482,7 +476,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     {
         logger.debug("QueueDrainer - Polling for queued operations.");
         FutureOperation operation = operationQueue.poll();
-        if(operation == null)
+        if (operation == null)
         {
             logger.debug("QueueDrainer - No queued operation available, sleeping.");
             Thread.sleep(50);
@@ -495,7 +489,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         // Sleep for a bit so we don't spinwait our CPUs to death
         if (!connectionSuccess)
         {
-            logger.debug("QueueDrainer - Pulled queued operation {}, but no connection available, sleeping.", System.identityHashCode(operation));
+            logger.debug("QueueDrainer - Pulled queued operation {}, but no connection available, sleeping.",
+                         System.identityHashCode(operation));
 
             // TODO: should this timeout be configurable, or based on an
             // average command execution time?
@@ -578,7 +573,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
             logger.info("Retrier shutting down.");
         }
-
     }
 
     private class QueueDrainTask implements Runnable
@@ -629,9 +623,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                 shutdownFuture.cancel(false);
             }
         }
-
     }
-
 
         public static Builder builder(List<RiakNode> nodes)
         {
@@ -774,7 +766,10 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
          * Set the maximum number of operations to queue.
          * A value of 0 disables the command queue.
          * <b>Setting this will override any of this clusters @{link RiakNode}s blockOnMaxConnection settings.</b>
-         * <p>Please note that while using the Operation Queue, operations may be executed out of the order that they were added in.</p>
+         * <p>
+         *     Please note that while using the Operation Queue, operations may be executed out of the order
+         * that they were added in.
+         * </p>
          *
          * @param operationQueueMaxDepth - maximum number of operations to queue if all connections are busy
          * @return this
@@ -794,6 +789,5 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         {
             return new RiakCluster(this);
         }
-
     }
 }

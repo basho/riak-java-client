@@ -101,7 +101,6 @@ public class RiakIndexes implements Iterable<RiakIndex<?>>
      */
     public RiakIndexes()
     {
-
     }
 
     /**
@@ -198,18 +197,21 @@ public class RiakIndexes implements Iterable<RiakIndex<?>>
         indexes.clear();
     }
 
-		@Override
-		public Iterator<RiakIndex<?>> iterator()
-		{
-				return indexes.values().iterator();
-		}
+        @Override
+        public Iterator<RiakIndex<?>> iterator()
+        {
+                return indexes.values().iterator();
+        }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || getClass() != o.getClass())
+        {
             return false;
         }
 
@@ -218,12 +220,14 @@ public class RiakIndexes implements Iterable<RiakIndex<?>>
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return indexes.hashCode();
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "RiakIndexes{" +
                 "indexes: " + indexes +
                 '}';

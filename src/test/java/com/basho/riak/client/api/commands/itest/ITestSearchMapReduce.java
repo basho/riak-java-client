@@ -30,7 +30,6 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 
-
 /**
  *
  * @author Brian Roach <roach at basho dot com>

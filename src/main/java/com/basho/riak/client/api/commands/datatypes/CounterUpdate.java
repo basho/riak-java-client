@@ -21,7 +21,7 @@ import com.basho.riak.client.core.query.crdt.ops.CounterOp;
  * An update to a Riak counter datatype.
  * <p>
  * When building a {@link UpdateCounter} or {@link UpdateMap} command
- * this class is used to encapsulate the update to be performed on a 
+ * this class is used to encapsulate the update to be performed on a
  * Riak counter datatype.
  * </p>
  * @author Dave Rusek <drusek at basho dot com>
@@ -29,7 +29,6 @@ import com.basho.riak.client.core.query.crdt.ops.CounterOp;
  */
 public class CounterUpdate implements DatatypeUpdate
 {
-
     private long delta = 0;
 
     /**

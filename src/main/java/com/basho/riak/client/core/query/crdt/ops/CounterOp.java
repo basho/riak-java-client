@@ -28,9 +28,7 @@ public class CounterOp implements CrdtOp
     {
         return increment;
     }
-    
-    
-    
+
     @Override
     public String toString()
     {

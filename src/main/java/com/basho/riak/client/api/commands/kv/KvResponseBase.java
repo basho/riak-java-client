@@ -40,7 +40,6 @@ abstract class KvResponseBase
     private final Location location;
     private final List<RiakObject> values;
 
-
     protected KvResponseBase(Init<?> builder)
     {
         this.location = builder.location;
@@ -51,7 +50,8 @@ abstract class KvResponseBase
      * Returns the {@link Location} affected by the operation that resulted in this response.
      * @return the affected {@link Location}
      */
-    public Location getLocation() {
+    public Location getLocation()
+    {
         return location;
     }
 
@@ -238,7 +238,7 @@ abstract class KvResponseBase
      * This version should only be used if you're converting to a parameterized
      * generic domain object. For example:
      * <pre>
-     * {@literal TypeReference<MyPojo<String>>} tr = new {@literal TypeReference<MyPojo<String>>}(){};
+     * {@literal TypeReference<MyPojo<String>>} tr = new {@literal TypeReference<MyPojo<String>>}() {};
      * {@literal MyPojo<String>} myPojo = response.getValue(tr);
      * </pre>
      * </p>
@@ -284,7 +284,7 @@ abstract class KvResponseBase
      * This version should only be used if you're converting to a parameterized
      * generic domain object. For example:
      * <pre>
-     * {@literal TypeReference<MyPojo<String>>} tr = new {@literal TypeReference<MyPojo<String>>}(){};
+     * {@literal TypeReference<MyPojo<String>>} tr = new {@literal TypeReference<MyPojo<String>>}() {};
      * {@literal List<MyPojo<String>>} list = response.getValues(tr);
      * </pre>
      * </p>
@@ -309,7 +309,6 @@ abstract class KvResponseBase
 
         return convertedValues;
     }
-
 
     protected static abstract class Init<T extends Init<T>>
     {

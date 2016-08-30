@@ -64,7 +64,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         if (response.hasKey())
         {
             BinaryValue key = BinaryValue.unsafeCreate(response.getKey().toByteArray());
-	        responseBuilder.withGeneratedKey(key);
+            responseBuilder.withGeneratedKey(key);
         }
 
         if (response.hasContext())
@@ -74,7 +74,6 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         }
 
         return responseBuilder.build();
-
     }
 
     @Override
@@ -150,7 +149,6 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             reqBuilder.setType(ByteString.copyFrom(loc.getNamespace().getBucketType().unsafeGetValue()));
 
             this.location = loc;
-
         }
 
         /**
@@ -219,7 +217,6 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             reqBuilder.setReturnBody(returnBody);
             return this;
         }
-
 
         /**
          * Set a timeout for this operation.
@@ -385,7 +382,6 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             }
 
             return mapOpBuilder.build();
-
         }
 
         /**
@@ -429,13 +425,11 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
 
         private Builder withOp(SetOp op)
         {
-
             reqBuilder.setOp(RiakDtPB.DtOp.newBuilder()
                 .setSetOp(getSetOp(op)));
 
             return this;
         }
-
     }
 
     public static class Response extends DtFetchOperation.Response
@@ -482,8 +476,6 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 return new Response(this);
             }
-
         }
     }
-
 }

@@ -18,10 +18,10 @@ package com.basho.riak.client.api.cap;
 import java.util.List;
 
 /**
- * A conflict resolver that doesn't resolve conflict. 
+ * A conflict resolver that doesn't resolve conflict.
  * <p>
- * This is the default ConflictResolver used if there is not one registered 
- * in the {@link com.basho.riak.client.api.cap.ConflictResolverFactory} for the 
+ * This is the default ConflictResolver used if there is not one registered
+ * in the {@link com.basho.riak.client.api.cap.ConflictResolverFactory} for the
  * class of object being resolved.
  * </p>
  * <p>
@@ -33,7 +33,6 @@ import java.util.List;
  */
 public class DefaultResolver<T> implements ConflictResolver<T>
 {
-
     /**
      * Detects conflict but does not resolve it.
      *

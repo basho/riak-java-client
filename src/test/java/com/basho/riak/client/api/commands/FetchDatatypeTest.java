@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 
 public class FetchDatatypeTest extends MockedResponseOperationTest<DtFetchOperation, DtFetchOperation.Response>
 {
-	private Location key = new Location(new Namespace("type", "bucket"), "key");
+    private Location key = new Location(new Namespace("type", "bucket"), "key");
 
     public FetchDatatypeTest()
     {
@@ -47,7 +47,7 @@ public class FetchDatatypeTest extends MockedResponseOperationTest<DtFetchOperat
         super.setupResponse(mockedResponse);
 
         when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<>()));
-        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[]{'1'}));
+        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[] {'1'}));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class FetchDatatypeTest extends MockedResponseOperationTest<DtFetchOperat
             .withOption(Option.R, new Quorum(1))
             .withOption(Option.SLOPPY_QUORUM, true)
             .withOption(Option.INCLUDE_CONTEXT, true)
-	        .build();
+            .build();
 
         assertEquals(key, fetchValue.getLocation());
 

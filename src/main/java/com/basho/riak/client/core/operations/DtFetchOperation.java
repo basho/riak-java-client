@@ -64,7 +64,7 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         // If we don't have a value set, then the Data Type is considered "New" or "Not Found"
         // A null context could be misleading, since the request might specify to not return a context.
         // See riak_dt.proto#DtFetchResp L113-132
-        if(!response.hasValue())
+        if (!response.hasValue())
         {
             responseBuilder.withNotFound(true);
         }
@@ -242,7 +242,6 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         {
             return new DtFetchOperation(this);
         }
-
     }
 
     public static class Response
@@ -320,7 +319,6 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
                 return self();
             }
         }
-
 
         private static class Builder extends Init<Builder>
         {

@@ -1,6 +1,5 @@
 package com.basho.riak.client.api.commands.kv;
 
-
 import com.basho.riak.client.api.commands.RiakOption;
 import com.basho.riak.client.core.query.Location;
 

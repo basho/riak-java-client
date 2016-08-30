@@ -47,37 +47,37 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
     {
         testListBuckets(Namespace.DEFAULT_BUCKET_TYPE);
     }
-    
+
     @Test
     public void testListBucketsTestType() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
         testListBuckets(bucketType.toString());
     }
-    
+
     private void testListBuckets(String bucketType) throws InterruptedException, ExecutionException
     {
         // Empty buckets do not show up
         final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
         final String value = "{\"value\":\"value\"}";
-        
+
         RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
         Location location = new Location(new Namespace(bucketType, bucketName.toString()), key);
-        StoreOperation storeOp = 
+        StoreOperation storeOp =
             new StoreOperation.Builder(location)
                 .withContent(rObj)
                 .build();
-        
+
         cluster.execute(storeOp);
         storeOp.get();
-        
+
         ListBucketsOperation listOp = new ListBucketsOperation.Builder()
                                         .withBucketType(BinaryValue.createFromUtf8(bucketType))
                                         .build();
         cluster.execute(listOp);
         List<BinaryValue> bucketList = listOp.get().getBuckets();
         assertTrue(bucketList.size() > 0);
-        
+
         boolean found = false;
         for (BinaryValue baw : bucketList)
         {
@@ -86,23 +86,23 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
                 found = true;
             }
         }
-        
+
         assertTrue(found);
     }
-    
+
     @Test
     public void testLargeBucketListDefaultType() throws InterruptedException, ExecutionException
     {
         testLargeBucketList(Namespace.DEFAULT_BUCKET_TYPE);
     }
-    
+
     @Test
     public void testLargeBucketListTestType() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
         testLargeBucketList(bucketType.toString());
     }
-    
+
     private void testLargeBucketList(String bucketType) throws InterruptedException, ExecutionException
     {
         final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
@@ -115,9 +115,8 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
         RiakFutureListener<StoreOperation.Response, Location> listener =
             new RiakFutureListener<StoreOperation.Response, Location>()
             {
-                
                 private final AtomicInteger received = new AtomicInteger();
-                
+
                 @Override
                 public void handle(RiakFuture<StoreOperation.Response, Location> f)
                 {
@@ -138,7 +137,7 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
                     }
                 }
             };
-        
+
         for (int i = 0; i < bucketCount; i++)
         {
             String testBucketName = bucketName.toString() + i;
@@ -147,7 +146,7 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
             Namespace ns = new Namespace(bucketType, testBucketName);
             RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
             Location location = new Location(ns, key);
-            StoreOperation storeOp = 
+            StoreOperation storeOp =
                 new StoreOperation.Builder(location)
                     .withContent(rObj)
                     .build();
@@ -155,9 +154,9 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
             semaphore.acquire();
             cluster.execute(storeOp);
         }
-        
+
         latch.await(2, TimeUnit.MINUTES);
-        
+
         ListBucketsOperation listOp = new ListBucketsOperation.Builder()
                                         .withBucketType(BinaryValue.createFromUtf8(bucketType))
                                         .build();
@@ -174,6 +173,5 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
             Namespace ns = new Namespace(bucketType, name.toString());
             resetAndEmptyBucket(ns);
         }
-        
     }
 }

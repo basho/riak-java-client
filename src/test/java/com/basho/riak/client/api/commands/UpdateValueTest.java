@@ -62,7 +62,7 @@ public class UpdateValueTest
         MockitoAnnotations.initMocks(this);
 
         riakObject = new RiakObject();
-        riakObject.setValue(BinaryValue.create(new byte[]{'O', '_', 'o'}));
+        riakObject.setValue(BinaryValue.create(new byte[] {'O', '_', 'o'}));
 
         ArrayList<RiakObject> objects = new ArrayList<>();
         objects.add(riakObject);
@@ -78,9 +78,7 @@ public class UpdateValueTest
                 .thenReturn(new ImmediateRiakFuture<StoreOperation.Response, Location>(storeResponse));
 
         client = new RiakClient(mockCluster);
-
     }
-
 
     @Test
     @Ignore
@@ -104,7 +102,6 @@ public class UpdateValueTest
                                                     any(Namespace.class),
                                                     any(BinaryValue.class));
         verify(spiedConverter, times(2)).toDomain(any(RiakObject.class), any(Location.class));
-
     }
 
     @Test
@@ -141,5 +138,4 @@ public class UpdateValueTest
             return original;
         }
     }
-
 }

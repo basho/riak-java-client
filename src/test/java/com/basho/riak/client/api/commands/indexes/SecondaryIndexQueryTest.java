@@ -33,8 +33,8 @@ public class SecondaryIndexQueryTest
     public void intIndexQueryBuildsCorrectly()
     {
         Namespace ns = new Namespace("bucket_type", "bucket_name");
-        
-        IntIndexQuery iiq = 
+
+        IntIndexQuery iiq =
             new IntIndexQuery.Builder(ns, "test_index", Long.MAX_VALUE)
                 .withKeyAndIndex(true)
                 .withContinuation(BinaryValue.create("continuation"))
@@ -42,9 +42,9 @@ public class SecondaryIndexQueryTest
                 .withPaginationSort(true)
                 .withTimeout(Integer.MAX_VALUE)
                 .build();
-        
+
         SecondaryIndexQueryOperation.Query query = iiq.createCoreQuery();
-        
+
         assertEquals(ns, query.getNamespace());
         assertEquals("test_index_int", query.getIndexName().toString());
         assertEquals(Long.MAX_VALUE, Long.valueOf(query.getIndexKey().toString()).longValue());
@@ -53,17 +53,16 @@ public class SecondaryIndexQueryTest
         assertEquals(true, query.isPaginationSort());
         assertEquals(true, query.isReturnKeyAndIndex());
         assertEquals(Integer.MAX_VALUE, query.getTimeout().intValue());
-        
-        
+
         iiq = new IntIndexQuery.Builder(ns, "test_index", Long.MIN_VALUE, Long.MAX_VALUE)
                 .withKeyAndIndex(true)
                 .withContinuation(BinaryValue.create("continuation"))
                 .withMaxResults(Integer.MAX_VALUE)
                 .withPaginationSort(true)
                 .build();
-        
+
         query = iiq.createCoreQuery();
-        
+
         assertEquals(ns, query.getNamespace());
         assertEquals("test_index_int", query.getIndexName().toString());
         assertEquals(Long.MIN_VALUE, Long.valueOf(query.getRangeStart().toString()).longValue());
@@ -72,7 +71,6 @@ public class SecondaryIndexQueryTest
         assertEquals(Integer.MAX_VALUE, query.getMaxResults());
         assertEquals(true, query.isPaginationSort());
         assertEquals(true, query.isReturnKeyAndIndex());
-        
 
         // You can't use a term filter with an _int query
         try
@@ -80,18 +78,18 @@ public class SecondaryIndexQueryTest
             iiq = new IntIndexQuery.Builder(ns, "test_index", Long.MIN_VALUE, Long.MAX_VALUE)
                 .withRegexTermFilter("filter")
                 .build();
-            
+
             fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException e)
         {}
     }
-    
-    @Test 
+
+    @Test
     public void binIndexQueryBuildsCorrectly()
     {
         Namespace ns = new Namespace("bucket_type", "bucket_name");
-        
+
         BinIndexQuery biq = new BinIndexQuery.Builder(ns, "test_index", "index_key")
             .withKeyAndIndex(true)
             .withMaxResults(Integer.MAX_VALUE)
@@ -99,9 +97,9 @@ public class SecondaryIndexQueryTest
             .withPaginationSort(true)
             .withRegexTermFilter("filter")
             .build();
-        
+
         SecondaryIndexQueryOperation.Query query = biq.createCoreQuery();
-        
+
         assertEquals(ns, query.getNamespace());
         assertEquals("test_index_bin", query.getIndexName().toString());
         assertEquals("index_key", query.getIndexKey().toString());
@@ -109,7 +107,7 @@ public class SecondaryIndexQueryTest
         assertEquals(Integer.MAX_VALUE, query.getMaxResults());
         assertEquals(true, query.isPaginationSort());
         assertEquals(true, query.isReturnKeyAndIndex());
-        
+
         biq = new BinIndexQuery.Builder(ns, "test_index", "aaa", "zzz")
             .withKeyAndIndex(true)
             .withMaxResults(Integer.MAX_VALUE)
@@ -117,9 +115,9 @@ public class SecondaryIndexQueryTest
             .withPaginationSort(true)
             .withRegexTermFilter("filter")
             .build();
-        
+
         query = biq.createCoreQuery();
-        
+
         assertEquals(ns, query.getNamespace());
         assertEquals("test_index_bin", query.getIndexName().toString());
         assertEquals("aaa", query.getRangeStart().toString());
@@ -128,38 +126,36 @@ public class SecondaryIndexQueryTest
         assertEquals(Integer.MAX_VALUE, query.getMaxResults());
         assertEquals(true, query.isPaginationSort());
         assertEquals(true, query.isReturnKeyAndIndex());
-        
     }
-    
+
     public void rawIndexQueryBuildsCorrectly()
     {
         Namespace ns = new Namespace("bucket_type", "bucket_name");
-        
+
         BinaryValue indexMatch = BinaryValue.create("match");
         BinaryValue indexStart = BinaryValue.create("start");
         BinaryValue indexEnd = BinaryValue.create("end");
-        
-        RawIndexQuery riq = 
+
+        RawIndexQuery riq =
             new RawIndexQuery.Builder(ns, "test_index", SecondaryIndexQuery.Type._INT, indexMatch)
                 .build();
-        
+
         SecondaryIndexQueryOperation.Query query = riq.createCoreQuery();
-        
+
         assertEquals(ns, query.getNamespace());
         assertEquals("test_index_int", query.getIndexName().toString());
         assertEquals(indexMatch, query.getIndexKey());
-        
-        riq = 
-            new RawIndexQuery.Builder(ns, "test_index", SecondaryIndexQuery.Type._INT, 
+
+        riq =
+            new RawIndexQuery.Builder(ns, "test_index", SecondaryIndexQuery.Type._INT,
                                       indexStart, indexEnd)
                 .build();
-                
+
         query = riq.createCoreQuery();
-        
+
         assertEquals(ns, query.getNamespace());
         assertEquals("test_index_int", query.getIndexName().toString());
         assertEquals(indexStart, query.getRangeStart());
         assertEquals(indexEnd, query.getRangeEnd());
-        
     }
 }

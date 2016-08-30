@@ -25,7 +25,6 @@ public class ITestMultiDelete extends ITestBase
     @Test
     public void testMultiDelete() throws ExecutionException, InterruptedException
     {
-
         // Insert Data
         Location[] bookLocations = insertBookData(client);
 
@@ -119,5 +118,4 @@ public class ITestMultiDelete extends ITestBase
         public String isbn;
         public Integer copiesOwned;
     }
-
 }

@@ -11,17 +11,17 @@ import java.io.IOException;
  */
 class LinkPhaseSerializer extends JsonSerializer<LinkPhase>
 {
-	@Override
-	public void serialize(LinkPhase phase, JsonGenerator jg, SerializerProvider sp) throws IOException
-	{
-		jg.writeStartObject();
-		jg.writeFieldName(phase.getType().toString());
+    @Override
+    public void serialize(LinkPhase phase, JsonGenerator jg, SerializerProvider sp) throws IOException
+    {
+        jg.writeStartObject();
+        jg.writeFieldName(phase.getType().toString());
 
-		jg.writeStartObject();
-		jg.writeStringField("bucket", phase.getBucket());
-		jg.writeStringField("tag", phase.getTag());
-		jg.writeEndObject();
+        jg.writeStartObject();
+        jg.writeStringField("bucket", phase.getBucket());
+        jg.writeStringField("tag", phase.getTag());
+        jg.writeEndObject();
 
-		jg.writeEndObject();
-	}
+        jg.writeEndObject();
+    }
 }

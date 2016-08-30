@@ -79,7 +79,6 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
             docList.add(map);
         }
         return new Response(docList, resp.getMaxScore(), resp.getNumFound());
-
     }
 
     @Override
@@ -111,7 +110,6 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
 
     public static class Builder
     {
-
         private final BinaryValue indexName;
         private final String queryString;
         private final RiakSearchPB.RpbSearchQueryReq.Builder reqBuilder =
@@ -314,7 +312,5 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
         {
             return results;
         }
-
     }
-
 }

@@ -22,7 +22,7 @@ import com.basho.riak.client.core.util.BinaryValue;
  * An update to a Riak register datatype.
  * <p>
  * When building an {@link UpdateMap} command
- * this class is used to encapsulate the update to be performed on a 
+ * this class is used to encapsulate the update to be performed on a
  * Riak register datatype contained in the map. It is used in conjunction with the
  * {@link MapUpdate}.
  * </p>
@@ -31,11 +31,10 @@ import com.basho.riak.client.core.util.BinaryValue;
  */
 public class RegisterUpdate implements DatatypeUpdate
 {
-
     private final BinaryValue value;
 
     /**
-     * Construct a RegisterUpdate with the provided bytes. 
+     * Construct a RegisterUpdate with the provided bytes.
      * @param value the bytes representing the register.
      */
     public RegisterUpdate(byte[] value)
@@ -44,16 +43,16 @@ public class RegisterUpdate implements DatatypeUpdate
     }
 
     /**
-     * Construct a RegisterUpdate with the provided BinaryValue. 
+     * Construct a RegisterUpdate with the provided BinaryValue.
      * @param value the BinaryValue representing the register.
      */
     public RegisterUpdate(BinaryValue value)
     {
         this.value = value;
     }
-    
+
     /**
-     * Construct a RegisterUpdate with the provided String. 
+     * Construct a RegisterUpdate with the provided String.
      * <p>
      * Note the String is converted to bytes using the default Charset.
      * </p>
@@ -63,7 +62,7 @@ public class RegisterUpdate implements DatatypeUpdate
     {
         this.value = BinaryValue.create(value);
     }
-    
+
     /**
      * Get the register contained in this update.
      * @return the register as a BinaryValue.
@@ -88,5 +87,4 @@ public class RegisterUpdate implements DatatypeUpdate
     {
         return value.toString();
     }
-
 }

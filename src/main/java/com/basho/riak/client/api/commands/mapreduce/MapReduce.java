@@ -59,7 +59,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
     @Override
     protected RiakFuture<Response, BinaryValue> executeAsync(RiakCluster cluster)
     {
-
         BinaryValue jobSpec;
         try
         {
@@ -94,7 +93,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
         coreFuture.addListener(future);
 
         return future;
-
     }
 
     /**
@@ -109,7 +107,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
      */
     String writeSpec() throws RiakException
     {
-
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         try
@@ -125,7 +122,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
             jg.flush();
 
             return out.toString("UTF-8");
-
         }
         catch (IOException e)
         {
@@ -156,7 +152,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
      */
     protected static abstract class Builder<T extends Builder<T>>
     {
-
         protected final List<MapReducePhase> phases = new LinkedList<>();
         protected Long timeout;
 
@@ -345,7 +340,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
         }
 
         protected abstract T self();
-
     }
 
     /**
@@ -353,7 +347,6 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
      */
     public static class Response
     {
-
         private final Map<Integer, ArrayNode> results;
 
         public Response(Map<Integer, ArrayNode> results)
@@ -401,6 +394,5 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
             }
             return flatArray;
         }
-
     }
 }

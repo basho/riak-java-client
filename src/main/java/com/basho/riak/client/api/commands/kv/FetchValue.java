@@ -28,7 +28,6 @@ import com.basho.riak.client.core.query.Location;
 import java.util.HashMap;
 import java.util.Map;
 
-
 /**
  * Command used to fetch a value from Riak.
  * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
@@ -73,7 +72,6 @@ import java.util.Map;
  */
 public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 {
-
     private final Location location;
     private final Map<RiakOption<?>, Object> options = new HashMap<>();
 
@@ -110,7 +108,6 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
             };
         coreFuture.addListener(future);
         return future;
-
     }
 
     private FetchOperation buildCoreOperation()
@@ -119,7 +116,6 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 
         for (Map.Entry<RiakOption<?>, Object> opPair : options.entrySet())
         {
-
             RiakOption<?> option = opPair.getKey();
 
             if (option == Option.R)
@@ -154,7 +150,6 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
             {
                 builder.withNotFoundOK((Boolean) opPair.getValue());
             }
-
         }
 
         return builder.build();
@@ -228,7 +223,6 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
 
         static class Builder extends Init<Builder>
         {
-
             @Override
             protected Builder self()
             {
@@ -240,9 +234,7 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
             {
                 return new Response(this);
             }
-
         }
-
     }
 
     /**
@@ -259,7 +251,6 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     */
    public static final class Option<T> extends RiakOption<T>
    {
-
        /**
         * Read Quorum.
         * How many replicas need to agree when fetching the object.
@@ -311,7 +302,6 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
        {
            super(name);
        }
-
    }
 
     /**

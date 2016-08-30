@@ -19,15 +19,14 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
- * 
+ *
  * Holds the Collection of siblings so they can be presented for further resolution attempts.
- * 
+ *
  * @author Russell Brown <russelldb at basho dot com>
  * @since 1.0
  */
 public class UnresolvedConflictException extends ExecutionException
 {
-
     /**
      * eclipse generated id
      */
@@ -37,7 +36,7 @@ public class UnresolvedConflictException extends ExecutionException
 
     /**
      * For when a list of siblings cannot be whittled down to one.
-     * 
+     *
      * @param cause
      *            the exception that broke the camels back
      * @param message
@@ -53,7 +52,7 @@ public class UnresolvedConflictException extends ExecutionException
 
     /**
      * For when a collection of siblings cannot be whittled down to one.
-     * 
+     *
      * @param message
      *            a String message
      * @param siblings

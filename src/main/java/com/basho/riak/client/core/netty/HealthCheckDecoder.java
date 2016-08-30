@@ -40,13 +40,13 @@ import org.slf4j.LoggerFactory;
  *
  * @author Brian Roach <roach at basho dot com>
  */
-public abstract class HealthCheckDecoder extends ByteToMessageDecoder 
+public abstract class HealthCheckDecoder extends ByteToMessageDecoder
 {
     private final Logger logger = LoggerFactory.getLogger(HealthCheckDecoder.class);
     private final HealthCheckFuture future = new HealthCheckFuture();
-    
+
     protected abstract FutureOperation<?,?,?> buildOperation();
-    
+
     @Override
     protected void decode(ChannelHandlerContext chc, ByteBuf in, List<Object> list) throws Exception
     {
@@ -55,7 +55,7 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
         {
             in.markReaderIndex();
             int length = in.readInt();
-            
+
             // See if we have the full frame.
             if (in.readableBytes() < length)
             {
@@ -66,7 +66,7 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
                 byte code = in.readByte();
                 byte[] protobuf = new byte[length - 1];
                 in.readBytes(protobuf);
-                
+
                 chc.channel().pipeline().remove(this);
                 if (code == RiakMessageCodes.MSG_ErrorResp)
                 {
@@ -81,12 +81,12 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
             }
         }
     }
-    
+
     private void init(ChannelHandlerContext ctx) throws InterruptedException
     {
         ChannelFuture writeAndFlush = ctx.channel().writeAndFlush(buildOperation().channelMessage());
     }
-    
+
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception
     {
@@ -100,14 +100,14 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
             future.setException(new IOException("HealthCheckDecoder added to inactive channel"));
         }
     }
-    
+
     @Override
     public void channelActive(final ChannelHandlerContext ctx) throws Exception
     {
         logger.debug("HealthCheckDecoder Channel Active");
         init(ctx);
     }
-    
+
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception
     {
@@ -115,19 +115,19 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
         future.setException(new IOException("Channel closed while performing health check op."));
         ctx.fireChannelInactive();
     }
-    
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception 
+            throws Exception
     {
         future.setException(new IOException("Exception in channel while performing health check op.", cause));
     }
-    
+
     public RiakFuture<RiakMessage, Void> getFuture()
     {
         return future;
     }
-    
+
     private RiakResponseException riakErrorToException(byte[] protobuf)
     {
         try
@@ -140,14 +140,13 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
             return null;
         }
     }
-    
+
     public static class HealthCheckFuture implements RiakFuture<RiakMessage, Void>
     {
-
         private final CountDownLatch latch = new CountDownLatch(1);
         private volatile Throwable exception;
         private volatile RiakMessage message;
-        
+
         @Override
         public boolean cancel(boolean mayInterruptIfRunning)
         {
@@ -198,13 +197,13 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
                 return message;
             }
         }
-        
+
         public void setException(Throwable e)
         {
             exception = e;
             latch.countDown();
         }
-        
+
         public void setMessage(RiakMessage m)
         {
             message = m;
@@ -258,6 +257,5 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
         {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
     }
 }

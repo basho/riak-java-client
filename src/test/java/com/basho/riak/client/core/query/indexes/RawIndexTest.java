@@ -34,8 +34,6 @@ import org.junit.Test;
  */
 public class RawIndexTest
 {
-
-
     @Test
     public void builderCreatesIndex()
     {
@@ -50,7 +48,6 @@ public class RawIndexTest
         assertEquals(index.getName(), "index_name");
         assertEquals(index.getType(), IndexType.BIN);
         assertEquals(index.getFullname(), "index_name" + IndexType.BIN.suffix());
-
     }
 
     @Test
@@ -153,7 +150,6 @@ public class RawIndexTest
         }
 
         assertEquals(index.size(), 1);
-
     }
 
     @Test
@@ -178,7 +174,6 @@ public class RawIndexTest
         assertTrue(index2.hasValue(values.get(0)));
         index.remove(values.get(0));
         assertFalse(index2.hasValue(values.get(0)));
-
     }
 
     @Test
@@ -255,5 +250,4 @@ public class RawIndexTest
             assertTrue(valueSet.contains(b));
         }
     }
-
 }

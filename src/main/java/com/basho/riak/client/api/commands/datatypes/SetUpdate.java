@@ -33,7 +33,6 @@ import java.util.Set;
  */
 public class SetUpdate implements DatatypeUpdate
 {
-
     private final Set<BinaryValue> adds = new HashSet<>();
     private final Set<BinaryValue> removes = new HashSet<>();
 

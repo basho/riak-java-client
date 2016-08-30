@@ -17,7 +17,6 @@ package com.basho.riak.client.core.query.crdt.ops;
 
 public class FlagOp implements CrdtOp
 {
-
     private final boolean enabled;
 
     public FlagOp(boolean enabled)

@@ -52,7 +52,6 @@ import java.util.LinkedList;
  */
 public class AnnotationInfo
 {
-
     private final Field riakKeyField;
     private final Method riakKeySetter;
     private final Method riakKeyGetter;
@@ -198,7 +197,6 @@ public class AnnotationInfo
                 setFieldValue(riakKeyField, obj, key.unsafeGetValue());
             }
         }
-
     }
 
     // TODO: charset in annotation
@@ -355,7 +353,6 @@ public class AnnotationInfo
 
     public <T> VClock getRiakVClock(T obj)
     {
-
         VClock vclock = null;
 
         // We allow the annotated field to be either an actual VClock, or
@@ -388,7 +385,6 @@ public class AnnotationInfo
 
     public <T> void setRiakVClock(T obj, VClock vclock)
     {
-
         // We allow the annotated field to be either an actual VClock, or
         // a byte array. This is enforced in the AnnotationScanner
         if (riakVClockSetter != null)
@@ -405,7 +401,6 @@ public class AnnotationInfo
         }
         else if (riakVClockField != null)
         {
-
             if (riakVClockField.getType().isAssignableFrom(VClock.class))
             {
                 setFieldValue(riakVClockField, obj, vclock);
@@ -434,7 +429,6 @@ public class AnnotationInfo
 
     public <T> void setRiakTombstone(T obj, Boolean isDeleted)
     {
-
         if (riakTombstoneSetter != null)
         {
             setMethodValue(riakTombstoneSetter, obj, isDeleted);
@@ -499,7 +493,7 @@ public class AnnotationInfo
     {
         for (UsermetaField uf : usermetaFields)
         {
-            switch(uf.getFieldType())
+            switch (uf.getFieldType())
             {
                 case MAP:
                     @SuppressWarnings("unchecked")
@@ -526,7 +520,7 @@ public class AnnotationInfo
 
         for (UsermetaMethod um : usermetaMethods)
         {
-            switch(um.getMethodType())
+            switch (um.getMethodType())
             {
                 case MAP_GETTER:
                     @SuppressWarnings("unchecked")
@@ -564,7 +558,7 @@ public class AnnotationInfo
         Field mapField = null;
         for (UsermetaField uf : usermetaFields)
         {
-            switch(uf.getFieldType())
+            switch (uf.getFieldType())
             {
                 case STRING:
                     if (userMetadata.containsKey(uf.getUsermetaDataKey()))
@@ -584,7 +578,7 @@ public class AnnotationInfo
         Method mapSetter = null;
         for (UsermetaMethod um : usermetaMethods)
         {
-            switch(um.getMethodType())
+            switch (um.getMethodType())
             {
                 case STRING_SETTER:
                     if (userMetadata.containsKey(um.getUsermetaDataKey()))
@@ -600,7 +594,6 @@ public class AnnotationInfo
                     break;
             }
         }
-
 
         if (mapSetter != null || mapField != null)
         {
@@ -634,7 +627,7 @@ public class AnnotationInfo
         for (RiakIndexField f : indexFields)
         {
             final Object val = getFieldValue(f.getField(), obj);
-            switch(f.getFieldType())
+            switch (f.getFieldType())
             {
                 case SET_LONG:
                 case LONG:
@@ -707,7 +700,6 @@ public class AnnotationInfo
                 default:
                     break;
             }
-
         }
 
         for (RiakIndexMethod m : indexMethods)
@@ -805,7 +797,7 @@ public class AnnotationInfo
         for (RiakIndexField f : indexFields)
         {
             Set<?> val = null;
-            switch(f.getFieldType())
+            switch (f.getFieldType())
             {
                 case SET_LONG:
                 case LONG:
@@ -861,7 +853,7 @@ public class AnnotationInfo
         {
             Set<?> val = null;
 
-            switch(m.getMethodType())
+            switch (m.getMethodType())
             {
                 case SET_LONG_SETTER:
                 case LONG_SETTER:
@@ -910,7 +902,6 @@ public class AnnotationInfo
                 {
                     setMethodValue(m.getMethod(), obj, val);
                 }
-
             }
         }
     }
@@ -946,12 +937,10 @@ public class AnnotationInfo
         {
             setFieldValue(riakLinksField, obj, links.getLinks());
         }
-
     }
 
     public static class Builder
     {
-
         private Field riakKeyField;
         private Method riakKeySetter;
         private Method riakKeyGetter;
@@ -982,14 +971,12 @@ public class AnnotationInfo
         private final List<RiakIndexField> indexFields;
         private final List<RiakIndexMethod> indexMethods;
 
-
         /**
          * Constructs a builder for a new AnnotationInfo
          */
         public Builder()
         {
         }
-
 
         {
             usermetaFields = new LinkedList<>();
@@ -1276,7 +1263,6 @@ public class AnnotationInfo
             return this;
         }
 
-
         public AnnotationInfo build()
         {
             return new AnnotationInfo(this);
@@ -1284,7 +1270,6 @@ public class AnnotationInfo
 
         private void validateRiakLinksField(Field riakLinksField)
         {
-
             if (Collection.class.isAssignableFrom(riakLinksField.getType()))
             {
                 Type t = riakLinksField.getGenericType();
@@ -1293,7 +1278,6 @@ public class AnnotationInfo
                     ParameterizedType type = (ParameterizedType) t;
                     if (type.getRawType().equals(Collection.class))
                     {
-
                         Type[] genericParams = type.getActualTypeArguments();
                         if (genericParams.length == 1 && genericParams[0].equals(RiakLink.class))
                         {
@@ -1348,7 +1332,6 @@ public class AnnotationInfo
                     }
                 }
                 throw new IllegalArgumentException("@RiakLinks getter must return Collection<RiakLink>");
-
             }
         }
 
@@ -1382,7 +1365,6 @@ public class AnnotationInfo
                     throw new IllegalArgumentException("@RiakVClock getter must return VClock or byte[]");
                 }
             }
-
         }
 
         private void validateTombstoneField(Field f)

@@ -124,7 +124,7 @@ class DescribeQueryResultParser
 
     private static boolean DescribeRowV1ChunkIsValid(List<Cell> cells)
     {
-        if(cells.size() < 5)
+        if (cells.size() < 5)
         {
             return false;
         }
@@ -141,7 +141,7 @@ class DescribeQueryResultParser
 
     private static boolean DescribeRowV2ChunkIsValid(List<Cell> cells)
     {
-        if(cells.size() < 7)
+        if (cells.size() < 7)
         {
             return false;
         }

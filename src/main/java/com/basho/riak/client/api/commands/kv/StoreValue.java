@@ -88,7 +88,6 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
         this.vclock = builder.vclock;
     }
 
-
     @SuppressWarnings("unchecked")
     @Override
     protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
@@ -143,7 +142,6 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
                 {
                     return coreQueryInfo;
                 }
-
             };
         coreFuture.addListener(future);
         return future;
@@ -167,7 +165,6 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 
         for (Map.Entry<Option<?>, Object> opPair : options.entrySet())
         {
-
             RiakOption<?> option = opPair.getKey();
 
             if (option == Option.TIMEOUT)
@@ -214,7 +211,6 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             {
                 builder.withReturnBody((Boolean) opPair.getValue());
             }
-
         }
 
         return builder.build();
@@ -233,7 +229,6 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     */
    public final static class Option<T> extends RiakOption<T>
    {
-
        /**
         * Write Quorum.
         * How many replicas to write to before returning a successful response.
@@ -280,13 +275,11 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
        public static final Option<Boolean> SLOPPY_QUORUM = new Option<>("SLOPPY_QUORUM");
        public static final Option<Integer> N_VAL = new Option<>("N_VAL");
 
-
        private Option(String name)
        {
            super(name);
        }
    }
-
 
     public static class Response extends KvResponseBase
     {
@@ -321,7 +314,6 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 
         static class Builder extends Init<Builder>
         {
-
             @Override
             protected Builder self()
             {
@@ -341,15 +333,12 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
      */
     public static class Builder
     {
-
         private final Map<Option<?>, Object> options = new HashMap<>();
         private final Object value;
         private Namespace namespace;
         private BinaryValue key;
         private TypeReference<?> typeReference;
         private VClock vclock;
-
-
 
         /**
          * Construct a Builder for a StoreValue command.

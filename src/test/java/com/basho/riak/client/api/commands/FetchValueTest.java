@@ -44,8 +44,8 @@ public class FetchValueTest extends MockedResponseOperationTest<FetchOperation, 
         super(FetchOperation.Response.class);
     }
 
-    private final VClock vClock = new BasicVClock(new byte[]{'1'});
-	private final Location key = new Location(new Namespace("type","bucket"), "key");
+    private final VClock vClock = new BasicVClock(new byte[] {'1'});
+    private final Location key = new Location(new Namespace("type","bucket"), "key");
 
     @Override
     protected void setupResponse(FetchOperation.Response mockedResponse)
@@ -58,7 +58,6 @@ public class FetchValueTest extends MockedResponseOperationTest<FetchOperation, 
     @Test
     public void testFetch() throws Exception
     {
-
         FetchValue.Builder fetchValue = new FetchValue.Builder(key)
             .withOption(Option.TIMEOUT, 100)
             .withOption(Option.BASIC_QUORUM, true)
@@ -89,5 +88,4 @@ public class FetchValueTest extends MockedResponseOperationTest<FetchOperation, 
         assertEquals(1, builder.getR());
         assertEquals(true, builder.getSloppyQuorum());
     }
-
 }

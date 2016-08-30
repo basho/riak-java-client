@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-
 /**
  * Time Series Operation Integration Tests Base
  *
@@ -51,7 +50,8 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
         Arrays.asList(
             new FullColumnDescription("geohash", ColumnDescription.ColumnType.VARCHAR,  false, 1),
             new FullColumnDescription("user", ColumnDescription.ColumnType.VARCHAR,  false, 2),
-            new FullColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP,  false, 3, new Quantum(15, TimeUnit.MINUTES)),
+            new FullColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP,  false, 3,
+                                      new Quantum(15, TimeUnit.MINUTES)),
             new FullColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR,  false),
             new FullColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE, true),
             new FullColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64,  true),
@@ -66,20 +66,30 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
     protected final static long fifteenMinsAgo = tenMinsAgo - fiveMinsInMS;
     protected final static long fifteenMinsInFuture = now + (fiveMinsInMS * 3L);
 
-
     protected final static List<Row> rows = Arrays.asList(
             // "Normal" Data
-            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fifteenMinsAgo), new Cell("cloudy"), new Cell(79.0), new Cell(1), new Cell(true)),
-            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fiveMinsAgo), new Cell("sunny"),  new Cell(80.5), new Cell(2), new Cell(true)),
-            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now), new Cell("sunny"),  new Cell(81.0), new Cell(10), new Cell(false)),
+            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fifteenMinsAgo),
+                    new Cell("cloudy"), new Cell(79.0), new Cell(1), new Cell(true)),
+
+            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fiveMinsAgo),
+                    new Cell("sunny"),  new Cell(80.5), new Cell(2), new Cell(true)),
+
+            new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now),
+                    new Cell("sunny"),  new Cell(81.0), new Cell(10), new Cell(false)),
 
             // Null Cell row
-            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo), new Cell("cloudy"), null, null, new Cell(true)),
+            new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo),
+                    new Cell("cloudy"), null, null, new Cell(true)),
 
             // Data for single reads / deletes
-            new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fifteenMinsAgo), new Cell("rain"), new Cell(79.0), new Cell(2), new Cell(false)),
-            new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo), new Cell("wind"),  new Cell(50.5), new Cell(3), new Cell(true)),
-            new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(now), new Cell("snow"),  new Cell(20.0), new Cell(11), new Cell(true)));
+            new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fifteenMinsAgo),
+                    new Cell("rain"), new Cell(79.0), new Cell(2), new Cell(false)),
+
+            new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo),
+                    new Cell("wind"),  new Cell(50.5), new Cell(3), new Cell(true)),
+
+            new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(now),
+                    new Cell("snow"),  new Cell(20.0), new Cell(11), new Cell(true)));
 
     @BeforeClass
     public static void BeforeClass() throws ExecutionException, InterruptedException
@@ -89,7 +99,8 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
         createTableIfNotExists(client, GeoCheckinWideTableDefinition);
     }
 
-    protected static boolean isTableExistence(RiakClient client, String tableName) throws InterruptedException, ExecutionException
+    protected static boolean isTableExistence(RiakClient client, String tableName)
+            throws InterruptedException, ExecutionException
     {
         final Namespace ns = new Namespace(tableName, tableName);
 
@@ -114,19 +125,22 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
         }
     }
 
-    protected static RiakFuture<Void, String> createTableAsync(final RiakClient client, TableDefinition tableDefinition) throws InterruptedException
+    protected static RiakFuture<Void, String> createTableAsync(final RiakClient client, TableDefinition tableDefinition)
+            throws InterruptedException
     {
         final CreateTable cmd = new CreateTable.Builder(tableDefinition).build();
 
         return client.executeAsync(cmd);
     }
 
-    protected static void createTable(final RiakClient client, TableDefinition tableDefinition) throws InterruptedException, ExecutionException
+    protected static void createTable(final RiakClient client, TableDefinition tableDefinition)
+            throws InterruptedException, ExecutionException
     {
         createTableAsync(client, tableDefinition).get();
     }
 
-    protected static void createTableIfNotExists(final RiakClient client, TableDefinition tableDefinition) throws InterruptedException, ExecutionException
+    protected static void createTableIfNotExists(final RiakClient client, TableDefinition tableDefinition)
+            throws InterruptedException, ExecutionException
     {
         if (!isTableExistence(client, tableDefinition.getTableName()))
         {
@@ -134,7 +148,8 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
         }
     }
 
-    protected static QueryResult executeQuery(QueryOperation.Builder builder) throws ExecutionException, InterruptedException
+    protected static QueryResult executeQuery(QueryOperation.Builder builder)
+            throws ExecutionException, InterruptedException
     {
         final RiakFuture<QueryResult, String> future = cluster.execute(builder.build());
 

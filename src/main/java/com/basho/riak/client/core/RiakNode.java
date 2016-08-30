@@ -120,7 +120,6 @@ public class RiakNode implements RiakResponseListener
                     future.channel().closeFuture().addListener(inProgressCloseListener);
                 }
             }
-
         };
 
     private final ChannelFutureListener inAvailableCloseListener =
@@ -164,10 +163,8 @@ public class RiakNode implements RiakResponseListener
                         inProgress.setException(new Exception("Connection closed unexpectantly"));
                     }
                 }
-
             }
         };
-
 
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
 
@@ -347,9 +344,7 @@ public class RiakNode implements RiakResponseListener
             {
                 return shutdownLatch.getCount() <= 0;
             }
-
         };
-
     }
 
     /**
@@ -646,7 +641,6 @@ public class RiakNode implements RiakResponseListener
             {
                 logger.error("Netty interrupted waiting for connection permit to be available; {}",
                              remoteAddress);
-
             }
         }
         else
@@ -692,7 +686,7 @@ public class RiakNode implements RiakResponseListener
             }
         }
 
-        if(forceAddressRefresh)
+        if (forceAddressRefresh)
         {
             refreshBootstrapRemoteAddress();
         }
@@ -734,7 +728,6 @@ public class RiakNode implements RiakResponseListener
         }
 
         return c;
-
     }
 
     private void setupTLSAndAuthenticate(Channel c) throws ConnectionFailedException
@@ -746,7 +739,7 @@ public class RiakNode implements RiakResponseListener
             TrustManagerFactory tmf =
                 TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(trustStore);
-                if(keyStore!=null)
+                if (keyStore!=null)
             {
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 kmf.init(keyStore, keyPassword==null?"".toCharArray():keyPassword.toCharArray());
@@ -756,7 +749,6 @@ public class RiakNode implements RiakResponseListener
             {
                 context.init(null, tmf.getTrustManagers(), null);
             }
-
         }
         catch (Exception ex)
         {
@@ -800,8 +792,6 @@ public class RiakNode implements RiakResponseListener
                 logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause());
                 throw new ConnectionFailedException(promise.cause());
             }
-
-
         }
         catch (InterruptedException e)
         {
@@ -861,7 +851,6 @@ public class RiakNode implements RiakResponseListener
         c.closeFuture().removeListener(inAvailableCloseListener);
         c.close();
     }
-
 
     // End ConnectionPool stuff
 
@@ -932,11 +921,11 @@ public class RiakNode implements RiakResponseListener
         final boolean propertyUndefined = property == null;
         boolean logWarning = false;
 
-        if(propertyUndefined && usingSecurityMgr)
+        if (propertyUndefined && usingSecurityMgr)
         {
             logWarning = true;
         }
-        else if(!propertyUndefined)
+        else if (!propertyUndefined)
         {
             final int cacheTTL = Integer.parseInt(property);
             logWarning = (cacheTTL == -1);
@@ -1046,7 +1035,6 @@ public class RiakNode implements RiakResponseListener
 
             this.maxPermits = maxPermits;
         }
-
     }
 
     private class IdleReaper implements Runnable
@@ -1150,8 +1138,6 @@ public class RiakNode implements RiakResponseListener
             Channel c = doGetConnection(true);
             logger.debug("Healthcheck channel: {} isOpen: {} handlers:{}", c.hashCode(), c.isOpen(), c.pipeline().names());
 
-
-
             // If the channel closes between when we got it and now, the pipeline is emptied. If the handlers
             // aren't there we fail the healthcheck
 
@@ -1178,7 +1164,6 @@ public class RiakNode implements RiakResponseListener
                 {
                     healthCheckFailed(future.cause());
                 }
-
             }
             catch (InterruptedException ex)
             {
@@ -1327,14 +1312,12 @@ public class RiakNode implements RiakResponseListener
         private KeyStore keyStore;
         private String keyPassword;
 
-
         /**
          * Default constructor. Returns a new builder for a RiakNode with
          * default values set.
          */
         public Builder()
         {
-
         }
 
         /**

@@ -79,7 +79,7 @@ public class Row implements Iterable<Cell>
 
     public RiakTsPB.TsRow getPbRow()
     {
-        if(pbRow != null)
+        if (pbRow != null)
         {
             return pbRow;
         }
@@ -96,7 +96,7 @@ public class Row implements Iterable<Cell>
     @Override
     public Iterator<Cell> iterator()
     {
-        if(cells != null)
+        if (cells != null)
         {
             return cells.iterator();
         }
@@ -125,7 +125,6 @@ public class Row implements Iterable<Cell>
             return false;
         }
         return getCellsCopy().equals(cells1.getCellsCopy());
-
     }
 
     @Override

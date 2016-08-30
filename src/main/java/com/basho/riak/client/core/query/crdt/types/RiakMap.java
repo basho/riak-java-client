@@ -260,7 +260,6 @@ public class RiakMap extends RiakDatatype
         RiakMap riakMap = (RiakMap) o;
 
         return entries != null ? entries.equals(riakMap.entries) : riakMap.entries == null;
-
     }
 
     @Override
@@ -274,7 +273,6 @@ public class RiakMap extends RiakDatatype
      */
     public static final class MapEntry
     {
-
         private final BinaryValue field;
         private final RiakDatatype element;
 
@@ -293,6 +291,5 @@ public class RiakMap extends RiakDatatype
         {
             return element;
         }
-
     }
 }

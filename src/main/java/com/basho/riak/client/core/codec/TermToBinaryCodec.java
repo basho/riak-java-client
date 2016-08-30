@@ -41,7 +41,7 @@ public class TermToBinaryCodec
         }
         os.write_nil(); // NB: finishes the list
 
-        if(timeout != 0)
+        if (timeout != 0)
         {
             os.write_long(timeout);
         }
@@ -97,7 +97,9 @@ public class TermToBinaryCodec
         return encodeTsPutRequest(tableName, Collections.<String>emptyList(), rows);
     }
 
-    public static OtpOutputStream encodeTsPutRequest(String tableName, Collection<String> columns, Collection<Row> rows)
+    public static OtpOutputStream encodeTsPutRequest(String tableName,
+                                                     Collection<String> columns,
+                                                     Collection<Row> rows)
     {
         final OtpOutputStream os = new OtpOutputStream();
         os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value
@@ -112,7 +114,7 @@ public class TermToBinaryCodec
         os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));
 
         // Columns List
-        if(columns != null && !columns.isEmpty())
+        if (columns != null && !columns.isEmpty())
         {
             os.write_list_head(columns.size());
 
@@ -206,7 +208,6 @@ public class TermToBinaryCodec
 
         throw new InvalidTermToBinaryException("Invalid Response atom encountered: " +
                                                        responseAtom + ". Was expecting tsqueryresp");
-
     }
 
     private static QueryResult parseTupleResult(OtpInputStream is)
@@ -258,7 +259,6 @@ public class TermToBinaryCodec
         {
             is.read_nil();
         }
-
 
         final int colTypeCount = is.read_list_head();
         assert (colNameCount == colTypeCount);

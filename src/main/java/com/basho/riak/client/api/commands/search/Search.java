@@ -102,7 +102,6 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
         this.options.putAll(builder.options);
     }
 
-
     @Override
     protected RiakFuture<SearchOperation.Response, BinaryValue> executeAsync(RiakCluster cluster)
     {
@@ -134,7 +133,6 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
 
         for (Map.Entry<Option<?>, Object> option : options.entrySet())
         {
-
             if (option.getKey() == Option.DEFAULT_FIELD)
             {
                 builder.withDefaultField((String) option.getValue());
@@ -144,7 +142,6 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
                 Option.Operation op = (Option.Operation) option.getValue();
                 builder.withDefaultOperation(op.opStr);
             }
-
         }
 
         if (start >= 0)
@@ -349,7 +346,5 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
         {
             return new Search(this);
         }
-
     }
-
 }

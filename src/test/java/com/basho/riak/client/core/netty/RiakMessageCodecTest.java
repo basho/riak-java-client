@@ -86,6 +86,5 @@ public class RiakMessageCodecTest
         RiakMessage message = (RiakMessage) outList.get(0);
         assertEquals(code, message.getCode());
         assertArrayEquals(data, message.getData());
-
     }
 }

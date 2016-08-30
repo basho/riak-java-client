@@ -32,7 +32,7 @@ public class PingOperation extends FutureOperation<Void, Void, Void>
     private final Logger logger = LoggerFactory.getLogger(PingOperation.class);
 
     @Override
-    protected Void convert(List<Void> rawResponse) 
+    protected Void convert(List<Void> rawResponse)
     {
         return null;
     }
@@ -53,5 +53,5 @@ public class PingOperation extends FutureOperation<Void, Void, Void>
     public Void getQueryInfo()
     {
         return null;
-    }    
+    }
 }

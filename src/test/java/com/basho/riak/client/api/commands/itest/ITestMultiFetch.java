@@ -39,7 +39,6 @@ import org.junit.Test;
  */
 public class ITestMultiFetch extends ITestAutoCleanupBase
 {
-
     @Test
     public void simpleTest() throws ExecutionException, InterruptedException
     {
@@ -82,9 +81,5 @@ public class ITestMultiFetch extends ITestAutoCleanupBase
 
         assertTrue(returnedLocations.containsAll(locations));
         assertTrue(returnedValues.containsAll(values));
-
-
-
-
     }
 }

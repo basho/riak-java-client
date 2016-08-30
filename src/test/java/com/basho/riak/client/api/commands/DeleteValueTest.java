@@ -32,14 +32,14 @@ import static org.junit.Assert.assertTrue;
 
 public class DeleteValueTest extends OperationTestBase<DeleteOperation>
 {
-    private VClock vClock = new BasicVClock(new byte[]{'1'});
+    private VClock vClock = new BasicVClock(new byte[] {'1'});
     private Location key = new Location(new Namespace("type","bucket"), "key");
 
     @Test
     public void testDelete() throws Exception
     {
         DeleteValue.Builder delete = new DeleteValue.Builder(key)
-	        .withVClock(vClock)
+            .withVClock(vClock)
             .withOption(Option.DW, new Quorum(1))
             .withOption(Option.N_VAL, 1)
             .withOption(Option.PR, new Quorum(1))

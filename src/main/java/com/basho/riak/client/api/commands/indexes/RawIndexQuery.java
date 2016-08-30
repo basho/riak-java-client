@@ -77,9 +77,14 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
         return future;
     }
 
-    protected final class RawQueryFuture extends CoreFutureAdapter<Response, RawIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+    protected final class RawQueryFuture
+            extends CoreFutureAdapter<Response,
+                                      RawIndexQuery,
+                                      SecondaryIndexQueryOperation.Response,
+                                      SecondaryIndexQueryOperation.Query>
     {
-        public RawQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        public RawQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response,
+                              SecondaryIndexQueryOperation.Query> coreFuture)
         {
             super(coreFuture);
         }
@@ -95,7 +100,6 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
         {
             return RawIndexQuery.this;
         }
-
     }
 
     /**
@@ -103,7 +107,6 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
      */
     public static class Builder extends SecondaryIndexQuery.Init<BinaryValue, Builder>
     {
-
         /**
          * Construct a Builder for a RawIndexQuery with a range.
          * <p>
@@ -155,7 +158,9 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
 
     public static class Response extends SecondaryIndexQuery.Response<BinaryValue>
     {
-        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BinaryValue> converter)
+        protected Response(Namespace queryLocation,
+                           SecondaryIndexQueryOperation.Response coreResponse,
+                           IndexConverter<BinaryValue> converter)
         {
             super(queryLocation, coreResponse, converter);
         }
@@ -179,8 +184,6 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
             {
                 super(riakObjectLocation, indexKey, converter);
             }
-
         }
     }
-
 }

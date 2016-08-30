@@ -35,7 +35,6 @@ import org.junit.Test;
 @SuppressWarnings("unchecked")
 public class RiakBeanSerializerModifierTest
 {
-
     @Test public void changePropertiesDropsRiakAnnotatedProperties() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -72,8 +71,6 @@ public class RiakBeanSerializerModifierTest
         assertTrue(map.containsKey("metaValueField"));
         assertTrue(map.containsKey("someField"));
         assertTrue(map.containsKey("someOtherField"));
-
-
     }
 
     @SuppressWarnings("unused") private static final class RiakAnnotatedClass
@@ -126,12 +123,12 @@ public class RiakBeanSerializerModifierTest
         public String someOtherField = "THREE";
     }
 
-	@SuppressWarnings("unused") private static final class RiakAnnotatedClassWithJsonProp
+    @SuppressWarnings("unused") private static final class RiakAnnotatedClassWithJsonProp
     {
         @JsonProperty
-		@RiakKey private String keyField = "key";
+        @RiakKey private String keyField = "key";
         @JsonProperty
-		@RiakUsermeta(key = "metaKey1") public String metaValueField = "ONE";
+        @RiakUsermeta(key = "metaKey1") public String metaValueField = "ONE";
         @RiakUsermeta public Map<String, String> usermeta = new HashMap<>();
 
         public String someField = "TWO";
@@ -141,7 +138,5 @@ public class RiakBeanSerializerModifierTest
         {
             return keyField;
         }
-
     }
-
 }

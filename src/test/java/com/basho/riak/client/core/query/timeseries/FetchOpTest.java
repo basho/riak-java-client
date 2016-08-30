@@ -25,7 +25,8 @@ public class FetchOpTest
     @Test
     public void shouldBuildADescriptiveQueryInfoString()
     {
-        String expectedInfo = "SELECT * FROM my_table WHERE PRIMARY KEY = { Cell{ my_family }, Cell{ my_series }, Cell{ 1443796900000 }, NULL }";
+        String expectedInfo = "SELECT * FROM my_table WHERE PRIMARY KEY = " +
+                                "{ Cell{ my_family }, Cell{ my_series }, Cell{ 1443796900000 }, NULL }";
         FetchOperation cmd = new FetchOperation.Builder(tableName, keyValues).build();
         assertEquals(expectedInfo, cmd.getQueryInfo());
     }
@@ -53,5 +54,4 @@ public class FetchOpTest
     {
         new FetchOperation.Builder(tableName, new ArrayList<>(0)).build();
     }
-
 }

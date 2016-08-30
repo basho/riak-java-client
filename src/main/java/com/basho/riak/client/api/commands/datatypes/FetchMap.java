@@ -44,23 +44,23 @@ import com.basho.riak.client.core.query.crdt.types.RiakMap;
  */
 public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Location>
 {
-	private FetchMap(Builder builder)
-	{
-		super(builder);
-	}
+    private FetchMap(Builder builder)
+    {
+        super(builder);
+    }
 
-	@Override
-	public RiakMap extractDatatype(RiakDatatype element)
-	{
-		return element.getAsMap();
-	}
+    @Override
+    public RiakMap extractDatatype(RiakDatatype element)
+    {
+        return element.getAsMap();
+    }
 
     @Override
     protected final RiakFuture<FetchMap.Response, Location> executeAsync(RiakCluster cluster)
     {
         RiakFuture<DtFetchOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<FetchMap.Response, Location, DtFetchOperation.Response, Location> future =
             new CoreFutureAdapter<FetchMap.Response, Location, DtFetchOperation.Response, Location>(coreFuture)
             {
@@ -89,38 +89,36 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
         coreFuture.addListener(future);
         return future;
     }
-    
+
     /**
      * Builder used to construct a FetchMap command.
      */
-	public static class Builder extends FetchDatatype.Builder<Builder>
-	{
-
+    public static class Builder extends FetchDatatype.Builder<Builder>
+    {
         /**
          * Construct a Builder for a FetchMap command.
          * @param location the location of the map in Riak.
          */
-		public Builder(Location location)
-		{
-			super(location);
-		}
+        public Builder(Location location)
+        {
+            super(location);
+        }
 
-		@Override
-		protected Builder self()
-		{
-			return this;
-		}
+        @Override
+        protected Builder self()
+        {
+            return this;
+        }
 
         /**
          * Construct a new FetchMap command.
          * @return a new FetchMap command.
          */
-		public FetchMap build()
-		{
-			return new FetchMap(this);
-		}
-
-	}
+        public FetchMap build()
+        {
+            return new FetchMap(this);
+        }
+    }
 
     /**
      * Response from a FetchMap command.
@@ -131,7 +129,7 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
      * ...
      * RiakMap rMap = response.getDatatype();
      * Map<BinaryValue, List<RiakDatatype>> map = rMap.view();
-     * 
+     *
      * }
      * </pre>
      * </p>
@@ -143,5 +141,4 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
             super(datatype, context);
         }
     }
-    
 }

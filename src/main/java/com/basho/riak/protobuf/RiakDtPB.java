@@ -11,7 +11,6 @@ public final class RiakDtPB {
   public interface MapFieldOrBuilder extends
       // @@protoc_insertion_point(interface_extends:MapField)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes name = 1;</code>
      */
@@ -195,7 +194,6 @@ public final class RiakDtPB {
        * <code>MAP = 5;</code>
        */
       public static final int MAP_VALUE = 5;
-
 
       public final int getNumber() { return value; }
 
@@ -527,11 +525,9 @@ public final class RiakDtPB {
 
       public final boolean isInitialized() {
         if (!hasName()) {
-          
           return false;
         }
         if (!hasType()) {
-          
           return false;
         }
         return true;
@@ -640,7 +636,6 @@ public final class RiakDtPB {
   public interface MapEntryOrBuilder extends
       // @@protoc_insertion_point(interface_extends:MapEntry)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required .MapField field = 1;</code>
      */
@@ -697,7 +692,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 6;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry> 
+    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry>
         getMapValueList();
     /**
      * <code>repeated .MapEntry map_value = 6;</code>
@@ -710,7 +705,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 6;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
         getMapValueOrBuilderList();
     /**
      * <code>repeated .MapEntry map_value = 6;</code>
@@ -964,7 +959,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 6;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
         getMapValueOrBuilderList() {
       return mapValue_;
     }
@@ -1341,7 +1336,7 @@ public final class RiakDtPB {
               mapValueBuilder_ = null;
               mapValue_ = other.mapValue_;
               bitField0_ = (bitField0_ & ~0x00000020);
-              mapValueBuilder_ = 
+              mapValueBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getMapValueFieldBuilder() : null;
             } else {
@@ -1355,16 +1350,13 @@ public final class RiakDtPB {
 
       public final boolean isInitialized() {
         if (!hasField()) {
-          
           return false;
         }
         if (!getField().isInitialized()) {
-          
           return false;
         }
         for (int i = 0; i < getMapValueCount(); i++) {
           if (!getMapValue(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -1493,7 +1485,7 @@ public final class RiakDtPB {
        * <code>required .MapField field = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapField, com.basho.riak.protobuf.RiakDtPB.MapField.Builder, com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.MapField, com.basho.riak.protobuf.RiakDtPB.MapField.Builder, com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder>
           getFieldFieldBuilder() {
         if (fieldBuilder_ == null) {
           fieldBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -1872,7 +1864,7 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapEntry map_value = 6;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
            getMapValueOrBuilderList() {
         if (mapValueBuilder_ != null) {
           return mapValueBuilder_.getMessageOrBuilderList();
@@ -1898,12 +1890,12 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapEntry map_value = 6;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder>
            getMapValueBuilderList() {
         return getMapValueFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapEntry, com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder, com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.MapEntry, com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder, com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
           getMapValueFieldBuilder() {
         if (mapValueBuilder_ == null) {
           mapValueBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -1931,7 +1923,6 @@ public final class RiakDtPB {
   public interface DtFetchReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DtFetchReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      *
@@ -2829,15 +2820,12 @@ public final class RiakDtPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         if (!hasKey()) {
-          
           return false;
         }
         if (!hasType()) {
-          
           return false;
         }
         return true;
@@ -3321,7 +3309,6 @@ public final class RiakDtPB {
   public interface DtValueOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DtValue)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional sint64 counter_value = 1;</code>
      */
@@ -3347,7 +3334,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 3;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry> 
+    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry>
         getMapValueList();
     /**
      * <code>repeated .MapEntry map_value = 3;</code>
@@ -3360,7 +3347,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 3;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
         getMapValueOrBuilderList();
     /**
      * <code>repeated .MapEntry map_value = 3;</code>
@@ -3540,7 +3527,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 3;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
         getMapValueOrBuilderList() {
       return mapValue_;
     }
@@ -3849,7 +3836,7 @@ public final class RiakDtPB {
               mapValueBuilder_ = null;
               mapValue_ = other.mapValue_;
               bitField0_ = (bitField0_ & ~0x00000004);
-              mapValueBuilder_ = 
+              mapValueBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getMapValueFieldBuilder() : null;
             } else {
@@ -3864,7 +3851,6 @@ public final class RiakDtPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getMapValueCount(); i++) {
           if (!getMapValue(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -4189,7 +4175,7 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapEntry map_value = 3;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
            getMapValueOrBuilderList() {
         if (mapValueBuilder_ != null) {
           return mapValueBuilder_.getMessageOrBuilderList();
@@ -4215,12 +4201,12 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapEntry map_value = 3;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder>
            getMapValueBuilderList() {
         return getMapValueFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapEntry, com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder, com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.MapEntry, com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder, com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
           getMapValueFieldBuilder() {
         if (mapValueBuilder_ == null) {
           mapValueBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -4248,7 +4234,6 @@ public final class RiakDtPB {
   public interface DtFetchRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DtFetchResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional bytes context = 1;</code>
      */
@@ -4441,7 +4426,6 @@ public final class RiakDtPB {
        * <code>MAP = 3;</code>
        */
       public static final int MAP_VALUE = 3;
-
 
       public final int getNumber() { return value; }
 
@@ -4824,12 +4808,10 @@ public final class RiakDtPB {
 
       public final boolean isInitialized() {
         if (!hasType()) {
-          
           return false;
         }
         if (hasValue()) {
           if (!getValue().isInitialized()) {
-            
             return false;
           }
         }
@@ -5028,7 +5010,7 @@ public final class RiakDtPB {
        * <code>optional .DtValue value = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.DtValue, com.basho.riak.protobuf.RiakDtPB.DtValue.Builder, com.basho.riak.protobuf.RiakDtPB.DtValueOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.DtValue, com.basho.riak.protobuf.RiakDtPB.DtValue.Builder, com.basho.riak.protobuf.RiakDtPB.DtValueOrBuilder>
           getValueFieldBuilder() {
         if (valueBuilder_ == null) {
           valueBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -5055,7 +5037,6 @@ public final class RiakDtPB {
   public interface CounterOpOrBuilder extends
       // @@protoc_insertion_point(interface_extends:CounterOp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional sint64 increment = 1;</code>
      */
@@ -5464,7 +5445,6 @@ public final class RiakDtPB {
   public interface SetOpOrBuilder extends
       // @@protoc_insertion_point(interface_extends:SetOp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated bytes adds = 1;</code>
      */
@@ -6088,7 +6068,6 @@ public final class RiakDtPB {
   public interface MapUpdateOrBuilder extends
       // @@protoc_insertion_point(interface_extends:MapUpdate)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required .MapField field = 1;</code>
      */
@@ -6362,7 +6341,6 @@ public final class RiakDtPB {
        * <code>DISABLE = 2;</code>
        */
       public static final int DISABLE_VALUE = 2;
-
 
       public final int getNumber() { return value; }
 
@@ -6895,16 +6873,13 @@ public final class RiakDtPB {
 
       public final boolean isInitialized() {
         if (!hasField()) {
-          
           return false;
         }
         if (!getField().isInitialized()) {
-          
           return false;
         }
         if (hasMapOp()) {
           if (!getMapOp().isInitialized()) {
-            
             return false;
           }
         }
@@ -7033,7 +7008,7 @@ public final class RiakDtPB {
        * <code>required .MapField field = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapField, com.basho.riak.protobuf.RiakDtPB.MapField.Builder, com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.MapField, com.basho.riak.protobuf.RiakDtPB.MapField.Builder, com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder>
           getFieldFieldBuilder() {
         if (fieldBuilder_ == null) {
           fieldBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -7149,7 +7124,7 @@ public final class RiakDtPB {
        * <code>optional .CounterOp counter_op = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.CounterOp, com.basho.riak.protobuf.RiakDtPB.CounterOp.Builder, com.basho.riak.protobuf.RiakDtPB.CounterOpOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.CounterOp, com.basho.riak.protobuf.RiakDtPB.CounterOp.Builder, com.basho.riak.protobuf.RiakDtPB.CounterOpOrBuilder>
           getCounterOpFieldBuilder() {
         if (counterOpBuilder_ == null) {
           counterOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -7265,7 +7240,7 @@ public final class RiakDtPB {
        * <code>optional .SetOp set_op = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.SetOp, com.basho.riak.protobuf.RiakDtPB.SetOp.Builder, com.basho.riak.protobuf.RiakDtPB.SetOpOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.SetOp, com.basho.riak.protobuf.RiakDtPB.SetOp.Builder, com.basho.riak.protobuf.RiakDtPB.SetOpOrBuilder>
           getSetOpFieldBuilder() {
         if (setOpBuilder_ == null) {
           setOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -7471,7 +7446,7 @@ public final class RiakDtPB {
        * <code>optional .MapOp map_op = 6;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapOp, com.basho.riak.protobuf.RiakDtPB.MapOp.Builder, com.basho.riak.protobuf.RiakDtPB.MapOpOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.MapOp, com.basho.riak.protobuf.RiakDtPB.MapOp.Builder, com.basho.riak.protobuf.RiakDtPB.MapOpOrBuilder>
           getMapOpFieldBuilder() {
         if (mapOpBuilder_ == null) {
           mapOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -7498,7 +7473,6 @@ public final class RiakDtPB {
   public interface MapOpOrBuilder extends
       // @@protoc_insertion_point(interface_extends:MapOp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated .MapField removes = 1;</code>
      *
@@ -7508,7 +7482,7 @@ public final class RiakDtPB {
      * operations to the values stored in the Map.
      * </pre>
      */
-    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapField> 
+    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapField>
         getRemovesList();
     /**
      * <code>repeated .MapField removes = 1;</code>
@@ -7539,7 +7513,7 @@ public final class RiakDtPB {
      * operations to the values stored in the Map.
      * </pre>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder>
         getRemovesOrBuilderList();
     /**
      * <code>repeated .MapField removes = 1;</code>
@@ -7556,7 +7530,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapUpdate updates = 2;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapUpdate> 
+    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapUpdate>
         getUpdatesList();
     /**
      * <code>repeated .MapUpdate updates = 2;</code>
@@ -7569,7 +7543,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapUpdate updates = 2;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder>
         getUpdatesOrBuilderList();
     /**
      * <code>repeated .MapUpdate updates = 2;</code>
@@ -7718,7 +7692,7 @@ public final class RiakDtPB {
      * operations to the values stored in the Map.
      * </pre>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder>
         getRemovesOrBuilderList() {
       return removes_;
     }
@@ -7771,7 +7745,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapUpdate updates = 2;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder>
         getUpdatesOrBuilderList() {
       return updates_;
     }
@@ -8061,7 +8035,7 @@ public final class RiakDtPB {
               removesBuilder_ = null;
               removes_ = other.removes_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              removesBuilder_ = 
+              removesBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getRemovesFieldBuilder() : null;
             } else {
@@ -8087,7 +8061,7 @@ public final class RiakDtPB {
               updatesBuilder_ = null;
               updates_ = other.updates_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              updatesBuilder_ = 
+              updatesBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getUpdatesFieldBuilder() : null;
             } else {
@@ -8102,13 +8076,11 @@ public final class RiakDtPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getRemovesCount(); i++) {
           if (!getRemoves(i).isInitialized()) {
-            
             return false;
           }
         }
         for (int i = 0; i < getUpdatesCount(); i++) {
           if (!getUpdates(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -8419,7 +8391,7 @@ public final class RiakDtPB {
        * operations to the values stored in the Map.
        * </pre>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder>
            getRemovesOrBuilderList() {
         if (removesBuilder_ != null) {
           return removesBuilder_.getMessageOrBuilderList();
@@ -8463,12 +8435,12 @@ public final class RiakDtPB {
        * operations to the values stored in the Map.
        * </pre>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapField.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapField.Builder>
            getRemovesBuilderList() {
         return getRemovesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapField, com.basho.riak.protobuf.RiakDtPB.MapField.Builder, com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.MapField, com.basho.riak.protobuf.RiakDtPB.MapField.Builder, com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder>
           getRemovesFieldBuilder() {
         if (removesBuilder_ == null) {
           removesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -8677,7 +8649,7 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapUpdate updates = 2;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder>
            getUpdatesOrBuilderList() {
         if (updatesBuilder_ != null) {
           return updatesBuilder_.getMessageOrBuilderList();
@@ -8703,12 +8675,12 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapUpdate updates = 2;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapUpdate.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapUpdate.Builder>
            getUpdatesBuilderList() {
         return getUpdatesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapUpdate, com.basho.riak.protobuf.RiakDtPB.MapUpdate.Builder, com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.MapUpdate, com.basho.riak.protobuf.RiakDtPB.MapUpdate.Builder, com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder>
           getUpdatesFieldBuilder() {
         if (updatesBuilder_ == null) {
           updatesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -8736,7 +8708,6 @@ public final class RiakDtPB {
   public interface DtOpOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DtOp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional .CounterOp counter_op = 1;</code>
      */
@@ -9256,7 +9227,6 @@ public final class RiakDtPB {
       public final boolean isInitialized() {
         if (hasMapOp()) {
           if (!getMapOp().isInitialized()) {
-            
             return false;
           }
         }
@@ -9385,7 +9355,7 @@ public final class RiakDtPB {
        * <code>optional .CounterOp counter_op = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.CounterOp, com.basho.riak.protobuf.RiakDtPB.CounterOp.Builder, com.basho.riak.protobuf.RiakDtPB.CounterOpOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.CounterOp, com.basho.riak.protobuf.RiakDtPB.CounterOp.Builder, com.basho.riak.protobuf.RiakDtPB.CounterOpOrBuilder>
           getCounterOpFieldBuilder() {
         if (counterOpBuilder_ == null) {
           counterOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -9501,7 +9471,7 @@ public final class RiakDtPB {
        * <code>optional .SetOp set_op = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.SetOp, com.basho.riak.protobuf.RiakDtPB.SetOp.Builder, com.basho.riak.protobuf.RiakDtPB.SetOpOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.SetOp, com.basho.riak.protobuf.RiakDtPB.SetOp.Builder, com.basho.riak.protobuf.RiakDtPB.SetOpOrBuilder>
           getSetOpFieldBuilder() {
         if (setOpBuilder_ == null) {
           setOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -9617,7 +9587,7 @@ public final class RiakDtPB {
        * <code>optional .MapOp map_op = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapOp, com.basho.riak.protobuf.RiakDtPB.MapOp.Builder, com.basho.riak.protobuf.RiakDtPB.MapOpOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.MapOp, com.basho.riak.protobuf.RiakDtPB.MapOp.Builder, com.basho.riak.protobuf.RiakDtPB.MapOpOrBuilder>
           getMapOpFieldBuilder() {
         if (mapOpBuilder_ == null) {
           mapOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -9644,7 +9614,6 @@ public final class RiakDtPB {
   public interface DtUpdateReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DtUpdateReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      *
@@ -10735,19 +10704,15 @@ public final class RiakDtPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         if (!hasType()) {
-          
           return false;
         }
         if (!hasOp()) {
-          
           return false;
         }
         if (!getOp().isInitialized()) {
-          
           return false;
         }
         return true;
@@ -11115,7 +11080,7 @@ public final class RiakDtPB {
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.DtOp, com.basho.riak.protobuf.RiakDtPB.DtOp.Builder, com.basho.riak.protobuf.RiakDtPB.DtOpOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.DtOp, com.basho.riak.protobuf.RiakDtPB.DtOp.Builder, com.basho.riak.protobuf.RiakDtPB.DtOpOrBuilder>
           getOpFieldBuilder() {
         if (opBuilder_ == null) {
           opBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -11462,7 +11427,6 @@ public final class RiakDtPB {
   public interface DtUpdateRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DtUpdateResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional bytes key = 1;</code>
      *
@@ -11522,7 +11486,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 5;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry> 
+    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry>
         getMapValueList();
     /**
      * <code>repeated .MapEntry map_value = 5;</code>
@@ -11535,7 +11499,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 5;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
         getMapValueOrBuilderList();
     /**
      * <code>repeated .MapEntry map_value = 5;</code>
@@ -11772,7 +11736,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 5;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
         getMapValueOrBuilderList() {
       return mapValue_;
     }
@@ -12116,7 +12080,7 @@ public final class RiakDtPB {
               mapValueBuilder_ = null;
               mapValue_ = other.mapValue_;
               bitField0_ = (bitField0_ & ~0x00000010);
-              mapValueBuilder_ = 
+              mapValueBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getMapValueFieldBuilder() : null;
             } else {
@@ -12131,7 +12095,6 @@ public final class RiakDtPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getMapValueCount(); i++) {
           if (!getMapValue(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -12558,7 +12521,7 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapEntry map_value = 5;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
            getMapValueOrBuilderList() {
         if (mapValueBuilder_ != null) {
           return mapValueBuilder_.getMessageOrBuilderList();
@@ -12584,12 +12547,12 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapEntry map_value = 5;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder>
            getMapValueBuilderList() {
         return getMapValueFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapEntry, com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder, com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
+          com.basho.riak.protobuf.RiakDtPB.MapEntry, com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder, com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
           getMapValueFieldBuilder() {
         if (mapValueBuilder_ == null) {
           mapValueBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<

@@ -12,7 +12,6 @@ import com.basho.riak.client.core.RiakNode;
 
 public class RiakJKSConnection
 {
-
     private static final String trustStorePasswd = "riak123";
     private static final String trustStrorePath = "truststore.jks";
     private static final KeyStore trustStore = loadKeystore(trustStrorePath,trustStorePasswd);
@@ -63,7 +62,6 @@ public class RiakJKSConnection
      */
     public static RiakCluster getRiakCluster()
     {
-
         RiakNode.Builder builder = createRiakNodeBuilder();
         RiakCluster cluster = initializeRiakCluster(builder);
 

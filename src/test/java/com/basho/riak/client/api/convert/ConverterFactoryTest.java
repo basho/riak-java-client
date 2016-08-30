@@ -43,106 +43,93 @@ import org.junit.Test;
  */
 public class ConverterFactoryTest
 {
-    
     @Before
     public void setup()
     {
         ConverterFactory factory = ConverterFactory.getInstance();
         factory.unregisterConverterForClass(Pojo.class);
-        //factory.setDefaultConverter(JSONConverter.class);
     }
-    
+
     @Test
     public void getDefaultConverter()
     {
         ConverterFactory factory = ConverterFactory.getInstance();
-        //TypeReference tr = new TypeReference<Pojo>(){};
         Converter<Pojo> converter = factory.getConverter(Pojo.class);
-        
+
         assertTrue(converter instanceof JSONConverter);
-    
+
         Pojo pojo = new Pojo();
         pojo.foo = "foo_value";
         pojo.bar = "bar_value";
-        
-        
+
         OrmExtracted orm = converter.fromDomain(pojo , null, null);
         RiakObject ro = orm.getRiakObject();
-        
+
         assertNotNull(ro.getValue());
-        
+
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "bucket");
         Pojo pojo2 = converter.toDomain(ro, new Location(ns, "key"));
-        
+
         assertEquals(pojo.foo, pojo2.foo);
         assertEquals(pojo.bar, pojo2.bar);
-        
     }
-    
+
     @Test
     public void stringConverter()
     {
         ConverterFactory factory = ConverterFactory.getInstance();
         Converter<String> converter = factory.getConverter(String.class);
-        
+
         assertTrue(converter instanceof StringConverter);
     }
-    
+
     @Test
     public void riakObjectConverter()
     {
         ConverterFactory factory = ConverterFactory.getInstance();
         Converter<RiakObject> converter = factory.getConverter(RiakObject.class);
-        
+
         assertTrue(converter instanceof PassThroughConverter);
-        
+
         RiakObject o = new RiakObject();
-        
+
         RiakObject o2 = converter.toDomain(o, null);
         assertEquals(o, o2);
-        
+
         OrmExtracted orm = converter.fromDomain(o, null, null);
         assertEquals(o, orm.getRiakObject());
-        
-        
     }
-     
+
     @Test
     public void registerConverterClass()
     {
         ConverterFactory factory = ConverterFactory.getInstance();
         factory.registerConverterForClass(Pojo.class, new MyConverter());
-        
+
         Converter<Pojo> converter = factory.getConverter(Pojo.class);
-        
+
         assertTrue(converter instanceof MyConverter);
-        
     }
-    
+
     @Test
     public void registerConverterInstance()
     {
         ConverterFactory factory = ConverterFactory.getInstance();
         MyConverter converter = new MyConverter();
         factory.registerConverterForClass(Pojo.class, converter);
-        
+
         Converter<Pojo> converter2 = factory.getConverter(Pojo.class);
         assertTrue(converter2 instanceof MyConverter);
         assertEquals(converter, converter2);
-        
-        
     }
-    
+
     public static class MyConverter extends Converter<Pojo>
     {
-
         public MyConverter()
         {
-            super(new TypeReference<Pojo>(){}.getType());
+            super(new TypeReference<Pojo>() {}.getType());
         }
-        
-        
-        
+
         @Override
         public Pojo toDomain(BinaryValue value, String contentType) throws ConversionException
         {
@@ -154,23 +141,21 @@ public class ConverterFactoryTest
         {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
     }
-    
+
     public static class Pojo
     {
-        public Pojo(){}
-        
+        public Pojo() {}
+
         @RiakBucketName
         String bucketName = "my_bucket";
-        
+
         @RiakVClock
         VClock vclock;
-        
+
         @JsonProperty
         String foo;
         @JsonProperty
         String bar;
     }
-    
 }

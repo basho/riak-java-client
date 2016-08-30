@@ -50,5 +50,4 @@ public class BucketInput implements MapReduceInput
     {
         return filters;
     }
-
 }

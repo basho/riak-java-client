@@ -40,6 +40,5 @@ public class CoveragePlanOperationTest
         exception.expectMessage("CoveragePlanOperation returns at least one coverage entry with ip '0.0.0.0'.");
 
         op.convert(Collections.singletonList(rpbCoverageResp));
-
     }
 }

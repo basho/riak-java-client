@@ -136,7 +136,7 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
 
         private static String generateIndexName(String baseIndexName)
         {
-            if(IndexNames.BUCKET.equalsIgnoreCase(baseIndexName) ||
+            if (IndexNames.BUCKET.equalsIgnoreCase(baseIndexName) ||
                IndexNames.KEY.equalsIgnoreCase(baseIndexName))
             {
                 return baseIndexName;
@@ -150,7 +150,6 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
             this.charset = charset;
             return self();
         }
-
     }
 
     /**
@@ -221,7 +220,6 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
         {
             return new BinIndexQuery(this);
         }
-
     }
 
     public static class Response extends SecondaryIndexQuery.Response<String>
@@ -252,7 +250,6 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
             {
                 super(riakObjectLocation, indexKey, converter);
             }
-
         }
     }
 

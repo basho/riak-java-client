@@ -56,7 +56,7 @@ public class CreateTableTest extends OperationTestBase<CreateTableOperation>
                                      TimeUnit tm, String expected) throws ExecutionException, InterruptedException
     {
         final CreateTable.Builder cmdBuilder = new CreateTable.Builder(td);
-        if(quantum != null && tm != null)
+        if (quantum != null && tm != null)
         {
             cmdBuilder.withQuantum(quantum, tm);
         }
@@ -172,7 +172,6 @@ public class CreateTableTest extends OperationTestBase<CreateTableOperation>
             fail("In case of using unsupported time unit IllegalArgumentException must be thrown");
         }
     }
-
 
     private static String normString(final String str)
     {

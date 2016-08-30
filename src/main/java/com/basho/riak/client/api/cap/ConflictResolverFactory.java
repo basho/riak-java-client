@@ -70,7 +70,6 @@ public enum ConflictResolverFactory
         return getConflictResolver(null, typeReference);
     }
 
-
     /**
      * Return the ConflictResolver for the given class.
      * <p>
@@ -85,7 +84,6 @@ public enum ConflictResolverFactory
     @SuppressWarnings("unchecked")
     private <T> ConflictResolver<T> getConflictResolver(Type type, TypeReference<T> typeReference)
     {
-
         type = type != null ? type : typeReference.getType();
 
         ConflictResolver<T> resolver = (ConflictResolver<T>) resolverInstances.get(type);
@@ -96,8 +94,6 @@ public enum ConflictResolverFactory
         }
 
         return resolver;
-
-
     }
 
     /**
@@ -119,7 +115,6 @@ public enum ConflictResolverFactory
     {
         resolverInstances.put(typeReference.getType(), resolver);
     }
-
 
     /**
      * Unregister a ConflictResolver.

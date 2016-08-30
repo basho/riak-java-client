@@ -21,10 +21,10 @@ import java.util.regex.Pattern;
 /**
  * Utils for dealing with {@code byte}, {@code String} charset
  * issues
- * 
+ *
  * This code is mainly from the Trifork fork of the original HTTP client and was written by
  * Krestan Krab and/or Erik Søe Sørensen.
- * 
+ *
  * @author Russell Brown <russelldb at basho dot com>
  */
 public class CharsetUtils
@@ -40,11 +40,11 @@ public class CharsetUtils
 
     /**
      * Attempts to parse the {@link Charset} from a contentType string.
-     * 
+     *
      * If contentType is null or no charset declaration found, then UTF-8 is
      * returned. If the found Charset declaration is unknown on this platform
      * then a runtime exception is thrown.
-     * 
+     *
      * @param contentType
      * @return a {@link Charset} parsed from a charset declaration in a
      *         {@code contentType} String.
@@ -93,7 +93,7 @@ public class CharsetUtils
      * NOTE: this is different from getCharset, which will always return a
      * default value.
      * </p>
-     * 
+     *
      * @param contentType
      *            the content-type string
      * @return the verbatim charset declared or null if non-exists
@@ -119,7 +119,7 @@ public class CharsetUtils
 
     /**
      * Adds the utf-8 charset to a content type.
-     * 
+     *
      * @param contentType
      * @return the {@code contentType} with {@literal ;charset=utf-8} appended.
      */
@@ -139,10 +139,10 @@ public class CharsetUtils
 
         return contentType + ";charset=utf-8";
     }
-    
+
     /**
      * Adds the charset to a content type.
-     * 
+     *
      * @param contentType
      * @return the {@code contentType} with {@code charset.name()} appended.
      */
@@ -155,10 +155,10 @@ public class CharsetUtils
         else
         {
             Matcher matcher = CHARSET_PATT.matcher(contentType);
-            if (matcher.find()) 
+            if (matcher.find())
             {
                 // replace what ever content-type with the charset
-                return contentType.substring(0, matcher.start(1)) + 
+                return contentType.substring(0, matcher.start(1)) +
                     charset + contentType.substring(matcher.end(1));
             }
             else
@@ -166,17 +166,16 @@ public class CharsetUtils
                 return contentType + ";charset=" + charset;
             }
         }
-        
     }
-    
+
     public static String addCharset(Charset charset, String contentType)
     {
         return addCharset(charset.name(), contentType);
     }
-    
+
     /**
      * Turns a byte[] array into a string in the provided {@link Charset}
-     * 
+     *
      * @param bytes
      * @param charset
      * @return a String
@@ -202,10 +201,10 @@ public class CharsetUtils
             throw new IllegalStateException(charset.name() + " must be present", e);
         }
     }
-    
+
     /**
      * Turns a byte[] array into a UTF8 string
-     * 
+     *
      * @param bytes
      * @return a String
      */
@@ -213,15 +212,15 @@ public class CharsetUtils
     {
         return asString(bytes, UTF_8);
     }
-    
+
     public static String asASCIIString(byte[] bytes)
     {
         return asString(bytes, ASCII);
     }
-    
+
     /**
      * Turn a string into an array of bytes using the passed {@link Charset}
-     * 
+     *
      * @param string
      * @param charset
      * @return a byte[] array
@@ -252,7 +251,7 @@ public class CharsetUtils
 
     /**
      * Turn a UTF-8 encoded string into an array of bytes
-     * 
+     *
      * @param string
      * @return the bytes for the supplied String
      */
@@ -263,7 +262,7 @@ public class CharsetUtils
 
     /**
      * Check if a content-type string has a charset field appended.
-     * 
+     *
      * @param ctype
      *            the content-type string
      * @return true if {@code ctype} has a charset, false otherwise

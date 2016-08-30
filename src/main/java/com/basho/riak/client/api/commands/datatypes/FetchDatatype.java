@@ -107,7 +107,6 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends RiakComm
      */
     public static final class Option<T> extends RiakOption<T>
     {
-
         /**
          * Read Quorum.
          * How many replicas need to agree when fetching the object.

@@ -120,7 +120,6 @@ public class RiakUserMetadata
         {
             return null;
         }
-
     }
 
     /**

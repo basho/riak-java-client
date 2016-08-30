@@ -39,7 +39,6 @@ public abstract class ConvertibleIterator<S,D> implements Iterator<D>
         throw new UnsupportedOperationException();
     }
 
-
     private static class ImmutablePBCellIterator extends ConvertibleIterator<Cell, RiakTsPB.TsCell>
     {
         public ImmutablePBCellIterator(Iterator<Cell> iterator)

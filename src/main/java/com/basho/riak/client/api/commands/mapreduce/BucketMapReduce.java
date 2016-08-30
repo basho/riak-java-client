@@ -13,47 +13,45 @@ import java.util.List;
  */
 public class BucketMapReduce extends MapReduce
 {
-
-	protected BucketMapReduce(BucketInput input, Builder builder)
-	{
-		super(input, builder);
-	}
+    protected BucketMapReduce(BucketInput input, Builder builder)
+    {
+        super(input, builder);
+    }
 
     /**
      * Builder for a BucketMapReduce command.
      */
-	public static class Builder extends MapReduce.Builder<Builder>
-	{
+    public static class Builder extends MapReduce.Builder<Builder>
+    {
+        private Namespace namespace;
+        private final List<KeyFilter> filters = new ArrayList<>();
 
-		private Namespace namespace;
-		private final List<KeyFilter> filters = new ArrayList<>();
+        @Override
+        protected Builder self()
+        {
+            return this;
+        }
 
-		@Override
-		protected Builder self()
-		{
-			return this;
-		}
+        public Builder withNamespace(Namespace namespace)
+        {
+            this.namespace = namespace;
+            return this;
+        }
 
-		public Builder withNamespace(Namespace namespace)
-		{
-			this.namespace = namespace;
-			return this;
-		}
-
-		public Builder withKeyFilter(KeyFilter filter)
-		{
+        public Builder withKeyFilter(KeyFilter filter)
+        {
             filters.add(filter);
-			return this;
-		}
+            return this;
+        }
 
-		public BucketMapReduce build()
-		{
-			if (namespace == null)
-			{
-				throw new IllegalStateException("A Namespace must be specified");
-			}
+        public BucketMapReduce build()
+        {
+            if (namespace == null)
+            {
+                throw new IllegalStateException("A Namespace must be specified");
+            }
 
-			return new BucketMapReduce(new BucketInput(namespace, filters), this);
-		}
-	}
+            return new BucketMapReduce(new BucketInput(namespace, filters), this);
+        }
+    }
 }

@@ -17,33 +17,30 @@ import static org.junit.Assert.assertEquals;
 
 public class LinkPhaseSerializerTest
 {
-	private StringWriter out;
-	private JsonGenerator jg;
+    private StringWriter out;
+    private JsonGenerator jg;
 
-	@Before
-	public void init() throws IOException
-	{
-		this.out = new StringWriter();
-		this.jg = new JsonFactory().createGenerator(out);
+    @Before
+    public void init() throws IOException
+    {
+        this.out = new StringWriter();
+        this.jg = new JsonFactory().createGenerator(out);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
-		specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());
-		objectMapper.registerModule(specModule);
+        ObjectMapper objectMapper = new ObjectMapper();
+        SimpleModule specModule = new SimpleModule("SpecModule", Version.unknownVersion());
+        specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());
+        objectMapper.registerModule(specModule);
 
-		jg.setCodec(objectMapper);
+        jg.setCodec(objectMapper);
+    }
 
-	}
+    @Test
+    public void testSerializeLinkPhase() throws IOException
+    {
+        LinkPhase phase = new LinkPhase("bucket", "tag", true);
 
-	@Test
-	public void testSerializeLinkPhase() throws IOException
-	{
-		LinkPhase phase = new LinkPhase("bucket", "tag", true);
+        jg.writeObject(phase);
 
-		jg.writeObject(phase);
-
-		assertEquals("{\"link\":{\"bucket\":\"bucket\",\"tag\":\"tag\"}}", out.toString());
-	}
-
-
+        assertEquals("{\"link\":{\"bucket\":\"bucket\",\"tag\":\"tag\"}}", out.toString());
+    }
 }

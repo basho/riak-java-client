@@ -48,7 +48,6 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
         this.maxInFlight = builder.maxInFlight;
     }
 
-
     @Override
     protected RiakFuture<ResponseType, List<Location>> executeAsync(final RiakCluster cluster)
     {
@@ -82,7 +81,6 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
         }
 
         return baseOperations;
-
     }
 
     @Override
@@ -108,7 +106,6 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
             return false;
         }
         return options.equals(that.options);
-
     }
 
     @Override
@@ -123,12 +120,14 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
     @Override
     public String toString()
     {
-        return String.format("%s {locations: %s, options: %s, maxInFlight: %s}", this.getClass().getSimpleName(), locations, options, maxInFlight);
+        return String.format("%s {locations: %s, options: %s, maxInFlight: %s}",
+                             this.getClass().getSimpleName(), locations, options, maxInFlight);
     }
 
     protected abstract ResponseType createResponseType(List<RiakFuture<BaseResponseType, Location>> futures);
     protected abstract BaseBuilder createBaseBuilderType(Location location);
-    protected abstract RiakFuture<BaseResponseType, Location> executeBaseCommandAsync(BaseCommand command, RiakCluster cluster);
+    protected abstract RiakFuture<BaseResponseType, Location> executeBaseCommandAsync(BaseCommand command,
+                                                                                      RiakCluster cluster);
 
     protected static abstract class Builder<BuiltType, ConcreteBuilder extends Builder<BuiltType, ConcreteBuilder>>
     {
@@ -233,7 +232,6 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
         {
             return responses;
         }
-
     }
 
     class Submitter implements Runnable, RiakFutureListener<BaseResponseType, Location>
@@ -290,7 +288,6 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
                 multiFuture.setCompleted();
             }
         }
-
     }
 
     class MultiFuture extends ListenableFuture<ResponseType,List<Location>>
@@ -306,7 +303,7 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
             futures = Collections.synchronizedList(new LinkedList<RiakFuture<BaseResponseType, Location>>());
 
             // If we have no locations, then we have no work to do.
-            if(this.locations.isEmpty())
+            if (this.locations.isEmpty())
             {
                 setCompleted();
             }
@@ -411,6 +408,5 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
             latch.countDown();
             notifyListeners();
         }
-
     }
 }

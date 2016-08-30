@@ -7,7 +7,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzPutIndexOperation;
 import com.basho.riak.client.core.query.search.YokozunaIndex;
 
-
 /**
  * Command used to store a search index in Riak.
  * <p>
@@ -55,7 +54,7 @@ public final class StoreIndex extends RiakCommand<Void, YokozunaIndex>
     {
         final YzPutIndexOperation.Builder opBuilder = new YzPutIndexOperation.Builder(cmdBuilder.index);
 
-        if(cmdBuilder.timeout != null)
+        if (cmdBuilder.timeout != null)
         {
             opBuilder.withTimeout(cmdBuilder.timeout);
         }

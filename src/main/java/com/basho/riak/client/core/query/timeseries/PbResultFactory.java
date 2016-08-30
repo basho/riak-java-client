@@ -19,7 +19,7 @@ public final class PbResultFactory
 
     public static QueryResult convertPbQueryResp(RiakTsPB.TsQueryResp response)
     {
-        if(response == null)
+        if (response == null)
         {
             return QueryResult.EMPTY;
         }
@@ -69,7 +69,6 @@ public final class PbResultFactory
         return new TableDefinition(
                 tableName,
                 DescribeQueryResultParser.ConvertToColumnDescriptions(intermediaryQueryResult));
-
     }
 
     public static CoveragePlanResult convertCoverageResp(String tableName, RiakTsPB.TsCoverageResp response)

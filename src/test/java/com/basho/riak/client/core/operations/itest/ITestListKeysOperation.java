@@ -104,7 +104,6 @@ public class ITestListKeysOperation extends ITestBase
         assertEquals(kList.size(), 1);
         assertEquals(kList.get(0), key);
         resetAndEmptyBucket(ns);
-
     }
 
     @Test
@@ -153,7 +152,6 @@ public class ITestListKeysOperation extends ITestBase
                     {
                         throw new RuntimeException(ex);
                     }
-
                 }
             };
 
@@ -183,6 +181,5 @@ public class ITestListKeysOperation extends ITestBase
         assertEquals(expected, kList.size());
 
         resetAndEmptyBucket(ns);
-
     }
 }

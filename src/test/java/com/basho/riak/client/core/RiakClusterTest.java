@@ -31,8 +31,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-
-
 /**
  *
  * @author Brian Roach <roach at basho dot com>
@@ -62,7 +60,6 @@ public class RiakClusterTest
                 .withRemotePort(defaultPort)
                 .withMinConnections(minConnections)
                 .withMaxConnections(maxConnections);
-
 
         final RiakCluster cluster = new RiakCluster.Builder(nodeBuilder, "localhost:"+ nonDefaultPort +", 10.0.0.1").build();
 

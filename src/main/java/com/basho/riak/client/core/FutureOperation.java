@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core;
 
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -82,13 +81,11 @@ import org.slf4j.LoggerFactory;
 
 public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
 {
-
     private enum State
     {
         CREATED, WRITTEN, RETRY, COMPLETE, CANCELLED,
         CLEANUP_WAIT
     }
-
 
     private final Logger logger = LoggerFactory.getLogger(FutureOperation.class);
     private final CountDownLatch latch = new CountDownLatch(1);
@@ -107,7 +104,6 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     @Override
     public void addListener(RiakFutureListener<T,S> listener)
     {
-
         boolean fireNow = false;
         listenersLock.lock();
         try
@@ -131,7 +127,6 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         {
             listener.handle(this);
         }
-
     }
 
     @Override
@@ -153,7 +148,6 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
 
     private void fireListeners()
     {
-
         boolean fireNow = false;
         listenersLock.lock();
         try
@@ -176,7 +170,6 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
                 listener.handle(this);
             }
         }
-
     }
 
     final synchronized void setRetrier(OperationRetrier retrier, int numTries)
@@ -256,7 +249,6 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         {
             retrier.operationFailed(this, remainingTries);
         }
-
     }
 
     public synchronized final Object channelMessage()
@@ -332,7 +324,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         {
             converted = convert(rawResponse);
         }
-        catch(IllegalArgumentException ex)
+        catch (IllegalArgumentException ex)
         {
             exception = ex;
             throwExceptionIfSet();
@@ -420,5 +412,4 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
 
     @Override
     abstract public S getQueryInfo();
-
 }

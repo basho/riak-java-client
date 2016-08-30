@@ -120,7 +120,7 @@ public class NetworkTestFixture implements Runnable
     public void run()
     {
         OUTER:
-        while(true)
+        while (true)
         {
             try
             {
@@ -139,7 +139,7 @@ public class NetworkTestFixture implements Runnable
                             {
                                 Acceptor h = (Acceptor) key.attachment();
                                 SocketChannel client;
-                                switch(h.type)
+                                switch (h.type)
                                 {
                                     case ACCEPT_THEN_READ:
                                         client = h.getServerSocketChannel().accept();
@@ -157,7 +157,8 @@ public class NetworkTestFixture implements Runnable
                                 }
                             }
 
-                            if (key.isReadable()) {
+                            if (key.isReadable())
+                            {
                                 Acceptor h = (Acceptor) key.attachment();
                                 try
                                 {
@@ -169,7 +170,6 @@ public class NetworkTestFixture implements Runnable
                                     key.cancel();
                                 }
                             }
-
                         }
                     }
                     catch (IOException | InterruptedException ex)

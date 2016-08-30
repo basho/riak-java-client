@@ -34,7 +34,6 @@ import java.util.Set;
  */
 public class MapUpdate implements DatatypeUpdate
 {
-
     private final Set<MapOp.MapField> removes = new HashSet<>();
     private final Set<MapOp.MapUpdate> updates = new HashSet<>();
 

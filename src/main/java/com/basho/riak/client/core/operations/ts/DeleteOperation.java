@@ -66,7 +66,6 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
 
         return String.format("DELETE { %s } FROM TABLE %s",
                 sb.toString(), this.builder.tableName);
-
     }
 
     public static class Builder

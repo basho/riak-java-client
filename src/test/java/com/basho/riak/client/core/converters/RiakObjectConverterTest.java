@@ -14,7 +14,6 @@ import static org.junit.Assert.assertTrue;
 
 public class RiakObjectConverterTest
 {
-
     public static final String JZON_CONTENT_TYPE = "application/jzon"; // use a non-default content type
     public static final String UTF_48_CHARSET = "UTF-48"; // use a non-default charset
 

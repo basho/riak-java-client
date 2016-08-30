@@ -55,5 +55,4 @@ public class DeleteOpTest
     {
         new DeleteOperation.Builder(tableName, new ArrayList<>(0)).build();
     }
-
 }

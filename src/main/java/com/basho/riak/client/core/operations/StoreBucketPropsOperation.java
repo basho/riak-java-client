@@ -69,7 +69,6 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void, Names
 
     static abstract class PropsBuilder<T extends PropsBuilder<T>>
     {
-
         protected final RiakPB.RpbBucketProps.Builder propsBuilder
                 = RiakPB.RpbBucketProps.newBuilder();
 

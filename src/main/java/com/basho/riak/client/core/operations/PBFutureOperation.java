@@ -25,7 +25,6 @@ public abstract class PBFutureOperation<T, U, S> extends FutureOperation<T, U, S
     protected final byte reqMessageCode;
     private final byte respMessageCode;
 
-
     protected PBFutureOperation(final byte reqMessageCode,
                                 final byte respMessageCode,
                                 final Builder<?> reqBuilder,

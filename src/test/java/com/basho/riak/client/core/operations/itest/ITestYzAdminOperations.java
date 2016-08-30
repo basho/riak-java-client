@@ -33,7 +33,6 @@ import static org.junit.Assert.*;
  */
 public class ITestYzAdminOperations extends ITestBase
 {
-
     private static final String fetchIndex = "fetch_index_ITestYzAdminOperations";
     private static final String deleteIndex = "delete_index_ITestYzAdminOperations";
     private static final String timeoutIndex = "timeout_index_ITestYzAdminOperations";
@@ -89,7 +88,6 @@ public class ITestYzAdminOperations extends ITestBase
             + "</types>"
             + "</schema>");
 
-
         YzPutSchemaOperation putOp = new YzPutSchemaOperation.Builder(yzSchema).build();
         cluster.execute(putOp);
         putOp.get();
@@ -128,7 +126,6 @@ public class ITestYzAdminOperations extends ITestBase
         putOp.get();
 
         assertTrue("Index not created", assureIndexExists(fetchIndex));
-
 
         YzFetchIndexOperation fetchOp = new YzFetchIndexOperation.Builder().withIndexName(fetchIndex).build();
 

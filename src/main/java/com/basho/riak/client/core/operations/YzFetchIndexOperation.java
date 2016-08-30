@@ -61,7 +61,6 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
     {
         RiakYokozunaPB.RpbYokozunaIndexGetReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_YokozunaIndexGetReq, req.toByteArray());
-
     }
 
     @Override
@@ -76,7 +75,6 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
         {
             throw new IllegalArgumentException("Invalid message received", ex);
         }
-
     }
 
     @Override

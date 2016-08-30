@@ -22,7 +22,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzFetchIndexOperation;
 
-
 /**
  * Command used to fetch a search index from Riak.
  * @author Dave Rusek <drusek at basho dot com>
@@ -30,14 +29,14 @@ import com.basho.riak.client.core.operations.YzFetchIndexOperation;
  */
 public class FetchIndex extends RiakCommand<YzFetchIndexOperation.Response, String>
 {
-	private final String index;
+    private final String index;
 
-	FetchIndex(Builder builder)
-	{
-		this.index = builder.index;
-	}
+    FetchIndex(Builder builder)
+    {
+        this.index = builder.index;
+    }
 
-	@Override
+    @Override
     protected final RiakFuture<YzFetchIndexOperation.Response, String> executeAsync(RiakCluster cluster)
     {
         RiakFuture<YzFetchIndexOperation.Response, String> coreFuture =
@@ -70,27 +69,27 @@ public class FetchIndex extends RiakCommand<YzFetchIndexOperation.Response, Stri
     /**
      * Builder for a FetchIndex command.
      */
-	public static class Builder
-	{
-		private final String index;
+    public static class Builder
+    {
+        private final String index;
 
         /**
          * Construct a Builder for a FetchIndex command.
          *
          * @param index The name of the search index to fetch from Riak.
          */
-		public Builder(String index)
-		{
-			this.index = index;
-		}
+        public Builder(String index)
+        {
+            this.index = index;
+        }
 
         /**
          * Construct the FetchIndex command.
          * @return the new FetchIndex command.
          */
-		public FetchIndex build()
-		{
-			return new FetchIndex(this);
-		}
-	}
+        public FetchIndex build()
+        {
+            return new FetchIndex(this);
+        }
+    }
 }

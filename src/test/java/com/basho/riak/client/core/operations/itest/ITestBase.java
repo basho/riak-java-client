@@ -127,9 +127,7 @@ public abstract class ITestBase
          */
         test2i = Boolean.parseBoolean(System.getProperty("com.basho.riak.2i", "true"));
 
-
         legacyRiakSearch = Boolean.parseBoolean(System.getProperty("com.basho.riak.riakSearch", "false"));
-
 
         /**
          * In order to run the CRDT itests you must first manually
@@ -168,7 +166,6 @@ public abstract class ITestBase
          * In case you want/need to use a custom PBC port you may pass it by using the following system property
          */
         pbcPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
-
 
         RiakNode.Builder builder = new RiakNode.Builder()
                                         .withRemoteAddress(hostname)
@@ -213,7 +210,8 @@ public abstract class ITestBase
         resetOp.get();
     }
 
-    protected static void setupUsernamePasswordSecurity(RiakNode.Builder builder) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
+    protected static void setupUsernamePasswordSecurity(RiakNode.Builder builder)
+            throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
     {
         InputStream in;
         if (overrideCert != null)
@@ -263,12 +261,14 @@ public abstract class ITestBase
 
     public static Namespace defaultNamespace()
     {
-        return new Namespace( testBucketType ? bucketType : BinaryValue.createFromUtf8(Namespace.DEFAULT_BUCKET_TYPE), bucketName);
+        return new Namespace(testBucketType ?
+                                     bucketType :
+                                     BinaryValue.createFromUtf8(Namespace.DEFAULT_BUCKET_TYPE), bucketName);
     }
 
     protected static void assertFutureSuccess(RiakFuture<?, ?> resultFuture)
     {
-        if(resultFuture.cause() == null)
+        if (resultFuture.cause() == null)
         {
             assertTrue(resultFuture.isSuccess());
         }

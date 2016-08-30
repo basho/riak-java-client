@@ -36,7 +36,7 @@ public final class RiakMessage
         this.code = code;
         this.data = data;
 
-        if(doErrorCheck)
+        if (doErrorCheck)
         {
             switch (this.code)
             {
@@ -100,7 +100,7 @@ public final class RiakMessage
         {
             int firstByte = ttbInputStream.read1skip_version();
 
-            if(firstByte != OtpExternal.smallTupleTag && firstByte != OtpExternal.largeTupleTag)
+            if (firstByte != OtpExternal.smallTupleTag && firstByte != OtpExternal.largeTupleTag)
             {
                 return null;
             }

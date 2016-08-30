@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 class ImmediateRiakFuture<V,S> implements RiakFuture<V,S>
 {
-
     private final V value;
 
     public ImmediateRiakFuture(V value)

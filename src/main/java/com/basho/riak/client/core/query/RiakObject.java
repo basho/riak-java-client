@@ -89,7 +89,6 @@ public final class RiakObject
      */
     public RiakObject()
     {
-
     }
 
     // Methods For dealing with Value

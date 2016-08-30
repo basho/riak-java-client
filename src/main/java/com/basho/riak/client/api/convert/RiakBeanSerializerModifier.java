@@ -44,7 +44,6 @@ import java.util.List;
  */
 public class RiakBeanSerializerModifier extends BeanSerializerModifier
 {
-
     private static final RiakBeanSerializerModifier INSTANCE = new RiakBeanSerializerModifier();
 
     /**

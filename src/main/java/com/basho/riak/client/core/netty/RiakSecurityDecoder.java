@@ -84,10 +84,10 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                 byte[] protobuf = new byte[length - 1];
                 in.readBytes(protobuf);
 
-                switch(state)
+                switch (state)
                 {
                     case TLS_WAIT:
-                        switch(code)
+                        switch (code)
                         {
                             case RiakMessageCodes.MSG_StartTls:
                                 logger.debug("Received MSG_RpbStartTls reply");
@@ -113,7 +113,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                         break;
                     case AUTH_WAIT:
                         chc.channel().pipeline().remove(this);
-                        switch(code)
+                        switch (code)
                         {
                             case RiakMessageCodes.MSG_AuthResp:
                                 logger.debug("Received MSG_RpbAuthResp reply");
@@ -162,7 +162,6 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception
     {
-
         logger.debug("Handler Added");
         if (ctx.channel().isActive())
         {
@@ -183,7 +182,6 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
 
         promise.tryFailure(new IOException("Channel closed during auth"));
         ctx.fireChannelInactive();
-
     }
 
     @Override
@@ -225,7 +223,6 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                     .build();
                 c.writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_AuthReq,
                                 authReq.toByteArray()));
-
             }
             else
             {
@@ -234,7 +231,4 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
             }
         }
     }
-
-
-
 }

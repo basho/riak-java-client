@@ -7,7 +7,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzPutSchemaOperation;
 import com.basho.riak.client.core.query.search.YokozunaSchema;
 
-
 /**
  * Command used to store a search schema in Riak.
  * <p>
@@ -19,19 +18,19 @@ import com.basho.riak.client.core.query.search.YokozunaSchema;
  */
 public final class StoreSchema extends RiakCommand<Void, YokozunaSchema>
 {
-	private final YokozunaSchema schema;
+    private final YokozunaSchema schema;
 
-	StoreSchema(Builder builder)
-	{
-		this.schema = builder.schema;
-	}
+    StoreSchema(Builder builder)
+    {
+        this.schema = builder.schema;
+    }
 
-	@Override
+    @Override
     protected RiakFuture<Void, YokozunaSchema> executeAsync(RiakCluster cluster)
     {
         RiakFuture<Void, YokozunaSchema> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<Void, YokozunaSchema,Void, YokozunaSchema> future =
             new CoreFutureAdapter<Void, YokozunaSchema,Void, YokozunaSchema>(coreFuture)
             {
@@ -60,26 +59,26 @@ public final class StoreSchema extends RiakCommand<Void, YokozunaSchema>
      * Builder for a StoreSchema command.
      */
     public static class Builder
-	{
-		private final YokozunaSchema schema;
+    {
+        private final YokozunaSchema schema;
 
         /**
          * Construct a Builder for a StoreSchema command.
          *
          * @param schema The schema to be stored to Riak.
          */
-		public Builder(YokozunaSchema schema)
-		{
-			this.schema = schema;
-		}
+        public Builder(YokozunaSchema schema)
+        {
+            this.schema = schema;
+        }
 
         /**
          * Construct the StoreSchema command.
          * @return the new StoreSchema command.
          */
-		public StoreSchema build()
-		{
-			return new StoreSchema(this);
-		}
-	}
+        public StoreSchema build()
+        {
+            return new StoreSchema(this);
+        }
+    }
 }
