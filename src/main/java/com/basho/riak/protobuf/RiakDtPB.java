@@ -3354,6 +3354,25 @@ public final class RiakDtPB {
      */
     com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder getMapValueOrBuilder(
         int index);
+
+    /**
+     * <code>optional uint64 hll_value = 4;</code>
+     *
+     * <pre>
+     * We return an estimated cardinality of the Hyperloglog set
+     * on fetch.
+     * </pre>
+     */
+    boolean hasHllValue();
+    /**
+     * <code>optional uint64 hll_value = 4;</code>
+     *
+     * <pre>
+     * We return an estimated cardinality of the Hyperloglog set
+     * on fetch.
+     * </pre>
+     */
+    long getHllValue();
   }
   /**
    * Protobuf type {@code DtValue}
@@ -3431,6 +3450,11 @@ public final class RiakDtPB {
                 mutable_bitField0_ |= 0x00000004;
               }
               mapValue_.add(input.readMessage(com.basho.riak.protobuf.RiakDtPB.MapEntry.PARSER, extensionRegistry));
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000002;
+              hllValue_ = input.readUInt64();
               break;
             }
           }
@@ -3551,10 +3575,36 @@ public final class RiakDtPB {
       return mapValue_.get(index);
     }
 
+    public static final int HLL_VALUE_FIELD_NUMBER = 4;
+    private long hllValue_;
+    /**
+     * <code>optional uint64 hll_value = 4;</code>
+     *
+     * <pre>
+     * We return an estimated cardinality of the Hyperloglog set
+     * on fetch.
+     * </pre>
+     */
+    public boolean hasHllValue() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional uint64 hll_value = 4;</code>
+     *
+     * <pre>
+     * We return an estimated cardinality of the Hyperloglog set
+     * on fetch.
+     * </pre>
+     */
+    public long getHllValue() {
+      return hllValue_;
+    }
+
     private void initFields() {
       counterValue_ = 0L;
       setValue_ = java.util.Collections.emptyList();
       mapValue_ = java.util.Collections.emptyList();
+      hllValue_ = 0L;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3584,6 +3634,9 @@ public final class RiakDtPB {
       for (int i = 0; i < mapValue_.size(); i++) {
         output.writeMessage(3, mapValue_.get(i));
       }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeUInt64(4, hllValue_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -3609,6 +3662,10 @@ public final class RiakDtPB {
       for (int i = 0; i < mapValue_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, mapValue_.get(i));
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(4, hllValue_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3743,6 +3800,8 @@ public final class RiakDtPB {
         } else {
           mapValueBuilder_.clear();
         }
+        hllValue_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -3789,6 +3848,10 @@ public final class RiakDtPB {
         } else {
           result.mapValue_ = mapValueBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.hllValue_ = hllValue_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3843,6 +3906,9 @@ public final class RiakDtPB {
               mapValueBuilder_.addAllMessages(other.mapValue_);
             }
           }
+        }
+        if (other.hasHllValue()) {
+          setHllValue(other.getHllValue());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -4220,6 +4286,58 @@ public final class RiakDtPB {
         return mapValueBuilder_;
       }
 
+      private long hllValue_ ;
+      /**
+       * <code>optional uint64 hll_value = 4;</code>
+       *
+       * <pre>
+       * We return an estimated cardinality of the Hyperloglog set
+       * on fetch.
+       * </pre>
+       */
+      public boolean hasHllValue() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional uint64 hll_value = 4;</code>
+       *
+       * <pre>
+       * We return an estimated cardinality of the Hyperloglog set
+       * on fetch.
+       * </pre>
+       */
+      public long getHllValue() {
+        return hllValue_;
+      }
+      /**
+       * <code>optional uint64 hll_value = 4;</code>
+       *
+       * <pre>
+       * We return an estimated cardinality of the Hyperloglog set
+       * on fetch.
+       * </pre>
+       */
+      public Builder setHllValue(long value) {
+        bitField0_ |= 0x00000008;
+        hllValue_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint64 hll_value = 4;</code>
+       *
+       * <pre>
+       * We return an estimated cardinality of the Hyperloglog set
+       * on fetch.
+       * </pre>
+       */
+      public Builder clearHllValue() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        hllValue_ = 0L;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:DtValue)
     }
 
@@ -4412,6 +4530,10 @@ public final class RiakDtPB {
        * <code>MAP = 3;</code>
        */
       MAP(2, 3),
+      /**
+       * <code>HLL = 4;</code>
+       */
+      HLL(3, 4),
       ;
 
       /**
@@ -4426,6 +4548,10 @@ public final class RiakDtPB {
        * <code>MAP = 3;</code>
        */
       public static final int MAP_VALUE = 3;
+      /**
+       * <code>HLL = 4;</code>
+       */
+      public static final int HLL_VALUE = 4;
 
       public final int getNumber() { return value; }
 
@@ -4434,6 +4560,7 @@ public final class RiakDtPB {
           case 1: return COUNTER;
           case 2: return SET;
           case 3: return MAP;
+          case 4: return HLL;
           default: return null;
         }
       }
@@ -6063,6 +6190,480 @@ public final class RiakDtPB {
     }
 
     // @@protoc_insertion_point(class_scope:SetOp)
+  }
+
+  public interface HllOpOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:HllOp)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated bytes adds = 1;</code>
+     */
+    java.util.List<com.google.protobuf.ByteString> getAddsList();
+    /**
+     * <code>repeated bytes adds = 1;</code>
+     */
+    int getAddsCount();
+    /**
+     * <code>repeated bytes adds = 1;</code>
+     */
+    com.google.protobuf.ByteString getAdds(int index);
+  }
+  /**
+   * Protobuf type {@code HllOp}
+   *
+   * <pre>
+   * An operation to update a Hyperloglog Set, a top-level DT.
+   * You can only add to a HllSet.
+   * </pre>
+   */
+  public static final class HllOp extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:HllOp)
+      HllOpOrBuilder {
+    // Use HllOp.newBuilder() to construct.
+    private HllOp(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private HllOp(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final HllOp defaultInstance;
+    public static HllOp getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public HllOp getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private HllOp(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                adds_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              adds_.add(input.readBytes());
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          adds_ = java.util.Collections.unmodifiableList(adds_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.basho.riak.protobuf.RiakDtPB.internal_static_HllOp_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.basho.riak.protobuf.RiakDtPB.internal_static_HllOp_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.basho.riak.protobuf.RiakDtPB.HllOp.class, com.basho.riak.protobuf.RiakDtPB.HllOp.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<HllOp> PARSER =
+        new com.google.protobuf.AbstractParser<HllOp>() {
+      public HllOp parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new HllOp(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<HllOp> getParserForType() {
+      return PARSER;
+    }
+
+    public static final int ADDS_FIELD_NUMBER = 1;
+    private java.util.List<com.google.protobuf.ByteString> adds_;
+    /**
+     * <code>repeated bytes adds = 1;</code>
+     */
+    public java.util.List<com.google.protobuf.ByteString>
+        getAddsList() {
+      return adds_;
+    }
+    /**
+     * <code>repeated bytes adds = 1;</code>
+     */
+    public int getAddsCount() {
+      return adds_.size();
+    }
+    /**
+     * <code>repeated bytes adds = 1;</code>
+     */
+    public com.google.protobuf.ByteString getAdds(int index) {
+      return adds_.get(index);
+    }
+
+    private void initFields() {
+      adds_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < adds_.size(); i++) {
+        output.writeBytes(1, adds_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      {
+        int dataSize = 0;
+        for (int i = 0; i < adds_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(adds_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getAddsList().size();
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static com.basho.riak.protobuf.RiakDtPB.HllOp parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.HllOp parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.HllOp parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.HllOp parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.HllOp parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.HllOp parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.HllOp parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.HllOp parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.HllOp parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.HllOp parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.basho.riak.protobuf.RiakDtPB.HllOp prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code HllOp}
+     *
+     * <pre>
+     * An operation to update a Hyperloglog Set, a top-level DT.
+     * You can only add to a HllSet.
+     * </pre>
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:HllOp)
+        com.basho.riak.protobuf.RiakDtPB.HllOpOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.basho.riak.protobuf.RiakDtPB.internal_static_HllOp_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.basho.riak.protobuf.RiakDtPB.internal_static_HllOp_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.basho.riak.protobuf.RiakDtPB.HllOp.class, com.basho.riak.protobuf.RiakDtPB.HllOp.Builder.class);
+      }
+
+      // Construct using com.basho.riak.protobuf.RiakDtPB.HllOp.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        adds_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.basho.riak.protobuf.RiakDtPB.internal_static_HllOp_descriptor;
+      }
+
+      public com.basho.riak.protobuf.RiakDtPB.HllOp getDefaultInstanceForType() {
+        return com.basho.riak.protobuf.RiakDtPB.HllOp.getDefaultInstance();
+      }
+
+      public com.basho.riak.protobuf.RiakDtPB.HllOp build() {
+        com.basho.riak.protobuf.RiakDtPB.HllOp result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public com.basho.riak.protobuf.RiakDtPB.HllOp buildPartial() {
+        com.basho.riak.protobuf.RiakDtPB.HllOp result = new com.basho.riak.protobuf.RiakDtPB.HllOp(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          adds_ = java.util.Collections.unmodifiableList(adds_);
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.adds_ = adds_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.basho.riak.protobuf.RiakDtPB.HllOp) {
+          return mergeFrom((com.basho.riak.protobuf.RiakDtPB.HllOp)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.basho.riak.protobuf.RiakDtPB.HllOp other) {
+        if (other == com.basho.riak.protobuf.RiakDtPB.HllOp.getDefaultInstance()) return this;
+        if (!other.adds_.isEmpty()) {
+          if (adds_.isEmpty()) {
+            adds_ = other.adds_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureAddsIsMutable();
+            adds_.addAll(other.adds_);
+          }
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.basho.riak.protobuf.RiakDtPB.HllOp parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.basho.riak.protobuf.RiakDtPB.HllOp) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<com.google.protobuf.ByteString> adds_ = java.util.Collections.emptyList();
+      private void ensureAddsIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          adds_ = new java.util.ArrayList<com.google.protobuf.ByteString>(adds_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public java.util.List<com.google.protobuf.ByteString>
+          getAddsList() {
+        return java.util.Collections.unmodifiableList(adds_);
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public int getAddsCount() {
+        return adds_.size();
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public com.google.protobuf.ByteString getAdds(int index) {
+        return adds_.get(index);
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public Builder setAdds(
+          int index, com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureAddsIsMutable();
+        adds_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public Builder addAdds(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureAddsIsMutable();
+        adds_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public Builder addAllAdds(
+          java.lang.Iterable<? extends com.google.protobuf.ByteString> values) {
+        ensureAddsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, adds_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public Builder clearAdds() {
+        adds_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:HllOp)
+    }
+
+    static {
+      defaultInstance = new HllOp(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:HllOp)
   }
 
   public interface MapUpdateOrBuilder extends
@@ -8746,6 +9347,34 @@ public final class RiakDtPB {
      * <code>optional .MapOp map_op = 3;</code>
      */
     com.basho.riak.protobuf.RiakDtPB.MapOpOrBuilder getMapOpOrBuilder();
+
+    /**
+     * <code>optional .HllOp hll_op = 4;</code>
+     *
+     * <pre>
+     * Adding values to a hyperloglog (set) is just like adding values
+     * to a set.
+     * </pre>
+     */
+    boolean hasHllOp();
+    /**
+     * <code>optional .HllOp hll_op = 4;</code>
+     *
+     * <pre>
+     * Adding values to a hyperloglog (set) is just like adding values
+     * to a set.
+     * </pre>
+     */
+    com.basho.riak.protobuf.RiakDtPB.HllOp getHllOp();
+    /**
+     * <code>optional .HllOp hll_op = 4;</code>
+     *
+     * <pre>
+     * Adding values to a hyperloglog (set) is just like adding values
+     * to a set.
+     * </pre>
+     */
+    com.basho.riak.protobuf.RiakDtPB.HllOpOrBuilder getHllOpOrBuilder();
   }
   /**
    * Protobuf type {@code DtOp}
@@ -8841,6 +9470,19 @@ public final class RiakDtPB {
                 mapOp_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000004;
+              break;
+            }
+            case 34: {
+              com.basho.riak.protobuf.RiakDtPB.HllOp.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000008) == 0x00000008)) {
+                subBuilder = hllOp_.toBuilder();
+              }
+              hllOp_ = input.readMessage(com.basho.riak.protobuf.RiakDtPB.HllOp.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(hllOp_);
+                hllOp_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000008;
               break;
             }
           }
@@ -8946,10 +9588,47 @@ public final class RiakDtPB {
       return mapOp_;
     }
 
+    public static final int HLL_OP_FIELD_NUMBER = 4;
+    private com.basho.riak.protobuf.RiakDtPB.HllOp hllOp_;
+    /**
+     * <code>optional .HllOp hll_op = 4;</code>
+     *
+     * <pre>
+     * Adding values to a hyperloglog (set) is just like adding values
+     * to a set.
+     * </pre>
+     */
+    public boolean hasHllOp() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional .HllOp hll_op = 4;</code>
+     *
+     * <pre>
+     * Adding values to a hyperloglog (set) is just like adding values
+     * to a set.
+     * </pre>
+     */
+    public com.basho.riak.protobuf.RiakDtPB.HllOp getHllOp() {
+      return hllOp_;
+    }
+    /**
+     * <code>optional .HllOp hll_op = 4;</code>
+     *
+     * <pre>
+     * Adding values to a hyperloglog (set) is just like adding values
+     * to a set.
+     * </pre>
+     */
+    public com.basho.riak.protobuf.RiakDtPB.HllOpOrBuilder getHllOpOrBuilder() {
+      return hllOp_;
+    }
+
     private void initFields() {
       counterOp_ = com.basho.riak.protobuf.RiakDtPB.CounterOp.getDefaultInstance();
       setOp_ = com.basho.riak.protobuf.RiakDtPB.SetOp.getDefaultInstance();
       mapOp_ = com.basho.riak.protobuf.RiakDtPB.MapOp.getDefaultInstance();
+      hllOp_ = com.basho.riak.protobuf.RiakDtPB.HllOp.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -8979,6 +9658,9 @@ public final class RiakDtPB {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeMessage(3, mapOp_);
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeMessage(4, hllOp_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -8999,6 +9681,10 @@ public final class RiakDtPB {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, mapOp_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, hllOp_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -9117,6 +9803,7 @@ public final class RiakDtPB {
           getCounterOpFieldBuilder();
           getSetOpFieldBuilder();
           getMapOpFieldBuilder();
+          getHllOpFieldBuilder();
         }
       }
       private static Builder create() {
@@ -9143,6 +9830,12 @@ public final class RiakDtPB {
           mapOpBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000004);
+        if (hllOpBuilder_ == null) {
+          hllOp_ = com.basho.riak.protobuf.RiakDtPB.HllOp.getDefaultInstance();
+        } else {
+          hllOpBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -9195,6 +9888,14 @@ public final class RiakDtPB {
         } else {
           result.mapOp_ = mapOpBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        if (hllOpBuilder_ == null) {
+          result.hllOp_ = hllOp_;
+        } else {
+          result.hllOp_ = hllOpBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -9220,6 +9921,9 @@ public final class RiakDtPB {
         if (other.hasMapOp()) {
           mergeMapOp(other.getMapOp());
         }
+        if (other.hasHllOp()) {
+          mergeHllOp(other.getHllOp());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -9227,6 +9931,7 @@ public final class RiakDtPB {
       public final boolean isInitialized() {
         if (hasMapOp()) {
           if (!getMapOp().isInitialized()) {
+
             return false;
           }
         }
@@ -9598,6 +10303,167 @@ public final class RiakDtPB {
           mapOp_ = null;
         }
         return mapOpBuilder_;
+      }
+
+      private com.basho.riak.protobuf.RiakDtPB.HllOp hllOp_ = com.basho.riak.protobuf.RiakDtPB.HllOp.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          com.basho.riak.protobuf.RiakDtPB.HllOp, com.basho.riak.protobuf.RiakDtPB.HllOp.Builder, com.basho.riak.protobuf.RiakDtPB.HllOpOrBuilder> hllOpBuilder_;
+      /**
+       * <code>optional .HllOp hll_op = 4;</code>
+       *
+       * <pre>
+       * Adding values to a hyperloglog (set) is just like adding values
+       * to a set.
+       * </pre>
+       */
+      public boolean hasHllOp() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional .HllOp hll_op = 4;</code>
+       *
+       * <pre>
+       * Adding values to a hyperloglog (set) is just like adding values
+       * to a set.
+       * </pre>
+       */
+      public com.basho.riak.protobuf.RiakDtPB.HllOp getHllOp() {
+        if (hllOpBuilder_ == null) {
+          return hllOp_;
+        } else {
+          return hllOpBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .HllOp hll_op = 4;</code>
+       *
+       * <pre>
+       * Adding values to a hyperloglog (set) is just like adding values
+       * to a set.
+       * </pre>
+       */
+      public Builder setHllOp(com.basho.riak.protobuf.RiakDtPB.HllOp value) {
+        if (hllOpBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          hllOp_ = value;
+          onChanged();
+        } else {
+          hllOpBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <code>optional .HllOp hll_op = 4;</code>
+       *
+       * <pre>
+       * Adding values to a hyperloglog (set) is just like adding values
+       * to a set.
+       * </pre>
+       */
+      public Builder setHllOp(
+          com.basho.riak.protobuf.RiakDtPB.HllOp.Builder builderForValue) {
+        if (hllOpBuilder_ == null) {
+          hllOp_ = builderForValue.build();
+          onChanged();
+        } else {
+          hllOpBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <code>optional .HllOp hll_op = 4;</code>
+       *
+       * <pre>
+       * Adding values to a hyperloglog (set) is just like adding values
+       * to a set.
+       * </pre>
+       */
+      public Builder mergeHllOp(com.basho.riak.protobuf.RiakDtPB.HllOp value) {
+        if (hllOpBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008) &&
+              hllOp_ != com.basho.riak.protobuf.RiakDtPB.HllOp.getDefaultInstance()) {
+            hllOp_ =
+              com.basho.riak.protobuf.RiakDtPB.HllOp.newBuilder(hllOp_).mergeFrom(value).buildPartial();
+          } else {
+            hllOp_ = value;
+          }
+          onChanged();
+        } else {
+          hllOpBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      /**
+       * <code>optional .HllOp hll_op = 4;</code>
+       *
+       * <pre>
+       * Adding values to a hyperloglog (set) is just like adding values
+       * to a set.
+       * </pre>
+       */
+      public Builder clearHllOp() {
+        if (hllOpBuilder_ == null) {
+          hllOp_ = com.basho.riak.protobuf.RiakDtPB.HllOp.getDefaultInstance();
+          onChanged();
+        } else {
+          hllOpBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+      /**
+       * <code>optional .HllOp hll_op = 4;</code>
+       *
+       * <pre>
+       * Adding values to a hyperloglog (set) is just like adding values
+       * to a set.
+       * </pre>
+       */
+      public com.basho.riak.protobuf.RiakDtPB.HllOp.Builder getHllOpBuilder() {
+        bitField0_ |= 0x00000008;
+        onChanged();
+        return getHllOpFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .HllOp hll_op = 4;</code>
+       *
+       * <pre>
+       * Adding values to a hyperloglog (set) is just like adding values
+       * to a set.
+       * </pre>
+       */
+      public com.basho.riak.protobuf.RiakDtPB.HllOpOrBuilder getHllOpOrBuilder() {
+        if (hllOpBuilder_ != null) {
+          return hllOpBuilder_.getMessageOrBuilder();
+        } else {
+          return hllOp_;
+        }
+      }
+      /**
+       * <code>optional .HllOp hll_op = 4;</code>
+       *
+       * <pre>
+       * Adding values to a hyperloglog (set) is just like adding values
+       * to a set.
+       * </pre>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          com.basho.riak.protobuf.RiakDtPB.HllOp, com.basho.riak.protobuf.RiakDtPB.HllOp.Builder, com.basho.riak.protobuf.RiakDtPB.HllOpOrBuilder>
+          getHllOpFieldBuilder() {
+        if (hllOpBuilder_ == null) {
+          hllOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              com.basho.riak.protobuf.RiakDtPB.HllOp, com.basho.riak.protobuf.RiakDtPB.HllOp.Builder, com.basho.riak.protobuf.RiakDtPB.HllOpOrBuilder>(
+                  getHllOp(),
+                  getParentForChildren(),
+                  isClean());
+          hllOp_ = null;
+        }
+        return hllOpBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:DtOp)
@@ -11506,6 +12372,15 @@ public final class RiakDtPB {
      */
     com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder getMapValueOrBuilder(
         int index);
+
+    /**
+     * <code>optional uint64 hll_value = 6;</code>
+     */
+    boolean hasHllValue();
+    /**
+     * <code>optional uint64 hll_value = 6;</code>
+     */
+    long getHllValue();
   }
   /**
    * Protobuf type {@code DtUpdateResp}
@@ -11594,6 +12469,11 @@ public final class RiakDtPB {
                 mutable_bitField0_ |= 0x00000010;
               }
               mapValue_.add(input.readMessage(com.basho.riak.protobuf.RiakDtPB.MapEntry.PARSER, extensionRegistry));
+              break;
+            }
+            case 48: {
+              bitField0_ |= 0x00000008;
+              hllValue_ = input.readUInt64();
               break;
             }
           }
@@ -11760,12 +12640,28 @@ public final class RiakDtPB {
       return mapValue_.get(index);
     }
 
+    public static final int HLL_VALUE_FIELD_NUMBER = 6;
+    private long hllValue_;
+    /**
+     * <code>optional uint64 hll_value = 6;</code>
+     */
+    public boolean hasHllValue() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional uint64 hll_value = 6;</code>
+     */
+    public long getHllValue() {
+      return hllValue_;
+    }
+
     private void initFields() {
       key_ = com.google.protobuf.ByteString.EMPTY;
       context_ = com.google.protobuf.ByteString.EMPTY;
       counterValue_ = 0L;
       setValue_ = java.util.Collections.emptyList();
       mapValue_ = java.util.Collections.emptyList();
+      hllValue_ = 0L;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -11801,6 +12697,9 @@ public final class RiakDtPB {
       for (int i = 0; i < mapValue_.size(); i++) {
         output.writeMessage(5, mapValue_.get(i));
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeUInt64(6, hllValue_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -11834,6 +12733,10 @@ public final class RiakDtPB {
       for (int i = 0; i < mapValue_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, mapValue_.get(i));
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(6, hllValue_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -11973,6 +12876,8 @@ public final class RiakDtPB {
         } else {
           mapValueBuilder_.clear();
         }
+        hllValue_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000020);
         return this;
       }
 
@@ -12027,6 +12932,10 @@ public final class RiakDtPB {
         } else {
           result.mapValue_ = mapValueBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.hllValue_ = hllValue_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -12088,6 +12997,9 @@ public final class RiakDtPB {
             }
           }
         }
+        if (other.hasHllValue()) {
+          setHllValue(other.getHllValue());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -12095,6 +13007,7 @@ public final class RiakDtPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getMapValueCount(); i++) {
           if (!getMapValue(i).isInitialized()) {
+
             return false;
           }
         }
@@ -12566,6 +13479,38 @@ public final class RiakDtPB {
         return mapValueBuilder_;
       }
 
+      private long hllValue_ ;
+      /**
+       * <code>optional uint64 hll_value = 6;</code>
+       */
+      public boolean hasHllValue() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional uint64 hll_value = 6;</code>
+       */
+      public long getHllValue() {
+        return hllValue_;
+      }
+      /**
+       * <code>optional uint64 hll_value = 6;</code>
+       */
+      public Builder setHllValue(long value) {
+        bitField0_ |= 0x00000020;
+        hllValue_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint64 hll_value = 6;</code>
+       */
+      public Builder clearHllValue() {
+        bitField0_ = (bitField0_ & ~0x00000020);
+        hllValue_ = 0L;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:DtUpdateResp)
     }
 
@@ -12613,6 +13558,11 @@ public final class RiakDtPB {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_SetOp_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_HllOp_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_HllOp_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_MapUpdate_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -12658,34 +13608,36 @@ public final class RiakDtPB {
       " \002(\014\022\t\n\001r\030\004 \001(\r\022\n\n\002pr\030\005 \001(\r\022\024\n\014basic_quo",
       "rum\030\006 \001(\010\022\023\n\013notfound_ok\030\007 \001(\010\022\017\n\007timeou" +
       "t\030\010 \001(\r\022\025\n\rsloppy_quorum\030\t \001(\010\022\r\n\005n_val\030" +
-      "\n \001(\r\022\035\n\017include_context\030\013 \001(\010:\004true\"Q\n\007" +
+      "\n \001(\r\022\035\n\017include_context\030\013 \001(\010:\004true\"d\n\007" +
       "DtValue\022\025\n\rcounter_value\030\001 \001(\022\022\021\n\tset_va" +
-      "lue\030\002 \003(\014\022\034\n\tmap_value\030\003 \003(\0132\t.MapEntry\"" +
-      "\207\001\n\013DtFetchResp\022\017\n\007context\030\001 \001(\014\022#\n\004type" +
-      "\030\002 \002(\0162\025.DtFetchResp.DataType\022\027\n\005value\030\003" +
-      " \001(\0132\010.DtValue\")\n\010DataType\022\013\n\007COUNTER\020\001\022" +
-      "\007\n\003SET\020\002\022\007\n\003MAP\020\003\"\036\n\tCounterOp\022\021\n\tincrem" +
-      "ent\030\001 \001(\022\"&\n\005SetOp\022\014\n\004adds\030\001 \003(\014\022\017\n\007remo",
-      "ves\030\002 \003(\014\"\321\001\n\tMapUpdate\022\030\n\005field\030\001 \002(\0132\t" +
-      ".MapField\022\036\n\ncounter_op\030\002 \001(\0132\n.CounterO" +
-      "p\022\026\n\006set_op\030\003 \001(\0132\006.SetOp\022\023\n\013register_op" +
-      "\030\004 \001(\014\022\"\n\007flag_op\030\005 \001(\0162\021.MapUpdate.Flag" +
-      "Op\022\026\n\006map_op\030\006 \001(\0132\006.MapOp\"!\n\006FlagOp\022\n\n\006" +
-      "ENABLE\020\001\022\013\n\007DISABLE\020\002\"@\n\005MapOp\022\032\n\007remove" +
-      "s\030\001 \003(\0132\t.MapField\022\033\n\007updates\030\002 \003(\0132\n.Ma" +
-      "pUpdate\"V\n\004DtOp\022\036\n\ncounter_op\030\001 \001(\0132\n.Co" +
-      "unterOp\022\026\n\006set_op\030\002 \001(\0132\006.SetOp\022\026\n\006map_o" +
-      "p\030\003 \001(\0132\006.MapOp\"\361\001\n\013DtUpdateReq\022\016\n\006bucke",
-      "t\030\001 \002(\014\022\013\n\003key\030\002 \001(\014\022\014\n\004type\030\003 \002(\014\022\017\n\007co" +
-      "ntext\030\004 \001(\014\022\021\n\002op\030\005 \002(\0132\005.DtOp\022\t\n\001w\030\006 \001(" +
-      "\r\022\n\n\002dw\030\007 \001(\r\022\n\n\002pw\030\010 \001(\r\022\032\n\013return_body" +
-      "\030\t \001(\010:\005false\022\017\n\007timeout\030\n \001(\r\022\025\n\rsloppy" +
-      "_quorum\030\013 \001(\010\022\r\n\005n_val\030\014 \001(\r\022\035\n\017include_" +
-      "context\030\r \001(\010:\004true\"t\n\014DtUpdateResp\022\013\n\003k" +
-      "ey\030\001 \001(\014\022\017\n\007context\030\002 \001(\014\022\025\n\rcounter_val" +
-      "ue\030\003 \001(\022\022\021\n\tset_value\030\004 \003(\014\022\034\n\tmap_value" +
-      "\030\005 \003(\0132\t.MapEntryB#\n\027com.basho.riak.prot" +
-      "obufB\010RiakDtPB"
+      "lue\030\002 \003(\014\022\034\n\tmap_value\030\003 \003(\0132\t.MapEntry\022" +
+      "\021\n\thll_value\030\004 \001(\004\"\220\001\n\013DtFetchResp\022\017\n\007co" +
+      "ntext\030\001 \001(\014\022#\n\004type\030\002 \002(\0162\025.DtFetchResp." +
+      "DataType\022\027\n\005value\030\003 \001(\0132\010.DtValue\"2\n\010Dat" +
+      "aType\022\013\n\007COUNTER\020\001\022\007\n\003SET\020\002\022\007\n\003MAP\020\003\022\007\n\003" +
+      "HLL\020\004\"\036\n\tCounterOp\022\021\n\tincrement\030\001 \001(\022\"&\n",
+      "\005SetOp\022\014\n\004adds\030\001 \003(\014\022\017\n\007removes\030\002 \003(\014\"\025\n" +
+      "\005HllOp\022\014\n\004adds\030\001 \003(\014\"\321\001\n\tMapUpdate\022\030\n\005fi" +
+      "eld\030\001 \002(\0132\t.MapField\022\036\n\ncounter_op\030\002 \001(\013" +
+      "2\n.CounterOp\022\026\n\006set_op\030\003 \001(\0132\006.SetOp\022\023\n\013" +
+      "register_op\030\004 \001(\014\022\"\n\007flag_op\030\005 \001(\0162\021.Map" +
+      "Update.FlagOp\022\026\n\006map_op\030\006 \001(\0132\006.MapOp\"!\n" +
+      "\006FlagOp\022\n\n\006ENABLE\020\001\022\013\n\007DISABLE\020\002\"@\n\005MapO" +
+      "p\022\032\n\007removes\030\001 \003(\0132\t.MapField\022\033\n\007updates" +
+      "\030\002 \003(\0132\n.MapUpdate\"n\n\004DtOp\022\036\n\ncounter_op" +
+      "\030\001 \001(\0132\n.CounterOp\022\026\n\006set_op\030\002 \001(\0132\006.Set",
+      "Op\022\026\n\006map_op\030\003 \001(\0132\006.MapOp\022\026\n\006hll_op\030\004 \001" +
+      "(\0132\006.HllOp\"\361\001\n\013DtUpdateReq\022\016\n\006bucket\030\001 \002" +
+      "(\014\022\013\n\003key\030\002 \001(\014\022\014\n\004type\030\003 \002(\014\022\017\n\007context" +
+      "\030\004 \001(\014\022\021\n\002op\030\005 \002(\0132\005.DtOp\022\t\n\001w\030\006 \001(\r\022\n\n\002" +
+      "dw\030\007 \001(\r\022\n\n\002pw\030\010 \001(\r\022\032\n\013return_body\030\t \001(" +
+      "\010:\005false\022\017\n\007timeout\030\n \001(\r\022\025\n\rsloppy_quor" +
+      "um\030\013 \001(\010\022\r\n\005n_val\030\014 \001(\r\022\035\n\017include_conte" +
+      "xt\030\r \001(\010:\004true\"\207\001\n\014DtUpdateResp\022\013\n\003key\030\001" +
+      " \001(\014\022\017\n\007context\030\002 \001(\014\022\025\n\rcounter_value\030\003" +
+      " \001(\022\022\021\n\tset_value\030\004 \003(\014\022\034\n\tmap_value\030\005 \003",
+      "(\0132\t.MapEntry\022\021\n\thll_value\030\006 \001(\004B#\n\027com." +
+      "basho.riak.protobufB\010RiakDtPB"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -12722,7 +13674,7 @@ public final class RiakDtPB {
     internal_static_DtValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_DtValue_descriptor,
-        new java.lang.String[] { "CounterValue", "SetValue", "MapValue", });
+        new java.lang.String[] { "CounterValue", "SetValue", "MapValue", "HllValue", });
     internal_static_DtFetchResp_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_DtFetchResp_fieldAccessorTable = new
@@ -12741,36 +13693,42 @@ public final class RiakDtPB {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_SetOp_descriptor,
         new java.lang.String[] { "Adds", "Removes", });
-    internal_static_MapUpdate_descriptor =
+    internal_static_HllOp_descriptor =
       getDescriptor().getMessageTypes().get(7);
+    internal_static_HllOp_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_HllOp_descriptor,
+        new java.lang.String[] { "Adds", });
+    internal_static_MapUpdate_descriptor =
+      getDescriptor().getMessageTypes().get(8);
     internal_static_MapUpdate_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_MapUpdate_descriptor,
         new java.lang.String[] { "Field", "CounterOp", "SetOp", "RegisterOp", "FlagOp", "MapOp", });
     internal_static_MapOp_descriptor =
-      getDescriptor().getMessageTypes().get(8);
+      getDescriptor().getMessageTypes().get(9);
     internal_static_MapOp_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_MapOp_descriptor,
         new java.lang.String[] { "Removes", "Updates", });
     internal_static_DtOp_descriptor =
-      getDescriptor().getMessageTypes().get(9);
+      getDescriptor().getMessageTypes().get(10);
     internal_static_DtOp_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_DtOp_descriptor,
-        new java.lang.String[] { "CounterOp", "SetOp", "MapOp", });
+        new java.lang.String[] { "CounterOp", "SetOp", "MapOp", "HllOp", });
     internal_static_DtUpdateReq_descriptor =
-      getDescriptor().getMessageTypes().get(10);
+      getDescriptor().getMessageTypes().get(11);
     internal_static_DtUpdateReq_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_DtUpdateReq_descriptor,
         new java.lang.String[] { "Bucket", "Key", "Type", "Context", "Op", "W", "Dw", "Pw", "ReturnBody", "Timeout", "SloppyQuorum", "NVal", "IncludeContext", });
     internal_static_DtUpdateResp_descriptor =
-      getDescriptor().getMessageTypes().get(11);
+      getDescriptor().getMessageTypes().get(12);
     internal_static_DtUpdateResp_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_DtUpdateResp_descriptor,
-        new java.lang.String[] { "Key", "Context", "CounterValue", "SetValue", "MapValue", });
+        new java.lang.String[] { "Key", "Context", "CounterValue", "SetValue", "MapValue", "HllValue", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)
