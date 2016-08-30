@@ -62,7 +62,7 @@ public class UpdateValueTest
         MockitoAnnotations.initMocks(this);
 
         riakObject = new RiakObject();
-        riakObject.setValue(BinaryValue.create(new byte[]{'O', '_', 'o'}));
+        riakObject.setValue(BinaryValue.create(new byte[] {'O', '_', 'o'}));
 
         ArrayList<RiakObject> objects = new ArrayList<>();
         objects.add(riakObject);

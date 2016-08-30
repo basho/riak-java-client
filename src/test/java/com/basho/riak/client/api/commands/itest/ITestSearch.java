@@ -81,6 +81,6 @@ public class ITestSearch extends ISearchTestBase
             ages.add(stringListMap.get("age_i").get(0));
         }
 
-        assertArrayEquals(new String[]{"28", "36", "43"}, ages.toArray());
+        assertArrayEquals(new String[] {"28", "36", "43"}, ages.toArray());
     }
 }

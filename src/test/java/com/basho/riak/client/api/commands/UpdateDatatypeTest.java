@@ -53,7 +53,7 @@ public class UpdateDatatypeTest extends MockedResponseOperationTest<DtUpdateOper
         super.setupResponse(mockedResponse);
 
         when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<>()));
-        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[]{'1'}));
+        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[] {'1'}));
 
         when(context.getValue()).thenReturn(BinaryValue.unsafeCreate(new byte[] {'1'}));
     }

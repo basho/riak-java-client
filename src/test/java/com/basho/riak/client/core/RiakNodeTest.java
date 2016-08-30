@@ -675,7 +675,7 @@ public class RiakNodeTest
 
                 if (listener.equals(writeListener))
                 {
-                    node.onSuccess(channel, new RiakMessage((byte) 0, new byte[]{}));
+                    node.onSuccess(channel, new RiakMessage((byte) 0, new byte[] {}));
                 }
                 return null;
             }

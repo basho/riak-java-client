@@ -44,7 +44,7 @@ public class FetchValueTest extends MockedResponseOperationTest<FetchOperation, 
         super(FetchOperation.Response.class);
     }
 
-    private final VClock vClock = new BasicVClock(new byte[]{'1'});
+    private final VClock vClock = new BasicVClock(new byte[] {'1'});
     private final Location key = new Location(new Namespace("type","bucket"), "key");
 
     @Override

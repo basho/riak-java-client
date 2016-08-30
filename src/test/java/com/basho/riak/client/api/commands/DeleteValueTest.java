@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 
 public class DeleteValueTest extends OperationTestBase<DeleteOperation>
 {
-    private VClock vClock = new BasicVClock(new byte[]{'1'});
+    private VClock vClock = new BasicVClock(new byte[] {'1'});
     private Location key = new Location(new Namespace("type","bucket"), "key");
 
     @Test

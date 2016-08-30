@@ -39,7 +39,7 @@ public class StoreOperationTest
     @Test
     public void testStoreOperationCreateChannelMessage() throws InvalidProtocolBufferException
     {
-        byte[] expectedValue = new byte[]{'O', '_', 'o'};
+        byte[] expectedValue = new byte[] {'O', '_', 'o'};
 
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "bucket");
         BinaryValue key = BinaryValue.create("key".getBytes());

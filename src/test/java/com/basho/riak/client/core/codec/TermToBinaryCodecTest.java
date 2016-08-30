@@ -23,7 +23,7 @@ public class TermToBinaryCodecTest
 {
     private static final String TABLE_NAME = "test_table";
     private static final String QUERY = "SELECT * FROM FRAZZLE";
-    private static final byte[] CONTEXT = new byte[]{(byte)131,104,2,98,40,26,4,(byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114};
+    private static final byte[] CONTEXT = new byte[] {(byte)131,104,2,98,40,26,4,(byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114};
 
     @Test
     public void encodesPutRequestCorrectly_1()
