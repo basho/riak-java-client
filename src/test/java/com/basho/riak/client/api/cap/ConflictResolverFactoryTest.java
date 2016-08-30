@@ -69,7 +69,7 @@ public class ConflictResolverFactoryTest
 
     public static class Pojo
     {
-        public Pojo(){}
+        public Pojo() {}
 
         String foo;
         int bar;

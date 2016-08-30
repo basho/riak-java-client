@@ -32,7 +32,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-
 /**
  * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * The client used to perform operations on Riak.

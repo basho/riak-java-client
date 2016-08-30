@@ -157,7 +157,8 @@ public class NetworkTestFixture implements Runnable
                                 }
                             }
 
-                            if (key.isReadable()) {
+                            if (key.isReadable())
+                            {
                                 Acceptor h = (Acceptor) key.attachment();
                                 try
                                 {

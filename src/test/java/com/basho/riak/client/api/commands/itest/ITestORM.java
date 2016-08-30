@@ -60,7 +60,7 @@ public class ITestORM extends ITestAutoCleanupBase
     public void resetFactory()
     {
         TypeReference<GenericPojo<Integer>> tr =
-            new TypeReference<GenericPojo<Integer>>(){};
+            new TypeReference<GenericPojo<Integer>>() {};
 
         ConverterFactory.getInstance().unregisterConverterForClass(tr);
         ConflictResolverFactory.getInstance().unregisterConflictResolver(tr);
@@ -92,7 +92,7 @@ public class ITestORM extends ITestAutoCleanupBase
 
 
         TypeReference<GenericPojo<Foo>> tr =
-            new TypeReference<GenericPojo<Foo>>(){};
+            new TypeReference<GenericPojo<Foo>>() {};
         GenericPojo<Foo> gpf2 = resp.getValue(tr);
 
         assertNotNull(gpf2);
@@ -133,7 +133,7 @@ public class ITestORM extends ITestAutoCleanupBase
         FetchValue.Response resp = client.execute(fv);
 
         TypeReference<GenericPojo<Foo>> tr =
-            new TypeReference<GenericPojo<Foo>>(){};
+            new TypeReference<GenericPojo<Foo>>() {};
         GenericPojo<Foo> gpf2 = resp.getValue(tr);
 
         assertNotNull(gpf2);
@@ -159,7 +159,7 @@ public class ITestORM extends ITestAutoCleanupBase
 
         MyUpdate update = new MyUpdate();
         TypeReference<GenericPojo<Integer>> tr =
-            new TypeReference<GenericPojo<Integer>>(){};
+            new TypeReference<GenericPojo<Integer>>() {};
 
         UpdateValue uv = new UpdateValue.Builder(loc)
                         .withUpdate(update, tr)
@@ -204,7 +204,7 @@ public class ITestORM extends ITestAutoCleanupBase
 
         MyUpdate update = new MyUpdate();
         TypeReference<GenericPojo<Integer>> tr =
-            new TypeReference<GenericPojo<Integer>>(){};
+            new TypeReference<GenericPojo<Integer>>() {};
 
         UpdateValue uv = new UpdateValue.Builder(loc)
                         .withUpdate(update, tr)
@@ -255,7 +255,7 @@ public class ITestORM extends ITestAutoCleanupBase
         Location loc = new Location(ns, "test_ORM_key5");
 
         TypeReference<GenericPojo<Integer>> tr =
-            new TypeReference<GenericPojo<Integer>>(){};
+            new TypeReference<GenericPojo<Integer>>() {};
 
         ConflictResolverFactory.getInstance().registerConflictResolver(tr, new MyResolver());
         ConverterFactory.getInstance().registerConverterForClass(tr, new MyConverter(tr.getType()));
@@ -410,8 +410,8 @@ public class ITestORM extends ITestAutoCleanupBase
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         Location loc = new Location(ns, "test_ORM_key9");
         UpdateValue uv = new UpdateValue.Builder(loc)
-                        .withUpdate(new Update<RiakObject>(){
-
+                        .withUpdate(new Update<RiakObject>()
+                                    {
                                         @Override
                                         public RiakObject apply(RiakObject original)
                                         {

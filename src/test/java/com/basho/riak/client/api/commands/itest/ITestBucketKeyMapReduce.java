@@ -175,7 +175,7 @@ public class ITestBucketKeyMapReduce extends ITestBase
         String json = resultList.get(0).toString();
         ObjectMapper oMapper = new ObjectMapper();
 
-        TypeReference<Map<String,Integer>> type = new TypeReference<Map<String,Integer>>(){};
+        TypeReference<Map<String,Integer>> type = new TypeReference<Map<String,Integer>>() {};
         Map<String, Integer> resultMap = oMapper.readValue(json, type);
 
         assertNotNull(resultMap.containsKey("the"));

@@ -79,9 +79,6 @@ public class JsonConverterTest
         assertFalse(fieldExistsInJson(json,"tombstone"));
 
         assertTrue(fieldExistsInJson(json, "value"));
-
-
-
     }
 
     @Test
@@ -104,8 +101,6 @@ public class JsonConverterTest
         assertTrue(fieldExistsInJson(json, "tombstone"));
 
         assertTrue(fieldExistsInJson(json, "value"));
-
-
     }
 
     @Test
@@ -127,7 +122,6 @@ public class JsonConverterTest
         assertFalse(fieldExistsInJson(json, "tombstone"));
 
         assertTrue(fieldExistsInJson(json, "value"));
-
     }
 
     @Test
@@ -150,8 +144,6 @@ public class JsonConverterTest
         assertTrue(fieldExistsInJson(json, "tombstone"));
 
         assertTrue(fieldExistsInJson(json, "value"));
-
-
     }
 
     @Test
@@ -164,9 +156,9 @@ public class JsonConverterTest
         pojo.bucketType = "some_type";
         pojo.value = "some_value";
         pojo.metadata =
-            new HashMap<String,String>(){{ put("metaKey", "metaValue");}};
-        pojo.index = new HashSet<String>(){{ add("bob@gmail.com");}};
-        pojo.links = new LinkedList<RiakLink>(){{ add(new RiakLink("bucket","key","tag"));}};
+            new HashMap<String,String>() {{ put("metaKey", "metaValue"); }};
+        pojo.index = new HashSet<String>() {{ add("bob@gmail.com"); }};
+        pojo.links = new LinkedList<RiakLink>() {{ add(new RiakLink("bucket","key","tag")); }};
         pojo.vclock = vclock;
         pojo.contentType = RiakObject.DEFAULT_CONTENT_TYPE;
 
@@ -239,13 +231,13 @@ class PojoWithRiakFields extends Pojo
 
     @RiakUsermeta
     public Map<String,String> metadata =
-        new HashMap<String,String>(){{ put("metaKey", "metaValue");}};
+        new HashMap<String,String>() {{ put("metaKey", "metaValue"); }};
 
     @RiakIndex(name="email")
-    public Set<String> index = new HashSet<String>(){{ add("bob@gmail.com");}};
+    public Set<String> index = new HashSet<String>() {{ add("bob@gmail.com"); }};
 
     @RiakLinks
-    public Collection<RiakLink> links = new LinkedList<RiakLink>(){{ add(new RiakLink("bucket","key","tag"));}};
+    public Collection<RiakLink> links = new LinkedList<RiakLink>() {{ add(new RiakLink("bucket","key","tag")); }};
 
     @RiakVClock
     public VClock vclock;
@@ -280,16 +272,16 @@ class PojoWithRiakFieldsIncluded extends Pojo
     @JsonProperty
     @RiakUsermeta
     Map<String,String> metadata =
-        new HashMap<String,String>(){{ put("metaKey", "metaValue");}};
+        new HashMap<String,String>() {{ put("metaKey", "metaValue"); }};
 
     @JsonProperty
     @RiakIndex(name="email")
-    Set<String> index = new HashSet<String>(){{ add("bob@gmail.com");}};
+    Set<String> index = new HashSet<String>() {{ add("bob@gmail.com"); }};
 
     @JsonProperty
     @RiakLinks
     Collection<RiakLink> links =
-        new LinkedList<RiakLink>(){{ add(new RiakLink("bucket","key","tag"));}};
+        new LinkedList<RiakLink>() {{ add(new RiakLink("bucket","key","tag")); }};
 
     @JsonProperty
     @RiakVClock
@@ -307,10 +299,10 @@ class PojoWithRiakMethods extends Pojo
     protected String bucketName = "some_bucket";
     protected String bucketType = "some_type";
     protected Map<String,String> metadata =
-        new HashMap<String,String>(){{ put("metaKey", "metaValue");}};
-    protected Set<String> index = new HashSet<String>(){{ add("bob@gmail.com");}};
+        new HashMap<String,String>() {{ put("metaKey", "metaValue"); }};
+    protected Set<String> index = new HashSet<String>() {{ add("bob@gmail.com"); }};
     protected Collection<RiakLink> links =
-        new LinkedList<RiakLink>(){{ add(new RiakLink("bucket","key","tag"));}};
+        new LinkedList<RiakLink>() {{ add(new RiakLink("bucket","key","tag")); }};
     protected VClock vclock;
     protected boolean tombstone;
 }
@@ -568,5 +560,4 @@ class EmptyPojoWithRiakFields
 
     @JsonProperty
     String value;
-
 }

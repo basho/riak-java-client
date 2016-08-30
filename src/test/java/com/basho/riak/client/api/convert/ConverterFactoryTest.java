@@ -49,14 +49,12 @@ public class ConverterFactoryTest
     {
         ConverterFactory factory = ConverterFactory.getInstance();
         factory.unregisterConverterForClass(Pojo.class);
-        //factory.setDefaultConverter(JSONConverter.class);
     }
 
     @Test
     public void getDefaultConverter()
     {
         ConverterFactory factory = ConverterFactory.getInstance();
-        //TypeReference tr = new TypeReference<Pojo>(){};
         Converter<Pojo> converter = factory.getConverter(Pojo.class);
 
         assertTrue(converter instanceof JSONConverter);
@@ -138,7 +136,7 @@ public class ConverterFactoryTest
 
         public MyConverter()
         {
-            super(new TypeReference<Pojo>(){}.getType());
+            super(new TypeReference<Pojo>() {}.getType());
         }
 
 
@@ -159,7 +157,7 @@ public class ConverterFactoryTest
 
     public static class Pojo
     {
-        public Pojo(){}
+        public Pojo() {}
 
         @RiakBucketName
         String bucketName = "my_bucket";

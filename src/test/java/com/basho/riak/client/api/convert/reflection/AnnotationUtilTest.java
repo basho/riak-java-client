@@ -148,7 +148,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void getNonStringKeyField()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakKey
             Date key;
         };
@@ -159,7 +160,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void getNonStringKeyGetter()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakKey
             Date getKey() { return null; }
 
@@ -174,7 +176,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void getNonStringKeySetter()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakKey
             String getKey() { return null; }
 
@@ -344,7 +347,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void illegalBucketNameSetter()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakBucketName
             String getBucketName()
             {
@@ -488,7 +492,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void getIllegalBucketTypeField()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakBucketType
             Date bucketType;
         };
@@ -499,7 +504,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void illegalBucketTypeGetter()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakBucketType
             Date getType() { return null; }
 
@@ -514,7 +520,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void illegalBucketTypeSetter()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakBucketType
             String getBucketType() { return null; }
 
@@ -660,7 +667,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void getIllegalVClockField()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakVClock
             Date vclock;
         };
@@ -671,7 +679,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void illegalVClockGetter()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakVClock
             Date getVClock() { return null; }
 
@@ -686,7 +695,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void illegalVClockSetter()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakVClock
             VClock getVClock() { return null; }
 
@@ -1832,7 +1842,8 @@ public class AnnotationUtilTest
     {
         RiakUserMetadata meta = new RiakUserMetadata();
 
-        Object o = new Object() {
+        Object o = new Object()
+        {
             @RiakUsermeta
             Boolean meta;
         };
@@ -1847,7 +1858,8 @@ public class AnnotationUtilTest
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
 
-        o = new Object() {
+        o = new Object()
+        {
             @RiakUsermeta
             Map<Long, Long> meta;
         };
@@ -1862,7 +1874,8 @@ public class AnnotationUtilTest
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
 
-        o = new Object() {
+        o = new Object()
+        {
             @RiakUsermeta(key="metaKey")
             Long meta;
         };
@@ -1884,7 +1897,8 @@ public class AnnotationUtilTest
     {
         RiakUserMetadata meta = new RiakUserMetadata();
 
-        Object o = new Object() {
+        Object o = new Object()
+        {
             @RiakUsermeta
             public Boolean getMeta()
             {
@@ -1905,7 +1919,8 @@ public class AnnotationUtilTest
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
 
-        o = new Object() {
+        o = new Object()
+        {
             @RiakUsermeta
             public Map<Long, Long> getMeta()
             {
@@ -1926,7 +1941,8 @@ public class AnnotationUtilTest
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
 
-        o = new Object() {
+        o = new Object()
+        {
             @RiakUsermeta(key="metaKey")
             public Long getMeta()
             {
@@ -1953,7 +1969,8 @@ public class AnnotationUtilTest
     {
         RiakUserMetadata meta = new RiakUserMetadata();
 
-        Object o = new Object() {
+        Object o = new Object()
+        {
             @RiakUsermeta
             public Map<String,String> getMeta()
             {
@@ -1975,7 +1992,8 @@ public class AnnotationUtilTest
         }
 
 
-        o = new Object() {
+        o = new Object()
+        {
             @RiakUsermeta
             public Map<String, String> getMeta()
             {
@@ -1996,7 +2014,8 @@ public class AnnotationUtilTest
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
 
-        o = new Object() {
+        o = new Object()
+        {
             @RiakUsermeta(key="metaKey")
             public String getMeta()
             {
@@ -2023,7 +2042,8 @@ public class AnnotationUtilTest
     {
         RiakUserMetadata meta = new RiakUserMetadata();
 
-        Object o = new Object() {
+        Object o = new Object()
+        {
             @RiakUsermeta
             String meta;
         };
@@ -2038,7 +2058,8 @@ public class AnnotationUtilTest
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
 
-        o = new Object() {
+        o = new Object()
+        {
             @RiakUsermeta
             public String getSingleMeta()
             {
@@ -2152,7 +2173,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void getNonStringContentTypeField()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakContentType
             Date key;
         };
@@ -2163,7 +2185,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void getNonStringContentTypeGetter()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakContentType
             Date getKey() { return null; }
 
@@ -2178,7 +2201,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void getNonStringContentTypeSetter()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakContentType
             String getKey() { return null; }
 
@@ -2245,7 +2269,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void getNonStringVTagField()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakVTag
             Date key;
         };
@@ -2256,7 +2281,8 @@ public class AnnotationUtilTest
     @Test(expected = RuntimeException.class)
     public void getNonStringVTagSetter()
     {
-        final Object o = new Object() {
+        final Object o = new Object()
+        {
             @RiakVTag
             public void setVTag(Date vtag) {}
         };

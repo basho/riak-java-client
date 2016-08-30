@@ -73,7 +73,8 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
     }
 
     @Override
-    protected FetchOperation.Response convert(List<RiakKvPB.RpbGetResp> responses) {
+    protected FetchOperation.Response convert(List<RiakKvPB.RpbGetResp> responses)
+    {
         // This is not a streaming op, there will only be one response
         if (responses.size() > 1)
         {
