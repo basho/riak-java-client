@@ -117,7 +117,6 @@ public class UsermetaMethod
                             return MethodType.MAP_GETTER;
                         }
                     }
-
                 }
                 else
                 {
@@ -131,7 +130,5 @@ public class UsermetaMethod
             }
         }
         throw new IllegalArgumentException("Method can not be null.");
-
     }
-
 }

@@ -38,5 +38,4 @@ public abstract class LogicalFilter extends KeyFilter
     {
         return filters;
     }
-
 }

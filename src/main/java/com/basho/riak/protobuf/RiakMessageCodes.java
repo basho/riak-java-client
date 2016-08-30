@@ -77,5 +77,4 @@ public final class RiakMessageCodes {
     public static final byte MSG_AuthReq = (byte)253;
     public static final byte MSG_AuthResp = (byte)254;
     public static final byte MSG_StartTls = (byte)255;
-
 }

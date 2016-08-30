@@ -55,7 +55,6 @@ public class ITestUpdateValue extends ITestAutoCleanupBase
         pojo = resp.getValue(Pojo.class);
 
         assertEquals(2, pojo.value);
-
     }
 
     @Test
@@ -87,13 +86,10 @@ public class ITestUpdateValue extends ITestAutoCleanupBase
         assertFalse(rap.deleted);
         assertNotNull(rap.value);
         assertEquals("updated value", rap.value);
-
-
     }
 
     public static class UpdatePojo extends Update<Pojo>
     {
-
         @Override
         public Pojo apply(Pojo original)
         {
@@ -105,7 +101,6 @@ public class ITestUpdateValue extends ITestAutoCleanupBase
             original.value++;
             return original;
         }
-
     }
 
     public static class Pojo
@@ -119,7 +114,6 @@ public class ITestUpdateValue extends ITestAutoCleanupBase
 
     public static class UpdateAnnotatedPojo extends Update<RiakAnnotatedPojo>
     {
-
         @Override
         public RiakAnnotatedPojo apply(RiakAnnotatedPojo original)
         {
@@ -130,6 +124,5 @@ public class ITestUpdateValue extends ITestAutoCleanupBase
             }
             return original;
         }
-
     }
 }

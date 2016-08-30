@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
-
 /**
  *
  * @author Brian Roach <roach at basho dot com>
@@ -44,7 +43,6 @@ public class RiakClusterFixtureTest
 {
     private final Logger logger = LoggerFactory.getLogger(RiakClusterFixtureTest.class);
     private NetworkTestFixture[] fixtures;
-
 
     @Before
     public void setUp() throws IOException
@@ -98,7 +96,6 @@ public class RiakClusterFixtureTest
         }
         catch (InterruptedException ignored)
         {
-
         }
         finally
         {
@@ -169,7 +166,6 @@ public class RiakClusterFixtureTest
 
         cluster.shutdown().get();
 
-
         // Upon registering the initial node state of each node should be sent.
         assertEquals(3, listener.stateCreated);
         // All three nodes should go through all three states and notify.
@@ -177,7 +173,6 @@ public class RiakClusterFixtureTest
         assertEquals(3, listener.stateShuttingDown);
         assertEquals(3, listener.stateShutdown);
     }
-
 
     @Test(timeout = 10000)
     public void testOperationQueue() throws Exception

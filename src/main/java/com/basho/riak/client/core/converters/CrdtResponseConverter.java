@@ -45,7 +45,6 @@ public class CrdtResponseConverter
         List<RiakMap.MapEntry> entries = new ArrayList<>(mapEntries.size());
         for (RiakDtPB.MapEntry entry : mapEntries)
         {
-
             RiakDtPB.MapField field = entry.getField();
 
             RiakDatatype element;
@@ -79,7 +78,6 @@ public class CrdtResponseConverter
 
     public RiakDatatype convert(RiakDtPB.DtUpdateResp response)
     {
-
         RiakDatatype element = null;
 
         if (response.hasCounterValue())
@@ -96,7 +94,6 @@ public class CrdtResponseConverter
         }
 
         return element;
-
     }
 
     public RiakDatatype convert(RiakDtPB.DtFetchResp response)

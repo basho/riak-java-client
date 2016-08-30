@@ -74,7 +74,6 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
                 // Riak. US_ASCII string instead of integer
                 return BinaryValue.createFromUtf8(String.valueOf(input));
             }
-
         };
     }
 
@@ -87,7 +86,6 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
         IntQueryFuture future = new IntQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
-
     }
 
     protected final class IntQueryFuture extends CoreFutureAdapter<Response, IntIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
@@ -112,7 +110,6 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
 
     protected static abstract class Init<S, T extends Init<S,T>> extends SecondaryIndexQuery.Init<S,T>
     {
-
         public Init(Namespace namespace, String indexName, S start, S end)
         {
             super(namespace, indexName + Type._INT, start, end);
@@ -140,7 +137,6 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
      */
     public static class Builder extends Init<Long, Builder>
     {
-
         /**
          * Construct a Builder for a IntIndexQuery with a cover context.
          * <p>
@@ -229,7 +225,6 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
             {
                 super(riakObjectLocation, indexKey, converter);
             }
-
         }
     }
 }

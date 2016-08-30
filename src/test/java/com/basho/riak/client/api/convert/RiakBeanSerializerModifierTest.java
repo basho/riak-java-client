@@ -35,7 +35,6 @@ import org.junit.Test;
 @SuppressWarnings("unchecked")
 public class RiakBeanSerializerModifierTest
 {
-
     @Test public void changePropertiesDropsRiakAnnotatedProperties() throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
@@ -72,8 +71,6 @@ public class RiakBeanSerializerModifierTest
         assertTrue(map.containsKey("metaValueField"));
         assertTrue(map.containsKey("someField"));
         assertTrue(map.containsKey("someOtherField"));
-
-
     }
 
     @SuppressWarnings("unused") private static final class RiakAnnotatedClass
@@ -141,7 +138,5 @@ public class RiakBeanSerializerModifierTest
         {
             return keyField;
         }
-
     }
-
 }

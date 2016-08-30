@@ -88,7 +88,6 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
         BigIntQueryFuture future = new BigIntQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
-
     }
 
     protected final class BigIntQueryFuture extends CoreFutureAdapter<Response, BigIntIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
@@ -113,7 +112,6 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
 
     protected static abstract class Init<S, T extends Init<S,T>> extends SecondaryIndexQuery.Init<S,T>
     {
-
         public Init(Namespace namespace, String indexName, S start, S end)
         {
             super(namespace, indexName + Type._INT, start, end);
@@ -229,7 +227,6 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
             {
                 super(riakObjectLocation, indexKey, converter);
             }
-
         }
     }
 }

@@ -50,5 +50,4 @@ public class AcceptReadPartialWriteStayOpen extends Acceptor
         ((WritableByteChannel)key.channel()).write(bb);
         return false;
     }
-
 }

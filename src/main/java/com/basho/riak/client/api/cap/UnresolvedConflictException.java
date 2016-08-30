@@ -27,7 +27,6 @@ import java.util.concurrent.ExecutionException;
  */
 public class UnresolvedConflictException extends ExecutionException
 {
-
     /**
      * eclipse generated id
      */

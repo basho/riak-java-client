@@ -127,6 +127,5 @@ public class Query extends RiakCommand<QueryResult, String>
         {
             return new Query(this);
         }
-
     }
 }

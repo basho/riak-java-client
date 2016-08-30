@@ -13,7 +13,6 @@ import java.util.List;
  */
 public class BucketMapReduce extends MapReduce
 {
-
     protected BucketMapReduce(BucketInput input, Builder builder)
     {
         super(input, builder);
@@ -24,7 +23,6 @@ public class BucketMapReduce extends MapReduce
      */
     public static class Builder extends MapReduce.Builder<Builder>
     {
-
         private Namespace namespace;
         private final List<KeyFilter> filters = new ArrayList<>();
 

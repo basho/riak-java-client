@@ -101,7 +101,6 @@ public class RiakIndexes implements Iterable<RiakIndex<?>>
      */
     public RiakIndexes()
     {
-
     }
 
     /**

@@ -7,7 +7,6 @@ import com.basho.riak.client.core.query.functions.Function;
  */
 class PhaseFunction
 {
-
     private final Function function;
     private final boolean keep;
 
@@ -39,5 +38,4 @@ class PhaseFunction
     {
         return keep;
     }
-
 }

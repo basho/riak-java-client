@@ -90,7 +90,6 @@ public class ITestORM extends ITestAutoCleanupBase
 
         StoreValue.Response resp = client.execute(sv);
 
-
         TypeReference<GenericPojo<Foo>> tr =
             new TypeReference<GenericPojo<Foo>>() {};
         GenericPojo<Foo> gpf2 = resp.getValue(tr);
@@ -106,7 +105,6 @@ public class ITestORM extends ITestAutoCleanupBase
         String json = mapper.writeValueAsString(gpf2);
         RiakObject ro = resp.getValue(RiakObject.class);
         assertEquals(json, ro.getValue().toString());
-
     }
 
     @Test
@@ -147,7 +145,6 @@ public class ITestORM extends ITestAutoCleanupBase
         String json = mapper.writeValueAsString(gpf2);
         RiakObject ro = resp.getValue(RiakObject.class);
         assertEquals(json, ro.getValue().toString());
-
     }
 
     @Test
@@ -234,8 +231,6 @@ public class ITestORM extends ITestAutoCleanupBase
         assertNotNull(gpi);
         assertNotNull(gpi.value);
         assertEquals(3, gpi.value.intValue());
-
-
     }
 
     @Test
@@ -250,7 +245,6 @@ public class ITestORM extends ITestAutoCleanupBase
         cluster.execute(op);
         op.get();
 
-
         RiakClient client = new RiakClient(cluster);
         Location loc = new Location(ns, "test_ORM_key5");
 
@@ -260,9 +254,7 @@ public class ITestORM extends ITestAutoCleanupBase
         ConflictResolverFactory.getInstance().registerConflictResolver(tr, new MyResolver());
         ConverterFactory.getInstance().registerConverterForClass(tr, new MyConverter(tr.getType()));
 
-
         MyUpdate update = new MyUpdate();
-
 
         UpdateValue uv = new UpdateValue.Builder(loc)
                         .withUpdate(update, tr)
@@ -295,7 +287,6 @@ public class ITestORM extends ITestAutoCleanupBase
         RiakObject ro = uvResp.getValue(RiakObject.class);
         assertEquals("3", ro.getValue().toString());
     }
-
 
     @Test
     public void updateAndResolveRawTypeJSON() throws ExecutionException, InterruptedException, JsonProcessingException
@@ -348,7 +339,6 @@ public class ITestORM extends ITestAutoCleanupBase
         String json = mapper.writeValueAsString(f);
         RiakObject ro = uvResp.getValue(RiakObject.class);
         assertEquals(json, ro.getValue().toString());
-
     }
 
     @Test
@@ -462,12 +452,10 @@ public class ITestORM extends ITestAutoCleanupBase
             Foo other = (Foo)o;
             return fooValue.equals(other.fooValue);
         }
-
     }
 
     public static class MyUpdate extends Update<GenericPojo<Integer>>
     {
-
         @Override
         public GenericPojo<Integer> apply(GenericPojo<Integer> original)
         {
@@ -487,7 +475,6 @@ public class ITestORM extends ITestAutoCleanupBase
 
     public static class MyResolver implements ConflictResolver<GenericPojo<Integer>>
     {
-
         @Override
         public GenericPojo<Integer> resolve(List<GenericPojo<Integer>> objectList) throws UnresolvedConflictException
         {
@@ -500,12 +487,10 @@ public class ITestORM extends ITestAutoCleanupBase
             newObj.value = total;
             return newObj;
         }
-
     }
 
     public static class MyConverter extends Converter<GenericPojo<Integer>>
     {
-
         public MyConverter(Type t)
         {
             super(t);
@@ -524,12 +509,10 @@ public class ITestORM extends ITestAutoCleanupBase
         {
             return new ContentAndType(BinaryValue.create(String.valueOf(domainObject.value)), "text/plain");
         }
-
     }
 
     public class MyFooUpdate extends Update<Foo>
     {
-
         @Override
         public Foo apply(Foo original)
         {
@@ -554,7 +537,6 @@ public class ITestORM extends ITestAutoCleanupBase
 
     public class MyFooResolver implements ConflictResolver<Foo>
     {
-
         @Override
         public Foo resolve(List<Foo> objectList) throws UnresolvedConflictException
         {
@@ -594,7 +576,5 @@ public class ITestORM extends ITestAutoCleanupBase
         {
             return new ContentAndType(BinaryValue.create(domainObject.fooValue), "text/plain");
         }
-
     }
-
 }

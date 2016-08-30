@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * Filter in keys that aren't caught by the group
  *
@@ -30,5 +29,4 @@ public class LogicalNotFilter extends LogicalFilter
     {
         super(NAME, filters);
     }
-
 }

@@ -157,11 +157,9 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
                 throw new IllegalArgumentException("MapReduce can not be null or empty.");
             }
 
-
             reqBuilder.setRequest(ByteString.copyFrom(mapReduce.unsafeGetValue()))
                         .setContentType(ByteString.copyFromUtf8("application/json"));
             this.mapReduce = mapReduce;
-
         }
 
         public MapReduceOperation build()
@@ -183,6 +181,5 @@ public class MapReduceOperation extends FutureOperation<MapReduceOperation.Respo
         {
             return resultMap;
         }
-
     }
 }

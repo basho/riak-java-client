@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * Filter in keys that match the regular expression argument
  *
@@ -21,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class MatchFilter extends KeyFilter
 {
-
     private static final String NAME = "matches";
     private final String value;
 

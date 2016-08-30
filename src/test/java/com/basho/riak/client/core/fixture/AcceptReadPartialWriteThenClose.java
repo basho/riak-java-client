@@ -29,7 +29,6 @@ import java.util.Arrays;
  */
 public class AcceptReadPartialWriteThenClose extends Acceptor
 {
-
     public AcceptReadPartialWriteThenClose(ServerSocketChannel server)
     {
         super(server);
@@ -51,5 +50,4 @@ public class AcceptReadPartialWriteThenClose extends Acceptor
         ((WritableByteChannel)key.channel()).write(bb);
         return true;
     }
-
 }

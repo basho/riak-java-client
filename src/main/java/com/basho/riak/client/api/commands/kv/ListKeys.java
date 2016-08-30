@@ -52,7 +52,6 @@ import java.util.List;
  */
 public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
 {
-
     private final Namespace namespace;
     private final int timeout;
 
@@ -101,7 +100,6 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
 
     public static class Response implements Iterable<Location>
     {
-
         private final Namespace namespace;
         private final List<BinaryValue> keys;
 

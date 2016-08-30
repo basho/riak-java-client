@@ -214,7 +214,6 @@ public class ITestFullBucketRead extends ITestBase
     private Map<String, RiakObject> performFBReadWithCoverageContext(boolean withContinuation,boolean withReturnBody)
             throws UnknownHostException, ExecutionException, InterruptedException
     {
-
         final Map<CoverageEntry, List<Entry>> chunkedKeys = new HashMap<>();
 
         // -- perform Full Bucket read and gather all results preserving partitioning by CoverageEntry

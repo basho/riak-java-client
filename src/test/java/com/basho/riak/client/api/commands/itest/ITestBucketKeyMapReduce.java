@@ -104,14 +104,12 @@ public class ITestBucketKeyMapReduce extends ITestBase
         location = new Location(ns, "p2");
         client.execute(new StoreValue.Builder(obj).withLocation(location).build());
 
-
         obj.setValue(BinaryValue.create("The rabbit-hole went straight on like a tunnel for some way, and then " +
                 "dipped suddenly down, so suddenly that Alice had not a moment to think " +
                 "about stopping herself before she found herself falling down a very deep " +
                 "well."));
         location = new Location(ns, "p3");
         client.execute(new StoreValue.Builder(obj).withLocation(location).build());
-
     }
 
     @Test
@@ -213,5 +211,4 @@ public class ITestBucketKeyMapReduce extends ITestBase
 
         assertEquals(3, response.getResultsFromAllPhases().size());
     }
-
 }

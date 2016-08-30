@@ -30,7 +30,6 @@ import com.basho.riak.client.core.query.crdt.ops.FlagOp;
  */
 public class FlagUpdate implements DatatypeUpdate
 {
-
     private boolean flag = false;
 
     /**

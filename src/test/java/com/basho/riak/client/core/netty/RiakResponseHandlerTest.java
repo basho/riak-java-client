@@ -30,8 +30,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-
-
 /**
  *
  * @author Brian Roach <roach at basho dot com>
@@ -82,5 +80,4 @@ public class RiakResponseHandlerTest
 
         verify(mockListener).onSuccess(mockChannel, message);
     }
-
 }

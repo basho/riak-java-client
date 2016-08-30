@@ -54,7 +54,6 @@ public class SecondaryIndexQueryTest
         assertEquals(true, query.isReturnKeyAndIndex());
         assertEquals(Integer.MAX_VALUE, query.getTimeout().intValue());
 
-
         iiq = new IntIndexQuery.Builder(ns, "test_index", Long.MIN_VALUE, Long.MAX_VALUE)
                 .withKeyAndIndex(true)
                 .withContinuation(BinaryValue.create("continuation"))
@@ -72,7 +71,6 @@ public class SecondaryIndexQueryTest
         assertEquals(Integer.MAX_VALUE, query.getMaxResults());
         assertEquals(true, query.isPaginationSort());
         assertEquals(true, query.isReturnKeyAndIndex());
-
 
         // You can't use a term filter with an _int query
         try
@@ -128,7 +126,6 @@ public class SecondaryIndexQueryTest
         assertEquals(Integer.MAX_VALUE, query.getMaxResults());
         assertEquals(true, query.isPaginationSort());
         assertEquals(true, query.isReturnKeyAndIndex());
-
     }
 
     public void rawIndexQueryBuildsCorrectly()
@@ -160,6 +157,5 @@ public class SecondaryIndexQueryTest
         assertEquals("test_index_int", query.getIndexName().toString());
         assertEquals(indexStart, query.getRangeStart());
         assertEquals(indexEnd, query.getRangeEnd());
-
     }
 }

@@ -143,7 +143,6 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
 
     public static class HealthCheckFuture implements RiakFuture<RiakMessage, Void>
     {
-
         private final CountDownLatch latch = new CountDownLatch(1);
         private volatile Throwable exception;
         private volatile RiakMessage message;
@@ -258,6 +257,5 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
         {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-
     }
 }

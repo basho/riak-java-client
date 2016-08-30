@@ -33,24 +33,20 @@ public class DtUpdateOperationTest
 {
     private final Namespace namespace = new Namespace("type", "bucket");
 
-
     @Test
     public void testGetCounterOp()
     {
-
         final long counterValue = 1;
         CounterOp op = new CounterOp(counterValue);
         DtUpdateOperation.Builder operation = new DtUpdateOperation.Builder(namespace);
         RiakDtPB.CounterOp counterOp = operation.getCounterOp(op);
 
         assertEquals(counterValue, counterOp.getIncrement());
-
     }
 
     @Test
     public void testGetSetOp()
     {
-
         BinaryValue addition = BinaryValue.create("1");
         BinaryValue removal = BinaryValue.create("2");
 
@@ -66,13 +62,11 @@ public class DtUpdateOperationTest
 
         assertEquals(addition, serializedAddition);
         assertEquals(removal, serializedRemoval);
-
     }
 
     @Test
     public void testGetFlagOp()
     {
-
         final boolean enabled = true;
 
         FlagOp op = new FlagOp(enabled);
@@ -81,13 +75,11 @@ public class DtUpdateOperationTest
         RiakDtPB.MapUpdate.FlagOp flagOp = operation.getFlagOp(op);
 
         assertEquals(RiakDtPB.MapUpdate.FlagOp.ENABLE, flagOp);
-
     }
 
     @Test
     public void testGetRegisterOp()
     {
-
         final BinaryValue registerValue = BinaryValue.create("value");
 
         RegisterOp op = new RegisterOp(registerValue);
@@ -102,7 +94,6 @@ public class DtUpdateOperationTest
     @Test
     public void testGetMapOpUpdates()
     {
-
         BinaryValue counterKey = BinaryValue.create("counter");
         BinaryValue setKey = BinaryValue.create("set");
         BinaryValue flagKey = BinaryValue.create("flag");
@@ -126,13 +117,11 @@ public class DtUpdateOperationTest
         RiakDtPB.MapOp mapOp = operation.getMapOp(op);
 
         assertTrue(mapOp.getUpdatesCount() == 5);
-
     }
 
     @Test
     public void testGetMapOpUpdateNestedMaps()
     {
-
         BinaryValue key1 = BinaryValue.create("key1");
         MapOp op1 = new MapOp().update(key1, new CounterOp(1));
 
@@ -168,7 +157,5 @@ public class DtUpdateOperationTest
 
         RiakDtPB.CounterOp serializedCounterOp = update.getCounterOp();
         assertEquals(1, serializedCounterOp.getIncrement());
-
     }
-
 }

@@ -61,6 +61,5 @@ public class ITestPingOperation extends ITestAutoCleanupBase
         assertNotNull(ping.cause());
 
         cluster.shutdown();
-
     }
 }

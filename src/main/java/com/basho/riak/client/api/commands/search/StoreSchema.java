@@ -7,7 +7,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzPutSchemaOperation;
 import com.basho.riak.client.core.query.search.YokozunaSchema;
 
-
 /**
  * Command used to store a search schema in Riak.
  * <p>

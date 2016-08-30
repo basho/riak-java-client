@@ -25,7 +25,6 @@ import com.basho.riak.client.core.RiakNode;
 
 public class RiakPemConnection
 {
-
     private static final KeyStore trustStore = loadTruststore();
 
     /**
@@ -41,7 +40,6 @@ public class RiakPemConnection
      */
     private static KeyStore loadTruststore()
     {
-
         KeyStore truststore = null;
         try
         {
@@ -59,7 +57,6 @@ public class RiakPemConnection
             truststore.load(null, "basho".toCharArray());
             truststore.setCertificateEntry("cacert", caCert);
             truststore.setCertificateEntry("server", serverCert);
-
         }
         catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e)
         {
@@ -101,7 +98,6 @@ public class RiakPemConnection
             keystore = KeyStore.getInstance(KeyStore.getDefaultType());
             keystore.load(null, "basho".toCharArray());
             keystore.setKeyEntry("private-key", privKey,"".toCharArray(),new java.security.cert.Certificate[] { public_cert });
-
         }
         catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | InvalidKeySpecException e)
         {
@@ -128,7 +124,6 @@ public class RiakPemConnection
      */
     public static RiakCluster getRiakCluster()
     {
-
         RiakNode.Builder builder = createRiakNodeBuilder();
         RiakCluster cluster = initializeRiakCluster(builder);
 

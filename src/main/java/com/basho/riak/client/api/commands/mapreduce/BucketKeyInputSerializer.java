@@ -13,16 +13,13 @@ import java.io.IOException;
  */
 public class BucketKeyInputSerializer extends JsonSerializer<BucketKeyInput>
 {
-
     @Override
     public void serialize(BucketKeyInput input, JsonGenerator jg, SerializerProvider sp) throws IOException
     {
-
         jg.writeStartArray();
 
         for (BucketKeyInput.IndividualInput i : input.getInputs())
         {
-
             jg.writeStartArray();
 
             Location loc = i.location;
@@ -39,10 +36,8 @@ public class BucketKeyInputSerializer extends JsonSerializer<BucketKeyInput>
                 jg.writeString(loc.getNamespace().getBucketTypeAsString());
             }
             jg.writeEndArray();
-
         }
 
         jg.writeEndArray();
-
     }
 }

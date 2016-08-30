@@ -23,7 +23,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
 
-
 /**
  * Command used to fetch the properties of a bucket in Riak.
  * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
@@ -42,7 +41,6 @@ import com.basho.riak.client.core.query.Namespace;
  */
 public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOperation.Response, Namespace>
 {
-
     private final Namespace namespace;
 
     public FetchBucketProperties(Builder builder)
@@ -109,5 +107,4 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
             return new FetchBucketProperties(this);
         }
     }
-
 }

@@ -178,7 +178,6 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
 
     public static class Response implements Iterable<Response.CoverageEntry>
     {
-
         public static class CoverageEntry implements Serializable
         {
             private static final long serialVersionUID = 0;
@@ -226,7 +225,6 @@ public class CoveragePlanOperation extends FutureOperation<CoveragePlanOperation
                 if (getPort() != that.getPort()) return false;
                 if (!getHost().equals(that.getHost())) return false;
                 return Arrays.equals(getCoverageContext(), that.getCoverageContext());
-
             }
 
             @Override

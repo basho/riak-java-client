@@ -36,7 +36,6 @@ import java.util.concurrent.ExecutionException;
 
 public class StoreFetchDeleteTest
 {
-
     private final Converter<RiakObject> domainObjectConverter = new PassThroughConverter();
     private static RiakCluster cluster;
     private BinaryValue bucket = BinaryValue.create("bucket");
@@ -62,7 +61,6 @@ public class StoreFetchDeleteTest
     @Test
     public void testStoreFetchDelete() throws ExecutionException, InterruptedException
     {
-
         RiakObject o = RiakObject.create(bucket.unsafeGetValue()).setValue("test value");
         StoreMeta storeMeta = new StoreMeta.Builder().returnBody(true).build();
 
@@ -99,13 +97,11 @@ public class StoreFetchDeleteTest
         RiakObject tombstone = tombstoneFetch.get();
 
         Assert.assertTrue(tombstone.isNotFound());
-
     }
 
     @Test
     public void testSiblings() throws ExecutionException, InterruptedException
     {
-
         RiakObject o = RiakObject.create(bucket.unsafeGetValue()).setValue("test value");
         StoreMeta storeMeta = new StoreMeta.Builder().returnBody(true).build();
 
@@ -127,8 +123,5 @@ public class StoreFetchDeleteTest
         cluster.execute(store2);
 
         RiakObject storeReturn2 = store2.get();
-
-
     }
-
 }

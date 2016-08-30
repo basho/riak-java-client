@@ -63,5 +63,4 @@ public class AnnotationCache
             throw new RuntimeException(e.getCause());
         }
     }
-
 }

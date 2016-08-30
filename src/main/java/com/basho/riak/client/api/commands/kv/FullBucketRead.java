@@ -227,7 +227,6 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
         }
     }
 
-
     public static class Response extends SecondaryIndexQuery.Response<BinaryValue>
     {
         private transient List<Entry> convertedList = null;
@@ -262,7 +261,6 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
                         .withValues(resp.getObjectList())
                         .withLocation(loc) // for ORM
                         .build();
-
                 }
                 else
                 {

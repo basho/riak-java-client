@@ -59,5 +59,4 @@ public class YokozunaSchema
     {
         return content;
     }
-
 }

@@ -47,7 +47,6 @@ package com.basho.riak.client.api.cap;
  */
 public final class Quorum
 {
-
     public static final String ONE = "one";
     public static final String QUORUM = "quorum";
     public static final String ALL = "all";
@@ -145,7 +144,6 @@ public final class Quorum
         }
         else
         {
-
             switch (i)
             {
                 case -2:

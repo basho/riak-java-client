@@ -41,7 +41,6 @@ import org.junit.Test;
  */
 public class ITestBigIntIndexQuery extends ITestAutoCleanupBase
 {
-
     @Test
     public void testMatchQuery() throws InterruptedException, ExecutionException
     {
@@ -94,7 +93,6 @@ public class ITestBigIntIndexQuery extends ITestAutoCleanupBase
         }
 
         assertTrue(found);
-
     }
 
     @Test
@@ -152,8 +150,6 @@ public class ITestBigIntIndexQuery extends ITestAutoCleanupBase
 
         assertTrue(found);
     }
-
-
 
     public static class IndexedPojo
     {

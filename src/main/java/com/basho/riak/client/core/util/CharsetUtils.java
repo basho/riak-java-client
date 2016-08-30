@@ -166,7 +166,6 @@ public class CharsetUtils
                 return contentType + ";charset=" + charset;
             }
         }
-
     }
 
     public static String addCharset(Charset charset, String contentType)

@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * Transforms a key from an int to a string.
  *
@@ -21,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class IntToStringFilter extends KeyFilter
 {
-
     private static final String NAME = "int_to_string";
 
     public IntToStringFilter()

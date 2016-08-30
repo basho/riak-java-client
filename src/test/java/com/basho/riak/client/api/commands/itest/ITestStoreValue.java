@@ -64,10 +64,7 @@ public class ITestStoreValue extends ITestAutoCleanupBase
         FetchValue.Response fResp = client.execute(fv);
 
         assertEquals(pojo.value, fResp.getValue(Pojo.class).value);
-
     }
-
-
 
     @Test
     public void storeAnnotatedPojo() throws ExecutionException, InterruptedException
@@ -140,8 +137,6 @@ public class ITestStoreValue extends ITestAutoCleanupBase
 
         assertTrue(rap.emailIndx.containsAll(emailAddys));
         assertEquals(rap.userId, pojo.userId);
-
-
     }
 
     @Test
@@ -179,7 +174,5 @@ public class ITestStoreValue extends ITestAutoCleanupBase
 
         @RiakVClock
         VClock vclock;
-
     }
-
 }

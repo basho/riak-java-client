@@ -66,7 +66,5 @@ public class RawIndex extends RiakIndex<BinaryValue>
         {
             return new RawIndex(this);
         }
-
     }
-
 }

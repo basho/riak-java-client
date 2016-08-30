@@ -11,7 +11,6 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class MapReduceSpec
 {
-
     private final MapReduceInput inputs;
     @JsonProperty(value = "query")
     private final List<MapReducePhase> phases;

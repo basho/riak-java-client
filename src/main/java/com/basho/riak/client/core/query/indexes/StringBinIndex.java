@@ -109,9 +109,5 @@ public class StringBinIndex extends RiakIndex<String>
         {
             return new StringBinIndex(this);
         }
-
-
-
     }
-
 }

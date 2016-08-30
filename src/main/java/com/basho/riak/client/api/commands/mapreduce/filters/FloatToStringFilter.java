@@ -20,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class FloatToStringFilter extends KeyFilter
 {
-
     private static final String NAME = "float_to_string";
 
     public FloatToStringFilter()

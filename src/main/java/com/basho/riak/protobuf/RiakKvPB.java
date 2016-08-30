@@ -11,7 +11,6 @@ public final class RiakKvPB {
   public interface RpbGetClientIdRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbGetClientIdResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes client_id = 1;</code>
      *
@@ -369,7 +368,6 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasClientId()) {
-          
           return false;
         }
         return true;
@@ -459,7 +457,6 @@ public final class RiakKvPB {
   public interface RpbSetClientIdReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbSetClientIdReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes client_id = 1;</code>
      *
@@ -809,7 +806,6 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasClientId()) {
-          
           return false;
         }
         return true;
@@ -899,7 +895,6 @@ public final class RiakKvPB {
   public interface RpbGetReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbGetReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      */
@@ -1893,11 +1888,9 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         if (!hasKey()) {
-          
           return false;
         }
         return true;
@@ -2460,11 +2453,10 @@ public final class RiakKvPB {
   public interface RpbGetRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbGetResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated .RpbContent content = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbContent> 
+    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbContent>
         getContentList();
     /**
      * <code>repeated .RpbContent content = 1;</code>
@@ -2477,7 +2469,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbContent content = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder>
         getContentOrBuilderList();
     /**
      * <code>repeated .RpbContent content = 1;</code>
@@ -2639,7 +2631,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbContent content = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder>
         getContentOrBuilderList() {
       return content_;
     }
@@ -2966,7 +2958,7 @@ public final class RiakKvPB {
               contentBuilder_ = null;
               content_ = other.content_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              contentBuilder_ = 
+              contentBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getContentFieldBuilder() : null;
             } else {
@@ -2987,7 +2979,6 @@ public final class RiakKvPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getContentCount(); i++) {
           if (!getContent(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -3208,7 +3199,7 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbContent content = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder>
            getContentOrBuilderList() {
         if (contentBuilder_ != null) {
           return contentBuilder_.getMessageOrBuilderList();
@@ -3234,12 +3225,12 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbContent content = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbContent.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbContent.Builder>
            getContentBuilderList() {
         return getContentFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakKvPB.RpbContent, com.basho.riak.protobuf.RiakKvPB.RpbContent.Builder, com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder> 
+          com.basho.riak.protobuf.RiakKvPB.RpbContent, com.basho.riak.protobuf.RiakKvPB.RpbContent.Builder, com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder>
           getContentFieldBuilder() {
         if (contentBuilder_ == null) {
           contentBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -3350,7 +3341,6 @@ public final class RiakKvPB {
   public interface RpbPutReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbPutReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      */
@@ -4467,15 +4457,12 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         if (!hasContent()) {
-          
           return false;
         }
         if (!getContent().isInitialized()) {
-          
           return false;
         }
         return true;
@@ -4708,7 +4695,7 @@ public final class RiakKvPB {
        * <code>required .RpbContent content = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakKvPB.RpbContent, com.basho.riak.protobuf.RiakKvPB.RpbContent.Builder, com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder> 
+          com.basho.riak.protobuf.RiakKvPB.RpbContent, com.basho.riak.protobuf.RiakKvPB.RpbContent.Builder, com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder>
           getContentFieldBuilder() {
         if (contentBuilder_ == null) {
           contentBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -5170,11 +5157,10 @@ public final class RiakKvPB {
   public interface RpbPutRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbPutResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated .RpbContent content = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbContent> 
+    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbContent>
         getContentList();
     /**
      * <code>repeated .RpbContent content = 1;</code>
@@ -5187,7 +5173,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbContent content = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder>
         getContentOrBuilderList();
     /**
      * <code>repeated .RpbContent content = 1;</code>
@@ -5357,7 +5343,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbContent content = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder>
         getContentOrBuilderList() {
       return content_;
     }
@@ -5692,7 +5678,7 @@ public final class RiakKvPB {
               contentBuilder_ = null;
               content_ = other.content_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              contentBuilder_ = 
+              contentBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getContentFieldBuilder() : null;
             } else {
@@ -5713,7 +5699,6 @@ public final class RiakKvPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getContentCount(); i++) {
           if (!getContent(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -5934,7 +5919,7 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbContent content = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder>
            getContentOrBuilderList() {
         if (contentBuilder_ != null) {
           return contentBuilder_.getMessageOrBuilderList();
@@ -5960,12 +5945,12 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbContent content = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbContent.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbContent.Builder>
            getContentBuilderList() {
         return getContentFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakKvPB.RpbContent, com.basho.riak.protobuf.RiakKvPB.RpbContent.Builder, com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder> 
+          com.basho.riak.protobuf.RiakKvPB.RpbContent, com.basho.riak.protobuf.RiakKvPB.RpbContent.Builder, com.basho.riak.protobuf.RiakKvPB.RpbContentOrBuilder>
           getContentFieldBuilder() {
         if (contentBuilder_ == null) {
           contentBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -6095,7 +6080,6 @@ public final class RiakKvPB {
   public interface RpbDelReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbDelReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      */
@@ -7041,11 +7025,9 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         if (!hasKey()) {
-          
           return false;
         }
         return true;
@@ -7560,7 +7542,6 @@ public final class RiakKvPB {
   public interface RpbListBucketsReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbListBucketsReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional uint32 timeout = 1;</code>
      */
@@ -8156,7 +8137,6 @@ public final class RiakKvPB {
   public interface RpbListBucketsRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbListBucketsResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated bytes buckets = 1;</code>
      */
@@ -8711,7 +8691,6 @@ public final class RiakKvPB {
   public interface RpbListKeysReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbListKeysReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      */
@@ -9161,7 +9140,6 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         return true;
@@ -9318,7 +9296,6 @@ public final class RiakKvPB {
   public interface RpbListKeysRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbListKeysResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated bytes keys = 1;</code>
      */
@@ -9873,7 +9850,6 @@ public final class RiakKvPB {
   public interface RpbMapRedReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbMapRedReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes request = 1;</code>
      */
@@ -10265,11 +10241,9 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasRequest()) {
-          
           return false;
         }
         if (!hasContentType()) {
-          
           return false;
         }
         return true;
@@ -10378,7 +10352,6 @@ public final class RiakKvPB {
   public interface RpbMapRedRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbMapRedResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional uint32 phase = 1;</code>
      */
@@ -10946,7 +10919,6 @@ public final class RiakKvPB {
   public interface RpbIndexReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbIndexReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      */
@@ -11335,7 +11307,6 @@ public final class RiakKvPB {
        * <code>range = 1;</code>
        */
       public static final int range_VALUE = 1;
-
 
       public final int getNumber() { return value; }
 
@@ -12154,15 +12125,12 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         if (!hasIndex()) {
-          
           return false;
         }
         if (!hasQtype()) {
-          
           return false;
         }
         return true;
@@ -12823,7 +12791,6 @@ public final class RiakKvPB {
   public interface RpbIndexRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbIndexResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated bytes keys = 1;</code>
      */
@@ -12840,7 +12807,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbPair results = 2;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair> 
+    java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair>
         getResultsList();
     /**
      * <code>repeated .RpbPair results = 2;</code>
@@ -12853,7 +12820,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbPair results = 2;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
         getResultsOrBuilderList();
     /**
      * <code>repeated .RpbPair results = 2;</code>
@@ -13040,7 +13007,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbPair results = 2;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
         getResultsOrBuilderList() {
       return results_;
     }
@@ -13389,7 +13356,7 @@ public final class RiakKvPB {
               resultsBuilder_ = null;
               results_ = other.results_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              resultsBuilder_ = 
+              resultsBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getResultsFieldBuilder() : null;
             } else {
@@ -13410,7 +13377,6 @@ public final class RiakKvPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getResultsCount(); i++) {
           if (!getResults(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -13703,7 +13669,7 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbPair results = 2;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
            getResultsOrBuilderList() {
         if (resultsBuilder_ != null) {
           return resultsBuilder_.getMessageOrBuilderList();
@@ -13729,12 +13695,12 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbPair results = 2;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair.Builder>
            getResultsBuilderList() {
         return getResultsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbPair, com.basho.riak.protobuf.RiakPB.RpbPair.Builder, com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+          com.basho.riak.protobuf.RiakPB.RpbPair, com.basho.riak.protobuf.RiakPB.RpbPair.Builder, com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
           getResultsFieldBuilder() {
         if (resultsBuilder_ == null) {
           resultsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -13829,11 +13795,10 @@ public final class RiakKvPB {
   public interface RpbIndexBodyRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbIndexBodyResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated .RpbIndexObject objects = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbIndexObject> 
+    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbIndexObject>
         getObjectsList();
     /**
      * <code>repeated .RpbIndexObject objects = 1;</code>
@@ -13846,7 +13811,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbIndexObject objects = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder>
         getObjectsOrBuilderList();
     /**
      * <code>repeated .RpbIndexObject objects = 1;</code>
@@ -14000,7 +13965,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbIndexObject objects = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder>
         getObjectsOrBuilderList() {
       return objects_;
     }
@@ -14319,7 +14284,7 @@ public final class RiakKvPB {
               objectsBuilder_ = null;
               objects_ = other.objects_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              objectsBuilder_ = 
+              objectsBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getObjectsFieldBuilder() : null;
             } else {
@@ -14340,7 +14305,6 @@ public final class RiakKvPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getObjectsCount(); i++) {
           if (!getObjects(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -14561,7 +14525,7 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbIndexObject objects = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder>
            getObjectsOrBuilderList() {
         if (objectsBuilder_ != null) {
           return objectsBuilder_.getMessageOrBuilderList();
@@ -14587,12 +14551,12 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbIndexObject objects = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbIndexObject.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbIndexObject.Builder>
            getObjectsBuilderList() {
         return getObjectsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakKvPB.RpbIndexObject, com.basho.riak.protobuf.RiakKvPB.RpbIndexObject.Builder, com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder> 
+          com.basho.riak.protobuf.RiakKvPB.RpbIndexObject, com.basho.riak.protobuf.RiakKvPB.RpbIndexObject.Builder, com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder>
           getObjectsFieldBuilder() {
         if (objectsBuilder_ == null) {
           objectsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -14687,7 +14651,6 @@ public final class RiakKvPB {
   public interface RpbCSBucketReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbCSBucketReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      */
@@ -15483,11 +15446,9 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         if (!hasStartKey()) {
-          
           return false;
         }
         return true;
@@ -15896,11 +15857,10 @@ public final class RiakKvPB {
   public interface RpbCSBucketRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbCSBucketResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated .RpbIndexObject objects = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbIndexObject> 
+    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbIndexObject>
         getObjectsList();
     /**
      * <code>repeated .RpbIndexObject objects = 1;</code>
@@ -15913,7 +15873,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbIndexObject objects = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder>
         getObjectsOrBuilderList();
     /**
      * <code>repeated .RpbIndexObject objects = 1;</code>
@@ -16067,7 +16027,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbIndexObject objects = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder>
         getObjectsOrBuilderList() {
       return objects_;
     }
@@ -16386,7 +16346,7 @@ public final class RiakKvPB {
               objectsBuilder_ = null;
               objects_ = other.objects_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              objectsBuilder_ = 
+              objectsBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getObjectsFieldBuilder() : null;
             } else {
@@ -16407,7 +16367,6 @@ public final class RiakKvPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getObjectsCount(); i++) {
           if (!getObjects(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -16628,7 +16587,7 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbIndexObject objects = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder>
            getObjectsOrBuilderList() {
         if (objectsBuilder_ != null) {
           return objectsBuilder_.getMessageOrBuilderList();
@@ -16654,12 +16613,12 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbIndexObject objects = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbIndexObject.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbIndexObject.Builder>
            getObjectsBuilderList() {
         return getObjectsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakKvPB.RpbIndexObject, com.basho.riak.protobuf.RiakKvPB.RpbIndexObject.Builder, com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder> 
+          com.basho.riak.protobuf.RiakKvPB.RpbIndexObject, com.basho.riak.protobuf.RiakKvPB.RpbIndexObject.Builder, com.basho.riak.protobuf.RiakKvPB.RpbIndexObjectOrBuilder>
           getObjectsFieldBuilder() {
         if (objectsBuilder_ == null) {
           objectsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -16754,7 +16713,6 @@ public final class RiakKvPB {
   public interface RpbIndexObjectOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbIndexObject)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes key = 1;</code>
      */
@@ -17169,15 +17127,12 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasKey()) {
-          
           return false;
         }
         if (!hasObject()) {
-          
           return false;
         }
         if (!getObject().isInitialized()) {
-          
           return false;
         }
         return true;
@@ -17340,7 +17295,7 @@ public final class RiakKvPB {
        * <code>required .RpbGetResp object = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakKvPB.RpbGetResp, com.basho.riak.protobuf.RiakKvPB.RpbGetResp.Builder, com.basho.riak.protobuf.RiakKvPB.RpbGetRespOrBuilder> 
+          com.basho.riak.protobuf.RiakKvPB.RpbGetResp, com.basho.riak.protobuf.RiakKvPB.RpbGetResp.Builder, com.basho.riak.protobuf.RiakKvPB.RpbGetRespOrBuilder>
           getObjectFieldBuilder() {
         if (objectBuilder_ == null) {
           objectBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -17367,7 +17322,6 @@ public final class RiakKvPB {
   public interface RpbContentOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbContent)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes value = 1;</code>
      */
@@ -17428,7 +17382,7 @@ public final class RiakKvPB {
      * links to other resources
      * </pre>
      */
-    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbLink> 
+    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbLink>
         getLinksList();
     /**
      * <code>repeated .RpbLink links = 6;</code>
@@ -17453,7 +17407,7 @@ public final class RiakKvPB {
      * links to other resources
      * </pre>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbLinkOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbLinkOrBuilder>
         getLinksOrBuilderList();
     /**
      * <code>repeated .RpbLink links = 6;</code>
@@ -17490,7 +17444,7 @@ public final class RiakKvPB {
      * user metadata stored with the object
      * </pre>
      */
-    java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair> 
+    java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair>
         getUsermetaList();
     /**
      * <code>repeated .RpbPair usermeta = 9;</code>
@@ -17515,7 +17469,7 @@ public final class RiakKvPB {
      * user metadata stored with the object
      * </pre>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
         getUsermetaOrBuilderList();
     /**
      * <code>repeated .RpbPair usermeta = 9;</code>
@@ -17534,7 +17488,7 @@ public final class RiakKvPB {
      * user metadata stored with the object
      * </pre>
      */
-    java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair> 
+    java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair>
         getIndexesList();
     /**
      * <code>repeated .RpbPair indexes = 10;</code>
@@ -17559,7 +17513,7 @@ public final class RiakKvPB {
      * user metadata stored with the object
      * </pre>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
         getIndexesOrBuilderList();
     /**
      * <code>repeated .RpbPair indexes = 10;</code>
@@ -17852,7 +17806,7 @@ public final class RiakKvPB {
      * links to other resources
      * </pre>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbLinkOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbLinkOrBuilder>
         getLinksOrBuilderList() {
       return links_;
     }
@@ -17937,7 +17891,7 @@ public final class RiakKvPB {
      * user metadata stored with the object
      * </pre>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
         getUsermetaOrBuilderList() {
       return usermeta_;
     }
@@ -17992,7 +17946,7 @@ public final class RiakKvPB {
      * user metadata stored with the object
      * </pre>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
         getIndexesOrBuilderList() {
       return indexes_;
     }
@@ -18466,7 +18420,7 @@ public final class RiakKvPB {
               linksBuilder_ = null;
               links_ = other.links_;
               bitField0_ = (bitField0_ & ~0x00000020);
-              linksBuilder_ = 
+              linksBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getLinksFieldBuilder() : null;
             } else {
@@ -18498,7 +18452,7 @@ public final class RiakKvPB {
               usermetaBuilder_ = null;
               usermeta_ = other.usermeta_;
               bitField0_ = (bitField0_ & ~0x00000100);
-              usermetaBuilder_ = 
+              usermetaBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getUsermetaFieldBuilder() : null;
             } else {
@@ -18524,7 +18478,7 @@ public final class RiakKvPB {
               indexesBuilder_ = null;
               indexes_ = other.indexes_;
               bitField0_ = (bitField0_ & ~0x00000200);
-              indexesBuilder_ = 
+              indexesBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getIndexesFieldBuilder() : null;
             } else {
@@ -18541,18 +18495,15 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasValue()) {
-          
           return false;
         }
         for (int i = 0; i < getUsermetaCount(); i++) {
           if (!getUsermeta(i).isInitialized()) {
-            
             return false;
           }
         }
         for (int i = 0; i < getIndexesCount(); i++) {
           if (!getIndexes(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -19024,7 +18975,7 @@ public final class RiakKvPB {
        * links to other resources
        * </pre>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbLinkOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbLinkOrBuilder>
            getLinksOrBuilderList() {
         if (linksBuilder_ != null) {
           return linksBuilder_.getMessageOrBuilderList();
@@ -19062,12 +19013,12 @@ public final class RiakKvPB {
        * links to other resources
        * </pre>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbLink.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbLink.Builder>
            getLinksBuilderList() {
         return getLinksFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakKvPB.RpbLink, com.basho.riak.protobuf.RiakKvPB.RpbLink.Builder, com.basho.riak.protobuf.RiakKvPB.RpbLinkOrBuilder> 
+          com.basho.riak.protobuf.RiakKvPB.RpbLink, com.basho.riak.protobuf.RiakKvPB.RpbLink.Builder, com.basho.riak.protobuf.RiakKvPB.RpbLinkOrBuilder>
           getLinksFieldBuilder() {
         if (linksBuilder_ == null) {
           linksBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -19400,7 +19351,7 @@ public final class RiakKvPB {
        * user metadata stored with the object
        * </pre>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
            getUsermetaOrBuilderList() {
         if (usermetaBuilder_ != null) {
           return usermetaBuilder_.getMessageOrBuilderList();
@@ -19438,12 +19389,12 @@ public final class RiakKvPB {
        * user metadata stored with the object
        * </pre>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair.Builder>
            getUsermetaBuilderList() {
         return getUsermetaFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbPair, com.basho.riak.protobuf.RiakPB.RpbPair.Builder, com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+          com.basho.riak.protobuf.RiakPB.RpbPair, com.basho.riak.protobuf.RiakPB.RpbPair.Builder, com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
           getUsermetaFieldBuilder() {
         if (usermetaBuilder_ == null) {
           usermetaBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -19712,7 +19663,7 @@ public final class RiakKvPB {
        * user metadata stored with the object
        * </pre>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
            getIndexesOrBuilderList() {
         if (indexesBuilder_ != null) {
           return indexesBuilder_.getMessageOrBuilderList();
@@ -19750,12 +19701,12 @@ public final class RiakKvPB {
        * user metadata stored with the object
        * </pre>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair.Builder>
            getIndexesBuilderList() {
         return getIndexesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbPair, com.basho.riak.protobuf.RiakPB.RpbPair.Builder, com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+          com.basho.riak.protobuf.RiakPB.RpbPair, com.basho.riak.protobuf.RiakPB.RpbPair.Builder, com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
           getIndexesFieldBuilder() {
         if (indexesBuilder_ == null) {
           indexesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -19815,7 +19766,6 @@ public final class RiakKvPB {
   public interface RpbLinkOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbLink)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional bytes bucket = 1;</code>
      */
@@ -20385,7 +20335,6 @@ public final class RiakKvPB {
   public interface RpbCounterUpdateReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbCounterUpdateReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      */
@@ -21011,15 +20960,12 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         if (!hasKey()) {
-          
           return false;
         }
         if (!hasAmount()) {
-          
           return false;
         }
         return true;
@@ -21288,7 +21234,6 @@ public final class RiakKvPB {
   public interface RpbCounterUpdateRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbCounterUpdateResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional sint64 value = 1;</code>
      */
@@ -21693,7 +21638,6 @@ public final class RiakKvPB {
   public interface RpbCounterGetReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbCounterGetReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      */
@@ -22269,11 +22213,9 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         if (!hasKey()) {
-          
           return false;
         }
         return true;
@@ -22510,7 +22452,6 @@ public final class RiakKvPB {
   public interface RpbCounterGetRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbCounterGetResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional sint64 value = 1;</code>
      */
@@ -22915,7 +22856,6 @@ public final class RiakKvPB {
   public interface RpbGetBucketKeyPreflistReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbGetBucketKeyPreflistReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      */
@@ -23353,11 +23293,9 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         if (!hasKey()) {
-          
           return false;
         }
         return true;
@@ -23501,11 +23439,10 @@ public final class RiakKvPB {
   public interface RpbGetBucketKeyPreflistRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbGetBucketKeyPreflistResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated .RpbBucketKeyPreflistItem preflist = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItem> 
+    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItem>
         getPreflistList();
     /**
      * <code>repeated .RpbBucketKeyPreflistItem preflist = 1;</code>
@@ -23518,7 +23455,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbBucketKeyPreflistItem preflist = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItemOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItemOrBuilder>
         getPreflistOrBuilderList();
     /**
      * <code>repeated .RpbBucketKeyPreflistItem preflist = 1;</code>
@@ -23643,7 +23580,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbBucketKeyPreflistItem preflist = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItemOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItemOrBuilder>
         getPreflistOrBuilderList() {
       return preflist_;
     }
@@ -23902,7 +23839,7 @@ public final class RiakKvPB {
               preflistBuilder_ = null;
               preflist_ = other.preflist_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              preflistBuilder_ = 
+              preflistBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getPreflistFieldBuilder() : null;
             } else {
@@ -23917,7 +23854,6 @@ public final class RiakKvPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getPreflistCount(); i++) {
           if (!getPreflist(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -24138,7 +24074,7 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbBucketKeyPreflistItem preflist = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItemOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItemOrBuilder>
            getPreflistOrBuilderList() {
         if (preflistBuilder_ != null) {
           return preflistBuilder_.getMessageOrBuilderList();
@@ -24164,12 +24100,12 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbBucketKeyPreflistItem preflist = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItem.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItem.Builder>
            getPreflistBuilderList() {
         return getPreflistFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItem, com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItem.Builder, com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItemOrBuilder> 
+          com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItem, com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItem.Builder, com.basho.riak.protobuf.RiakKvPB.RpbBucketKeyPreflistItemOrBuilder>
           getPreflistFieldBuilder() {
         if (preflistBuilder_ == null) {
           preflistBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -24197,7 +24133,6 @@ public final class RiakKvPB {
   public interface RpbBucketKeyPreflistItemOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbBucketKeyPreflistItem)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required int64 partition = 1;</code>
      */
@@ -24639,15 +24574,12 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasPartition()) {
-          
           return false;
         }
         if (!hasNode()) {
-          
           return false;
         }
         if (!hasPrimary()) {
-          
           return false;
         }
         return true;
@@ -24785,7 +24717,6 @@ public final class RiakKvPB {
   public interface RpbCoverageReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbCoverageReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional bytes type = 1;</code>
      *
@@ -25413,7 +25344,6 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         return true;
@@ -25737,11 +25667,10 @@ public final class RiakKvPB {
   public interface RpbCoverageRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbCoverageResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated .RpbCoverageEntry entries = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntry> 
+    java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntry>
         getEntriesList();
     /**
      * <code>repeated .RpbCoverageEntry entries = 1;</code>
@@ -25754,7 +25683,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbCoverageEntry entries = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntryOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntryOrBuilder>
         getEntriesOrBuilderList();
     /**
      * <code>repeated .RpbCoverageEntry entries = 1;</code>
@@ -25879,7 +25808,7 @@ public final class RiakKvPB {
     /**
      * <code>repeated .RpbCoverageEntry entries = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntryOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntryOrBuilder>
         getEntriesOrBuilderList() {
       return entries_;
     }
@@ -26138,7 +26067,7 @@ public final class RiakKvPB {
               entriesBuilder_ = null;
               entries_ = other.entries_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              entriesBuilder_ = 
+              entriesBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getEntriesFieldBuilder() : null;
             } else {
@@ -26153,7 +26082,6 @@ public final class RiakKvPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getEntriesCount(); i++) {
           if (!getEntries(i).isInitialized()) {
-            
             return false;
           }
         }
@@ -26374,7 +26302,7 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbCoverageEntry entries = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntryOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntryOrBuilder>
            getEntriesOrBuilderList() {
         if (entriesBuilder_ != null) {
           return entriesBuilder_.getMessageOrBuilderList();
@@ -26400,12 +26328,12 @@ public final class RiakKvPB {
       /**
        * <code>repeated .RpbCoverageEntry entries = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntry.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntry.Builder>
            getEntriesBuilderList() {
         return getEntriesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntry, com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntry.Builder, com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntryOrBuilder> 
+          com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntry, com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntry.Builder, com.basho.riak.protobuf.RiakKvPB.RpbCoverageEntryOrBuilder>
           getEntriesFieldBuilder() {
         if (entriesBuilder_ == null) {
           entriesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -26433,7 +26361,6 @@ public final class RiakKvPB {
   public interface RpbCoverageEntryOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbCoverageEntry)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes ip = 1;</code>
      */
@@ -26953,15 +26880,12 @@ public final class RiakKvPB {
 
       public final boolean isInitialized() {
         if (!hasIp()) {
-          
           return false;
         }
         if (!hasPort()) {
-          
           return false;
         }
         if (!hasCoverContext()) {
-          
           return false;
         }
         return true;

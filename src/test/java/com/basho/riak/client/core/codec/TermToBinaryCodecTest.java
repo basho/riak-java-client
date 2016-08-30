@@ -147,7 +147,6 @@ public class TermToBinaryCodecTest
                             106,
                         106};
 
-
         final List<String> columns = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
         final ArrayList<Row> rows = new ArrayList<>(1);
         rows.add(new Row(new Cell("series"), new Cell("family"), Cell.newTimestamp(12345678),
@@ -244,7 +243,6 @@ public class TermToBinaryCodecTest
     @Test
     public void decodesQueryResultCorrectly() throws OtpErlangDecodeException
     {
-
         /* MSG = {tsqueryresp, DATA}
            DATA = {COLUMN_NAMES, COLUMN_TYPES, ROWS}
            COLUMN_NAMES = [binary, ...]
@@ -304,6 +302,5 @@ public class TermToBinaryCodecTest
         {
             Assert.fail(ex.getMessage());
         }
-
     }
 }

@@ -95,7 +95,6 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
                 {
                     return coreQueryInfo;
                 }
-
             };
         coreFuture.addListener(future);
         return future;
@@ -110,7 +109,6 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
         {
             super(context, datatype, generatedKey);
         }
-
     }
 
     /**
@@ -171,6 +169,5 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
         {
             return this;
         }
-
     }
 }

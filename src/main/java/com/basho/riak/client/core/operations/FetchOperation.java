@@ -116,7 +116,6 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             }
 
             responseBuilder.withUnchanged(response.hasUnchanged() ? response.getUnchanged() : false);
-
         }
 
         return responseBuilder.build();
@@ -157,7 +156,6 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             reqBuilder.setBucket(ByteString.copyFrom(location.getNamespace().getBucketName().unsafeGetValue()));
             reqBuilder.setType(ByteString.copyFrom(location.getNamespace().getBucketType().unsafeGetValue()));
             this.location = location;
-
         }
 
         /**
@@ -298,8 +296,6 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         {
             return new FetchOperation(this);
         }
-
-
     }
 
     protected static abstract class KvResponseBase
@@ -335,7 +331,6 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             }
         }
     }
-
 
     public static class Response extends KvResponseBase
     {

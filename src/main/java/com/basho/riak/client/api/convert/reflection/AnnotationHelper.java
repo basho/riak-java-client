@@ -28,7 +28,6 @@ import com.basho.riak.client.core.util.BinaryValue;
  */
 public class AnnotationHelper
 {
-
     private static final AnnotationHelper INSTANCE = new AnnotationHelper();
     private final AnnotationCache annotationCache = new AnnotationCache();
 

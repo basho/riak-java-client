@@ -53,8 +53,6 @@ public enum ConverterFactory
             put(String.class, new StringConverter());
         }};
 
-
-
     /**
      * Get the instance of the ConverterFactory.
      * @return the ConverterFactory
@@ -114,9 +112,7 @@ public enum ConverterFactory
         }
 
         return converter;
-
     }
-
 
     /**
      * Register a converter for the supplied class.

@@ -49,7 +49,6 @@ public class YzPutIndexOperation extends FutureOperation<Void, Void, YokozunaInd
     {
         RiakYokozunaPB.RpbYokozunaIndexPutReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_YokozunaIndexPutReq, req.toByteArray());
-
     }
 
     @Override

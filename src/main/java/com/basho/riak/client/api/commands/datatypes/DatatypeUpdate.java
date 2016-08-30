@@ -25,5 +25,4 @@ import com.basho.riak.client.core.query.crdt.ops.CrdtOp;
 public interface DatatypeUpdate
 {
     public abstract CrdtOp getOp();
-
 }

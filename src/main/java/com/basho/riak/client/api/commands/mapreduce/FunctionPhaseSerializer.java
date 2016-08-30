@@ -12,7 +12,6 @@ import java.io.IOException;
  */
 class FunctionPhaseSerializer extends JsonSerializer<FunctionPhase>
 {
-
     private void writePhaseFunction(JsonGenerator jg, FunctionPhase phase) throws IOException
     {
         Function function = phase.getFunction();
@@ -52,13 +51,11 @@ class FunctionPhaseSerializer extends JsonSerializer<FunctionPhase>
     @Override
     public void serialize(FunctionPhase phase, JsonGenerator jg, SerializerProvider sp) throws IOException
     {
-
         jg.writeStartObject();
 
         jg.writeFieldName(phase.getType().toString());
         writePhaseFunction(jg, phase);
 
         jg.writeEndObject();
-
     }
 }

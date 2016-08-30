@@ -115,7 +115,6 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
         RiakFutureListener<StoreOperation.Response, Location> listener =
             new RiakFutureListener<StoreOperation.Response, Location>()
             {
-
                 private final AtomicInteger received = new AtomicInteger();
 
                 @Override
@@ -174,6 +173,5 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
             Namespace ns = new Namespace(bucketType, name.toString());
             resetAndEmptyBucket(ns);
         }
-
     }
 }

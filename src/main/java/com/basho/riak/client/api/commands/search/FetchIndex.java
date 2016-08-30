@@ -22,7 +22,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzFetchIndexOperation;
 
-
 /**
  * Command used to fetch a search index from Riak.
  * @author Dave Rusek <drusek at basho dot com>

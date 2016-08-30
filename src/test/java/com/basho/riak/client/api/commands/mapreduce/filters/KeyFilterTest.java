@@ -14,7 +14,6 @@ import static org.junit.Assert.assertEquals;
 
 public class KeyFilterTest
 {
-
     private ObjectWriter writer;
     private StringWriter serialized;
 
@@ -33,7 +32,6 @@ public class KeyFilterTest
 
         writer.writeValue(serialized, filter);
         assertEquals("[\"greater_than\",1]", serialized.toString());
-
     }
 
     @Test
@@ -52,7 +50,6 @@ public class KeyFilterTest
 
         writer.writeValue(serialized, filter);
         assertEquals("[\"greater_than_eq\",1]", serialized.toString());
-
     }
 
     @Test
@@ -142,7 +139,6 @@ public class KeyFilterTest
     @Test
     public void testAnd() throws IOException
     {
-
         LogicalAndFilter filter =
             new LogicalAndFilter(new EmptyFilter(), new EmptyFilter());
 
@@ -153,7 +149,6 @@ public class KeyFilterTest
     @Test
     public void testOr() throws IOException
     {
-
         LogicalOrFilter filter =
             new LogicalOrFilter(new EmptyFilter(), new EmptyFilter());
 
@@ -164,7 +159,6 @@ public class KeyFilterTest
     @Test
     public void testNot() throws IOException
     {
-
         LogicalNotFilter filter =
             new LogicalNotFilter(new EmptyFilter(), new EmptyFilter());
 
@@ -246,12 +240,9 @@ public class KeyFilterTest
 
     private static class EmptyFilter extends KeyFilter
     {
-
         protected EmptyFilter()
         {
             super("empty");
         }
-
     }
-
 }

@@ -53,5 +53,4 @@ public class FetchOpTest
     {
         new FetchOperation.Builder(tableName, new ArrayList<>(0)).build();
     }
-
 }

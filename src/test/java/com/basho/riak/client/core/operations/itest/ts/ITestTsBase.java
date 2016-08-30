@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-
 /**
  * Time Series Operation Integration Tests Base
  *
@@ -65,7 +64,6 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
     protected final static long tenMinsAgo = fiveMinsAgo - fiveMinsInMS;
     protected final static long fifteenMinsAgo = tenMinsAgo - fiveMinsInMS;
     protected final static long fifteenMinsInFuture = now + (fiveMinsInMS * 3L);
-
 
     protected final static List<Row> rows = Arrays.asList(
             // "Normal" Data

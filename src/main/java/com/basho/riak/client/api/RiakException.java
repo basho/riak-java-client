@@ -21,5 +21,4 @@ public class RiakException extends Exception
     {
         super(cause);
     }
-
 }

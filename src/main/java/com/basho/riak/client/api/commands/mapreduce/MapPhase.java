@@ -22,7 +22,6 @@ import com.basho.riak.client.core.query.functions.Function;
  */
 class MapPhase extends FunctionPhase
 {
-
     /**
      * Create a MapPhase
      *
@@ -70,5 +69,4 @@ class MapPhase extends FunctionPhase
     {
         this(phaseFunction, null, keep);
     }
-
 }

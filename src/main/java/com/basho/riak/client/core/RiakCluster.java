@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.core;
 
-
 import com.basho.riak.client.core.util.HostAndPort;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -60,7 +59,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
     private final List<NodeStateListener> stateListeners =
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
 
-
     private volatile ScheduledFuture<?> shutdownFuture;
     private volatile ScheduledFuture<?> retrierFuture;
     private volatile ScheduledFuture<?> queueDrainFuture;
@@ -92,7 +90,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                 .group(new NioEventLoopGroup())
                 .channel(NioSocketChannel.class);
         }
-
 
         if (builder.executor != null)
         {
@@ -219,9 +216,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
             {
                 return shutdownLatch.getCount() <= 0;
             }
-
         };
-
     }
 
     public <V,S> RiakFuture<V,S> execute(FutureOperation<V, ?, S> operation)
@@ -406,7 +401,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         {
             nodeListLock.readLock().unlock();
         }
-
     }
 
     int inFlightCount()
@@ -578,7 +572,6 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
             logger.info("Retrier shutting down.");
         }
-
     }
 
     private class QueueDrainTask implements Runnable
@@ -629,9 +622,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
                 shutdownFuture.cancel(false);
             }
         }
-
     }
-
 
         public static Builder builder(List<RiakNode> nodes)
         {
@@ -794,6 +785,5 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         {
             return new RiakCluster(this);
         }
-
     }
 }

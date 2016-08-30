@@ -127,7 +127,6 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
             reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));
 
             this.location = location;
-
         }
 
         /**
@@ -147,9 +146,7 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
             reqBuilder.setBucket(ByteString.copyFrom(namespace.getBucketName().unsafeGetValue()));
 
             this.location = new Location(namespace, "RIAK_GENERATED");
-
         }
-
 
         public Builder withContent(RiakObject content)
         {
@@ -323,7 +320,6 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
         {
             return new StoreOperation(this);
         }
-
     }
 
     /**
@@ -358,7 +354,6 @@ public class StoreOperation extends FutureOperation<StoreOperation.Response, Ria
                 this.generatedKey = key;
                 return self();
             }
-
         }
 
         static class Builder extends Init<Builder>

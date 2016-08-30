@@ -32,7 +32,6 @@ public class LinkPhaseSerializerTest
         objectMapper.registerModule(specModule);
 
         jg.setCodec(objectMapper);
-
     }
 
     @Test
@@ -44,6 +43,4 @@ public class LinkPhaseSerializerTest
 
         assertEquals("{\"link\":{\"bucket\":\"bucket\",\"tag\":\"tag\"}}", out.toString());
     }
-
-
 }

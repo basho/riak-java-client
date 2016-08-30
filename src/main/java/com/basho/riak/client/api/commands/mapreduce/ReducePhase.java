@@ -22,7 +22,6 @@ import com.basho.riak.client.core.query.functions.Function;
  */
 class ReducePhase extends FunctionPhase
 {
-
     /**
      * Create a Reduce Phase
      *
@@ -66,5 +65,4 @@ class ReducePhase extends FunctionPhase
     {
         this(phaseFunction, null, false);
     }
-
 }

@@ -36,7 +36,6 @@ import java.util.Map;
  */
 public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCommand<S,U>
 {
-
     protected final Namespace namespace;
     protected final BinaryValue key;
     private final Context ctx;
@@ -105,7 +104,6 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
         }
 
         return builder.build();
-
     }
 
     /**
@@ -115,7 +113,6 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
     */
    public static final class Option<T> extends RiakOption<T>
    {
-
        /**
         * Durable Write Quorum.
         * How many replicas to commit to durable storage before returning a successful response.

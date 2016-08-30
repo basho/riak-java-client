@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * Filetr in keys that don't equal the configured argument
  *

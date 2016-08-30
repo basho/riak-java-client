@@ -43,5 +43,4 @@ public class RiakChannelInitializer extends ChannelInitializer<SocketChannel>
         p.addLast(Constants.OPERATION_ENCODER, new RiakOperationEncoder());
         p.addLast(Constants.RESPONSE_HANDLER, new RiakResponseHandler(listener));
     }
-
 }

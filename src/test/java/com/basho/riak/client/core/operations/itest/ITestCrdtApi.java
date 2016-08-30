@@ -36,7 +36,6 @@ import static org.junit.Assert.*;
 
 public class ITestCrdtApi extends ITestAutoCleanupBase
 {
-
     @Test
     public void simpleTest() throws ExecutionException, InterruptedException
     {
@@ -101,7 +100,6 @@ public class ITestCrdtApi extends ITestAutoCleanupBase
         cluster.execute(update);
         update.get();
 
-
         DtFetchOperation fetch = new DtFetchOperation.Builder(location)
             .build();
         cluster.execute(fetch);
@@ -148,7 +146,6 @@ public class ITestCrdtApi extends ITestAutoCleanupBase
         assertNotNull(shoppingCartElement);
         assertEquals(1, shoppingCartElement.size());
         assertTrue(shoppingCartElement.get(0).isSet());
-
     }
 
     @Test
@@ -188,5 +185,4 @@ public class ITestCrdtApi extends ITestAutoCleanupBase
         assertTrue(counterResponse.hasCrdtElement());
         assertEquals(counterBottomValue, counterResponse.getCrdtElement().getAsCounter());
     }
-
 }

@@ -98,7 +98,6 @@ public abstract class Converter<T>
         AnnotationUtil.setLastModified(domainObject, obj.getLastModified());
 
         return domainObject;
-
     }
 
     /**
@@ -229,7 +228,6 @@ public abstract class Converter<T>
         {
             return key;
         }
-
     }
 
     protected class ContentAndType

@@ -40,7 +40,6 @@ public class StoreValueHealthCheck extends HealthCheckDecoder implements HealthC
     private final Location location;
     private final BinaryValue value;
 
-
     public StoreValueHealthCheck(Location location, BinaryValue value)
     {
         this.location = location;
@@ -60,5 +59,4 @@ public class StoreValueHealthCheck extends HealthCheckDecoder implements HealthC
     {
         return new StoreValueHealthCheck(location, value);
     }
-
 }

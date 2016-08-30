@@ -310,7 +310,6 @@ abstract class KvResponseBase
         return convertedValues;
     }
 
-
     protected static abstract class Init<T extends Init<T>>
     {
         private Location location;

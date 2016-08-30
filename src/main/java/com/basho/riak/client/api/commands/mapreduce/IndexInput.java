@@ -96,7 +96,6 @@ public class IndexInput implements MapReduceInput
         {
             return end;
         }
-
     }
 
     /**
@@ -124,6 +123,5 @@ public class IndexInput implements MapReduceInput
         {
             return value;
         }
-
     }
 }

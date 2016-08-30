@@ -66,7 +66,6 @@ import java.util.Map;
  */
 public final class DeleteValue extends RiakCommand<Void, Location>
 {
-
     private final Location location;
     private final Map<Option<?>, Object> options = new HashMap<>();
     private final VClock vClock;
@@ -114,7 +113,6 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 
         for (Map.Entry<Option<?>, Object> optPair : options.entrySet())
         {
-
             Option<?> option = optPair.getKey();
 
             if (option == Option.DW)
@@ -160,7 +158,6 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 
     public final static class Option<T> extends RiakOption<T>
     {
-
         /**
          * Read Write Quorum.
          * Quorum for both operations (get and put) involved in deleting an object
@@ -272,7 +269,6 @@ public final class DeleteValue extends RiakCommand<Void, Location>
         {
             return new DeleteValue(this);
         }
-
     }
 
     @Override

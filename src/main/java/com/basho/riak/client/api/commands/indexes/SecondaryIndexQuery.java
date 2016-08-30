@@ -590,7 +590,6 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
             return !coreResponse.getEntryList().isEmpty();
         }
 
-
         protected final Location getLocationFromCoreEntry(SecondaryIndexQueryOperation.Response.Entry e)
         {
             Location loc = new Location(queryLocation, e.getObjectKey());
@@ -633,8 +632,6 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
             {
                 return converter.convert(indexKey);
             }
-
         }
-
     }
 }

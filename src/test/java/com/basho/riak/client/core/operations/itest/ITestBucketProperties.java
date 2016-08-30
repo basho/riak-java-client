@@ -31,7 +31,6 @@ import org.junit.Test;
  */
 public class ITestBucketProperties extends ITestAutoCleanupBase
 {
-
     @Test
     public void testFetchDefaultBucketProps() throws InterruptedException, ExecutionException
     {
@@ -78,7 +77,6 @@ public class ITestBucketProperties extends ITestAutoCleanupBase
 
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertTrue(props.getAllowMulti());
-
     }
 
     @Test
@@ -101,7 +99,6 @@ public class ITestBucketProperties extends ITestAutoCleanupBase
         props = fetchBucketProps(namespace);
         assertEquals(props.getNVal(), Integer.valueOf(3));
         assertEquals(props.getR(), Quorum.quorumQuorum());
-
     }
 
     @Test
@@ -171,5 +168,4 @@ public class ITestBucketProperties extends ITestAutoCleanupBase
 
         op.get();
     }
-
 }

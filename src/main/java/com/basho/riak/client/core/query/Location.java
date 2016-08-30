@@ -40,7 +40,6 @@ import java.nio.charset.Charset;
  */
 public final class Location
 {
-
     private final Namespace namespace;
     private final BinaryValue key;
 
@@ -183,5 +182,4 @@ public final class Location
     {
         return "{namespace: " + namespace + ", key: " + key + "}";
     }
-
 }

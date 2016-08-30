@@ -242,7 +242,6 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
         {
             return new DtFetchOperation(this);
         }
-
     }
 
     public static class Response
@@ -320,7 +319,6 @@ public class DtFetchOperation extends FutureOperation<DtFetchOperation.Response,
                 return self();
             }
         }
-
 
         private static class Builder extends Init<Builder>
         {

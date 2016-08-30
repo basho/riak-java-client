@@ -33,7 +33,6 @@ import java.util.List;
  */
 public class DefaultResolver<T> implements ConflictResolver<T>
 {
-
     /**
      * Detects conflict but does not resolve it.
      *

@@ -27,7 +27,6 @@ public class ITestSearch extends ISearchTestBase
     private static final String indexName = "search_index_ITestSearch";
     private final String thundercatsQuery = "doc_type_i:1 AND NOT leader_b:true";
 
-
     @BeforeClass
     public static void Setup() throws ExecutionException, InterruptedException
     {

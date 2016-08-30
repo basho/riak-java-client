@@ -26,7 +26,6 @@ import java.lang.reflect.Method;
  */
 public final class ClassUtil
 {
-
     private ClassUtil() {}
 
     /**
@@ -97,5 +96,4 @@ public final class ClassUtil
             throw new IllegalStateException("Unable to set Riak annotated method value", e);
         }
     }
-
 }

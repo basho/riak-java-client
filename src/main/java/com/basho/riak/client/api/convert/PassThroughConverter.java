@@ -20,7 +20,6 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
 
-
 /**
  * For working with {@link RiakObject} rather than domain types.
  *
@@ -46,8 +45,6 @@ public final class PassThroughConverter extends Converter<RiakObject>
         return new Converter.OrmExtracted(domainObject, namespace, key);
     }
 
-
-
     @Override
     public RiakObject toDomain(BinaryValue value, String contentType)
     {
@@ -59,5 +56,4 @@ public final class PassThroughConverter extends Converter<RiakObject>
     {
         throw new UnsupportedOperationException("Not supported");
     }
-
 }

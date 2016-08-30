@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * Filter in keys that start with the provided argument
  *
@@ -21,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class StartsWithFilter extends KeyFilter
 {
-
     private static final String NAME = "starts_with";
     private final String value;
 

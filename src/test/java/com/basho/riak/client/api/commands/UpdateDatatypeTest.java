@@ -61,7 +61,6 @@ public class UpdateDatatypeTest extends MockedResponseOperationTest<DtUpdateOper
     @Test
     public void testStore() throws ExecutionException, InterruptedException
     {
-
         MapUpdate update = new MapUpdate();
 
         UpdateMap store = new UpdateMap.Builder(key, update)

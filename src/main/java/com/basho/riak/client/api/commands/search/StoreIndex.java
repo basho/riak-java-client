@@ -7,7 +7,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzPutIndexOperation;
 import com.basho.riak.client.core.query.search.YokozunaIndex;
 
-
 /**
  * Command used to store a search index in Riak.
  * <p>

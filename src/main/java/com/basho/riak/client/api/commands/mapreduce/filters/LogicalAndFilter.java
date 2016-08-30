@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * Group a bunch of filters together and filter in keys that match all
  *
@@ -21,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class LogicalAndFilter extends LogicalFilter
 {
-
     private static final String NAME = "and";
 
     /**
@@ -31,5 +29,4 @@ public class LogicalAndFilter extends LogicalFilter
     {
         super(NAME, filters);
     }
-
 }

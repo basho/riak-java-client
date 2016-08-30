@@ -61,11 +61,7 @@ public class ConflictResolverFactoryTest
 
         assertTrue(resolver2 instanceof MyResolver);
         assertEquals(resolver, resolver2);
-
     }
-
-
-
 
     public static class Pojo
     {
@@ -77,13 +73,10 @@ public class ConflictResolverFactoryTest
 
     public static class MyResolver implements ConflictResolver<Pojo>
     {
-
         @Override
         public Pojo resolve(List<Pojo> objectList) throws UnresolvedConflictException
         {
             return objectList.get(0);
         }
-
     }
-
 }

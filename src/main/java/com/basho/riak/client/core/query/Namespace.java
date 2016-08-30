@@ -274,5 +274,4 @@ public class Namespace
     {
         return "{type: " + type + ", bucket: " + bucket + "}";
     }
-
 }

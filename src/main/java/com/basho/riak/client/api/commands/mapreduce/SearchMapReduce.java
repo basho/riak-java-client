@@ -17,7 +17,6 @@ public class SearchMapReduce extends MapReduce
      */
     public static class Builder extends MapReduce.Builder<Builder>
     {
-
         private String index;
         private String query;
 
@@ -68,5 +67,4 @@ public class SearchMapReduce extends MapReduce
             return new SearchMapReduce(new SearchInput(index, query), this);
         }
     }
-
 }

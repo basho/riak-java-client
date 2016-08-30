@@ -31,7 +31,6 @@ import com.fasterxml.jackson.databind.Module;
  */
 public class RiakJacksonModule extends Module
 {
-
     private static final String NAME = "RiakJacksonModule";
     private static final Version VERSION = Version.unknownVersion();
 
@@ -56,5 +55,4 @@ public class RiakJacksonModule extends Module
     {
         context.addBeanSerializerModifier(RiakBeanSerializerModifier.getInstance());
     }
-
 }

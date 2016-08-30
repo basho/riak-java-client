@@ -27,11 +27,9 @@ import java.util.List;
  */
 public class RiakOperationEncoder extends MessageToMessageEncoder<FutureOperation>
 {
-
     @Override
     protected void encode(ChannelHandlerContext ctx, FutureOperation operation, List<Object> out) throws Exception
     {
         out.add(operation.channelMessage());
     }
-
 }

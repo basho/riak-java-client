@@ -62,7 +62,6 @@ public class JsonConverterTest
     @Test
     public void testRiakAnnotatedtFieldsExcludedFromJson() throws IOException
     {
-
         PojoWithRiakFields pojo = new PojoWithRiakFields();
         JSONConverter<PojoWithRiakFields> jc = new JSONConverter<>(new TypeReference<PojoWithRiakFields>() {});
 
@@ -84,7 +83,6 @@ public class JsonConverterTest
     @Test
     public void testRiakAnnotatedtFieldsIncludedInJson() throws IOException
     {
-
         PojoWithRiakFieldsIncluded pojo = new PojoWithRiakFieldsIncluded();
         JSONConverter<PojoWithRiakFieldsIncluded> jc =
                 new JSONConverter<>(new TypeReference<PojoWithRiakFieldsIncluded>() {});
@@ -188,7 +186,6 @@ public class JsonConverterTest
         assertEquals(pojo.vclock, convertedPojo.vclock);
         assertEquals(123, convertedPojo.lastModified.longValue());
         assertEquals("vtag", convertedPojo.vtag);
-
     }
 
     @Test
@@ -203,13 +200,11 @@ public class JsonConverterTest
         assertEquals("42", tested.getRiakObject().getValue().toStringUtf8());
     }
 
-
     private boolean fieldExistsInJson(String json, String fieldname) throws IOException
     {
         JsonNode node = mapper.readTree(json);
         return node.has(fieldname);
     }
-
 }
 
 class Pojo
@@ -290,7 +285,6 @@ class PojoWithRiakFieldsIncluded extends Pojo
     @JsonProperty
     @RiakTombstone
     boolean tombstone;
-
 }
 
 class PojoWithRiakMethods extends Pojo
@@ -404,12 +398,10 @@ class PojoWithRiakMethodsExcluded extends PojoWithRiakMethods
     {
         this.tombstone = tombstone;
     }
-
 }
 
 class PojoWithRiakMethodsIncluded extends PojoWithRiakMethods
 {
-
     @JsonProperty
     @RiakKey
     public void setKey(String key)

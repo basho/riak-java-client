@@ -20,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce;
  */
 public abstract class MapReducePhase
 {
-
     /**
      * Possible phase types.
      */

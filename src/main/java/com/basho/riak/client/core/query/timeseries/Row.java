@@ -125,7 +125,6 @@ public class Row implements Iterable<Cell>
             return false;
         }
         return getCellsCopy().equals(cells1.getCellsCopy());
-
     }
 
     @Override

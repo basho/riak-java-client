@@ -6,7 +6,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
 
-
 /**
  * Command used to delete a search index in Riak.
  * @author Dave Rusek <drusek at basho dot com>
@@ -30,7 +29,6 @@ public final class DeleteIndex extends RiakCommand<Void, String>
         CoreFutureAdapter<Void, String, Void, String> future =
             new CoreFutureAdapter<Void, String, Void, String>(coreFuture)
     {
-
         @Override
         protected Void convertResponse(Void coreResponse)
         {
@@ -57,7 +55,6 @@ public final class DeleteIndex extends RiakCommand<Void, String>
      */
     public static class Builder
     {
-
         private final String index;
 
         /**

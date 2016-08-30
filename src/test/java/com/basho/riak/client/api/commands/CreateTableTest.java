@@ -173,7 +173,6 @@ public class CreateTableTest extends OperationTestBase<CreateTableOperation>
         }
     }
 
-
     private static String normString(final String str)
     {
         return str.replace("\n","")

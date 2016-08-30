@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * Filter in keys that equal the configured value
  * @author russell
@@ -21,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class EqualToFilter<T> extends KeyFilter
 {
-
     private final static String NAME = "eq";
     private final T value;
 

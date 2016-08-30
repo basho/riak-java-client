@@ -95,7 +95,6 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
      */
     public static class Builder extends FetchDatatype.Builder<Builder>
     {
-
         /**
          * Construct a Builder for a FetchMap command.
          * @param location the location of the map in Riak.
@@ -119,7 +118,6 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
         {
             return new FetchMap(this);
         }
-
     }
 
     /**
@@ -143,5 +141,4 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response, Lo
             super(datatype, context);
         }
     }
-
 }

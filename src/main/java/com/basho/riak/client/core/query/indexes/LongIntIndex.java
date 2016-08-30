@@ -79,6 +79,5 @@ public class LongIntIndex extends RiakIndex<Long>
         {
             return new LongIntIndex(this);
         }
-
     }
 }

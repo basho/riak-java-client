@@ -38,7 +38,6 @@ public class InputSerializerTest
 
         assertEquals("{\"module\":\"yokozuna\",\"function\":\"mapred_search\",\"arg\":[\"index\",\"query\"]}",
                      out.toString());
-
     }
 
     @Test
@@ -54,7 +53,6 @@ public class InputSerializerTest
     @Test
     public void testBucketInputSerializerWithFilter() throws IOException
     {
-
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "bucket");
         ArrayList<KeyFilter> filters = new ArrayList<>();
         filters.add(new EndsWithFilter("dave"));
@@ -63,7 +61,6 @@ public class InputSerializerTest
         jg.writeObject(input);
 
         assertEquals("{\"bucket\":\"bucket\",\"key_filters\":[[\"ends_with\",\"dave\"]]}", out.toString());
-
     }
 
     @Test
@@ -78,7 +75,6 @@ public class InputSerializerTest
     @Test
     public void testBucketInputSerializerWithTypeAndFilter() throws IOException
     {
-
         Namespace ns = new Namespace("type", "bucket");
         ArrayList<KeyFilter> filters = new ArrayList<>();
         filters.add(new EndsWithFilter("dave"));
@@ -87,9 +83,7 @@ public class InputSerializerTest
         jg.writeObject(input);
 
         assertEquals("{\"bucket\":[\"type\",\"bucket\"],\"key_filters\":[[\"ends_with\",\"dave\"]]}", out.toString());
-
     }
-
 
     @Test
     public void testSerializeBucketKeyInput() throws IOException
@@ -103,8 +97,6 @@ public class InputSerializerTest
         jg.writeObject(input);
 
         assertEquals("[[\"bucket\",\"key\",\"\"],[\"bucket\",\"key\",\"data\"]]", out.toString());
-
-
     }
 
     @Test
@@ -119,8 +111,6 @@ public class InputSerializerTest
         jg.writeObject(input);
 
         assertEquals("[[\"bucket\",\"key\",\"\",\"type\"],[\"bucket\",\"key\",\"data\",\"type\"]]", out.toString());
-
-
     }
 
     @Test
@@ -170,5 +160,4 @@ public class InputSerializerTest
         assertEquals("{\"bucket\":[\"type\",\"bucket\"],\"index\":\"index_int\",\"start\":1,\"end\":2}",
                      out.toString());
     }
-
 }

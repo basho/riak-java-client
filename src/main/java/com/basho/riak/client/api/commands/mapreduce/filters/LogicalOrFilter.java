@@ -20,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class LogicalOrFilter extends LogicalFilter
 {
-
     private static final String NAME = "or";
 
     /**
@@ -30,5 +29,4 @@ public class LogicalOrFilter extends LogicalFilter
     {
         super(NAME, filters);
     }
-
 }

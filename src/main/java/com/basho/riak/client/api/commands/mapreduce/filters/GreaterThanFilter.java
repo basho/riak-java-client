@@ -20,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class GreaterThanFilter<T> extends KeyFilter
 {
-
     private static final String NAME = "greater_than";
     private final T value;
 
@@ -31,8 +30,6 @@ public class GreaterThanFilter<T> extends KeyFilter
     {
         super(NAME);
         this.value = value;
-
-
     }
 
     public T getValue()

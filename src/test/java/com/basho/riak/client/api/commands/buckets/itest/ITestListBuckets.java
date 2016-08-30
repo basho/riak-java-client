@@ -22,7 +22,6 @@ import static org.junit.Assume.assumeTrue;
  */
 public class ITestListBuckets extends ITestAutoCleanupBase
 {
-
     private final RiakClient client = new RiakClient(cluster);
 
     @Test

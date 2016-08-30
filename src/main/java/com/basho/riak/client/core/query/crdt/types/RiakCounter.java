@@ -59,7 +59,6 @@ public class RiakCounter extends RiakDatatype
         RiakCounter that = (RiakCounter) o;
 
         return value == that.value;
-
     }
 
     @Override

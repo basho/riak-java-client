@@ -47,7 +47,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class RiakNodeFixtureTest extends FixtureTest
 {
-
     @Test
     public void closedConnectionsTriggerHealthCheck() throws InterruptedException, Exception
     {
@@ -60,8 +59,6 @@ public class RiakNodeFixtureTest extends FixtureTest
         node.addStateListener(listener);
         assertTrue(listener.get(10));
         node.shutdown().get();
-
-
     }
 
     @Test
@@ -146,7 +143,6 @@ public class RiakNodeFixtureTest extends FixtureTest
         assertEquals(available.size(), 10);
 
         node.shutdown().get();
-
     }
 
     @Test
@@ -198,7 +194,6 @@ public class RiakNodeFixtureTest extends FixtureTest
             node.removeStateListener(listener);
             listener = new StateListener(RiakNode.State.RUNNING);
             node.addStateListener(listener);
-
         }
         finally
         {
@@ -289,14 +284,12 @@ public class RiakNodeFixtureTest extends FixtureTest
         }
 
         node.shutdown().get();
-
     }
 
     public static class StateListener implements NodeStateListener
     {
         private final CountDownLatch latch = new CountDownLatch(1);
         private final EnumSet<RiakNode.State> expected;
-
 
         public StateListener(RiakNode.State... expected)
         {
@@ -317,7 +310,5 @@ public class RiakNodeFixtureTest extends FixtureTest
         {
             return latch.await(timeout, TimeUnit.SECONDS);
         }
-
     }
-
 }

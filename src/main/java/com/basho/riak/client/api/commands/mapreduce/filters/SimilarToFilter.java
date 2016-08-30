@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * Filter in keys that are within a specified Levenshtein edit distance of the provided string
  *

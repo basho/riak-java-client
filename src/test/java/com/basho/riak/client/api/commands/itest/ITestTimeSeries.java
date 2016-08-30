@@ -71,7 +71,6 @@ public class ITestTimeSeries extends ITestTsBase
         resultFuture.await();
         assertFutureSuccess(resultFuture);
 
-
         final Namespace namespace = new Namespace(tableName, tableName);
         StoreBucketProperties storeBucketPropsCmd = new StoreBucketProperties.Builder(namespace).withNVal(1).build();
         final RiakFuture<Void, Namespace> storeBucketPropsFuture = client.executeAsync(storeBucketPropsCmd);

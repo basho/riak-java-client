@@ -39,7 +39,6 @@ import java.util.LinkedList;
  */
 public class AnnotationScanner implements Callable<AnnotationInfo>
 {
-
     @SuppressWarnings("rawtypes")
     private final Class classToScan;
 
@@ -52,7 +51,6 @@ public class AnnotationScanner implements Callable<AnnotationInfo>
     @Override
     public AnnotationInfo call() throws Exception
     {
-
         AnnotationInfo.Builder builder = new AnnotationInfo.Builder();
 
         // This allows us to start at the top and walk down so that
@@ -67,12 +65,10 @@ public class AnnotationScanner implements Callable<AnnotationInfo>
 
         for (Class c : classList)
         {
-
             final Field[] fields = c.getDeclaredFields();
 
             for (Field field : fields)
             {
-
                 if (field.isAnnotationPresent(RiakKey.class))
                 {
                     builder.withRiakKeyField(field);
@@ -122,7 +118,6 @@ public class AnnotationScanner implements Callable<AnnotationInfo>
             final Method[] methods = c.getDeclaredMethods();
             for (Method method : methods)
             {
-
                 if (method.isAnnotationPresent(RiakKey.class))
                 {
                     if (isSetter(method))

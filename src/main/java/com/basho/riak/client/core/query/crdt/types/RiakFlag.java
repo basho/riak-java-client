@@ -70,7 +70,6 @@ public class RiakFlag extends RiakDatatype
         RiakFlag riakFlag = (RiakFlag) o;
 
         return enabled == riakFlag.enabled;
-
     }
 
     @Override

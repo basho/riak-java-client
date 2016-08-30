@@ -34,5 +34,4 @@ public class RiakResponseException extends Exception
     {
         return code;
     }
-
 }

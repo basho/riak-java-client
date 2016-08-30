@@ -84,7 +84,6 @@ public class ColumnDescription
             return false;
         }
         return type == that.type;
-
     }
 
     @Override

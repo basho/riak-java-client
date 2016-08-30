@@ -24,7 +24,6 @@ import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.functions.Function;
 
-
 /**
  * Command used to store (modify) the properties of a bucket in Riak.
  * <p>
@@ -42,7 +41,6 @@ import com.basho.riak.client.core.query.functions.Function;
  */
 public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
 {
-
     private final Namespace namespace;
     private final Boolean allowMulti;
     private final String backend;
@@ -69,7 +67,6 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
 
     StoreBucketProperties(Builder builder)
     {
-
         this.namespace = builder.namespace;
         this.allowMulti = builder.allowMulti;
         this.backend = builder.backend;
@@ -93,7 +90,6 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
         this.nval = builder.nval;
         this.legacySearch = builder.legacySearch;
         this.searchIndex = builder.searchIndex;
-
     }
 
     @Override
@@ -120,7 +116,6 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
         coreFuture.addListener(future);
         return future;
     }
-
 
     private StoreBucketPropsOperation buildCoreOperation()
     {
@@ -242,7 +237,6 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
 
     public static class Builder
     {
-
         private final Namespace namespace;
         private Boolean allowMulti;
         private String backend;
@@ -266,7 +260,6 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
         private Integer nval;
         private Boolean legacySearch;
         private String searchIndex;
-
 
         public Builder(Namespace namespace)
         {
@@ -588,6 +581,5 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
         {
             return new StoreBucketProperties(this);
         }
-
     }
 }

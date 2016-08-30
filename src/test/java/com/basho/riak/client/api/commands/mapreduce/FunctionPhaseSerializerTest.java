@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 
 public class FunctionPhaseSerializerTest
 {
-
     private StringWriter out;
     private JsonGenerator jg;
 
@@ -39,20 +38,17 @@ public class FunctionPhaseSerializerTest
         objectMapper.registerModule(specModule);
 
         jg.setCodec(objectMapper);
-
     }
 
     @Test
     public void testSerializeMapPhase() throws IOException
     {
-
         Function function = Function.newNamedJsFunction("the_func");
         MapPhase phase = new MapPhase(function, "Arg", true);
 
         jg.writeObject(phase);
 
         assertEquals("{\"map\":{\"language\":\"javascript\",\"name\":\"the_func\",\"keep\":true,\"arg\":\"Arg\"}}", out.toString());
-
     }
 
     @Test
@@ -65,5 +61,4 @@ public class FunctionPhaseSerializerTest
 
         assertEquals("{\"reduce\":{\"language\":\"javascript\",\"name\":\"the_func\",\"keep\":true,\"arg\":\"Arg\"}}", out.toString());
     }
-
 }

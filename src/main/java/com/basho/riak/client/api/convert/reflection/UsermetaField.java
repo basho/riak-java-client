@@ -28,7 +28,6 @@ import java.util.Map;
  */
 public class UsermetaField
 {
-
     public enum FieldType
     {
         STRING,
@@ -54,7 +53,6 @@ public class UsermetaField
         {
             throw new IllegalArgumentException("@RiakUsermeta annotated String must include key: " + field);
         }
-
     }
 
     /**
@@ -98,7 +96,6 @@ public class UsermetaField
                         return FieldType.MAP;
                     }
                 }
-
             }
             else
             {
@@ -112,7 +109,5 @@ public class UsermetaField
                                             f);
         }
         throw new IllegalArgumentException("Field can not be null.");
-
     }
-
 }

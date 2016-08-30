@@ -21,7 +21,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 
-
 /**
  * Annotates a field or getter/setter method pair in a class to serve as the content-type.
  * <p>
@@ -61,5 +60,4 @@ import java.lang.annotation.ElementType;
  */
 @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakContentType
 {
-
 }

@@ -27,7 +27,6 @@ import java.util.Set;
  */
 public class RiakIndexField
 {
-
     public enum FieldType { LONG, SET_LONG, STRING, SET_STRING, RAW, SET_RAW, BIG_INT, SET_BIG_INT }
 
     private final Field field;
@@ -79,7 +78,6 @@ public class RiakIndexField
 
     private FieldType validateAndGetType(Field f)
     {
-
         if (f != null)
         {
             Type t = f.getGenericType();

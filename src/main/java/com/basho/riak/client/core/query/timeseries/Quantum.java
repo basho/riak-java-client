@@ -17,7 +17,6 @@ package com.basho.riak.client.core.query.timeseries;
 
 import java.util.concurrent.TimeUnit;
 
-
 /**
  * Holds the Quantum information for a Riak TimeSeries row.
  * Used in conjunction with {@link FullColumnDescription} when receiving data

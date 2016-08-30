@@ -45,7 +45,5 @@ public class BucketInputSerializer extends JsonSerializer<BucketInput>
         {
             jg.writeString(input.getNamespace().getBucketNameAsString());
         }
-
-
     }
 }

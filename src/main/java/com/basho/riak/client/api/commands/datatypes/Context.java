@@ -28,7 +28,6 @@ import com.basho.riak.client.core.util.BinaryValue;
   */
 public class Context
 {
-
     private final BinaryValue value;
 
     /**

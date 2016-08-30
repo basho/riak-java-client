@@ -206,7 +206,6 @@ public class TermToBinaryCodec
 
         throw new InvalidTermToBinaryException("Invalid Response atom encountered: " +
                                                        responseAtom + ". Was expecting tsqueryresp");
-
     }
 
     private static QueryResult parseTupleResult(OtpInputStream is)
@@ -258,7 +257,6 @@ public class TermToBinaryCodec
         {
             is.read_nil();
         }
-
 
         final int colTypeCount = is.read_list_head();
         assert (colNameCount == colTypeCount);

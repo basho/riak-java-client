@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * Transform the key from a string to a float
  *
@@ -21,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class StringToFloatFilter extends KeyFilter
 {
-
     private static final String NAME = "string_to_float";
 
     public StringToFloatFilter()

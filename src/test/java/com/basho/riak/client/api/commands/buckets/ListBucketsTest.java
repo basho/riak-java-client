@@ -32,7 +32,6 @@ import static org.mockito.Mockito.when;
  */
 public class ListBucketsTest
 {
-
     @Mock RiakCluster mockCluster;
     @Mock RiakFuture mockFuture;
     @Mock ListBucketsOperation.Response mockResponse;
@@ -56,7 +55,6 @@ public class ListBucketsTest
 
     private void testListBuckets(String bucketType) throws Exception
     {
-
         final BinaryValue type = BinaryValue.createFromUtf8(bucketType);
         ListBuckets.Builder list = new ListBuckets.Builder(type);
         client.execute(list.build());

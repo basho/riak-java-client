@@ -94,7 +94,6 @@ public class RiakSet extends RiakDatatype
         RiakSet riakSet = (RiakSet) o;
 
         return elements != null ? elements.equals(riakSet.elements) : riakSet.elements == null;
-
     }
 
     @Override

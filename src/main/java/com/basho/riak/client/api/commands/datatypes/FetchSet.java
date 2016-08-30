@@ -94,7 +94,6 @@ public final class FetchSet extends FetchDatatype<RiakSet, FetchSet.Response, Lo
      */
     public static class Builder extends FetchDatatype.Builder<Builder>
     {
-
         /**
          * Construct a builder for a FetchSet command.
          * @param location the location of the set in Riak.

@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * Filter in keys that match the <code>tokenNum</code> token of the key when tokenized by <code>separator</code>
  *
@@ -21,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class TokenizeFilter extends KeyFilter implements KeyTransformFilter
 {
-
     private static final String NAME = "tokenize";
     private final String separator;
     private final int tokens;
@@ -46,5 +44,4 @@ public class TokenizeFilter extends KeyFilter implements KeyTransformFilter
     {
         return tokens;
     }
-
 }

@@ -45,7 +45,6 @@ public class FullColumnDescription extends ColumnDescription
         this(name, type, isNullable, keyOrdinal, keyOrdinal);
     }
 
-
     /**
      * Creates a FullColumnDescription. Useful for key columns where the partition and local key oridinals are the same.
      * @param name The name of the column. Required - must not be null or an empty string.
@@ -92,7 +91,6 @@ public class FullColumnDescription extends ColumnDescription
                                  Integer localKeyOrdinal)
     {
         this(name, type, isNullable, partitionKeyOrdinal, localKeyOrdinal, null);
-
     }
 
     /**
@@ -129,7 +127,6 @@ public class FullColumnDescription extends ColumnDescription
         this.localKeyOrdinal = localKeyOrdinal;
         validateQuantumUsage(type, partitionKeyOrdinal, quantum);
         this.quantum = quantum;
-
     }
 
     private void validateQuantumUsage(ColumnType type, Integer partitionKeyOrdinal, Quantum quantum)

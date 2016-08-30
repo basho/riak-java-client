@@ -191,7 +191,6 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         return query;
     }
 
-
     /**
      * Builder that constructs a QueryOperation.
      */
@@ -742,7 +741,5 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
                 return new Response(this);
             }
         }
-
     }
-
 }

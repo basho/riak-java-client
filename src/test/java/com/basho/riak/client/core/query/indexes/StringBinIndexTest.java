@@ -43,6 +43,5 @@ public class StringBinIndexTest
 
         Set<String> stringSet2 = index.values();
         assertTrue(stringSet.containsAll(stringSet2));
-
     }
 }

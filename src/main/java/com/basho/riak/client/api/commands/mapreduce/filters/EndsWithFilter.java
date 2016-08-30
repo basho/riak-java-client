@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * A filter that matches keys whose name ends with the configured String argument
  * @author russell
@@ -21,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class EndsWithFilter extends KeyFilter
 {
-
     private static final String NAME = "ends_with";
     private final String pattern;
 

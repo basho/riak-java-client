@@ -52,7 +52,6 @@ import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
 public class StoreValueTest
 {
     @Mock
@@ -88,7 +87,6 @@ public class StoreValueTest
     @Ignore
     public void testStore() throws ExecutionException, InterruptedException
     {
-
         StoreValue storeValue = filledStoreValue(riakObject);
         client.execute(storeValue);
 
@@ -111,7 +109,6 @@ public class StoreValueTest
         assertEquals(true, builder.getSloppyQuorum());
         assertEquals(1000, builder.getTimeout());
         assertEquals(1, builder.getW());
-
     }
 
     @Test
@@ -119,7 +116,6 @@ public class StoreValueTest
     {
         final RiakObject riakObject1 = RiakObjectTest.CreateFilledObject();
         final RiakObject riakObject2 = RiakObjectTest.CreateFilledObject();
-
 
         final StoreValue value1 = filledStoreValue(riakObject1);
         final StoreValue value2 = filledStoreValue(riakObject2);

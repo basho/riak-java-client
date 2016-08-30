@@ -167,7 +167,6 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
         assertEquals(100, bqResp.getEntries().size());
     }
 
-
     public static class IndexedPojo
     {
         @RiakKey

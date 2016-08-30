@@ -95,7 +95,6 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
         }
     }
 
-
     private void initValuesOneToN(String bucketType) throws InterruptedException
     {
         String keyPrefix = "mr_test_";
@@ -136,7 +135,6 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
         assertEquals(200, response.getResultsFromAllPhases().size());
 
         resetAndEmptyBucket(ns);
-
     }
 
     @Test
@@ -188,8 +186,6 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
         assertEquals(20, response.getResultsFromAllPhases().size());
 
         resetAndEmptyBucket(ns);
-
-
     }
 
     @Test
@@ -216,8 +212,6 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
         assertEquals(20, response.getResultsFromAllPhases().size());
 
         resetAndEmptyBucket(ns);
-
-
     }
 
     @Test

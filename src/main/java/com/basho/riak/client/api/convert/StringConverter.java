@@ -33,7 +33,6 @@ import com.basho.riak.client.core.util.BinaryValue;
  */
 public class StringConverter extends Converter<String>
 {
-
     public StringConverter()
     {
         super(String.class);
@@ -65,7 +64,4 @@ public class StringConverter extends Converter<String>
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
-
-
 }

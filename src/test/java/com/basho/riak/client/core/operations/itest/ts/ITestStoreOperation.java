@@ -40,5 +40,4 @@ public class ITestStoreOperation extends ITestTsBase
         future.get();
         assertTrue(future.isSuccess());
     }
-
 }

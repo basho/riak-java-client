@@ -306,5 +306,4 @@ public class AnnotationUtil
     {
         return AnnotationHelper.getInstance().setRiakLastModified(domainObject, lastModified);
     }
-
 }

@@ -93,7 +93,6 @@ public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.
      */
     public static class Builder extends FetchDatatype.Builder<Builder>
     {
-
         /**
          * Construct a builder for a FetchCounter command.
          * @param location the location of the counter in Riak.

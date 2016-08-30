@@ -37,5 +37,4 @@ public class SearchInput implements MapReduceInput
     {
         return search;
     }
-
 }

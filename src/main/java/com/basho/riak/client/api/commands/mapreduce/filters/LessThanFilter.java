@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * Filter in keys that are less than the configured value
  *
@@ -21,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class LessThanFilter<T> extends KeyFilter
 {
-
     private static final String NAME = "less_than";
 
     private final T value;

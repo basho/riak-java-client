@@ -77,7 +77,6 @@ public class RiakRegister extends RiakDatatype
         RiakRegister that = (RiakRegister) o;
 
         return value != null ? value.equals(that.value) : that.value == null;
-
     }
 
     @Override

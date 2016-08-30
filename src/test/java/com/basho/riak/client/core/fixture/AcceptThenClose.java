@@ -25,7 +25,6 @@ import java.nio.channels.ServerSocketChannel;
  */
 public class AcceptThenClose extends Acceptor
 {
-
     public AcceptThenClose(ServerSocketChannel server)
     {
         super(server);
@@ -43,7 +42,4 @@ public class AcceptThenClose extends Acceptor
     {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
-
-
 }

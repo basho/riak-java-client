@@ -11,7 +11,6 @@ public final class RiakYokozunaPB {
   public interface RpbYokozunaIndexOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbYokozunaIndex)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes name = 1;</code>
      *
@@ -485,7 +484,7 @@ public final class RiakYokozunaPB {
 
       public final boolean isInitialized() {
         if (!hasName()) {
-          
+
           return false;
         }
         return true;
@@ -674,7 +673,6 @@ public final class RiakYokozunaPB {
   public interface RpbYokozunaIndexGetReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbYokozunaIndexGetReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional bytes name = 1;</code>
      *
@@ -1114,11 +1112,10 @@ public final class RiakYokozunaPB {
   public interface RpbYokozunaIndexGetRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbYokozunaIndexGetResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated .RpbYokozunaIndex index = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndex> 
+    java.util.List<com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndex>
         getIndexList();
     /**
      * <code>repeated .RpbYokozunaIndex index = 1;</code>
@@ -1131,7 +1128,7 @@ public final class RiakYokozunaPB {
     /**
      * <code>repeated .RpbYokozunaIndex index = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndexOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndexOrBuilder>
         getIndexOrBuilderList();
     /**
      * <code>repeated .RpbYokozunaIndex index = 1;</code>
@@ -1252,7 +1249,7 @@ public final class RiakYokozunaPB {
     /**
      * <code>repeated .RpbYokozunaIndex index = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndexOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndexOrBuilder>
         getIndexOrBuilderList() {
       return index_;
     }
@@ -1507,7 +1504,7 @@ public final class RiakYokozunaPB {
               indexBuilder_ = null;
               index_ = other.index_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              indexBuilder_ = 
+              indexBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getIndexFieldBuilder() : null;
             } else {
@@ -1522,7 +1519,7 @@ public final class RiakYokozunaPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getIndexCount(); i++) {
           if (!getIndex(i).isInitialized()) {
-            
+
             return false;
           }
         }
@@ -1743,7 +1740,7 @@ public final class RiakYokozunaPB {
       /**
        * <code>repeated .RpbYokozunaIndex index = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndexOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndexOrBuilder>
            getIndexOrBuilderList() {
         if (indexBuilder_ != null) {
           return indexBuilder_.getMessageOrBuilderList();
@@ -1769,12 +1766,12 @@ public final class RiakYokozunaPB {
       /**
        * <code>repeated .RpbYokozunaIndex index = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndex.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndex.Builder>
            getIndexBuilderList() {
         return getIndexFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndex, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndex.Builder, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndexOrBuilder> 
+          com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndex, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndex.Builder, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndexOrBuilder>
           getIndexFieldBuilder() {
         if (indexBuilder_ == null) {
           indexBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -1802,7 +1799,6 @@ public final class RiakYokozunaPB {
   public interface RpbYokozunaIndexPutReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbYokozunaIndexPutReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required .RpbYokozunaIndex index = 1;</code>
      */
@@ -2237,11 +2233,11 @@ public final class RiakYokozunaPB {
 
       public final boolean isInitialized() {
         if (!hasIndex()) {
-          
+
           return false;
         }
         if (!getIndex().isInitialized()) {
-          
+
           return false;
         }
         return true;
@@ -2369,7 +2365,7 @@ public final class RiakYokozunaPB {
        * <code>required .RpbYokozunaIndex index = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndex, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndex.Builder, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndexOrBuilder> 
+          com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndex, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndex.Builder, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaIndexOrBuilder>
           getIndexFieldBuilder() {
         if (indexBuilder_ == null) {
           indexBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -2444,7 +2440,6 @@ public final class RiakYokozunaPB {
   public interface RpbYokozunaIndexDeleteReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbYokozunaIndexDeleteReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes name = 1;</code>
      *
@@ -2802,7 +2797,7 @@ public final class RiakYokozunaPB {
 
       public final boolean isInitialized() {
         if (!hasName()) {
-          
+
           return false;
         }
         return true;
@@ -2892,7 +2887,6 @@ public final class RiakYokozunaPB {
   public interface RpbYokozunaSchemaOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbYokozunaSchema)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes name = 1;</code>
      *
@@ -3304,7 +3298,7 @@ public final class RiakYokozunaPB {
 
       public final boolean isInitialized() {
         if (!hasName()) {
-          
+
           return false;
         }
         return true;
@@ -3445,7 +3439,6 @@ public final class RiakYokozunaPB {
   public interface RpbYokozunaSchemaPutReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbYokozunaSchemaPutReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required .RpbYokozunaSchema schema = 1;</code>
      */
@@ -3818,11 +3811,11 @@ public final class RiakYokozunaPB {
 
       public final boolean isInitialized() {
         if (!hasSchema()) {
-          
+
           return false;
         }
         if (!getSchema().isInitialized()) {
-          
+
           return false;
         }
         return true;
@@ -3950,7 +3943,7 @@ public final class RiakYokozunaPB {
        * <code>required .RpbYokozunaSchema schema = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaSchema, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaSchema.Builder, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaSchemaOrBuilder> 
+          com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaSchema, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaSchema.Builder, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaSchemaOrBuilder>
           getSchemaFieldBuilder() {
         if (schemaBuilder_ == null) {
           schemaBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -3977,7 +3970,6 @@ public final class RiakYokozunaPB {
   public interface RpbYokozunaSchemaGetReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbYokozunaSchemaGetReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes name = 1;</code>
      *
@@ -4335,7 +4327,7 @@ public final class RiakYokozunaPB {
 
       public final boolean isInitialized() {
         if (!hasName()) {
-          
+
           return false;
         }
         return true;
@@ -4425,7 +4417,6 @@ public final class RiakYokozunaPB {
   public interface RpbYokozunaSchemaGetRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbYokozunaSchemaGetResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required .RpbYokozunaSchema schema = 1;</code>
      */
@@ -4790,11 +4781,11 @@ public final class RiakYokozunaPB {
 
       public final boolean isInitialized() {
         if (!hasSchema()) {
-          
+
           return false;
         }
         if (!getSchema().isInitialized()) {
-          
+
           return false;
         }
         return true;
@@ -4922,7 +4913,7 @@ public final class RiakYokozunaPB {
        * <code>required .RpbYokozunaSchema schema = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaSchema, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaSchema.Builder, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaSchemaOrBuilder> 
+          com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaSchema, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaSchema.Builder, com.basho.riak.protobuf.RiakYokozunaPB.RpbYokozunaSchemaOrBuilder>
           getSchemaFieldBuilder() {
         if (schemaBuilder_ == null) {
           schemaBuilder_ = new com.google.protobuf.SingleFieldBuilder<

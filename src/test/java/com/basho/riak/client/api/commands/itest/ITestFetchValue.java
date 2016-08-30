@@ -83,7 +83,6 @@ public class ITestFetchValue extends ITestAutoCleanupBase
 
             StoreValue.Response resp = client.execute(sv);
 
-
             FetchValue fv = new FetchValue.Builder(loc).build();
             FetchValue.Response fResp = client.execute(fv);
 
@@ -101,7 +100,6 @@ public class ITestFetchValue extends ITestAutoCleanupBase
         {
             Logger.getLogger(ITestFetchValue.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
     @Test
@@ -145,7 +143,6 @@ public class ITestFetchValue extends ITestAutoCleanupBase
         cluster.execute(op);
         op.get();
 
-
         Location loc = new Location(ns, "test_fetch_key3");
 
         Pojo pojo = new Pojo();
@@ -166,7 +163,6 @@ public class ITestFetchValue extends ITestAutoCleanupBase
         FetchValue.Response fResp = client.execute(fv);
 
         assertEquals(2, fResp.getValues(RiakObject.class).size());
-
     }
 
     @Test
@@ -334,7 +330,6 @@ public class ITestFetchValue extends ITestAutoCleanupBase
 
         @RiakVClock
         VClock vclock;
-
     }
 
     public static class MyResolver implements ConflictResolver<Pojo>
@@ -356,6 +351,5 @@ public class ITestFetchValue extends ITestAutoCleanupBase
             }
             return null;
         }
-
     }
 }

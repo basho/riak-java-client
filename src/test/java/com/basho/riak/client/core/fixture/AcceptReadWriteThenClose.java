@@ -49,5 +49,4 @@ public class AcceptReadWriteThenClose extends Acceptor
         ((WritableByteChannel)key.channel()).write(bb);
         return true;
     }
-
 }

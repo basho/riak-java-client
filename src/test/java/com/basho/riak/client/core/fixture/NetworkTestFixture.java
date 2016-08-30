@@ -170,7 +170,6 @@ public class NetworkTestFixture implements Runnable
                                     key.cancel();
                                 }
                             }
-
                         }
                     }
                     catch (IOException | InterruptedException ex)

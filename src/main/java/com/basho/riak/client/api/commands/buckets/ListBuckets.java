@@ -110,7 +110,6 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
      */
     public static class Response implements Iterable<Namespace>
     {
-
         private final BinaryValue type;
         private final List<BinaryValue> buckets;
 
@@ -208,5 +207,4 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
             return new ListBuckets(this);
         }
     }
-
 }

@@ -190,9 +190,7 @@ public class BucketPropertiesConverter
         }
 
         return propsBuilder.build();
-
     }
-
 
     private static List<Function> parseHooks(List<RiakPB.RpbCommitHook> hooks)
     {

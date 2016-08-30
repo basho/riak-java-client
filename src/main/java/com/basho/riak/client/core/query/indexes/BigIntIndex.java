@@ -71,7 +71,5 @@ public class BigIntIndex extends RiakIndex<BigInteger>
         {
             return new BigIntIndex(this);
         }
-
     }
-
 }

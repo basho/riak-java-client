@@ -101,12 +101,8 @@ abstract class Acceptor
             readBuffer.position(readBuffer.limit());
             readBuffer.limit(readBuffer.capacity());
         }
-
-
-
     }
 
     abstract Acceptor duplicate();
     abstract boolean writePb(SelectionKey key) throws IOException;
-
 }

@@ -20,21 +20,16 @@ import org.junit.Test;
 
 public class IndexTest
 {
-
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidIndexName()
     {
-
         IndexType.typeFromFullname("notavaildname");
-
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidIndexTypeExtension()
     {
-
         IndexType.typeFromFullname("notavalidname_notavalidextension");
-
     }
 
     @Test
@@ -60,6 +55,5 @@ public class IndexTest
 
         IndexType indexType3 = IndexType.typeFromFullname(IndexNames.KEY);
         Assert.assertTrue(indexType3.equals(IndexType.KEY));
-
     }
 }

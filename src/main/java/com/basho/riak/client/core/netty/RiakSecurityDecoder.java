@@ -162,7 +162,6 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception
     {
-
         logger.debug("Handler Added");
         if (ctx.channel().isActive())
         {
@@ -183,7 +182,6 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
 
         promise.tryFailure(new IOException("Channel closed during auth"));
         ctx.fireChannelInactive();
-
     }
 
     @Override
@@ -225,7 +223,6 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                     .build();
                 c.writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_AuthReq,
                                 authReq.toByteArray()));
-
             }
             else
             {
@@ -234,7 +231,4 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
             }
         }
     }
-
-
-
 }

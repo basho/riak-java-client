@@ -36,11 +36,9 @@ import static org.junit.Assert.assertTrue;
 
 public class StoreOperationTest
 {
-
     @Test
     public void testStoreOperationCreateChannelMessage() throws InvalidProtocolBufferException
     {
-
         byte[] expectedValue = new byte[]{'O', '_', 'o'};
 
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "bucket");
@@ -69,7 +67,5 @@ public class StoreOperationTest
         assertTrue(rm.getCode() == RiakMessageCodes.MSG_PutReq);
         RiakKvPB.RpbPutReq req = RiakKvPB.RpbPutReq.parseFrom(rm.getData());
         assertTrue(Arrays.equals(req.getContent().getValue().toByteArray(), expectedValue));
-
     }
-
 }

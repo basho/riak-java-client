@@ -86,7 +86,6 @@ public class ITestFetchOperation extends ITestBase
         FetchOperation.Response response = fetchOp.get();
         assertTrue(response.isNotFound());
         assertTrue(response.getObjectList().isEmpty());
-
     }
 
     @Test
@@ -129,7 +128,6 @@ public class ITestFetchOperation extends ITestBase
         RiakObject ro = objectList.get(0);
         assertFalse(ro.isDeleted());
         assertEquals(ro.getValue().toString(), value);
-
     }
 
     @Test
@@ -160,7 +158,6 @@ public class ITestFetchOperation extends ITestBase
         cluster.execute(storeOp);
         storeOp.get();
         assertTrue(storeOp.isSuccess());
-
 
         final StoreOperation storeOp2 = new StoreOperation.Builder(location).withContent(rObj).build();
 
@@ -199,5 +196,4 @@ public class ITestFetchOperation extends ITestBase
         final String key = testName.getMethodName() + keySeed;
         return BinaryValue.unsafeCreate(key.getBytes());
     }
-
 }

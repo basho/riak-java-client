@@ -58,8 +58,6 @@ public class RiakMessageCodec extends ByteToMessageCodec<RiakMessage>
                 in.readBytes(array);
                 out.add(new RiakMessage(code,array));
             }
-
         }
     }
-
 }

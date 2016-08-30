@@ -92,7 +92,6 @@ public class ITestIntIndexQuery extends ITestAutoCleanupBase
         }
 
         assertTrue(found);
-
     }
 
     @Test
@@ -148,7 +147,6 @@ public class ITestIntIndexQuery extends ITestAutoCleanupBase
         }
 
         assertTrue(found);
-
     }
 
     public static class IndexedPojo

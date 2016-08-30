@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-
 /**
  * This only tests the conversions. RiakIndex is fully exercised via the RawIndexTest
  * @author Brian Roach <roach at basho dot com>
@@ -44,7 +43,5 @@ public class LongIntIndexTest
 
         Set<Long> longSet2 = index.values();
         assertTrue(longSet.containsAll(longSet2));
-
     }
-
 }

@@ -160,7 +160,6 @@ import java.util.concurrent.TimeoutException;
  */
 public class RiakClient
 {
-
     private final RiakCluster cluster;
 
     /**
@@ -191,7 +190,6 @@ public class RiakClient
         RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
         return new RiakClient(cluster);
-
     }
 
     /**

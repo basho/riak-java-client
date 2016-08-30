@@ -259,11 +259,8 @@ public class Function
         private String module;
         private String function;
 
-
-
         public Builder()
         {
-
         }
 
         /**
@@ -430,5 +427,4 @@ public class Function
             return new Function(this);
         }
     }
-
 }

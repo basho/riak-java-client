@@ -11,11 +11,10 @@ public final class RiakSearchPB {
   public interface RpbSearchDocOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbSearchDoc)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated .RpbPair fields = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair> 
+    java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair>
         getFieldsList();
     /**
      * <code>repeated .RpbPair fields = 1;</code>
@@ -28,7 +27,7 @@ public final class RiakSearchPB {
     /**
      * <code>repeated .RpbPair fields = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
         getFieldsOrBuilderList();
     /**
      * <code>repeated .RpbPair fields = 1;</code>
@@ -149,7 +148,7 @@ public final class RiakSearchPB {
     /**
      * <code>repeated .RpbPair fields = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
         getFieldsOrBuilderList() {
       return fields_;
     }
@@ -404,7 +403,7 @@ public final class RiakSearchPB {
               fieldsBuilder_ = null;
               fields_ = other.fields_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              fieldsBuilder_ = 
+              fieldsBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getFieldsFieldBuilder() : null;
             } else {
@@ -419,7 +418,7 @@ public final class RiakSearchPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getFieldsCount(); i++) {
           if (!getFields(i).isInitialized()) {
-            
+
             return false;
           }
         }
@@ -640,7 +639,7 @@ public final class RiakSearchPB {
       /**
        * <code>repeated .RpbPair fields = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
            getFieldsOrBuilderList() {
         if (fieldsBuilder_ != null) {
           return fieldsBuilder_.getMessageOrBuilderList();
@@ -666,12 +665,12 @@ public final class RiakSearchPB {
       /**
        * <code>repeated .RpbPair fields = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair.Builder>
            getFieldsBuilderList() {
         return getFieldsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbPair, com.basho.riak.protobuf.RiakPB.RpbPair.Builder, com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
+          com.basho.riak.protobuf.RiakPB.RpbPair, com.basho.riak.protobuf.RiakPB.RpbPair.Builder, com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
           getFieldsFieldBuilder() {
         if (fieldsBuilder_ == null) {
           fieldsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -699,7 +698,6 @@ public final class RiakSearchPB {
   public interface RpbSearchQueryReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbSearchQueryReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes q = 1;</code>
      *
@@ -1649,11 +1647,11 @@ public final class RiakSearchPB {
 
       public final boolean isInitialized() {
         if (!hasQ()) {
-          
+
           return false;
         }
         if (!hasIndex()) {
-          
+
           return false;
         }
         return true;
@@ -2245,7 +2243,6 @@ public final class RiakSearchPB {
   public interface RpbSearchQueryRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbSearchQueryResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>repeated .RpbSearchDoc docs = 1;</code>
      *
@@ -2253,7 +2250,7 @@ public final class RiakSearchPB {
      * Result documents
      * </pre>
      */
-    java.util.List<com.basho.riak.protobuf.RiakSearchPB.RpbSearchDoc> 
+    java.util.List<com.basho.riak.protobuf.RiakSearchPB.RpbSearchDoc>
         getDocsList();
     /**
      * <code>repeated .RpbSearchDoc docs = 1;</code>
@@ -2278,7 +2275,7 @@ public final class RiakSearchPB {
      * Result documents
      * </pre>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakSearchPB.RpbSearchDocOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakSearchPB.RpbSearchDocOrBuilder>
         getDocsOrBuilderList();
     /**
      * <code>repeated .RpbSearchDoc docs = 1;</code>
@@ -2456,7 +2453,7 @@ public final class RiakSearchPB {
      * Result documents
      * </pre>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakSearchPB.RpbSearchDocOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakSearchPB.RpbSearchDocOrBuilder>
         getDocsOrBuilderList() {
       return docs_;
     }
@@ -2799,7 +2796,7 @@ public final class RiakSearchPB {
               docsBuilder_ = null;
               docs_ = other.docs_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              docsBuilder_ = 
+              docsBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getDocsFieldBuilder() : null;
             } else {
@@ -2820,7 +2817,7 @@ public final class RiakSearchPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getDocsCount(); i++) {
           if (!getDocs(i).isInitialized()) {
-            
+
             return false;
           }
         }
@@ -3101,7 +3098,7 @@ public final class RiakSearchPB {
        * Result documents
        * </pre>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakSearchPB.RpbSearchDocOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakSearchPB.RpbSearchDocOrBuilder>
            getDocsOrBuilderList() {
         if (docsBuilder_ != null) {
           return docsBuilder_.getMessageOrBuilderList();
@@ -3139,12 +3136,12 @@ public final class RiakSearchPB {
        * Result documents
        * </pre>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakSearchPB.RpbSearchDoc.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakSearchPB.RpbSearchDoc.Builder>
            getDocsBuilderList() {
         return getDocsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakSearchPB.RpbSearchDoc, com.basho.riak.protobuf.RiakSearchPB.RpbSearchDoc.Builder, com.basho.riak.protobuf.RiakSearchPB.RpbSearchDocOrBuilder> 
+          com.basho.riak.protobuf.RiakSearchPB.RpbSearchDoc, com.basho.riak.protobuf.RiakSearchPB.RpbSearchDoc.Builder, com.basho.riak.protobuf.RiakSearchPB.RpbSearchDocOrBuilder>
           getDocsFieldBuilder() {
         if (docsBuilder_ == null) {
           docsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<

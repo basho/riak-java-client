@@ -15,7 +15,6 @@
  */
 package com.basho.riak.client.api.convert;
 
-
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.Module;
@@ -103,9 +102,7 @@ public class JSONConverter<T> extends Converter<T>
                     ? (Class<?>) type
                     : (Class<?>) ((ParameterizedType) type).getRawType();
                return OBJECT_MAPPER.readValue(value.unsafeGetValue(), (Class<T>) rawType);
-
             }
-
         }
         catch (IOException ex)
         {
@@ -126,5 +123,4 @@ public class JSONConverter<T> extends Converter<T>
             throw new ConversionException(ex);
         }
     }
-
 }

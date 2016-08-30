@@ -43,7 +43,6 @@ import org.junit.Test;
  */
 public class ConverterFactoryTest
 {
-
     @Before
     public void setup()
     {
@@ -63,7 +62,6 @@ public class ConverterFactoryTest
         pojo.foo = "foo_value";
         pojo.bar = "bar_value";
 
-
         OrmExtracted orm = converter.fromDomain(pojo , null, null);
         RiakObject ro = orm.getRiakObject();
 
@@ -74,7 +72,6 @@ public class ConverterFactoryTest
 
         assertEquals(pojo.foo, pojo2.foo);
         assertEquals(pojo.bar, pojo2.bar);
-
     }
 
     @Test
@@ -101,8 +98,6 @@ public class ConverterFactoryTest
 
         OrmExtracted orm = converter.fromDomain(o, null, null);
         assertEquals(o, orm.getRiakObject());
-
-
     }
 
     @Test
@@ -114,7 +109,6 @@ public class ConverterFactoryTest
         Converter<Pojo> converter = factory.getConverter(Pojo.class);
 
         assertTrue(converter instanceof MyConverter);
-
     }
 
     @Test
@@ -127,19 +121,14 @@ public class ConverterFactoryTest
         Converter<Pojo> converter2 = factory.getConverter(Pojo.class);
         assertTrue(converter2 instanceof MyConverter);
         assertEquals(converter, converter2);
-
-
     }
 
     public static class MyConverter extends Converter<Pojo>
     {
-
         public MyConverter()
         {
             super(new TypeReference<Pojo>() {}.getType());
         }
-
-
 
         @Override
         public Pojo toDomain(BinaryValue value, String contentType) throws ConversionException
@@ -152,7 +141,6 @@ public class ConverterFactoryTest
         {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-
     }
 
     public static class Pojo
@@ -170,5 +158,4 @@ public class ConverterFactoryTest
         @JsonProperty
         String bar;
     }
-
 }

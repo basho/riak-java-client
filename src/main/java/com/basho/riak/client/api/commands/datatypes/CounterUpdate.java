@@ -29,7 +29,6 @@ import com.basho.riak.client.core.query.crdt.ops.CounterOp;
  */
 public class CounterUpdate implements DatatypeUpdate
 {
-
     private long delta = 0;
 
     /**

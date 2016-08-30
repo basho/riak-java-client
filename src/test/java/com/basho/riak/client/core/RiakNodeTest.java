@@ -49,7 +49,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-
 /**
  * @author Brian Roach <roach at basho dot com>
  * @author Alex Moore <amoore at basho dot com>
@@ -109,7 +108,6 @@ public class RiakNodeTest
         assertEquals(node.getRemoteAddress(), REMOTE_ADDRESS);
         assertEquals(node.availablePermits(), MAX_CONNECTIONS);
         assertEquals(node.getPort(), PORT);
-
     }
 
     @Test
@@ -121,7 +119,6 @@ public class RiakNodeTest
         boolean removed = node.removeStateListener(listener);
         assertTrue(removed);
     }
-
 
     @Test
     public void nodeNotifiesListeners() throws Exception
@@ -272,7 +269,6 @@ public class RiakNodeTest
     @Test
     public void idleReaperTest() throws Exception
     {
-
         ChannelFuture future = mock(ChannelFuture.class);
         Channel c = mock(Channel.class);
         Bootstrap bootstrap = PowerMockito.spy(new Bootstrap());

@@ -28,7 +28,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  *
  * @author Brian Roach <roach at basho dot com>
@@ -69,7 +68,6 @@ public class RiakIndexesTest
         assertTrue(rri.hasValue(BinaryValue.unsafeCreate(String.valueOf(4L).getBytes())));
 
         assertEquals(indexes.size(), 1);
-
     }
 
     @Test
@@ -161,5 +159,4 @@ public class RiakIndexesTest
         index = indexes.getIndex(RawIndex.named("foo", IndexType.BIN));
         assertFalse(index.hasValue(baw));
     }
-
 }

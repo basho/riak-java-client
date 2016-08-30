@@ -33,7 +33,6 @@ import java.util.List;
  */
 public class BucketProperties
 {
-
     private final Function linkwalkFunction;
     private final Function chashKeyFunction;
     private final Quorum rw;
@@ -642,7 +641,6 @@ public class BucketProperties
 
     public static class Builder
     {
-
         private Function linkwalkFunction;
         private Function chashKeyFunction;
         private Quorum rw;
@@ -1070,7 +1068,5 @@ public class BucketProperties
                 throw new IllegalArgumentException("Must be an Erlang Function.");
             }
         }
-
     }
-
 }

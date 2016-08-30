@@ -96,7 +96,6 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
                 {
                     return coreQueryInfo;
                 }
-
             };
         coreFuture.addListener(future);
         return future;
@@ -108,7 +107,6 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
         {
             super(context, datatype, generatedKey);
         }
-
     }
 
     /**
@@ -169,7 +167,5 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
         {
             return new UpdateMap(this);
         }
-
     }
-
 }

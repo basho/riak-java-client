@@ -96,7 +96,6 @@ public class YokozunaIndex
         return schema;
     }
 
-
     /**
      * Determine if an nVal value has been set.
      *

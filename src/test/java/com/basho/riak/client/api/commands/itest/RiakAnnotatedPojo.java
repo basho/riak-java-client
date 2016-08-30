@@ -65,7 +65,4 @@ public class RiakAnnotatedPojo
     public Long userId;
 
     public String value;
-
-
-
 }

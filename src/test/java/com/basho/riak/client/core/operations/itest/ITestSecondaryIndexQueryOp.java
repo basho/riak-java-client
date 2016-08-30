@@ -324,7 +324,6 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertTrue(response.getEntryList().get(0).hasIndexKey());
         assertEquals(BinaryValue.unsafeCreate("5".getBytes()), response.getEntryList().get(0).getIndexKey());
         assertEquals(keyBase + "0", response.getEntryList().get(0).getObjectKey().toString());
-
     }
 
     private void testRangeQuery(Namespace namespace) throws InterruptedException, ExecutionException
@@ -408,8 +407,6 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         AssertLongObjectsInOrder(response);
     }
 
-
-
     private void testNoSortWithPaging(Namespace namespace) throws InterruptedException, ExecutionException
     {
         try
@@ -431,7 +428,6 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
             assertNotNull(ex);
         }
     }
-
 
     private void testSortWithPaging(Namespace namespace) throws InterruptedException, ExecutionException
     {

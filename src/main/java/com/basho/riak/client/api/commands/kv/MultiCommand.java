@@ -48,7 +48,6 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
         this.maxInFlight = builder.maxInFlight;
     }
 
-
     @Override
     protected RiakFuture<ResponseType, List<Location>> executeAsync(final RiakCluster cluster)
     {
@@ -82,7 +81,6 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
         }
 
         return baseOperations;
-
     }
 
     @Override
@@ -108,7 +106,6 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
             return false;
         }
         return options.equals(that.options);
-
     }
 
     @Override
@@ -233,7 +230,6 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
         {
             return responses;
         }
-
     }
 
     class Submitter implements Runnable, RiakFutureListener<BaseResponseType, Location>
@@ -290,7 +286,6 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
                 multiFuture.setCompleted();
             }
         }
-
     }
 
     class MultiFuture extends ListenableFuture<ResponseType,List<Location>>
@@ -411,6 +406,5 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
             latch.countDown();
             notifyListeners();
         }
-
     }
 }

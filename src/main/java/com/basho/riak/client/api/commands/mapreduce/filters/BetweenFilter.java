@@ -22,7 +22,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class BetweenFilter<T> extends KeyFilter
 {
-
     private static final String NAME = "between";
 
     private final T from;
@@ -44,5 +43,4 @@ public class BetweenFilter<T> extends KeyFilter
     {
         return to;
     }
-
 }

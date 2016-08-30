@@ -78,7 +78,6 @@ public class AnnotationUtilTest
         assertEquals(BinaryValue.create(expected), AnnotationUtil.getKey(pojo, null));
     }
 
-
     @Test
     public void setKeyStringField()
     {
@@ -167,7 +166,6 @@ public class AnnotationUtilTest
 
             @RiakKey
             void setKey(String key) {}
-
         };
 
         AnnotationUtil.getKey(o);
@@ -183,7 +181,6 @@ public class AnnotationUtilTest
 
             @RiakKey
             void setKey(Date key) {}
-
         };
 
         AnnotationUtil.setKey(o, BinaryValue.create("Some Date"));
@@ -241,7 +238,6 @@ public class AnnotationUtilTest
 
         assertEquals(BinaryValue.create(expected), AnnotationUtil.getBucketName(pojo));
         assertEquals(BinaryValue.create(expected), AnnotationUtil.getBucketName(pojo, null));
-
     }
 
     @Test
@@ -308,7 +304,6 @@ public class AnnotationUtilTest
 
         assertNotNull(pojo.bucketName);
         assertArrayEquals(expected, pojo.bucketName);
-
     }
 
     @Test(expected = RuntimeException.class)
@@ -338,7 +333,6 @@ public class AnnotationUtilTest
             void setKey(String key)
             {
             }
-
         };
 
         AnnotationUtil.getBucketName(o);
@@ -419,7 +413,6 @@ public class AnnotationUtilTest
 
         assertEquals(BinaryValue.create(expected), AnnotationUtil.getBucketType(pojo));
         assertEquals(BinaryValue.create(expected), AnnotationUtil.getBucketType(pojo, null));
-
     }
 
     @Test
@@ -486,7 +479,6 @@ public class AnnotationUtilTest
 
         assertNotNull(pojo.bucketType);
         assertArrayEquals(expected, pojo.bucketType);
-
     }
 
     @Test(expected = RuntimeException.class)
@@ -511,7 +503,6 @@ public class AnnotationUtilTest
 
             @RiakBucketType
             void setType(String key) {}
-
         };
 
         AnnotationUtil.getBucketType(o);
@@ -527,7 +518,6 @@ public class AnnotationUtilTest
 
             @RiakBucketType
             void setBucketType(Date key) {}
-
         };
 
         AnnotationUtil.setBucketType(o, BinaryValue.create("Some Date"));
@@ -589,7 +579,6 @@ public class AnnotationUtilTest
 
         assertEquals(new BasicVClock(expected), AnnotationUtil.getVClock(pojo));
         assertEquals(new BasicVClock(expected), AnnotationUtil.getVClock(pojo, null));
-
     }
 
     @Test
@@ -661,7 +650,6 @@ public class AnnotationUtilTest
 
         assertNotNull(pojo.vclock);
         assertArrayEquals(clockBytes, pojo.vclock);
-
     }
 
     @Test(expected = RuntimeException.class)
@@ -686,7 +674,6 @@ public class AnnotationUtilTest
 
             @RiakVClock
             void setVClock(VClock key) {}
-
         };
 
         AnnotationUtil.getVClock(o);
@@ -702,7 +689,6 @@ public class AnnotationUtilTest
 
             @RiakVClock
             void setVClock(Date key) {}
-
         };
         final byte[] clockBytes = "a85hYGBgzGDKBVIcypz/fvo/2e2UwZTImMfKwHIy/SRfFgA=".getBytes();
         final VClock expected = new BasicVClock(clockBytes);
@@ -745,7 +731,6 @@ public class AnnotationUtilTest
         assertNotNull(AnnotationUtil.getVClock(pojo, new BasicVClock(clockBytes)));
     }
 
-
     @Test
     public void getTombstoneField()
     {
@@ -777,7 +762,6 @@ public class AnnotationUtilTest
         {
             @RiakTombstone
             private final String domainProperty = null;
-
         };
 
         try
@@ -806,7 +790,6 @@ public class AnnotationUtilTest
             public void setTombstone(Boolean v)
             {
             }
-
         };
 
         try
@@ -834,7 +817,6 @@ public class AnnotationUtilTest
             @RiakVClock
             public void setTombstone(String v)
             {}
-
         };
 
         try
@@ -874,7 +856,6 @@ public class AnnotationUtilTest
 
         AnnotationUtil.setTombstone(pojo2, true);
         assertTrue(pojo2.getTombstone());
-
     }
 
     @Test
@@ -963,7 +944,6 @@ public class AnnotationUtilTest
                       rIndexes.getIndex(RawIndex.named("raw", IndexType.BIN)).size(),
                       1);
 
-
         assertEquals("Expected RiakIndexes IntIndex (longs) to be populated",
                       rIndexes.getIndex(LongIntIndex.named("longs")).size(),
                       pojo.longs.size());
@@ -980,7 +960,6 @@ public class AnnotationUtilTest
                       rIndexes.getIndex(RawIndex.named("raw", IndexType.INT)).size(),
                       1);
 
-
         assertTrue(rIndexes.getIndex(StringBinIndex.named("favorite_languages")).values().containsAll(pojo.languages));
         assertEquals(rIndexes.getIndex(StringBinIndex.named("lucky_language")).iterator().next(),
                      pojo.languages.iterator().next());
@@ -992,7 +971,6 @@ public class AnnotationUtilTest
                      pojo.longs.iterator().next());
         assertArrayEquals(rIndexes.getIndex(RawIndex.named("raw", IndexType.INT)).iterator().next().getValue(),
                      pojo.rawInt);
-
     }
 
     @Test
@@ -1107,7 +1085,6 @@ public class AnnotationUtilTest
                      pojo.getLongs().iterator().next());
         assertEquals(rIndexes.getIndex(LongIntIndex.named("longlong")).iterator().next(),
                      pojo.getLongs().iterator().next());
-
     }
 
     @Test
@@ -1119,7 +1096,6 @@ public class AnnotationUtilTest
         {
             @RiakIndex(name="whatever")
             private final Boolean domainProperty = null;
-
         };
 
         try
@@ -1136,7 +1112,6 @@ public class AnnotationUtilTest
         {
             @RiakIndex(name="whatever")
             private final Set<Boolean> domainProperty = null;
-
         };
 
         try
@@ -1148,8 +1123,6 @@ public class AnnotationUtilTest
         {
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
-
-
     }
 
     @Test
@@ -1168,7 +1141,6 @@ public class AnnotationUtilTest
             {
                 return null;
             }
-
         };
 
         try
@@ -1192,7 +1164,6 @@ public class AnnotationUtilTest
             {
                 return null;
             }
-
         };
 
         try
@@ -1204,7 +1175,6 @@ public class AnnotationUtilTest
         {
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
-
     }
 
     @Test
@@ -1223,7 +1193,6 @@ public class AnnotationUtilTest
             {
                 return true;
             }
-
         };
 
         try
@@ -1247,7 +1216,6 @@ public class AnnotationUtilTest
             {
                 return null;
             }
-
         };
 
         try
@@ -1259,9 +1227,7 @@ public class AnnotationUtilTest
         {
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
-
     }
-
 
     @Test
     public void missingIndexNameInAnnotation()
@@ -1279,7 +1245,6 @@ public class AnnotationUtilTest
             {
                 return null;
             }
-
         };
 
         try
@@ -1296,7 +1261,6 @@ public class AnnotationUtilTest
         {
             @RiakIndex(name = "")
             private String index = null;
-
         };
 
         try
@@ -1308,7 +1272,6 @@ public class AnnotationUtilTest
         {
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
-
     }
 
     @Test
@@ -1327,7 +1290,6 @@ public class AnnotationUtilTest
             {
                 return null;
             }
-
         };
 
         try
@@ -1344,7 +1306,6 @@ public class AnnotationUtilTest
         {
             @RiakIndex(name="raw")
             private byte[] index = null;
-
         };
 
         try
@@ -1375,7 +1336,6 @@ public class AnnotationUtilTest
         assertNull(pojo.luckyLongLong);
         assertNull(pojo.luckyLanguage);
         assertEquals(pojo.luckyLong, 0);
-
     }
 
     @Test
@@ -1395,7 +1355,6 @@ public class AnnotationUtilTest
         assertNull(pojo.getLongLong());
         assertNull(pojo.getString());
         assertEquals(pojo.getLong(), 0);
-
     }
 
     @Test
@@ -1435,7 +1394,6 @@ public class AnnotationUtilTest
         // TODO: chuck long support
         assertTrue(rIndex.hasIndex(LongIntIndex.named("lucky_long")));
         assertEquals(1, rIndex.getIndex(LongIntIndex.named("lucky_long")).size());
-
     }
 
     @Test
@@ -1462,7 +1420,6 @@ public class AnnotationUtilTest
         // TODO: chuck long support
         assertTrue(rIndex.hasIndex(LongIntIndex.named("long")));
         assertEquals(1, rIndex.getIndex(LongIntIndex.named("long")).size());
-
     }
 
     @Test
@@ -1548,7 +1505,6 @@ public class AnnotationUtilTest
         {
             @RiakLinks
             private final String domainProperty = null;
-
         };
 
         try
@@ -1565,7 +1521,6 @@ public class AnnotationUtilTest
         {
             @RiakLinks
             private final Collection<String> domainProperty = null;
-
         };
 
         try
@@ -1577,7 +1532,6 @@ public class AnnotationUtilTest
         {
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
-
     }
 
     @Test
@@ -1596,7 +1550,6 @@ public class AnnotationUtilTest
 
             @RiakLinks
             public void setLinks(Collection<RiakLink> links) {}
-
         };
 
         try
@@ -1619,7 +1572,6 @@ public class AnnotationUtilTest
 
             @RiakLinks
             public void setLinks(Collection<RiakLink> links) {}
-
         };
 
         try
@@ -1631,7 +1583,6 @@ public class AnnotationUtilTest
         {
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
-
     }
 
     @Test
@@ -1650,7 +1601,6 @@ public class AnnotationUtilTest
 
             @RiakLinks
             public void setLinks(String links) {}
-
         };
 
         try
@@ -1673,7 +1623,6 @@ public class AnnotationUtilTest
 
             @RiakLinks
             public void setLinks(Collection<String> links) {}
-
         };
 
         try
@@ -1807,7 +1756,6 @@ public class AnnotationUtilTest
 
         assertNotNull(obj.metaItemOne);
         assertEquals("userMetaItemOne", obj.metaItemOne);
-
     }
 
     @Test
@@ -1834,7 +1782,6 @@ public class AnnotationUtilTest
 
         assertNotNull(obj.metaItemOne);
         assertEquals("userMetaItemOne", obj.metaItemOne);
-
     }
 
     @Test
@@ -1889,7 +1836,6 @@ public class AnnotationUtilTest
         {
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
-
     }
 
     @Test
@@ -1961,7 +1907,6 @@ public class AnnotationUtilTest
         {
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
-
     }
 
     @Test
@@ -1990,7 +1935,6 @@ public class AnnotationUtilTest
         {
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
-
 
         o = new Object()
         {
@@ -2035,7 +1979,6 @@ public class AnnotationUtilTest
             assertEquals(e.getCause().getClass(), IllegalArgumentException.class);
         }
     }
-
 
     @Test
     public void singleMetaAnnotationMissingKey()
@@ -2089,7 +2032,6 @@ public class AnnotationUtilTest
         AnnotationUtil.getUsermetaData(meta, pojo);
 
         assertTrue(meta.isEmpty());
-
     }
 
     @Test
@@ -2192,7 +2134,6 @@ public class AnnotationUtilTest
 
             @RiakContentType
             void setKey(String key) {}
-
         };
 
         AnnotationUtil.getContentType(o);
@@ -2208,7 +2149,6 @@ public class AnnotationUtilTest
 
             @RiakContentType
             void setKey(Date key) {}
-
         };
 
         AnnotationUtil.getContentType(o);
@@ -2353,8 +2293,6 @@ public class AnnotationUtilTest
 
         @RiakLastModified
         Long lastModified;
-
-
     }
 
     protected static final class PojoWithAnnotatedByteFields
@@ -2374,7 +2312,6 @@ public class AnnotationUtilTest
         @RiakTombstone
         Boolean tombstone;
     }
-
 
     protected static final class PojoWithAnnotatedMethods
     {
@@ -2579,7 +2516,6 @@ public class AnnotationUtilTest
             return rawBins;
         }
 
-
         @RiakTombstone
         public Boolean getTombstone()
         {
@@ -2696,7 +2632,5 @@ public class AnnotationUtilTest
         {
             this.tombstone = tombstone;
         }
-
     }
-
 }

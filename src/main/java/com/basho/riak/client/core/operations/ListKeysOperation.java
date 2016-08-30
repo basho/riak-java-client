@@ -157,8 +157,6 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
             {
                 return new Response(this);
             }
-
         }
-
     }
 }

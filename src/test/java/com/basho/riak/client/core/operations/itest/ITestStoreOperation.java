@@ -52,7 +52,6 @@ public class ITestStoreOperation extends ITestAutoCleanupBase
 
     private void testSimpleStore(String bucketType) throws InterruptedException, ExecutionException
     {
-
         RiakObject obj = new RiakObject().setValue(BinaryValue.create(value));
         Namespace ns = new Namespace(bucketType, bucketName.toString());
         Location location = new Location(ns, key);
@@ -71,7 +70,6 @@ public class ITestStoreOperation extends ITestAutoCleanupBase
         RiakObject obj2 = fetchOp.get().getObjectList().get(0);
 
         assertEquals(obj.getValue(), obj2.getValue());
-
     }
 
     @Test
@@ -130,5 +128,4 @@ public class ITestStoreOperation extends ITestAutoCleanupBase
 
         resetAndEmptyBucket(ns);
     }
-
 }

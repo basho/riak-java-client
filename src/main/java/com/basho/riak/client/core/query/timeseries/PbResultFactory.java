@@ -69,7 +69,6 @@ public final class PbResultFactory
         return new TableDefinition(
                 tableName,
                 DescribeQueryResultParser.ConvertToColumnDescriptions(intermediaryQueryResult));
-
     }
 
     public static CoveragePlanResult convertCoverageResp(String tableName, RiakTsPB.TsCoverageResp response)

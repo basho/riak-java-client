@@ -16,7 +16,6 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertTrue;
 
-
 /**
  * Base class for testing Search features.
  *
@@ -117,7 +116,6 @@ public class ISearchTestBase extends ITestBase
             assertTrue(propsOp.cause().toString(), propsOp.isSuccess());
         }
     }
-
 
     private static void setupData(RiakClient client, Namespace namespace) throws ExecutionException, InterruptedException
     {

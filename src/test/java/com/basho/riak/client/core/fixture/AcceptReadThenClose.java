@@ -41,7 +41,4 @@ public class AcceptReadThenClose extends Acceptor
     {
         return true;
     }
-
-
-
 }

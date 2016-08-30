@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 /**
  * Transform filter that uppercases the key
  *
@@ -21,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class ToUpperFilter extends KeyFilter
 {
-
     private static final String NAME = "to_upper";
 
     public ToUpperFilter()

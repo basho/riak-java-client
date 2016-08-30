@@ -1,6 +1,5 @@
 package com.basho.riak.client.api;
 
-
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
@@ -73,7 +72,6 @@ public class ITestClusterLifecycle extends ITestBase
             {
                 createAndStoreObject(client, new Location(namespace, Integer.toString(i)));
             }
-
         }
         catch (Exception ex)
         {

@@ -95,7 +95,6 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
         {
             return RawIndexQuery.this;
         }
-
     }
 
     /**
@@ -103,7 +102,6 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
      */
     public static class Builder extends SecondaryIndexQuery.Init<BinaryValue, Builder>
     {
-
         /**
          * Construct a Builder for a RawIndexQuery with a range.
          * <p>
@@ -179,8 +177,6 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
             {
                 super(riakObjectLocation, indexKey, converter);
             }
-
         }
     }
-
 }

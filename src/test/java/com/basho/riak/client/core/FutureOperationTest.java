@@ -34,7 +34,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-
 /**
  * @author Brian Roach <roach at basho dot com>
  */
@@ -82,7 +81,6 @@ public class FutureOperationTest
         operation.setException(new Exception());
         verify(retrier).operationFailed(operation, 0);
         assertTrue(operation.isDone());
-
     }
 
     @Test
@@ -141,13 +139,11 @@ public class FutureOperationTest
         operation.setException(new Exception());
         assertFalse(operation.isDone());
         operation.get(10, TimeUnit.MILLISECONDS);
-
     }
 
     @Test
     public void notifiesListenersAfterSuccess()
     {
-
         FutureOperation<String, ?, Void> operation = PowerMockito.spy(new FutureOperationImpl());
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
@@ -159,13 +155,11 @@ public class FutureOperationTest
 
         assertTrue(operation.isDone());
         assertTrue(called.get());
-
     }
 
     @Test
     public void notifiesListenersAfterStreamingSuccess()
     {
-
         FutureOperation<String, ?, Void> operation = PowerMockito.spy(new StreamingFutureOperationImpl(2));
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
@@ -178,13 +172,11 @@ public class FutureOperationTest
 
         assertTrue(operation.isDone());
         assertEquals(1, called.get());
-
     }
 
     @Test
     public void notifiesLisetnersAfterFailure()
     {
-
         FutureOperation<String, ?, Void> operation = PowerMockito.spy(new FutureOperationImpl());
 
         final AtomicBoolean called = new AtomicBoolean(false);
@@ -194,13 +186,11 @@ public class FutureOperationTest
 
         assertTrue(operation.isDone());
         assertTrue(called.get());
-
     }
 
     @Test
     public void notifiesLisetnersAfterStreamingFailure()
     {
-
         FutureOperation<String, ?, Void> operation = PowerMockito.spy(new StreamingFutureOperationImpl(3));
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
@@ -212,13 +202,11 @@ public class FutureOperationTest
 
         assertEquals(1, called.get());
         assertTrue(operation.isDone());
-
     }
 
     @Test
     public void notifiesOnAddAfterComplete()
     {
-
         FutureOperation<String, ?, Void> operation = PowerMockito.spy(new FutureOperationImpl());
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
@@ -230,13 +218,11 @@ public class FutureOperationTest
 
         assertTrue(operation.isDone());
         assertTrue(called.get());
-
     }
 
     @Test
     public void notifiesOnAddAfterStreamingComplete()
     {
-
         StreamingFutureOperationImpl operation = PowerMockito.spy(new StreamingFutureOperationImpl(2));
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
@@ -245,13 +231,11 @@ public class FutureOperationTest
 
         operation.setResponse(response);
         assertTrue(operation.isDone());
-
     }
 
     @Test
     public void removedListenersDoNotGetCalled()
     {
-
         FutureOperation<String, ?, Void> operation = PowerMockito.spy(new FutureOperationImpl());
         RiakMessage response = PowerMockito.mock(RiakMessage.class);
 
@@ -264,7 +248,6 @@ public class FutureOperationTest
 
         assertTrue(operation.isDone());
         assertFalse(called.get());
-
     }
 
     @Test(expected = IllegalStateException.class)
@@ -275,7 +258,6 @@ public class FutureOperationTest
 
         operation.setResponse(response);
         operation.setResponse(response);
-
     }
 
     @Test(expected = IllegalStateException.class)
@@ -285,7 +267,6 @@ public class FutureOperationTest
 
         operation.setException(new Exception());
         operation.setException(new Exception());
-
     }
 
     @Test(expected = IllegalStateException.class)
@@ -296,7 +277,6 @@ public class FutureOperationTest
 
         operation.setResponse(response);
         operation.setException(new Exception());
-
     }
 
     private class FutureOperationImpl extends FutureOperation<String, Message, Void>
@@ -369,6 +349,4 @@ public class FutureOperationTest
             return null;
         }
     }
-
-
 }

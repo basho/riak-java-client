@@ -18,7 +18,6 @@ import static org.junit.Assert.assertEquals;
 
 public class PhaseFunctionSerializerTest
 {
-
     private StringWriter out;
     private JsonGenerator jg;
 
@@ -34,7 +33,6 @@ public class PhaseFunctionSerializerTest
         objectMapper.registerModule(specModule);
 
         jg.setCodec(objectMapper);
-
     }
 
     @Test
@@ -69,5 +67,4 @@ public class PhaseFunctionSerializerTest
 
         assertEquals("{\"language\":\"javascript\",\"name\":\"the_func\",\"keep\":true}", out.toString());
     }
-
 }

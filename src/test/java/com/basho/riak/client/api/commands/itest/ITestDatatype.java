@@ -34,7 +34,6 @@ import static org.junit.Assert.assertTrue;
 
 public class ITestDatatype extends ITestAutoCleanupBase
 {
-
     private final String numLogins = "logins";
     private final String lastLoginTime = "last-login";
     private final ByteBuffer nowBinary = ByteBuffer.allocate(8).putLong(System.currentTimeMillis());
@@ -119,7 +118,6 @@ public class ITestDatatype extends ITestAutoCleanupBase
 
         assertTrue(Arrays.equals(now, lastLoginTimeRegister.view().getValue()));
 
-
         // logged-in - flag
         RiakFlag loggedInFlag = usernameMap.getFlag(loggedIn);
         assertEquals((Boolean) true, loggedInFlag.view());
@@ -136,13 +134,10 @@ public class ITestDatatype extends ITestAutoCleanupBase
         }
         assertTrue(setView.containsAll(expectedSet));
         assertTrue(expectedSet.containsAll(setView));
-
-
     }
 
     public void testConflict() throws ExecutionException, InterruptedException
     {
-
         resetAndEmptyBucket(carts);
 
         MapUpdate innerMapUpdate = new MapUpdate().update("flag", new FlagUpdate(true));
@@ -161,7 +156,5 @@ public class ITestDatatype extends ITestAutoCleanupBase
         assertEquals(2, conflictedResponse.getDatatype().view().size());
         assertNotNull(conflictedResponse.getDatatype().getMap(numLogins));
         assertNotNull(conflictedResponse.getDatatype().getCounter(numLogins));
-
     }
-
 }

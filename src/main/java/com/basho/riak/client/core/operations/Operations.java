@@ -17,10 +17,8 @@ package com.basho.riak.client.core.operations;
 
 import com.basho.riak.client.core.RiakMessage;
 
-
 public class Operations
 {
-
     public static void checkPBMessageType(RiakMessage msg, byte expected)
     {
         byte pbMessageCode = msg.getCode();
@@ -31,7 +29,6 @@ public class Operations
                 + expected
                 + " received " + unsignedBytePbMessageCode);
         }
-
     }
 
     /**

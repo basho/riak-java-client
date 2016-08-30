@@ -20,7 +20,6 @@ package com.basho.riak.client.api.commands.mapreduce.filters;
  */
 public class UrlDecodeFilter extends KeyFilter implements KeyTransformFilter
 {
-
     private static final String NAME = "urldecode";
 
     public UrlDecodeFilter()

@@ -93,7 +93,6 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
                 {
                     return coreQueryInfo;
                 }
-
             };
         coreFuture.addListener(future);
         return future;
@@ -157,7 +156,6 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
         {
             return this;
         }
-
     }
 
     /**
@@ -169,6 +167,5 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
         {
             super(context, datatype, generatedKey);
         }
-
     }
 }

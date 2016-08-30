@@ -13,7 +13,6 @@
  */
 package com.basho.riak.client.api.commands.mapreduce.filters;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**

@@ -31,7 +31,6 @@ import com.basho.riak.client.core.util.BinaryValue;
  */
 public class RegisterUpdate implements DatatypeUpdate
 {
-
     private final BinaryValue value;
 
     /**
@@ -88,5 +87,4 @@ public class RegisterUpdate implements DatatypeUpdate
     {
         return value.toString();
     }
-
 }

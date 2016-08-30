@@ -23,7 +23,6 @@ import java.util.Collections;
 
 public class MapReduceSpecSerializerTest
 {
-
     private StringWriter out;
     private JsonGenerator jg;
 
@@ -46,14 +45,11 @@ public class MapReduceSpecSerializerTest
         objectMapper.registerModule(specModule);
 
         jg.setCodec(objectMapper);
-
     }
-
 
     @Test
     public void testSerializeMapReduceSpec() throws IOException
     {
-
         ArrayList<MapReducePhase> phases = new ArrayList<>();
         phases.add(new MapPhase(Function.newNamedJsFunction("map_func")));
         phases.add(new ReducePhase(Function.newNamedJsFunction("reduce_func")));
@@ -69,7 +65,6 @@ public class MapReduceSpecSerializerTest
                 "[{\"map\":{\"language\":\"javascript\",\"name\":\"map_func\",\"keep\":false,\"arg\":null}}," +
                 "{\"reduce\":{\"language\":\"javascript\",\"name\":\"reduce_func\",\"keep\":false,\"arg\":null}}," +
                 "{\"link\":{\"bucket\":\"bucket\",\"tag\":\"tag\"}}]}", out.toString());
-
     }
 
     @Test
@@ -93,7 +88,5 @@ public class MapReduceSpecSerializerTest
                                     "[{\"map\":{\"language\":\"javascript\",\"name\":\"map_func\",\"keep\":false,\"arg\":null}}," +
                                     "{\"reduce\":{\"language\":\"javascript\",\"name\":\"reduce_func\",\"keep\":false,\"arg\":null}}," +
                                     "{\"link\":{\"bucket\":\"bucket\",\"tag\":\"tag\"}}]}", out.toString());
-
     }
-
 }

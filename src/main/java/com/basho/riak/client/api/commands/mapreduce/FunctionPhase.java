@@ -52,7 +52,4 @@ class FunctionPhase extends MapReducePhase
     {
         return arg;
     }
-
-
-
 }

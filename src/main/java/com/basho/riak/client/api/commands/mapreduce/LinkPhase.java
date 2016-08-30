@@ -23,7 +23,6 @@ package com.basho.riak.client.api.commands.mapreduce;
  */
 class LinkPhase extends MapReducePhase
 {
-
     private final String bucket;
     private final String tag;
     private final Boolean keep;
