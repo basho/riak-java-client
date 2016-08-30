@@ -489,7 +489,8 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         // Sleep for a bit so we don't spinwait our CPUs to death
         if (!connectionSuccess)
         {
-            logger.debug("QueueDrainer - Pulled queued operation {}, but no connection available, sleeping.", System.identityHashCode(operation));
+            logger.debug("QueueDrainer - Pulled queued operation {}, but no connection available, sleeping.",
+                         System.identityHashCode(operation));
 
             // TODO: should this timeout be configurable, or based on an
             // average command execution time?
@@ -765,7 +766,10 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
          * Set the maximum number of operations to queue.
          * A value of 0 disables the command queue.
          * <b>Setting this will override any of this clusters @{link RiakNode}s blockOnMaxConnection settings.</b>
-         * <p>Please note that while using the Operation Queue, operations may be executed out of the order that they were added in.</p>
+         * <p>
+         *     Please note that while using the Operation Queue, operations may be executed out of the order
+         * that they were added in.
+         * </p>
          *
          * @param operationQueueMaxDepth - maximum number of operations to queue if all connections are busy
          * @return this

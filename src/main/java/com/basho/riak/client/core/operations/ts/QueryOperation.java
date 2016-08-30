@@ -50,8 +50,12 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
             {
                 throw new IllegalArgumentException("QueryText cannot be null or empty");
             }
+
             this.queryText = queryText;
-            RiakTsPB.TsInterpolation.Builder interpolationBuilder = RiakTsPB.TsInterpolation.newBuilder().setBase(ByteString.copyFromUtf8(queryText));
+
+            RiakTsPB.TsInterpolation.Builder interpolationBuilder =
+                    RiakTsPB.TsInterpolation.newBuilder().setBase(ByteString.copyFromUtf8(queryText));
+
             reqBuilder.setQuery(interpolationBuilder);
         }
 

@@ -88,7 +88,11 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
         return future;
     }
 
-    protected final class IntQueryFuture extends CoreFutureAdapter<Response, IntIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+    protected final class IntQueryFuture
+            extends CoreFutureAdapter<Response,
+                                      IntIndexQuery,
+                                      SecondaryIndexQueryOperation.Response,
+                                      SecondaryIndexQueryOperation.Query>
     {
         public IntQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
         {

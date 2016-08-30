@@ -23,12 +23,14 @@ public class TermToBinaryCodecTest
 {
     private static final String TABLE_NAME = "test_table";
     private static final String QUERY = "SELECT * FROM FRAZZLE";
-    private static final byte[] CONTEXT = new byte[] {(byte)131,104,2,98,40,26,4,(byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114};
+    private static final byte[] CONTEXT = new byte[] {(byte)131,104,2,98,40,26,4,(byte)204,109,0,0,0,12,
+                                                      (byte)131,104,1,100,0,6,102,111,111,98,97,114};
 
     @Test
     public void encodesPutRequestCorrectly_1()
     {
-        // {tsputreq, <<"test_table">>, [], [{<<"varchar">>, 12345678, 12.34, true, 12345}, {<<"string">>, 8765432, 43.21, false, 543321}]}
+        // {tsputreq, <<"test_table">>, [], [{<<"varchar">>, 12345678, 12.34, true, 12345},
+        //                                   {<<"string">>, 8765432, 43.21, false, 543321}]}
         final byte[] exp = {(byte)131, 104, 4, 100, 0, 8, 116, 115, 112, 117, 116, 114, 101, 113, 109, 0,
             0, 0, 10, 116, 101, 115, 116, 95, 116, 97, 98, 108, 101, 106, 108, 0, 0,
             0, 2, 104, 5, 109, 0, 0, 0, 7, 118, 97, 114, 99, 104, 97, 114, 98, 0, (byte)188,
@@ -75,7 +77,9 @@ public class TermToBinaryCodecTest
     @Test
     public void encodesPutRequestCorrectly_2()
     {
-        // A = riakc_ts_put_operator:serialize(<<"test_table">>,[{<<"series">>, <<"family">>, 12345678, 1, true, 34.3, []}], true).
+        // A = riakc_ts_put_operator:serialize(<<"test_table">>,
+        //                                     [{<<"series">>, <<"family">>, 12345678, 1, true, 34.3, []}],
+        //                                     true).
         // A = {tsputreq,<<"test_table">>,[],[{<<"series">>,<<"family">>,12345678,1,true,34.3,[]}]}
         final byte[] exp = {(byte)131,104,4, // outer tuple arity 4
                             100,0,8,116,115,112,117,116,114,101,113, // tsputreq atom
@@ -89,7 +93,8 @@ public class TermToBinaryCodecTest
                                     97,1, // small integer
                                     100,0,4,116,114,117,101, // true atom
                                     // NB: this is what Erlang generates, an old-style float
-                                    // 99,51,46,52,50,57,57,57,57,57,57,57,57,57,57,57,57,57,55,49,53,55,56,101,43,48,49,0,0,0,0,0, // float_ext len 31
+                                    // 99,51,46,52,50,57,57,57,57,57,57,57,57,57,
+                                    //   57,57,57,57,55,49,53,55,56,101,43,48,49,0,0,0,0,0, // float_ext len 31
                                     // NB: this is what JInterface generates, a new-style float
                                     70,64,65,38,102,102,102,102,102,
                                     106, // null cell empty list
@@ -141,7 +146,8 @@ public class TermToBinaryCodecTest
                             97,1,
                             100,0,4,116,114,117,101,
                             // NB: this is what Erlang generates, an old-style float
-                            // 99,51,46,52,50,57,57,57,57,57,57,57,57,57,57,57,57,57,55,49,53,55,56,101,43,48,49,0,0,0,0,0, // float_ext len 31
+                            // 99,51,46,52,50,57,57,57,57,57,57,57,57,57,57,57,57,
+                            //     57,55,49,53,55,56,101,43,48,49,0,0,0,0,0, // float_ext len 31
                             // NB: this is what JInterface generates, a new-style float
                             70,64,65,38,102,102,102,102,102,
                             106,
@@ -219,7 +225,9 @@ public class TermToBinaryCodecTest
     @Test
     public void encodesQueryRequestWithCoverageContextCorrectly()
     {
-        // {tsqueryreq, {tsinterpolation, <<"SELECT * FROM FRAZZLE">>, []}, false, <<131,104,2,98,40,26,4,204,109,0,0,0,12,131,104,1,100,0,6,102,111,111,98,97,114>>}
+        // {tsqueryreq, {tsinterpolation, <<"SELECT * FROM FRAZZLE">>, []},
+        //              false,
+        //              <<131,104,2,98,40,26,4,204,109,0,0,0,12,131,104,1,100,0,6,102,111,111,98,97,114>>}
         final byte[] exp = {(byte)131,104,4,100,0,10,116,115,113,117,101,114,121,114,101,
                             113,104,3,100,0,15,116,115,105,110,116,101,114,112,111,
                             108,97,116,105,111,110,109,0,0,0,21,83,69,76,69,67,84,
@@ -282,7 +290,8 @@ public class TermToBinaryCodecTest
         expectedColumnDescriptions[5] = new ColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64);
         expectedColumnDescriptions[6] = new ColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN);
 
-        final Row row = new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(1443806600000L), new Cell("cloudy"), null, null, new Cell(true));
+        final Row row = new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(1443806600000L),
+                                new Cell("cloudy"), null, null, new Cell(true));
         final Row[] expectedRows = new Row[1];
         expectedRows[0] = (row);
 
@@ -294,7 +303,8 @@ public class TermToBinaryCodecTest
             final List<Row> actualRows = actual.getRowsCopy();
 
             Assert.assertArrayEquals(expectedColumnDescriptions,
-                                     actualColumnDescriptions.toArray(new ColumnDescription[actualColumnDescriptions.size()]));
+                                     actualColumnDescriptions.toArray(
+                                             new ColumnDescription[actualColumnDescriptions.size()]));
 
             Assert.assertArrayEquals(expectedRows, actualRows.toArray(new Row[actualRows.size()]));
         }

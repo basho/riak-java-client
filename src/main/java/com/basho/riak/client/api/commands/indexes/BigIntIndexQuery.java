@@ -90,9 +90,14 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
         return future;
     }
 
-    protected final class BigIntQueryFuture extends CoreFutureAdapter<Response, BigIntIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+    protected final class BigIntQueryFuture
+            extends CoreFutureAdapter<Response,
+                                      BigIntIndexQuery,
+                                      SecondaryIndexQueryOperation.Response,
+                                      SecondaryIndexQueryOperation.Query>
     {
-        public BigIntQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        public BigIntQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response,
+                                 SecondaryIndexQueryOperation.Query> coreFuture)
         {
             super(coreFuture);
         }
@@ -203,7 +208,9 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
 
     public static class Response extends SecondaryIndexQuery.Response<BigInteger>
     {
-        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BigInteger> converter)
+        protected Response(Namespace queryLocation,
+                           SecondaryIndexQueryOperation.Response coreResponse,
+                           IndexConverter<BigInteger> converter)
         {
             super(queryLocation, coreResponse, converter);
         }

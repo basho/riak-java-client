@@ -210,7 +210,8 @@ public abstract class ITestBase
         resetOp.get();
     }
 
-    protected static void setupUsernamePasswordSecurity(RiakNode.Builder builder) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
+    protected static void setupUsernamePasswordSecurity(RiakNode.Builder builder)
+            throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
     {
         InputStream in;
         if (overrideCert != null)
@@ -260,7 +261,9 @@ public abstract class ITestBase
 
     public static Namespace defaultNamespace()
     {
-        return new Namespace( testBucketType ? bucketType : BinaryValue.createFromUtf8(Namespace.DEFAULT_BUCKET_TYPE), bucketName);
+        return new Namespace(testBucketType ?
+                                     bucketType :
+                                     BinaryValue.createFromUtf8(Namespace.DEFAULT_BUCKET_TYPE), bucketName);
     }
 
     protected static void assertFutureSuccess(RiakFuture<?, ?> resultFuture)

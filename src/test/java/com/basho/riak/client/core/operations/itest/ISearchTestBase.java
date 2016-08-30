@@ -26,7 +26,8 @@ public class ISearchTestBase extends ITestBase
 {
     public static final int DEFAULT_STORE_INDEX_TIMEOUT = 45000;
 
-    public static void setupSearchEnvironment(String bucketName, String indexName) throws ExecutionException, InterruptedException
+    public static void setupSearchEnvironment(String bucketName, String indexName)
+            throws ExecutionException, InterruptedException
     {
         final RiakClient client = new RiakClient(cluster);
 
@@ -60,7 +61,8 @@ public class ISearchTestBase extends ITestBase
         return new Namespace(yokozunaBucketType.toString(), bucketName);
     }
 
-    public static void cleanupSearchEnvironment(String bucketName, String indexName) throws ExecutionException, InterruptedException
+    public static void cleanupSearchEnvironment(String bucketName, String indexName)
+            throws ExecutionException, InterruptedException
     {
         final RiakClient client = new RiakClient(cluster);
 
@@ -117,43 +119,52 @@ public class ISearchTestBase extends ITestBase
         }
     }
 
-    private static void setupData(RiakClient client, Namespace namespace) throws ExecutionException, InterruptedException
+    private static void setupData(RiakClient client, Namespace namespace)
+            throws ExecutionException, InterruptedException
     {
         RiakObject ro = new RiakObject()
                 .setContentType("application/json")
-                .setValue(BinaryValue.create("{\"doc_type_i\":1, \"name_s\":\"Lion-o\", \"age_i\":30, \"leader_b\":true}"));
+                .setValue(BinaryValue.create(
+                        "{\"doc_type_i\":1, \"name_s\":\"Lion-o\", \"age_i\":30, \"leader_b\":true}"));
+
         Location location = new Location(namespace, "liono");
         StoreValue sv = new StoreValue.Builder(ro).withLocation(location).build();
         client.execute(sv);
 
         ro = new RiakObject()
                 .setContentType("application/json")
-                .setValue(BinaryValue.create("{\"doc_type_i\":1, \"name_s\":\"Cheetara\", \"age_i\":28, \"leader_b\":false}"));
+                .setValue(BinaryValue.create(
+                        "{\"doc_type_i\":1, \"name_s\":\"Cheetara\", \"age_i\":28, \"leader_b\":false}"));
+
         location = new Location(namespace, "cheetara");
         sv = new StoreValue.Builder(ro).withLocation(location).build();
         client.execute(sv);
 
         ro = new RiakObject()
                 .setContentType("application/json")
-                .setValue(BinaryValue.create("{\"doc_type_i\":1, \"name_s\":\"Snarf\", \"age_i\":43}"));
+                .setValue(BinaryValue.create(
+                        "{\"doc_type_i\":1, \"name_s\":\"Snarf\", \"age_i\":43}"));
+
         location = new Location(namespace, "snarf");
         sv = new StoreValue.Builder(ro).withLocation(location).build();
         client.execute(sv);
 
         ro = new RiakObject()
                 .setContentType("application/json")
-                .setValue(BinaryValue.create("{\"doc_type_i\":1, \"name_s\":\"Panthro\", \"age_i\":36}"));
+                .setValue(BinaryValue.create(
+                        "{\"doc_type_i\":1, \"name_s\":\"Panthro\", \"age_i\":36}"));
+
         location = new Location(namespace, "panthro");
         sv = new StoreValue.Builder(ro).withLocation(location).build();
         client.execute(sv);
 
         ro = new RiakObject()
                 .setContentType("application/json")
-                .setValue(BinaryValue.create("{\"doc_type_i\":2, \"content_s\":\"Alice was beginning to get very tired of sitting by her sister on the " +
-                                                "bank, and of having nothing to do: once or twice she had peeped into the " +
-                                                "book her sister was reading, but it had no pictures or conversations in " +
-                                                "it, 'and what is the use of a book,' thought Alice 'without pictures or " +
-                                                "conversation?'\"}"));
+                .setValue(BinaryValue.create(
+                        "{\"doc_type_i\":2, \"content_s\":\"Alice was beginning to get very tired of sitting " +
+                        "by her sister on the bank, and of having nothing to do: once or twice she had peeped " +
+                        "into the book her sister was reading, but it had no pictures or conversations in " +
+                        "it, 'and what is the use of a book,' thought Alice 'without pictures or conversation?'\"}"));
 
         location = new Location(namespace, "p1");
         sv = new StoreValue.Builder(ro).withLocation(location).build();
@@ -161,11 +172,12 @@ public class ISearchTestBase extends ITestBase
 
         ro = new RiakObject()
                 .setContentType("application/json")
-                .setValue(BinaryValue.create("{\"doc_type_i\":2, \"content_s\":\"So she was considering in her own mind (as well as she could, for the " +
-                                                "hot day made her feel very sleepy and stupid), whether the pleasure " +
-                                                "of making a daisy-chain would be worth the trouble of getting up and " +
-                                                "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
-                                                "close by her.\", \"multi_ss\":[\"this\",\"that\"]}"));
+                .setValue(BinaryValue.create(
+                        "{\"doc_type_i\":2, \"content_s\":\"So she was considering in her own mind (as well " +
+                        "as she could, for the hot day made her feel very sleepy and stupid), whether the " +
+                        "pleasure of making a daisy-chain would be worth the trouble of getting up and " +
+                        "picking the daisies, when suddenly a White Rabbit with pink eyes ran " +
+                        "close by her.\", \"multi_ss\":[\"this\",\"that\"]}"));
 
         location = new Location(namespace, "p2");
         sv = new StoreValue.Builder(ro).withLocation(location).build();
@@ -173,10 +185,11 @@ public class ISearchTestBase extends ITestBase
 
         ro = new RiakObject()
                 .setContentType("application/json")
-                .setValue(BinaryValue.create("{\"doc_type_i\":2, \"content_s\":\"The rabbit-hole went straight on like a tunnel for some way, and then " +
-                                                "dipped suddenly down, so suddenly that Alice had not a moment to think " +
-                                                "about stopping herself before she found herself falling down a very deep " +
-                                                "well.\"}"));
+                .setValue(BinaryValue.create(
+                        "{\"doc_type_i\":2, \"content_s\":\"The rabbit-hole went straight on like a tunnel " +
+                        "for some way, and then dipped suddenly down, so suddenly that Alice had not a " +
+                        "moment to think about stopping herself before she found herself falling down a " +
+                        "very deep well.\"}"));
 
         location = new Location(namespace, "p3");
         sv = new StoreValue.Builder(ro).withLocation(location).build();

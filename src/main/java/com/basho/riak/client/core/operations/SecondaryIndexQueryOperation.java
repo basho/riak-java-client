@@ -37,7 +37,8 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndexQueryOperation.Response, Object, SecondaryIndexQueryOperation.Query>
+public class SecondaryIndexQueryOperation
+        extends FutureOperation<SecondaryIndexQueryOperation.Response, Object, SecondaryIndexQueryOperation.Query>
 {
     private final static Logger logger = LoggerFactory.getLogger(SecondaryIndexQueryOperation.class);
     private final RiakKvPB.RpbIndexReq pbReq;
@@ -67,7 +68,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
 
                 if (bodyResp.hasContinuation())
                 {
-                    responseBuilder.withContinuation(BinaryValue.unsafeCreate(bodyResp.getContinuation().toByteArray()));
+                    responseBuilder.withContinuation(
+                            BinaryValue.unsafeCreate(bodyResp.getContinuation().toByteArray()));
                 }
                 continue;
             }
@@ -95,13 +97,15 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
 
             if (pbEntry.hasContinuation())
             {
-                responseBuilder.withContinuation(BinaryValue.unsafeCreate(pbEntry.getContinuation().toByteArray()));
+                responseBuilder.withContinuation(
+                        BinaryValue.unsafeCreate(pbEntry.getContinuation().toByteArray()));
             }
         }
         return responseBuilder.build();
     }
 
-    private static void convertKeys(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexResp pbEntry)
+    private static void convertKeys(SecondaryIndexQueryOperation.Response.Builder builder,
+                                    RiakKvPB.RpbIndexResp pbEntry)
     {
         /**
          * If return_terms wasn't specified only the object keys are returned
@@ -112,7 +116,8 @@ public class SecondaryIndexQueryOperation extends FutureOperation<SecondaryIndex
         }
     }
 
-    private static void convertBodies(SecondaryIndexQueryOperation.Response.Builder builder, RiakKvPB.RpbIndexBodyResp resp)
+    private static void convertBodies(SecondaryIndexQueryOperation.Response.Builder builder,
+                                      RiakKvPB.RpbIndexBodyResp resp)
     {
         for (RiakKvPB.RpbIndexObject io: resp.getObjectsList())
         {

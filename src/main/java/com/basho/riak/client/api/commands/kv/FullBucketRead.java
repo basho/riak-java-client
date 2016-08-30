@@ -25,7 +25,6 @@ import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.google.protobuf.ByteString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,16 +32,19 @@ import java.util.List;
 /**
  * Command used to retrieve all values from  Riak bucket.
  * <p>
- * Command might be executed with or without {@link com.basho.riak.client.core.operations.CoveragePlanOperation.Response.CoverageEntry}.
- * If coverage entry/context is provided, the only primary writes that related to the coverage context will be returned,
- * otherwise all data will be returned. All execution options may be used in conjunction
- * with coverage context.
+ * Command might be executed with or without
+ * {@link com.basho.riak.client.core.operations.CoveragePlanOperation.Response.CoverageEntry}.
+ * If coverage entry/context is provided, the only primary writes that
+ * related to the coverage context will be returned, otherwise all data will be returned.
+ * All execution options may be used in conjunction with a coverage context.
  *
- * Unlike 2i queries, FullBucketRead may return values/objects as part of the response and, as a result, it has better performance.
- * To activate this option you need to set {@link com.basho.riak.client.api.commands.kv.FullBucketRead.Builder#returnBody}
- * parameter.
+ * Unlike 2i queries, FullBucketRead may return values/objects as part
+ * of the response and, as a result, it has better performance.
+ * To activate this option you need to set the
+ * {@link com.basho.riak.client.api.commands.kv.FullBucketRead.Builder#returnBody} parameter.
  *
- * Note that this command mustn't be used without coverage context for querying buckets that contain a big amount of data.
+ * Note that this command must not be used without coverage context
+ * for querying buckets that contain a big amount of data.
  *
  * @author Sergey Galkin <sgalkin at basho dot com>
  * @see CoveragePlan
@@ -81,9 +83,14 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
         return future;
     }
 
-    protected final class RawQueryFuture extends CoreFutureAdapter<Response, FullBucketRead, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+    protected final class RawQueryFuture
+            extends CoreFutureAdapter<Response,
+                                      FullBucketRead,
+                                      SecondaryIndexQueryOperation.Response,
+                                      SecondaryIndexQueryOperation.Query>
     {
-        public RawQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        public RawQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response,
+                              SecondaryIndexQueryOperation.Query> coreFuture)
         {
             super(coreFuture);
         }
@@ -106,7 +113,8 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
      */
     public static class Builder
     {
-        private static class BuilderFullBucketRead2i extends  SecondaryIndexQuery.Init<BinaryValue, BuilderFullBucketRead2i>
+        private static class BuilderFullBucketRead2i
+                extends SecondaryIndexQuery.Init<BinaryValue, BuilderFullBucketRead2i>
         {
             public BuilderFullBucketRead2i(Namespace namespace)
             {
@@ -231,7 +239,9 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
     {
         private transient List<Entry> convertedList = null;
 
-        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, SecondaryIndexQuery.IndexConverter<BinaryValue> converter)
+        protected Response(Namespace queryLocation,
+                           SecondaryIndexQueryOperation.Response coreResponse,
+                           SecondaryIndexQuery.IndexConverter<BinaryValue> converter)
         {
             super(queryLocation, coreResponse, converter);
         }

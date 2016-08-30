@@ -120,12 +120,14 @@ abstract class MultiCommand<BaseCommand extends RiakCommand<BaseResponseType, Lo
     @Override
     public String toString()
     {
-        return String.format("%s {locations: %s, options: %s, maxInFlight: %s}", this.getClass().getSimpleName(), locations, options, maxInFlight);
+        return String.format("%s {locations: %s, options: %s, maxInFlight: %s}",
+                             this.getClass().getSimpleName(), locations, options, maxInFlight);
     }
 
     protected abstract ResponseType createResponseType(List<RiakFuture<BaseResponseType, Location>> futures);
     protected abstract BaseBuilder createBaseBuilderType(Location location);
-    protected abstract RiakFuture<BaseResponseType, Location> executeBaseCommandAsync(BaseCommand command, RiakCluster cluster);
+    protected abstract RiakFuture<BaseResponseType, Location> executeBaseCommandAsync(BaseCommand command,
+                                                                                      RiakCluster cluster);
 
     protected static abstract class Builder<BuiltType, ConcreteBuilder extends Builder<BuiltType, ConcreteBuilder>>
     {

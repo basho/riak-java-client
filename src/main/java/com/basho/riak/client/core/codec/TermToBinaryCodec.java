@@ -97,7 +97,9 @@ public class TermToBinaryCodec
         return encodeTsPutRequest(tableName, Collections.<String>emptyList(), rows);
     }
 
-    public static OtpOutputStream encodeTsPutRequest(String tableName, Collection<String> columns, Collection<Row> rows)
+    public static OtpOutputStream encodeTsPutRequest(String tableName,
+                                                     Collection<String> columns,
+                                                     Collection<Row> rows)
     {
         final OtpOutputStream os = new OtpOutputStream();
         os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value

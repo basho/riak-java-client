@@ -77,9 +77,14 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
         return future;
     }
 
-    protected final class RawQueryFuture extends CoreFutureAdapter<Response, RawIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+    protected final class RawQueryFuture
+            extends CoreFutureAdapter<Response,
+                                      RawIndexQuery,
+                                      SecondaryIndexQueryOperation.Response,
+                                      SecondaryIndexQueryOperation.Query>
     {
-        public RawQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        public RawQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response,
+                              SecondaryIndexQueryOperation.Query> coreFuture)
         {
             super(coreFuture);
         }
@@ -153,7 +158,9 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
 
     public static class Response extends SecondaryIndexQuery.Response<BinaryValue>
     {
-        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BinaryValue> converter)
+        protected Response(Namespace queryLocation,
+                           SecondaryIndexQueryOperation.Response coreResponse,
+                           IndexConverter<BinaryValue> converter)
         {
             super(queryLocation, coreResponse, converter);
         }

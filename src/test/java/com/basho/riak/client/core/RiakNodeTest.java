@@ -255,7 +255,8 @@ public class RiakNodeTest
 
         for (int i = 0; i < 5; i++)
         {
-            ChannelFutureListener listener = Whitebox.getInternalState(node, "inAvailableCloseListener", RiakNode.class);
+            ChannelFutureListener listener =
+                    Whitebox.getInternalState(node, "inAvailableCloseListener", RiakNode.class);
             listener.operationComplete(future);
         }
 
@@ -528,7 +529,8 @@ public class RiakNodeTest
         Map<?, ?> inProgressMap = Whitebox.getInternalState(node, "inProgressMap");
         assertEquals(1, inProgressMap.size());
         node.onException(channel, t);
-        await().atMost(500, TimeUnit.MILLISECONDS).until(fieldIn(operation).ofType(Throwable.class).andWithName("exception"), equalTo(t));
+        await().atMost(500, TimeUnit.MILLISECONDS)
+               .until(fieldIn(operation).ofType(Throwable.class).andWithName("exception"), equalTo(t));
     }
 
     @Test(expected = UnknownHostException.class)
@@ -539,7 +541,8 @@ public class RiakNodeTest
     }
 
     @Test(expected = ExecutionException.class)
-    public void BlockingExceptionIsCaughtWhileWaitingForChannelToOpen() throws UnknownHostException, InterruptedException, ExecutionException
+    public void BlockingExceptionIsCaughtWhileWaitingForChannelToOpen()
+            throws UnknownHostException, InterruptedException, ExecutionException
     {
         final BlockingExceptionTestSetup setup = new BlockingExceptionTestSetup();
         final CompoundCommand command = setup.getCommand();
@@ -564,7 +567,8 @@ public class RiakNodeTest
             catch (InterruptedException ignored) {}
         };
 
-        // Throw away all connections before second command is run, and throw a BlockingOperationException when a new one is opened.
+        // Throw away all connections before second command is run,
+        // and throw a BlockingOperationException when a new one is opened.
         command.secondCommand.injectSetup(secondCmdSetup);
 
         startAndRunBlockingExceptionTest(command, setup.getChannel(), setup.getChannelFuture(), node, cluster);
@@ -600,7 +604,8 @@ public class RiakNodeTest
             catch (InterruptedException ignored) {}
         };
 
-        // Throw away all connections before second command is run, and throw a BlockingOperationException when a new one is opened.
+        // Throw away all connections before second command is run,
+        // and throw a BlockingOperationException when a new one is opened.
         command.secondCommand.injectSetup(secondCmdSetup);
 
         startAndRunBlockingExceptionTest(command, setup.getChannel(), setup.getChannelFuture(), node, cluster);
@@ -654,7 +659,9 @@ public class RiakNodeTest
     /**
      * Say yes/onSuccess to all listeners that are added, except inProgressCloseListener. Completes operations.
      */
-    private Answer<Void> createYesChannelListenerAnswer(final RiakNode node, final Channel channel, final ChannelFuture future)
+    private Answer<Void> createYesChannelListenerAnswer(final RiakNode node,
+                                                        final Channel channel,
+                                                        final ChannelFuture future)
     {
         return new Answer<Void>()
         {
@@ -729,7 +736,8 @@ public class RiakNodeTest
     }
 
     /**
-     * Imitates a compound command like UpdateValue, where we run 1 command, then run a second in the callback of the first.
+     * Imitates a compound command like UpdateValue, where we run 1 command,
+     * then run a second in the callback of the first.
      */
     private class CompoundCommand extends RiakCommand<String, Void>
     {
