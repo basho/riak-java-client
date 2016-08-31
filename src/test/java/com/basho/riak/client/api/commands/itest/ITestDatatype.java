@@ -1,16 +1,12 @@
 package com.basho.riak.client.api.commands.itest;
 
-import com.basho.riak.client.api.commands.datatypes.*;
-import com.basho.riak.client.core.query.crdt.types.RiakSet;
-import com.basho.riak.client.core.query.crdt.types.RiakMap;
-import com.basho.riak.client.core.query.crdt.types.RiakCounter;
-import com.basho.riak.client.core.query.crdt.types.RiakRegister;
-import com.basho.riak.client.core.query.crdt.types.RiakFlag;
-import com.basho.riak.client.api.commands.datatypes.UpdateDatatype.Option;
 import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.commands.datatypes.*;
+import com.basho.riak.client.api.commands.datatypes.UpdateDatatype.Option;
 import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.crdt.types.*;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.Test;
@@ -19,12 +15,9 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ITestDatatype extends ITestAutoCleanupBase
 {
@@ -156,6 +149,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
     @Test
     public void testHyperLogLog() throws ExecutionException, InterruptedException
     {
+        Assume.assumeTrue(testHllDataType);
         resetAndEmptyBucket(uniqueUsers);
 
         HllUpdate hllUpdate = new HllUpdate().add("user1").add("user2")
