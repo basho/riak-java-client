@@ -69,6 +69,7 @@ public abstract class ITestBase
     protected static BinaryValue bucketName;
     protected static BinaryValue counterBucketType;
     protected static BinaryValue setBucketType;
+    protected static BinaryValue hllBucketType;
     protected static BinaryValue mapBucketType;
     protected static BinaryValue bucketType;
     protected static BinaryValue yokozunaBucketType;
@@ -143,6 +144,7 @@ public abstract class ITestBase
          */
         counterBucketType = BinaryValue.create("counters");
         setBucketType = BinaryValue.create("sets");
+        hllBucketType = BinaryValue.create("hlls");
         mapBucketType = BinaryValue.create("maps");
 
         mapReduceBucketType = BinaryValue.create("mr");

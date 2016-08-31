@@ -10402,7 +10402,7 @@ public final class RiakPB {
     internal_static_RpbBucketProps_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RpbBucketProps_descriptor,
-        new java.lang.String[] { "NVal", "AllowMult", "LastWriteWins", "Precommit", "HasPrecommit", "Postcommit", "HasPostcommit", "ChashKeyfun", "Linkfun", "OldVclock", "YoungVclock", "BigVclock", "SmallVclock", "Pr", "R", "W", "Pw", "Dw", "Rw", "BasicQuorum", "NotfoundOk", "Backend", "Search", "Repl", "SearchIndex", "Datatype", "Consistent", "WriteOnce", `"HllPrecision", });
+        new java.lang.String[] { "NVal", "AllowMult", "LastWriteWins", "Precommit", "HasPrecommit", "Postcommit", "HasPostcommit", "ChashKeyfun", "Linkfun", "OldVclock", "YoungVclock", "BigVclock", "SmallVclock", "Pr", "R", "W", "Pw", "Dw", "Rw", "BasicQuorum", "NotfoundOk", "Backend", "Search", "Repl", "SearchIndex", "Datatype", "Consistent", "WriteOnce", "HllPrecision", });
     internal_static_RpbAuthReq_descriptor =
       getDescriptor().getMessageTypes().get(12);
     internal_static_RpbAuthReq_fieldAccessorTable = new

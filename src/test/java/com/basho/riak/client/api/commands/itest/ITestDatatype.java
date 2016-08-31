@@ -1,20 +1,14 @@
 package com.basho.riak.client.api.commands.itest;
 
+import com.basho.riak.client.api.commands.datatypes.*;
 import com.basho.riak.client.core.query.crdt.types.RiakSet;
 import com.basho.riak.client.core.query.crdt.types.RiakMap;
 import com.basho.riak.client.core.query.crdt.types.RiakCounter;
 import com.basho.riak.client.core.query.crdt.types.RiakRegister;
 import com.basho.riak.client.core.query.crdt.types.RiakFlag;
-import com.basho.riak.client.api.commands.datatypes.CounterUpdate;
-import com.basho.riak.client.api.commands.datatypes.MapUpdate;
-import com.basho.riak.client.api.commands.datatypes.RegisterUpdate;
-import com.basho.riak.client.api.commands.datatypes.FlagUpdate;
-import com.basho.riak.client.api.commands.datatypes.SetUpdate;
-import com.basho.riak.client.api.commands.datatypes.FetchMap;
 import com.basho.riak.client.api.commands.datatypes.UpdateDatatype.Option;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
-import com.basho.riak.client.api.commands.datatypes.UpdateMap;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -43,6 +37,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
     private final String shoppingCart = "cart";
 
     private final Namespace carts = new Namespace(mapBucketType, bucketName);
+    private final Namespace uniqueUsers = new Namespace(hllBucketType, BinaryValue.create("uniqueUsers"));
 
     private final RiakClient client = new RiakClient(cluster);
 
@@ -156,5 +151,32 @@ public class ITestDatatype extends ITestAutoCleanupBase
         assertEquals(2, conflictedResponse.getDatatype().view().size());
         assertNotNull(conflictedResponse.getDatatype().getMap(numLogins));
         assertNotNull(conflictedResponse.getDatatype().getCounter(numLogins));
+    }
+
+    @Test
+    public void testHyperLogLog() throws ExecutionException, InterruptedException
+    {
+        resetAndEmptyBucket(uniqueUsers);
+
+        HllUpdate hllUpdate = new HllUpdate().add("user1").add("user2")
+                                             .addAll(Arrays.asList("foo", "bar", "baz"))
+                                             .add("user1");
+
+        final UpdateHll hllUpdateCmd = new UpdateHll.Builder(uniqueUsers, hllUpdate)
+                                                                    .withOption(Option.RETURN_BODY, true)
+                                                                    .build();
+
+        final UpdateHll.Response hllResponse = client.execute(hllUpdateCmd);
+
+        assertNotNull(hllResponse.getDatatype());
+        assertEquals(Long.valueOf(5), hllResponse.getDatatype().view());
+
+        final Location location = new Location(uniqueUsers, hllResponse.getGeneratedKey());
+
+        FetchHll hllFetchCmd = new FetchHll.Builder(location).build();
+        final FetchHll.Response fetchHllResponse = client.execute(hllFetchCmd);
+
+        assertNotNull(fetchHllResponse.getDatatype());
+        assertEquals(Long.valueOf(5), fetchHllResponse.getDatatype().view());
     }
 }

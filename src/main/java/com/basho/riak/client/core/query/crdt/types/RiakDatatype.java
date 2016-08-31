@@ -76,6 +76,16 @@ public abstract class RiakDatatype
     }
 
     /**
+     * Determine if this datatype is a HyperLogLog.
+     *
+     * @return true if a flag, false otherwise.
+     */
+    public boolean isHLL()
+    {
+        return this instanceof RiakHll;
+    }
+
+    /**
      * Get this datatype as a map.
      *
      * @return a RiakMap
@@ -148,5 +158,20 @@ public abstract class RiakDatatype
             throw new IllegalStateException("This is not an instance of a CrdtFlag");
         }
         return (RiakFlag) this;
+    }
+
+    /**
+     * Get this datatype as a flag.
+     *
+     * @return a RiakFlag
+     * @throws IllegalStateException if this is not a flag.
+     */
+    public RiakHll getAsHLL()
+    {
+        if (!isHLL())
+        {
+            throw new IllegalStateException("This is not an instance of a RiakHll");
+        }
+        return (RiakHll) this;
     }
 }
