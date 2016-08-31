@@ -151,7 +151,7 @@ public abstract class ITestBase
         mapReduceBucketType = BinaryValue.create("mr");
 
         testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt", "true"));
-        testHllDataType = Boolean.parseBoolean(System.getProperty("com.basho.riak.hlldt", "true"));
+        testHllDataType = Boolean.parseBoolean(System.getProperty("com.basho.riak.hlldt", "false"));
 
         testTimeSeries = Boolean.parseBoolean(System.getProperty("com.basho.riak.timeseries", "false"));
 
