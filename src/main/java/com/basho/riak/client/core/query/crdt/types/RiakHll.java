@@ -18,7 +18,7 @@ package com.basho.riak.client.core.query.crdt.types;
 /**
  * Representation of the Riak HyperLogLog datatype.
  * <p>
- * Contains the estimated cardinality of the HLL.
+ * Contains the estimated cardinality of the Hll.
  * </p>
  *
  * @author Alex Moore <amoore at basho dot com>

@@ -86,7 +86,7 @@ public final class FetchHll extends FetchDatatype<RiakHll, FetchHll.Response, Lo
     @Override
     public RiakHll extractDatatype(RiakDatatype element)
     {
-        return element.getAsHLL();
+        return element.getAsHll();
     }
 
     /**

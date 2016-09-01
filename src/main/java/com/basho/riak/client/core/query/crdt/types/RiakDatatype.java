@@ -80,7 +80,7 @@ public abstract class RiakDatatype
      *
      * @return true if a flag, false otherwise.
      */
-    public boolean isHLL()
+    public boolean isHll()
     {
         return this instanceof RiakHll;
     }
@@ -166,9 +166,9 @@ public abstract class RiakDatatype
      * @return a RiakFlag
      * @throws IllegalStateException if this is not a flag.
      */
-    public RiakHll getAsHLL()
+    public RiakHll getAsHll()
     {
-        if (!isHLL())
+        if (!isHll())
         {
             throw new IllegalStateException("This is not an instance of a RiakHll");
         }

@@ -74,7 +74,7 @@ public class UpdateHll extends UpdateDatatype<RiakHll, UpdateHll.Response, Locat
                     if (coreResponse.hasCrdtElement())
                     {
                         RiakDatatype element = coreResponse.getCrdtElement();
-                        hll = element.getAsHLL();
+                        hll = element.getAsHll();
                     }
                     BinaryValue returnedKey = coreResponse.hasGeneratedKey()
                         ? coreResponse.getGeneratedKey()
