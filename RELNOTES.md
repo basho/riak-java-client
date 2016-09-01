@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+### 2.0.8
+
+Following issues / PRs addressed:
+
+ * [Upgrade Netty to 4.1.5 to address higher memory usage with Netty 4.1.3](https://github.com/basho/riak-java-client/pull/671)
+
 ### 2.0.7
 
 **Notes**
