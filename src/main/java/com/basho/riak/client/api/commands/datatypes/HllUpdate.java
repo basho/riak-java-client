@@ -72,7 +72,7 @@ public class HllUpdate implements DatatypeUpdate
      */
     public HllUpdate addAllBinary(Collection<BinaryValue> elements)
     {
-        if(elements == null)
+        if (elements == null)
         {
             throw new IllegalArgumentException("Elements cannot be null");
         }
@@ -92,7 +92,7 @@ public class HllUpdate implements DatatypeUpdate
      */
     public HllUpdate addAll(Collection<String> elements)
     {
-        if(elements == null)
+        if (elements == null)
         {
             throw new IllegalArgumentException("Elements cannot be null");
         }

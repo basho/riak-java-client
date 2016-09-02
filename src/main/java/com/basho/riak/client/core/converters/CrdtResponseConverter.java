@@ -92,7 +92,7 @@ public class CrdtResponseConverter
         {
             element = parseMap(response.getMapValueList());
         }
-        else if(response.hasHllValue())
+        else if (response.hasHllValue())
         {
             element = parseHll(response.getHllValue());
         }
