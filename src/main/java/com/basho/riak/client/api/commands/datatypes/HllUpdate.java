@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc
+ * Copyright 2016 Basho Technologies Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ import java.util.Set;
  * this class is used to encapsulate the update to be performed on a
  * Riak HyperLogLog datatype.
  * </p>
- * @author Dave Rusek <drusek at basho dot com>
- * @since 2.0
+ * @author Alex Moore <amoore at basho dot com>
+ * @since 2.1
  */
 public class HllUpdate implements DatatypeUpdate
 {
