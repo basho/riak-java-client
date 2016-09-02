@@ -33,15 +33,14 @@ import com.basho.riak.client.core.query.crdt.types.RiakHll;
  *     Namespace ns = new Namespace("my_type", "my_bucket");
  *     Location loc = new Location(ns, "my_key");
  *     FetchHll fhll = new FetchHll.Builder(loc).build();
- *     FetchHll.Response resp = client.execute(fhll);
- *     RiakHll rHll = resp.getDatatype();
- *     long hllCardinality = rHll.view();
+ *     RiakHll rHll = client.execute(fhll);
+ *     long hllCardinality = rHll.getCardinality();
  * }
  * </pre>
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.1
  */
-public final class FetchHll extends FetchDatatype<RiakHll, FetchHll.Response, Location>
+public final class FetchHll extends FetchDatatype<RiakHll, RiakHll, Location>
 {
     private FetchHll(Builder builder)
     {
@@ -49,28 +48,22 @@ public final class FetchHll extends FetchDatatype<RiakHll, FetchHll.Response, Lo
     }
 
     @Override
-    protected final RiakFuture<FetchHll.Response, Location> executeAsync(RiakCluster cluster)
+    protected final RiakFuture<RiakHll, Location> executeAsync(RiakCluster cluster)
     {
         RiakFuture<DtFetchOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation());
 
-        CoreFutureAdapter<FetchHll.Response, Location, DtFetchOperation.Response, Location> future =
-            new CoreFutureAdapter<FetchHll.Response, Location, DtFetchOperation.Response, Location>(coreFuture)
+        CoreFutureAdapter<RiakHll, Location, DtFetchOperation.Response, Location> future =
+            new CoreFutureAdapter<RiakHll, Location, DtFetchOperation.Response, Location>(coreFuture)
             {
                 @Override
-                protected FetchHll.Response convertResponse(DtFetchOperation.Response coreResponse)
+                protected RiakHll convertResponse(DtFetchOperation.Response coreResponse)
                 {
                     RiakDatatype element = coreResponse.getCrdtElement();
 
-                    Context context = null;
-                    if (coreResponse.hasContext())
-                    {
-                        context = new Context(coreResponse.getContext());
-                    }
-
                     RiakHll datatype = extractDatatype(element);
 
-                    return new Response(datatype, context);
+                    return datatype;
                 }
 
                 @Override
@@ -116,27 +109,6 @@ public final class FetchHll extends FetchDatatype<RiakHll, FetchHll.Response, Lo
         public FetchHll build()
         {
             return new FetchHll(this);
-        }
-    }
-
-    /**
-     * Response from a FetchHll command.
-     * <p>
-     * Encapsulates a RiakHll returned from the FetchHll command.
-     * <pre>
-     * {@code
-     * ...
-     *     RiakHll rHll = response.getDatatype();
-     *     long hllCardinality = rHll.view();
-     * }
-     * </pre>
-     * </p>
-     */
-    public static class Response extends FetchDatatype.Response<RiakHll>
-    {
-        Response(RiakHll hll, Context context)
-        {
-            super(hll, context);
         }
     }
 }

@@ -140,6 +140,17 @@ public class UpdateHll extends UpdateDatatype<RiakHll, UpdateHll.Response, Locat
         }
 
         /**
+         * Contexts are not used with the Hyperloglog data type
+         * @param unused Unused parameter
+         * @return a copy of this object
+         */
+        @Override
+        public Builder withContext(Context unused)
+        {
+            return this;
+        }
+
+        /**
          * Construct a new UpdateHll command.
          * @return a new UpdateHll command.
          */
@@ -164,6 +175,26 @@ public class UpdateHll extends UpdateDatatype<RiakHll, UpdateHll.Response, Locat
         private Response(Context context, RiakHll datatype, BinaryValue generatedKey)
         {
             super(context, datatype, generatedKey);
+        }
+
+        /**
+         * Contexts are not used with the Hyperloglog data type
+         * @return false
+         */
+        @Override
+        public boolean hasContext()
+        {
+            return false;
+        }
+
+        /**
+         * Contexts are not used with the Hyperloglog data type
+         * @return null
+         */
+        @Override
+        public Context getContext()
+        {
+            return null;
         }
     }
 }

@@ -168,9 +168,9 @@ public class ITestDatatype extends ITestAutoCleanupBase
         final Location location = new Location(uniqueUsers, hllResponse.getGeneratedKey());
 
         FetchHll hllFetchCmd = new FetchHll.Builder(location).build();
-        final FetchHll.Response fetchHllResponse = client.execute(hllFetchCmd);
+        final RiakHll fetchHll = client.execute(hllFetchCmd);
 
-        assertNotNull(fetchHllResponse.getDatatype());
-        assertEquals(5l, fetchHllResponse.getDatatype().getCardinality());
+        assertNotNull(fetchHll);
+        assertEquals(5l, fetchHll.getCardinality());
     }
 }
