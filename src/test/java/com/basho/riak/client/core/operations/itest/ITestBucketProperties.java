@@ -171,6 +171,17 @@ public class ITestBucketProperties extends ITestAutoCleanupBase
         assertEquals(Integer.valueOf(13), props.getHllPrecision());
     }
 
+    @Test(expected = ExecutionException.class)
+    public void testIncreaseHllPrecisionThrowsError() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testHllDataType);
+        Namespace namespace = new Namespace(hllBucketType, BinaryValue.create("hll_" + new Random().nextLong()));
+        StoreBucketPropsOperation.Builder storeOp =
+                new StoreBucketPropsOperation.Builder(namespace).withHllPrecision(15);
+
+        storeBucketProps(storeOp);
+    }
+
     private BucketProperties fetchBucketProps(Namespace namespace) throws InterruptedException, ExecutionException
     {
         FetchBucketPropsOperation.Builder builder = new FetchBucketPropsOperation.Builder(namespace);
