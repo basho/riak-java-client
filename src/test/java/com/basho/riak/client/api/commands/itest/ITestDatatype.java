@@ -171,6 +171,6 @@ public class ITestDatatype extends ITestAutoCleanupBase
         final FetchHll.Response fetchHllResponse = client.execute(hllFetchCmd);
 
         assertNotNull(fetchHllResponse.getDatatype());
-        assertEquals(Long.valueOf(5), fetchHllResponse.getDatatype().view());
+        assertEquals(5l, fetchHllResponse.getDatatype().getCardinality());
     }
 }

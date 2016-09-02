@@ -44,6 +44,16 @@ public class RiakHll extends RiakDatatype
         return this.cardinality;
     }
 
+    /**
+     * Get the cardinality of the HyperLogLog as a long.
+     *
+     * @return the estimated cardinality for this HyperLogLog.
+     */
+    public long getCardinality()
+    {
+        return this.cardinality;
+    }
+
     @Override
     public String toString()
     {
