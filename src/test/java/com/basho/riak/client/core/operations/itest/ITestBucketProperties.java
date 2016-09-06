@@ -20,8 +20,12 @@ import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.query.BucketProperties;
 import com.basho.riak.client.core.query.Namespace;
+
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
+
+import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -150,6 +154,32 @@ public class ITestBucketProperties extends ITestAutoCleanupBase
         namespace = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         props = fetchBucketProps(namespace);
         assertEquals(props.getNVal(), Integer.valueOf(3));
+    }
+
+    @Test
+    public void testSetHllPrecision() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testHllDataType);
+        Namespace namespace = new Namespace(hllBucketType, BinaryValue.create("hll_" + new Random().nextLong()));
+        StoreBucketPropsOperation.Builder storeOp =
+                new StoreBucketPropsOperation.Builder(namespace).withHllPrecision(13);
+
+        storeBucketProps(storeOp);
+
+        BucketProperties props = fetchBucketProps(namespace);
+
+        assertEquals(Integer.valueOf(13), props.getHllPrecision());
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void testIncreaseHllPrecisionThrowsError() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testHllDataType);
+        Namespace namespace = new Namespace(hllBucketType, BinaryValue.create("hll_" + new Random().nextLong()));
+        StoreBucketPropsOperation.Builder storeOp =
+                new StoreBucketPropsOperation.Builder(namespace).withHllPrecision(15);
+
+        storeBucketProps(storeOp);
     }
 
     private BucketProperties fetchBucketProps(Namespace namespace) throws InterruptedException, ExecutionException

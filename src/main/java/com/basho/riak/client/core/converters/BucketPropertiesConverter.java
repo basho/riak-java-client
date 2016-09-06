@@ -92,6 +92,11 @@ public class BucketPropertiesConverter
                 builder.withBackend(pbProps.getBackend().toStringUtf8());
             }
 
+            if (pbProps.hasHllPrecision())
+            {
+                builder.withHllPrecision(pbProps.getHllPrecision());
+            }
+
             return builder.build();
     }
 
@@ -187,6 +192,10 @@ public class BucketPropertiesConverter
         if (bucketProperties.hasSearchIndex())
         {
             propsBuilder.setSearchIndex(ByteString.copyFromUtf8(bucketProperties.getSearchIndex()));
+        }
+        if (bucketProperties.hasHllPrecision())
+        {
+            propsBuilder.setHllPrecision(bucketProperties.getHllPrecision());
         }
 
         return propsBuilder.build();

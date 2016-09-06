@@ -64,6 +64,7 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
     private final Integer nval;
     private final Boolean legacySearch;
     private final String searchIndex;
+    private final Integer hllPrecision;
 
     StoreBucketProperties(Builder builder)
     {
@@ -90,6 +91,7 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
         this.nval = builder.nval;
         this.legacySearch = builder.legacySearch;
         this.searchIndex = builder.searchIndex;
+        this.hllPrecision = builder.hllPrecision;
     }
 
     @Override
@@ -232,6 +234,11 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
             builder.withSearchIndex(searchIndex);
         }
 
+        if (hllPrecision != null)
+        {
+            builder.withHllPrecision(hllPrecision);
+        }
+
         return builder.build();
     }
 
@@ -260,6 +267,7 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
         private Integer nval;
         private Boolean legacySearch;
         private String searchIndex;
+        private Integer hllPrecision;
 
         public Builder(Namespace namespace)
         {
@@ -574,6 +582,25 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
                 throw new IllegalArgumentException("Index name cannot be null or zero length");
             }
             this.searchIndex = indexName;
+            return this;
+        }
+
+        /**
+         * Set the HyperLogLog Precision.
+         *
+         * @param precision the number of bits to use in the HyperLogLog precision.
+         *                  Valid values are [4 - 16] inclusive, default is 14 on new buckets.
+         *                  <b>NOTE:</b> When changing precision, it may only be reduced from
+         *                  it's current value, and never increased.
+         * @return a reference to this object.
+         */
+        public Builder withHllPrecision(int precision)
+        {
+            if (precision < 4 || precision > 16)
+            {
+                throw new IllegalArgumentException("Precision must be between 4 and 16, inclusive.");
+            }
+            this.hllPrecision = precision;
             return this;
         }
 

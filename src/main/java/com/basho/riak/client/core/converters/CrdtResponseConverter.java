@@ -15,12 +15,7 @@
  */
 package com.basho.riak.client.core.converters;
 
-import com.basho.riak.client.core.query.crdt.types.RiakFlag;
-import com.basho.riak.client.core.query.crdt.types.RiakRegister;
-import com.basho.riak.client.core.query.crdt.types.RiakMap;
-import com.basho.riak.client.core.query.crdt.types.RiakCounter;
-import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
-import com.basho.riak.client.core.query.crdt.types.RiakSet;
+import com.basho.riak.client.core.query.crdt.types.*;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
 import com.google.protobuf.ByteString;
@@ -30,6 +25,11 @@ import java.util.List;
 
 public class CrdtResponseConverter
 {
+    private RiakDatatype parseHll(long hllValue)
+    {
+        return new RiakHll(hllValue);
+    }
+
     private RiakDatatype parseSet(List<ByteString> setValues)
     {
         List<BinaryValue> entries = new ArrayList<>(setValues.size());
@@ -92,6 +92,10 @@ public class CrdtResponseConverter
         {
             element = parseMap(response.getMapValueList());
         }
+        else if (response.hasHllValue())
+        {
+            element = parseHll(response.getHllValue());
+        }
 
         return element;
     }
@@ -109,6 +113,9 @@ public class CrdtResponseConverter
                 break;
             case SET:
                 element = parseSet(response.getValue().getSetValueList());
+                break;
+            case HLL:
+                element = parseHll(response.getValue().getHllValue());
                 break;
             default:
                 throw new IllegalStateException("No known datatype returned");

@@ -6211,6 +6211,23 @@ public final class RiakPB {
      * </pre>
      */
     boolean getWriteOnce();
+
+    /**
+     * <code>optional uint32 hll_precision = 29;</code>
+     *
+     * <pre>
+     * Hyperlolog DT Precision
+     * </pre>
+     */
+    boolean hasHllPrecision();
+    /**
+     * <code>optional uint32 hll_precision = 29;</code>
+     *
+     * <pre>
+     * Hyperlolog DT Precision
+     * </pre>
+     */
+    int getHllPrecision();
   }
   /**
    * Protobuf type {@code RpbBucketProps}
@@ -6434,6 +6451,11 @@ public final class RiakPB {
             case 224: {
               bitField0_ |= 0x02000000;
               writeOnce_ = input.readBool();
+              break;
+            }
+            case 232: {
+              bitField0_ |= 0x04000000;
+              hllPrecision_ = input.readUInt32();
               break;
             }
           }
@@ -7125,6 +7147,29 @@ public final class RiakPB {
       return writeOnce_;
     }
 
+    public static final int HLL_PRECISION_FIELD_NUMBER = 29;
+    private int hllPrecision_;
+    /**
+     * <code>optional uint32 hll_precision = 29;</code>
+     *
+     * <pre>
+     * Hyperlolog DT Precision
+     * </pre>
+     */
+    public boolean hasHllPrecision() {
+      return ((bitField0_ & 0x04000000) == 0x04000000);
+    }
+    /**
+     * <code>optional uint32 hll_precision = 29;</code>
+     *
+     * <pre>
+     * Hyperlolog DT Precision
+     * </pre>
+     */
+    public int getHllPrecision() {
+      return hllPrecision_;
+    }
+
     private void initFields() {
       nVal_ = 0;
       allowMult_ = false;
@@ -7154,6 +7199,7 @@ public final class RiakPB {
       datatype_ = com.google.protobuf.ByteString.EMPTY;
       consistent_ = false;
       writeOnce_ = false;
+      hllPrecision_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -7276,6 +7322,9 @@ public final class RiakPB {
       if (((bitField0_ & 0x02000000) == 0x02000000)) {
         output.writeBool(28, writeOnce_);
       }
+      if (((bitField0_ & 0x04000000) == 0x04000000)) {
+        output.writeUInt32(29, hllPrecision_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -7396,6 +7445,10 @@ public final class RiakPB {
       if (((bitField0_ & 0x02000000) == 0x02000000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(28, writeOnce_);
+      }
+      if (((bitField0_ & 0x04000000) == 0x04000000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(29, hllPrecision_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -7594,6 +7647,8 @@ public final class RiakPB {
         bitField0_ = (bitField0_ & ~0x04000000);
         writeOnce_ = false;
         bitField0_ = (bitField0_ & ~0x08000000);
+        hllPrecision_ = 0;
+        bitField0_ = (bitField0_ & ~0x10000000);
         return this;
       }
 
@@ -7752,6 +7807,10 @@ public final class RiakPB {
           to_bitField0_ |= 0x02000000;
         }
         result.writeOnce_ = writeOnce_;
+        if (((from_bitField0_ & 0x10000000) == 0x10000000)) {
+          to_bitField0_ |= 0x04000000;
+        }
+        result.hllPrecision_ = hllPrecision_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -7897,6 +7956,9 @@ public final class RiakPB {
         }
         if (other.hasWriteOnce()) {
           setWriteOnce(other.getWriteOnce());
+        }
+        if (other.hasHllPrecision()) {
+          setHllPrecision(other.getHllPrecision());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -9585,6 +9647,54 @@ public final class RiakPB {
         return this;
       }
 
+      private int hllPrecision_ ;
+      /**
+       * <code>optional uint32 hll_precision = 29;</code>
+       *
+       * <pre>
+       * Hyperlolog DT Precision
+       * </pre>
+       */
+      public boolean hasHllPrecision() {
+        return ((bitField0_ & 0x10000000) == 0x10000000);
+      }
+      /**
+       * <code>optional uint32 hll_precision = 29;</code>
+       *
+       * <pre>
+       * Hyperlolog DT Precision
+       * </pre>
+       */
+      public int getHllPrecision() {
+        return hllPrecision_;
+      }
+      /**
+       * <code>optional uint32 hll_precision = 29;</code>
+       *
+       * <pre>
+       * Hyperlolog DT Precision
+       * </pre>
+       */
+      public Builder setHllPrecision(int value) {
+        bitField0_ |= 0x10000000;
+        hllPrecision_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 hll_precision = 29;</code>
+       *
+       * <pre>
+       * Hyperlolog DT Precision
+       * </pre>
+       */
+      public Builder clearHllPrecision() {
+        bitField0_ = (bitField0_ & ~0x10000000);
+        hllPrecision_ = 0;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:RpbBucketProps)
     }
 
@@ -10187,7 +10297,7 @@ public final class RiakPB {
       " \002(\0132\017.RpbBucketProps\"-\n\tRpbModFun\022\016\n\006mo" +
       "dule\030\001 \002(\014\022\020\n\010function\030\002 \002(\014\"9\n\rRpbCommi" +
       "tHook\022\032\n\006modfun\030\001 \001(\0132\n.RpbModFun\022\014\n\004nam" +
-      "e\030\002 \001(\014\"\260\005\n\016RpbBucketProps\022\r\n\005n_val\030\001 \001(" +
+      "e\030\002 \001(\014\"\307\005\n\016RpbBucketProps\022\r\n\005n_val\030\001 \001(" +
       "\r\022\022\n\nallow_mult\030\002 \001(\010\022\027\n\017last_write_wins" +
       "\030\003 \001(\010\022!\n\tprecommit\030\004 \003(\0132\016.RpbCommitHoo" +
       "k\022\034\n\rhas_precommit\030\005 \001(\010:\005false\022\"\n\npostc" +
@@ -10202,11 +10312,12 @@ public final class RiakPB {
       "\n\007backend\030\026 \001(\014\022\016\n\006search\030\027 \001(\010\022)\n\004repl\030" +
       "\030 \001(\0162\033.RpbBucketProps.RpbReplMode\022\024\n\014se" +
       "arch_index\030\031 \001(\014\022\020\n\010datatype\030\032 \001(\014\022\022\n\nco",
-      "nsistent\030\033 \001(\010\022\022\n\nwrite_once\030\034 \001(\010\">\n\013Rp" +
-      "bReplMode\022\t\n\005FALSE\020\000\022\014\n\010REALTIME\020\001\022\014\n\010FU" +
-      "LLSYNC\020\002\022\010\n\004TRUE\020\003\",\n\nRpbAuthReq\022\014\n\004user" +
-      "\030\001 \002(\014\022\020\n\010password\030\002 \002(\014B!\n\027com.basho.ri" +
-      "ak.protobufB\006RiakPB"
+      "nsistent\030\033 \001(\010\022\022\n\nwrite_once\030\034 \001(\010\022\025\n\rhl" +
+      "l_precision\030\035 \001(\r\">\n\013RpbReplMode\022\t\n\005FALS" +
+      "E\020\000\022\014\n\010REALTIME\020\001\022\014\n\010FULLSYNC\020\002\022\010\n\004TRUE\020" +
+      "\003\",\n\nRpbAuthReq\022\014\n\004user\030\001 \002(\014\022\020\n\010passwor" +
+      "d\030\002 \002(\014B!\n\027com.basho.riak.protobufB\006Riak" +
+      "PB"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -10291,7 +10402,7 @@ public final class RiakPB {
     internal_static_RpbBucketProps_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RpbBucketProps_descriptor,
-        new java.lang.String[] { "NVal", "AllowMult", "LastWriteWins", "Precommit", "HasPrecommit", "Postcommit", "HasPostcommit", "ChashKeyfun", "Linkfun", "OldVclock", "YoungVclock", "BigVclock", "SmallVclock", "Pr", "R", "W", "Pw", "Dw", "Rw", "BasicQuorum", "NotfoundOk", "Backend", "Search", "Repl", "SearchIndex", "Datatype", "Consistent", "WriteOnce", });
+        new java.lang.String[] { "NVal", "AllowMult", "LastWriteWins", "Precommit", "HasPrecommit", "Postcommit", "HasPostcommit", "ChashKeyfun", "Linkfun", "OldVclock", "YoungVclock", "BigVclock", "SmallVclock", "Pr", "R", "W", "Pw", "Dw", "Rw", "BasicQuorum", "NotfoundOk", "Backend", "Search", "Repl", "SearchIndex", "Datatype", "Consistent", "WriteOnce", "HllPrecision", });
     internal_static_RpbAuthReq_descriptor =
       getDescriptor().getMessageTypes().get(12);
     internal_static_RpbAuthReq_fieldAccessorTable = new
