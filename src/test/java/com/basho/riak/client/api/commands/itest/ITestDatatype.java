@@ -173,4 +173,19 @@ public class ITestDatatype extends ITestAutoCleanupBase
         assertNotNull(fetchHll);
         assertEquals(5l, fetchHll.getCardinality());
     }
+
+    @Test
+    public void testNotFoundHyperLogLog() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testHllDataType);
+        resetAndEmptyBucket(uniqueUsers);
+
+        final Location location = new Location(uniqueUsers, "hll_not_found");
+
+        FetchHll hllFetchCmd = new FetchHll.Builder(location).build();
+        final RiakHll fetchHll = client.execute(hllFetchCmd);
+
+        assertNotNull(fetchHll);
+        assertEquals(0l, fetchHll.getCardinality());
+    }
 }

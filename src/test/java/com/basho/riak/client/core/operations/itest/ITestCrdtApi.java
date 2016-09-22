@@ -185,4 +185,19 @@ public class ITestCrdtApi extends ITestAutoCleanupBase
         assertTrue(counterResponse.hasCrdtElement());
         assertEquals(counterBottomValue, counterResponse.getCrdtElement().getAsCounter());
     }
+
+    @Test
+    public void testNonExistingHLLReturnsBottomValueAndNotFoundFlag() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testHllDataType);
+        RiakHll hllBottomValue = new RiakHll(0);
+        Location hllLocation = new Location(new Namespace(hllBucketType, bucketName), "404");
+        DtFetchOperation hllFetch = new DtFetchOperation.Builder(hllLocation).build();
+        final RiakFuture<DtFetchOperation.Response, Location> hllFuture = cluster.execute(hllFetch);
+
+        final DtFetchOperation.Response hllResponse = hllFuture.get();
+        assertTrue(hllResponse.isNotFound());
+        assertTrue(hllResponse.hasCrdtElement());
+        assertEquals(hllBottomValue, hllResponse.getCrdtElement().getAsHll());
+    }
 }
