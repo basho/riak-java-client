@@ -27,4 +27,4 @@ env:
   - RIAK_HOSTS=localhost:8087
 notifications:
   slack:
-    secure: CQHpKSbvzvGOKfQ8GdYdK0Huaz0y2xLbwhUWNH/xkrxO/OuqvYvZn7SlJRCLIYobj+zSiwsQRrz9G19gXGZMaDCwtdVVgEnddzm15bLjsUsrWU0FgRufJuATre+AVFByngvhAmdDIvcxVVhobIYo+F6m/8/OWRGhnQvvWOVtnMA=
+    secure: lCGUVnffHyrS1rpOlencvFdID7pVF2leOvbmxAKf/svkjJDLd0BWa9SgLjUDtAQ7vCa8B03rO0fWmlyynDJBQmudjytm+h8BVgAFJNm0SQOAm4ALNsWmixo4XoXhPl3rl3VmXRrx/bvLI8nA4ZIARak6RXoOXqHnl8KmkNhhxw8=
