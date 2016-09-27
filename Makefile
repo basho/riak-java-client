@@ -15,6 +15,9 @@ unit-test:
 integration-test:
 	mvn -Pitest,default -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
 
+integration-test-hll:
+	mvn -Pitest,default -Dcom.basho.riak.pbcport=$(RIAK_PORT) -Dcom.basho.riak.hlldt=true verify
+
 integration-test-timeseries:
 	mvn -Pitest,default -Dcom.basho.riak.timeseries=true -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
 
