@@ -16,6 +16,7 @@
 package com.basho.riak.client.core;
 
 import com.google.protobuf.Message;
+import io.netty.util.concurrent.FastThreadLocal;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -30,14 +31,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-
+import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
  * @author Sergey Galkin <srggal at gmail dot com>
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(FutureOperation.class)
+@PrepareForTest({FutureOperation.class, FastThreadLocal.class})
 public class RiakClusterTest
 {
     @Test
@@ -220,6 +221,37 @@ public class RiakClusterTest
 
         assertQueueStatus(cluster, 0, RiakCluster.State.RUNNING, null);
         verify(nodeManager, times(1)).executeOnNode(operation4, null);
+    }
+
+    @Test
+    public void testCleanup() throws Exception
+    {
+        RiakNode node = mock(RiakNode.class);
+        RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
+        doReturn(node).when(nodeBuilder).build();
+        PowerMockito.mockStatic(FastThreadLocal.class);
+        PowerMockito.doNothing().when(FastThreadLocal.class, "destroy");
+        PowerMockito.doNothing().when(FastThreadLocal.class, "removeAll");
+
+        RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).build();
+        Whitebox.setInternalState(cluster, "state", RiakCluster.State.SHUTDOWN);
+
+        cluster.cleanup();
+
+        verifyStatic(times(2));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCleanupNotShutdown()
+    {
+        RiakNode node = mock(RiakNode.class);
+        RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
+        doReturn(node).when(nodeBuilder).build();
+
+        RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).build();
+        Whitebox.setInternalState(cluster, "state", RiakCluster.State.RUNNING);
+
+        cluster.cleanup();
     }
 
     private void assertQueueStatus(RiakCluster cluster, Integer expectedQueueSize,

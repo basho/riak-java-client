@@ -636,6 +636,21 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         }
 
     /**
+     * Cleans up any Thread-Local variables after shutdown.
+     * This operation is useful when you are in a container environment, and you
+     * do not want to leave the thread local variables in the threads you do not manage.
+     * Call this method when your application is being unloaded from the container, <b>after</b>
+     * all {@link RiakNode}, {@link RiakCluster}, and {@link com.basho.riak.client.api.RiakClient}
+     * objects are in the shutdown state.
+     */
+    public synchronized void cleanup()
+    {
+        stateCheck(State.SHUTDOWN);
+        io.netty.util.concurrent.FastThreadLocal.removeAll();
+        io.netty.util.concurrent.FastThreadLocal.destroy();
+    }
+
+    /**
      * Builder used to create {@link RiakCluster} instances.
      */
     public static class Builder

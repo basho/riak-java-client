@@ -190,6 +190,7 @@ public class RiakClient
         RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
         return new RiakClient(cluster);
+        
     }
 
     /**
@@ -426,5 +427,18 @@ public class RiakClient
     public RiakCluster getRiakCluster()
     {
         return cluster;
+    }
+
+    /**
+     * Cleans up any Thread-Local variables after shutdown.
+     * This operation is useful when you are in a container environment, and you
+     * do not want to leave the thread local variables in the threads you do not manage.
+     * Call this method when your application is being unloaded from the container, <b>after</b>
+     * all {@link RiakNode}, {@link RiakCluster}, and {@link com.basho.riak.client.api.RiakClient}
+     * objects are in the shutdown state.
+     */
+    public void cleanup()
+    {
+        cluster.cleanup();
     }
 }
