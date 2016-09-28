@@ -11,7 +11,13 @@ fi
 
 if [[ $RIAK_DOWNLOAD_URL == 'docker' ]]
 then
-    docker run --name "$RIAK_FLAVOR" -d -p 8087:8087 -p 8098:8098 "basho/$RIAK_FLAVOR"
+    if [[ $RIAK_FLAVOR == 'riak-ts' ]]
+    then
+        TAG='1.4.0'
+    else
+        TAG='latest'
+    fi
+    docker run --name "$RIAK_FLAVOR" -d -p 8087:8087 -p 8098:8098 "basho/$RIAK_FLAVOR:$TAG"
     docker exec "$RIAK_FLAVOR" riak-admin wait-for-service riak_kv
     ./tools/devrel/riak-cluster-config "docker exec $RIAK_FLAVOR riak-admin" 8098 false false
 else
