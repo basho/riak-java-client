@@ -14,9 +14,9 @@ before_script:
   false
 script:
 - if [ $RIAK_FLAVOR == "riak-kv" ]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false
-  verify; else echo "Not riak-kv flavor"; fi
+  verify; for i in {1..10}; do mvn -Ptest-debug-logging surefire:test -Dtest=RiakClusterTest; done; else echo "Not riak-kv flavor"; fi
 - if [ $RIAK_FLAVOR == "riak-ts" ]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false
-  -Dcom.basho.riak.timeseries=true verify; else echo "Not riak-ts flavor"; fi
+  -Dcom.basho.riak.timeseries=true verify; for i in {1..10}; do mvn -Ptest-debug-logging surefire:test -Dtest=RiakClusterTest; done; else echo "Not riak-ts flavor"; fi
 after_script:
 - docker rm -f $RIAK_FLAVOR
 env:
