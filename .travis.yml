@@ -13,10 +13,8 @@ before_script:
 - tools/devrel/riak-cluster-config "docker exec $RIAK_FLAVOR riak-admin" 8098 false
   false
 script:
-- if [ $RIAK_FLAVOR == "riak-kv" ]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false
-  verify; for i in {1..10}; do mvn -Ptest-debug-logging surefire:test -Dtest=RiakClusterTest; done; else echo "Not riak-kv flavor"; fi
-- if [ $RIAK_FLAVOR == "riak-ts" ]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false
-  -Dcom.basho.riak.timeseries=true verify; for i in {1..10}; do mvn -Ptest-debug-logging surefire:test -Dtest=RiakClusterTest; done; else echo "Not riak-ts flavor"; fi
+- if [[ $RIAK_FLAVOR == "riak-kv" ]]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false verify; fi
+- if [[ $RIAK_FLAVOR == "riak-ts" ]]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false -Dcom.basho.riak.timeseries=true verify; fi
 after_script:
 - docker rm -f $RIAK_FLAVOR
 env:

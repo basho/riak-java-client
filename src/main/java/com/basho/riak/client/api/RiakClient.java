@@ -190,7 +190,6 @@ public class RiakClient
         RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
         return new RiakClient(cluster);
-        
     }
 
     /**
