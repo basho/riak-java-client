@@ -8,19 +8,17 @@ cache:
   directories:
   - "$HOME/.m2"
 before_script:
-- docker run --name $RIAK_FLAVOR -d -p 8087:8087 -p 8098:8098 basho/riak-ts
-- docker exec $RIAK_FLAVOR riak-admin wait-for-service riak_kv
-- tools/devrel/riak-cluster-config "docker exec $RIAK_FLAVOR riak-admin" 8098 false
-  false
+- ./.travis.sh
 script:
-- if [[ $RIAK_FLAVOR == "riak-kv" ]]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false verify; fi
-- if [[ $RIAK_FLAVOR == "riak-ts" ]]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false -Dcom.basho.riak.timeseries=true verify; fi
+- if [ $RIAK_FLAVOR == "riak-kv" ]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false verify; else echo "Not riak-kv flavor"; fi
+- if [ $RIAK_FLAVOR == "riak-ts" ]; then mvn -Pitest,default -Dcom.basho.riak.yokozuna=false -Dcom.basho.riak.timeseries=true verify; else echo "Not riak-ts flavor"; fi
 after_script:
 - docker rm -f $RIAK_FLAVOR
 env:
   matrix:
-  - RIAK_FLAVOR=riak-ts
-  - RIAK_FLAVOR=riak-kv
+  - RIAK_FLAVOR=riak-ts RIAK_DOWNLOAD_URL=docker
+  - RIAK_FLAVOR=riak-kv RIAK_DOWNLOAD_URL=http://s3.amazonaws.com/downloads.basho.com/riak/2.0/2.0.7/ubuntu/trusty/riak_2.0.7-1_amd64.deb
+  - RIAK_FLAVOR=riak-kv RIAK_DOWNLOAD_URL=http://s3.amazonaws.com/downloads.basho.com/riak/2.1/2.1.4/ubuntu/trusty/riak_2.1.4-1_amd64.deb
   global:
   - RIAK_HOSTS=localhost:8087
 notifications:
