@@ -10,10 +10,14 @@ import java.util.*;
  */
 public class TableDefinition
 {
+    private static final FullColumnDescription UNDEF_COLUMNDEF = new FullColumnDescription("UNDEF_COLUMNDEF",
+            ColumnDescription.ColumnType.SINT64, true);
+
     private final String tableName;
     private final LinkedHashMap<String, FullColumnDescription> fullColumnDescriptions = new LinkedHashMap<>();
     private transient List<FullColumnDescription> partitionKeys;
     private transient List<FullColumnDescription> localKeys;
+    private transient FullColumnDescription quantumField;
 
     /**
      * Create a new Table Definition
@@ -82,6 +86,35 @@ public class TableDefinition
         }
 
         return this.partitionKeys;
+    }
+
+    /**
+     * Get the FullColumnDescription for a quantum field, if any.
+     * @return null if there is no quantum information
+     */
+    public FullColumnDescription getQuantumDescription()
+    {
+        if (quantumField == null)
+        {
+            quantumField = UNDEF_COLUMNDEF;
+
+            for (FullColumnDescription fd: getPartitionKeyColumnDescriptions())
+            {
+                if (fd.hasQuantum())
+                {
+                    if (quantumField != UNDEF_COLUMNDEF)
+                    {
+                        throw new IllegalStateException("Table definition has More than one quantum.");
+                    }
+                    else
+                    {
+                        quantumField = fd;
+                    }
+                }
+            }
+        }
+
+        return quantumField == UNDEF_COLUMNDEF ? null : quantumField;
     }
 
     /**
