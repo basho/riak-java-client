@@ -12,8 +12,8 @@ public class TableDefinition
 {
     private final String tableName;
     private final LinkedHashMap<String, FullColumnDescription> fullColumnDescriptions = new LinkedHashMap<>();
-    private final ArrayList<FullColumnDescription> partitionKeys = new ArrayList<>();
-    private final ArrayList<FullColumnDescription> localKeys = new ArrayList<>();
+    private transient List<FullColumnDescription> partitionKeys;
+    private transient List<FullColumnDescription> localKeys;
 
     /**
      * Create a new Table Definition
@@ -29,20 +29,7 @@ public class TableDefinition
         for (FullColumnDescription col : fullColumnDescriptions)
         {
             this.fullColumnDescriptions.put(col.getName(), col);
-
-            if (col.isPartitionKeyMember())
-            {
-                this.partitionKeys.add(col);
-            }
-
-            if (col.isLocalKeyMember())
-            {
-                this.localKeys.add(col);
-            }
         }
-
-        Collections.sort(this.localKeys, LocalKeyComparator.INSTANCE);
-        Collections.sort(this.partitionKeys, PartitionKeyComparator.INSTANCE);
     }
 
     /**
@@ -79,6 +66,21 @@ public class TableDefinition
      */
     public Collection<FullColumnDescription> getPartitionKeyColumnDescriptions()
     {
+        if (partitionKeys == null)
+        {
+            partitionKeys = new LinkedList<>();
+
+            for (FullColumnDescription col : fullColumnDescriptions.values())
+            {
+                if (col.isPartitionKeyMember())
+                {
+                    this.partitionKeys.add(col);
+                }
+            }
+
+            Collections.sort(this.partitionKeys, PartitionKeyComparator.INSTANCE);
+        }
+
         return this.partitionKeys;
     }
 
@@ -88,6 +90,21 @@ public class TableDefinition
      */
     public Collection<FullColumnDescription> getLocalKeyColumnDescriptions()
     {
+        if (localKeys == null)
+        {
+            localKeys = new LinkedList<>();
+
+            for (FullColumnDescription col : fullColumnDescriptions.values())
+            {
+                if (col.isLocalKeyMember())
+                {
+                    this.localKeys.add(col);
+                }
+            }
+
+            Collections.sort(this.localKeys, LocalKeyComparator.INSTANCE);
+        }
+
         return this.localKeys;
     }
 
