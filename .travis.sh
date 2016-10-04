@@ -3,6 +3,14 @@
 set -o errexit
 set -o nounset
 
+echo "CPU Info"
+echo
+
+cat /proc/cpuinfo
+
+echo
+
+
 if [[ -z $RIAK_FLAVOR ]]
 then
     echo 'RIAK_FLAVOR must be set' 1>&2
