@@ -194,7 +194,9 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     {
         stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
         U decodedMessage = decode(rawResponse);
-        this.rawResponses.add(decodedMessage);
+
+        processMessage(decodedMessage);
+
         exception = null;
         if (done(decodedMessage))
         {
@@ -206,6 +208,16 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
             }
             state = State.CLEANUP_WAIT;
         }
+    }
+
+    protected void processMessage(U decodedMessage)
+    {
+        processBatchMessage(decodedMessage);
+    }
+
+    protected void processBatchMessage(U decodedMessage)
+    {
+        this.rawResponses.add(decodedMessage);
     }
 
     public synchronized final void setComplete()

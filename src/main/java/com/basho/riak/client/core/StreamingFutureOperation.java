@@ -18,32 +18,16 @@ public abstract class StreamingFutureOperation<ReturnType, ResponseType, QueryIn
         this.streamResults = streamResults;
     }
 
-    public synchronized void setResponse(RiakMessage rawResponse)
+    @Override
+    protected void processMessage(ResponseType decodedMessage)
     {
         if(!streamResults)
         {
-            super.setResponse(rawResponse);
+            super.processMessage(decodedMessage);
             return;
         }
 
-        stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
-        ResponseType decodedMessage = decode(rawResponse);
-
         processStreamingChunk(decodedMessage);
-
-        exception = null;
-
-        if (done(decodedMessage))
-        {
-            remainingTries--;
-            if (retrier != null)
-            {
-                retrier.operationComplete(this, remainingTries);
-            }
-            state = State.COMPLETE;
-            latch.countDown();
-            fireListeners();
-        }
     }
 
     abstract protected void processStreamingChunk(ResponseType rawResponseChunk);

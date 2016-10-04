@@ -253,7 +253,8 @@ public class SecondaryIndexQueryOperation
                     RiakKvPB.RpbIndexResp.newBuilder().setContinuation(
                     ByteString.copyFrom(response.getContinuation().unsafeGetValue()))
                                          .build();
-            rawResponses.add(continuationOnlyResponse);
+
+            processBatchMessage(continuationOnlyResponse);
         }
 
         this.responseQueue.add(response);
