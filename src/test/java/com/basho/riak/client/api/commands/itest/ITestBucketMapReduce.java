@@ -39,7 +39,6 @@ import java.util.concurrent.ExecutionException;
 
 import org.junit.*;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -85,13 +84,13 @@ public class ITestBucketMapReduce extends ITestBase
             client.execute(op);
         }
     }
-    
+
     private static void initValues(String bucketType) throws InterruptedException
     {
         // insert 200 items into a bucket
-       
+
         Namespace ns = new Namespace(bucketType, mrBucketName);
-        
+
         String keyPrefix = "mr_test_";
         for (int i = 0; i < 200; i++)
         {
@@ -104,182 +103,182 @@ public class ITestBucketMapReduce extends ITestBase
             assertTrue(future.isSuccess());
         }
     }
-    
+
     @Test
     public void erlangBucketMRDefaultType() throws InterruptedException, ExecutionException
     {
         erlangBucketMR(Namespace.DEFAULT_BUCKET_TYPE);
     }
-    
+
     @Test
     public void erlangBucketMRTestType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
         erlangBucketMR(mapReduceBucketType.toString());
     }
-    
+
     private void erlangBucketMR(String bucketType) throws InterruptedException, ExecutionException
     {
         Namespace ns = new Namespace(bucketType, mrBucketName);
-        BucketMapReduce bmr = 
+        BucketMapReduce bmr =
             new BucketMapReduce.Builder()
                 .withNamespace(ns)
                 .withMapPhase(Function.newErlangFunction("riak_kv_mapreduce", "map_object_value"), false)
                 .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_string_to_integer"), false)
                 .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_sort"), true)
                 .build();
-        
+
          MapReduce.Response response = client.execute(bmr);
-                
+
         // The query should return one phase result which is a JSON array containing
         // all the values, 0 - 199
         assertEquals(200, response.getResultsFromAllPhases().size());
         ArrayNode result = response.getResultForPhase(2);
         assertEquals(200, result.size());
-        
+
         assertEquals(42, result.get(42).asInt());
         assertEquals(199, result.get(199).asInt());
     }
-    
+
     @Test
     public void JsBucketMRDefaultType() throws InterruptedException, ExecutionException
     {
         JsBucketMR(Namespace.DEFAULT_BUCKET_TYPE);
     }
-    
+
     @Test
     public void JsBucketMRTestType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
         JsBucketMR(mapReduceBucketType.toString());
     }
-    
+
     private void JsBucketMR(String bucketType) throws InterruptedException, ExecutionException
     {
         Namespace ns = new Namespace(bucketType, mrBucketName);
-        BucketMapReduce bmr = 
+        BucketMapReduce bmr =
             new BucketMapReduce.Builder()
                 .withNamespace(ns)
                 .withMapPhase(Function.newNamedJsFunction("Riak.mapValuesJson"), false)
                 .withReducePhase(Function.newNamedJsFunction("Riak.reduceNumericSort"), true)
                 .build();
-        
+
         RiakFuture<MapReduce.Response, BinaryValue> future = client.executeAsync(bmr);
-        
+
         future.await();
         assertTrue("Map reduce operation Operation failed:" + future.cause(), future.isSuccess());
-        
+
         MapReduce.Response response = future.get();
-        
+
         // The query should return one phase result which is a JSON array containing
         // all the values, 0 - 199
         assertEquals(200, response.getResultsFromAllPhases().size());
         ArrayNode result = response.getResultForPhase(1);
         assertEquals(200, result.size());
-        
+
         assertEquals(42, result.get(42).asInt());
         assertEquals(199, result.get(199).asInt());
     }
-    
+
     @Test
     public void multiPhaseResult() throws InterruptedException, ExecutionException
     {
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, mrBucketName);
-        BucketMapReduce bmr = 
+        BucketMapReduce bmr =
             new BucketMapReduce.Builder()
                 .withNamespace(ns)
                 .withMapPhase(Function.newNamedJsFunction("Riak.mapValuesJson"), true)
                 .withReducePhase(Function.newNamedJsFunction("Riak.reduceNumericSort"), true)
                 .build();
-        
+
         RiakFuture<MapReduce.Response, BinaryValue> future = client.executeAsync(bmr);
-        
+
         future.await();
         assertTrue(future.isSuccess());
-        
+
         MapReduce.Response response = future.get();
-        
+
         // The query should return two phase results, each a JSON array containing
         // all the values, 0 - 199
         assertEquals(400, response.getResultsFromAllPhases().size());
         assertEquals(200, response.getResultForPhase(0).size());
         ArrayNode result = response.getResultForPhase(1);
         assertEquals(200, result.size());
-        
+
         assertEquals(42, result.get(42).asInt());
         assertEquals(199, result.get(199).asInt());
     }
-    
+
     @Test
     public void keyFilter() throws InterruptedException, ExecutionException
     {
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, mrBucketName);
-        BucketMapReduce bmr = 
+        BucketMapReduce bmr =
             new BucketMapReduce.Builder()
                 .withNamespace(ns)
                 .withMapPhase(Function.newNamedJsFunction("Riak.mapValuesJson"))
                 .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_sort"),true)
                 .withKeyFilter(new TokenizeFilter("_",3))
                 .withKeyFilter(new StringToIntFilter())
-                .withKeyFilter(new LogicalAndFilter(new LessThanFilter<Integer>(50), new GreaterThanFilter<Integer>(45)))
+                .withKeyFilter(new LogicalAndFilter(new LessThanFilter<>(50), new GreaterThanFilter<>(45)))
                 .build();
-        
+
         RiakFuture<MapReduce.Response, BinaryValue> future = client.executeAsync(bmr);
-        
+
         future.await();
         assertTrue(future.isSuccess());
-        
+
         MapReduce.Response response = future.get();
         assertEquals(4, response.getResultsFromAllPhases().size());
         assertEquals(46, response.getResultsFromAllPhases().get(0).asInt());
         assertEquals(49, response.getResultsFromAllPhases().get(3).asInt());
     }
-    
+
     @Test
     public void differentBucketType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
-        
+
         Namespace ns = new Namespace(mapReduceBucketType.toString(), mrBucketName);
-        BucketMapReduce bmr = 
+        BucketMapReduce bmr =
             new BucketMapReduce.Builder()
                 .withNamespace(ns)
                 .withMapPhase(Function.newAnonymousJsFunction(
                     "function(value, keydata, arg) {" +
                         "  var data = value.values[0].data;" +
-                        "  if(data > 20)" +
+                        "  if (data > 20)" +
                         "    return [data];" +
                         "  else" +
                         "    return[];" +
                         "}"), true)
                 .build();
-        
+
         MapReduce.Response response = client.execute(bmr);
-        
+
         assertEquals(179, response.getResultsFromAllPhases().size());
     }
-    
+
     @Test
     public void differentBucketTypeWithFilter() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
 
         Namespace ns = new Namespace(mapReduceBucketType.toString(), mrBucketName);
-        BucketMapReduce bmr = 
+        BucketMapReduce bmr =
             new BucketMapReduce.Builder()
                 .withNamespace(ns)
                 .withKeyFilter(new TokenizeFilter("_",3))
                 .withKeyFilter(new StringToIntFilter())
-                .withKeyFilter(new LogicalAndFilter(new LessThanFilter<Integer>(50), new GreaterThanFilter<Integer>(45)))
+                .withKeyFilter(new LogicalAndFilter(new LessThanFilter<>(50), new GreaterThanFilter<>(45)))
                 .withMapPhase(Function.newAnonymousJsFunction(
                     "function(value, keydata, arg) {" +
                         "  var data = value.values[0].data;" +
                         "  return [data];" +
                         "}"), true)
                 .build();
-        
+
         RiakFuture<MapReduce.Response, BinaryValue> future = client.executeAsync(bmr);
-        
+
         future.await();
         assertTrue(future.isSuccess());
         assertEquals(4, future.get().getResultsFromAllPhases().size());

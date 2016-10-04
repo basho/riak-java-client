@@ -24,7 +24,6 @@ import static java.util.Collections.unmodifiableSet;
 
 public class MapOp implements CrdtOp
 {
-
     public enum FieldType
     {
         SET, COUNTER, MAP, REGISTER, FLAG
@@ -59,8 +58,8 @@ public class MapOp implements CrdtOp
 
     public MapOp()
     {
-        removes = new HashSet<MapField>();
-        updates = new HashSet<MapUpdate>();
+        removes = new HashSet<>();
+        updates = new HashSet<>();
     }
 
     public MapOp(Set<MapField> removes, Set<MapUpdate> updates)
@@ -102,7 +101,6 @@ public class MapOp implements CrdtOp
         return update(key, op, FieldType.FLAG);
     }
 
-    
     public MapOp remove(BinaryValue key, FieldType type)
     {
         MapField field = new MapField(type, key);

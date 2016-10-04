@@ -73,5 +73,4 @@ public class BucketKeyInput implements MapReduceInput
             return keyData != null && keyData != "";
         }
     }
-
 }

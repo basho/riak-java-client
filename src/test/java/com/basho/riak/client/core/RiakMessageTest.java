@@ -14,7 +14,8 @@ import org.junit.Test;
 public class RiakMessageTest
 {
     @Test
-    public void parsesPbufErrorCorrectly() {
+    public void parsesPbufErrorCorrectly()
+    {
         RiakPB.RpbErrorResp.Builder b = RiakPB.RpbErrorResp.newBuilder();
         b.setErrcode(1234);
         b.setErrmsg(ByteString.copyFromUtf8("this is an error"));
@@ -27,7 +28,8 @@ public class RiakMessageTest
     }
 
     @Test
-    public void parsesTtbErrorCorrectly() {
+    public void parsesTtbErrorCorrectly()
+    {
         final byte[] TTB_ERROR = {(byte)131, 104, 3, 100, 0, 12, 114, 112, 98, 101, 114,
             114, 111, 114, 114, 101, 115, 112, 109, 0, 0, 0, 16, 116, 104, 105, 115, 32, 105, 115,
             32, 97, 110, 32, 101, 114, 114, 111, 114, 98, 0, 0, 4, (byte)210};

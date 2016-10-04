@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-
 /**
  * This only tests the conversions. RiakIndex is fully exercised via the RawIndexTest
  * @author Brian Roach <roach at basho dot com>
@@ -34,17 +33,15 @@ public class LongIntIndexTest
     public void storeAndRetrieveLong()
     {
         LongIntIndex index = LongIntIndex.named("index_name").createIndex();
-        Set<Long> longSet = new HashSet<Long>(Arrays.asList(Long.MAX_VALUE, Long.MIN_VALUE));
-        
+        Set<Long> longSet = new HashSet<>(Arrays.asList(Long.MAX_VALUE, Long.MIN_VALUE));
+
         index.add(longSet);
-        
+
         assertEquals(index.size(), 2);
         assertTrue(index.hasValue(Long.MIN_VALUE));
         assertTrue(index.hasValue(Long.MAX_VALUE));
-        
+
         Set<Long> longSet2 = index.values();
         assertTrue(longSet.containsAll(longSet2));
-        
     }
-    
 }

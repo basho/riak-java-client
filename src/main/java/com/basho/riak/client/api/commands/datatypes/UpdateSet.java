@@ -33,18 +33,18 @@ import com.basho.riak.client.core.util.BinaryValue;
  * To update or create a set in Riak you construct a {@link SetUpdate} and use
  * this command to send it to Riak.
  * <pre class="prettyprint">
- * {@code 
+ * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * Location loc = new Location(ns, "my_key");
  * SetUpdate update = new SetUpdate().add("some_new_value");
- * 
+ *
  * UpdateSet us = new UpdateSet.Builder(loc, update).withReturnDatatype(true).build();
  * UpdateSet.Response resp = client.execute(us);
  * RiakSet = resp.getDatatype();
  * }
  * </pre>
  * </p>
- * 
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
@@ -52,19 +52,19 @@ import com.basho.riak.client.core.util.BinaryValue;
 public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Location>
 {
     private final SetUpdate update;
-    
+
     private UpdateSet(Builder builder)
     {
         super(builder);
         this.update = builder.update;
     }
-    
+
     @Override
     protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<DtUpdateOperation.Response, Location> coreFuture = 
+        RiakFuture<DtUpdateOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation(update));
-        
+
         CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location> future =
             new CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location>(coreFuture)
             {
@@ -93,19 +93,18 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
                 {
                     return coreQueryInfo;
                 }
-                
             };
         coreFuture.addListener(future);
         return future;
     }
-    
+
     /**
      * Builder used to construct an UpdateSet command.
      */
     public static class Builder extends UpdateDatatype.Builder<Builder>
     {
         private final SetUpdate update;
-        
+
         /**
          * Construct a Builder for an UpdateSet command.
          * @param location the location of the set in Riak.
@@ -120,17 +119,17 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
             }
             this.update = update;
         }
-        
+
         /**
          * Constructs a builder for an UpdateSet command with only a Namespace.
          * <p>
-         * By providing only a Namespace with the update, Riak will create the 
-         * set, generate the key, 
-         * and return it in the response. 
+         * By providing only a Namespace with the update, Riak will create the
+         * set, generate the key,
+         * and return it in the response.
          * </p>
          * @param namespace the namespace to create the datatype.
          * @param update the update to apply
-         * @see Response#getGeneratedKey() 
+         * @see Response#getGeneratedKey()
          */
         public Builder(Namespace namespace, SetUpdate update)
         {
@@ -141,7 +140,7 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
             }
             this.update = update;
         }
-        
+
         /**
          * Construct a new UpdateSet command.
          * @return a new UpdateSet command.
@@ -151,15 +150,14 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
         {
             return new UpdateSet(this);
         }
-        
+
         @Override
         protected Builder self()
         {
             return this;
         }
-        
     }
-    
+
     /**
      * A response from an UpdateSet command.
      */
@@ -169,6 +167,5 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
         {
             super(context, datatype, generatedKey);
         }
-        
     }
 }

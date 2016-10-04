@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Basho Technologies Inc.
+ * Copyright 2013-2015 Basho Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public final class HostAndPort implements Serializable
 
     public int getPortOrDefault(int defaultPort)
     {
-        if(!hasPort())
+        if (!hasPort())
         {
             return defaultPort;
         }
@@ -68,7 +68,7 @@ public final class HostAndPort implements Serializable
 
     public InetSocketAddress asInetSocketAddress()
     {
-        if(inetAddress == null)
+        if (inetAddress == null)
         {
             inetAddress = new InetSocketAddress(getHost(), getPort());
         }
@@ -81,9 +81,9 @@ public final class HostAndPort implements Serializable
         checkHost(hostPortStr);
         String rawHosts[] = hostPortStr.split(",");
 
-        List<HostAndPort> retVal = new ArrayList<HostAndPort>(rawHosts.length);
+        List<HostAndPort> retVal = new ArrayList<>(rawHosts.length);
 
-        for( String s: rawHosts)
+        for ( String s: rawHosts)
         {
             retVal.add(HostAndPort.fromString(s, defaultPort));
         }
@@ -99,7 +99,7 @@ public final class HostAndPort implements Serializable
         final int idx = hostPortStr.indexOf(':');
         final HostAndPort retVal;
 
-        if( idx == -1 )
+        if ( idx == -1 )
         {
             retVal = fromParts(hostPortStr, defaultPort);
         }
@@ -128,7 +128,7 @@ public final class HostAndPort implements Serializable
 
     private static void checkHost(String host) throws IllegalArgumentException
     {
-        if(host == null || host.isEmpty())
+        if (host == null || host.isEmpty())
         {
             throw new IllegalArgumentException("Host must be provided, it can't be null or empty");
         }
@@ -141,7 +141,9 @@ public final class HostAndPort implements Serializable
         if (o == null || getClass() != o.getClass()) return false;
 
         HostAndPort that = (HostAndPort) o;
-        return getPort()==that.getPort() && getHost().equals(that.getHost());
+
+        if (getPort() != that.getPort()) return false;
+        return getHost().equals(that.getHost());
     }
 
     @Override

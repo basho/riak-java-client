@@ -27,9 +27,8 @@ import java.util.Set;
 @JsonSerialize(using = SetMemberSerializer.class)
 public class SetMemberFilter<T> extends KeyFilter
 {
-
     private static final String NAME = "set_member";
-    private final Set<T> set = new HashSet<T>();
+    private final Set<T> set = new HashSet<>();
 
     /**
      * Creates a set by copying a known set.

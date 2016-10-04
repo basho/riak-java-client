@@ -27,19 +27,21 @@ import java.util.Arrays;
 public class BasicVClock implements VClock
 {
     private final byte[] value;
-    
+
     /**
      * Create a BasicVclock.
      * @param value the vector clock bytes. NOTE: copies the value
      * @throws IllegalArgumentException if <code>value</code> is null
      */
-    public BasicVClock(final byte[] value) {
-        if (value == null) {
+    public BasicVClock(final byte[] value)
+    {
+        if (value == null)
+        {
             throw new IllegalArgumentException("VClock value cannot be null");
         }
         this.value = Arrays.copyOf(value, value.length);
     }
-    
+
     /**
      * Create a BasicVclock from utf8 String.
      * @param vclock the vector clock.
@@ -47,12 +49,13 @@ public class BasicVClock implements VClock
      */
     public BasicVClock(String vclock)
     {
-        if (vclock == null) {
+        if (vclock == null)
+        {
             throw new IllegalArgumentException("VClock value cannot be null");
         }
         this.value = vclock.getBytes(Charset.forName("UTF-8"));
     }
-    
+
     @Override
     public byte[] getBytes()
     {
@@ -71,7 +74,7 @@ public class BasicVClock implements VClock
             throw new IllegalStateException(ex);
         }
     }
-    
+
     @Override
     public boolean equals(Object o)
     {
@@ -83,7 +86,7 @@ public class BasicVClock implements VClock
                 return Arrays.equals(other.getBytes(), value);
             }
         }
-            
+
         return false;
     }
 

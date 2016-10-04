@@ -20,8 +20,8 @@ package com.basho.riak.client.core.util;
  * @author Brian Roach <roach at basho dot com>
  * @since 1.0
  */
-public interface Constants {
-
+public interface Constants
+{
     // JSON fields used by Riak
     public static String FL_NAME = "name";
     public static String FL_KEYS = "keys";
@@ -88,7 +88,7 @@ public interface Constants {
 
     // List bucket operation parameters
     public static String LIST_BUCKETS = "true";
-    
+
     // Netty Channel handler constants
     public static final String MESSAGE_CODEC = "codec";
     public static final String OPERATION_ENCODER = "operationEncoder";

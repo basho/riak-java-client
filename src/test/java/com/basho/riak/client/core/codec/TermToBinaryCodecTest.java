@@ -1,14 +1,11 @@
 package com.basho.riak.client.core.codec;
 
-import com.basho.riak.client.api.RiakException;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.query.timeseries.Row;
-import com.basho.riak.protobuf.RiakTsPB;
 import com.ericsson.otp.erlang.OtpErlangDecodeException;
 import com.ericsson.otp.erlang.OtpOutputStream;
-import com.google.protobuf.ByteString;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,10 +23,14 @@ public class TermToBinaryCodecTest
 {
     private static final String TABLE_NAME = "test_table";
     private static final String QUERY = "SELECT * FROM FRAZZLE";
+    private static final byte[] CONTEXT = new byte[] {(byte)131,104,2,98,40,26,4,(byte)204,109,0,0,0,12,
+                                                      (byte)131,104,1,100,0,6,102,111,111,98,97,114};
 
     @Test
-    public void encodesPutRequestCorrectly_1() {
-        // {tsputreq, <<"test_table">>, [], [{<<"varchar">>, 12345678, 12.34, true, 12345}, {<<"string">>, 8765432, 43.21, false, 543321}]}
+    public void encodesPutRequestCorrectly_1()
+    {
+        // {tsputreq, <<"test_table">>, [], [{<<"varchar">>, 12345678, 12.34, true, 12345},
+        //                                   {<<"string">>, 8765432, 43.21, false, 543321}]}
         final byte[] exp = {(byte)131, 104, 4, 100, 0, 8, 116, 115, 112, 117, 116, 114, 101, 113, 109, 0,
             0, 0, 10, 116, 101, 115, 116, 95, 116, 97, 98, 108, 101, 106, 108, 0, 0,
             0, 2, 104, 5, 109, 0, 0, 0, 7, 118, 97, 114, 99, 104, 97, 114, 98, 0, (byte)188,
@@ -60,19 +61,25 @@ public class TermToBinaryCodecTest
         Row r2 = new Row(c6, c7, c8, c9, c10);
         Row[] rows = { r1, r2 };
 
-        try {
+        try
+        {
             OtpOutputStream os = TermToBinaryCodec.encodeTsPutRequest(TABLE_NAME, Arrays.asList(rows));
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             Assert.fail(ex.getMessage());
         }
     }
 
     @Test
-    public void encodesPutRequestCorrectly_2() {
-        // A = riakc_ts_put_operator:serialize(<<"test_table">>,[{<<"series">>, <<"family">>, 12345678, 1, true, 34.3, []}], true).
+    public void encodesPutRequestCorrectly_2()
+    {
+        // A = riakc_ts_put_operator:serialize(<<"test_table">>,
+        //                                     [{<<"series">>, <<"family">>, 12345678, 1, true, 34.3, []}],
+        //                                     true).
         // A = {tsputreq,<<"test_table">>,[],[{<<"series">>,<<"family">>,12345678,1,true,34.3,[]}]}
         final byte[] exp = {(byte)131,104,4, // outer tuple arity 4
                             100,0,8,116,115,112,117,116,114,101,113, // tsputreq atom
@@ -86,9 +93,10 @@ public class TermToBinaryCodecTest
                                     97,1, // small integer
                                     100,0,4,116,114,117,101, // true atom
                                     // NB: this is what Erlang generates, an old-style float
-                                    // 99,51,46,52,50,57,57,57,57,57,57,57,57,57,57,57,57,57,55,49,53,55,56,101,43,48,49,0,0,0,0,0, // float_ext len 31
+                                    // 99,51,46,52,50,57,57,57,57,57,57,57,57,57,
+                                    //   57,57,57,57,55,49,53,55,56,101,43,48,49,0,0,0,0,0, // float_ext len 31
                                     // NB: this is what JInterface generates, a new-style float
-                                    70, 64, 65, 38, 102, 102, 102, 102, 102,
+                                    70,64,65,38,102,102,102,102,102,
                                     106, // null cell empty list
                             106}; // list arity 1 end
 
@@ -96,18 +104,76 @@ public class TermToBinaryCodecTest
         rows.add(new Row(new Cell("series"), new Cell("family"), Cell.newTimestamp(12345678),
                          new Cell(1L), new Cell(true), new Cell(34.3), null));
 
-        try {
+        try
+        {
             OtpOutputStream os = TermToBinaryCodec.encodeTsPutRequest(TABLE_NAME, rows);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             Assert.fail(ex.getMessage());
         }
     }
 
     @Test
-    public void encodesGetRequestCorrectly() {
+    public void encodesPutWithColumnsCorrectly()
+    {
+        /*
+            {tsputreq,<<"test_table">>,
+                      [<<"a">>,<<"b">>,<<"c">>,<<"d">>,<<"e">>,<<"f">>,<<"g">>],
+                      [{<<"series">>,<<"family">>,12345678,1,true,34.3,[]}]}
+         */
+        final byte[] exp = {
+                (byte)131,104,4,
+                    100,0,8,116,115,112,117,116,114,101,113,
+                    109,0,0,0,10,116,101,115,116,95,116,97,98,108,101,
+                    108,0,0,0,7,
+                        109,0,0,0,1,97,
+                        109,0,0,0,1,98,
+                        109,0,0,0,1,99,
+                        109,0,0,0,1,100,
+                        109,0,0,0,1,101,
+                        109,0,0,0,1,102,
+                        109,0,0,0,1,103,
+                        106,
+                    108,0,0,0,1,
+                        104,7,
+                            109,0,0,0,6,115,101,114,105,101,115,
+                            109,0,0,0,6,102,97,109,105,108,121,
+                            98,0,(byte)188,97,78,
+                            97,1,
+                            100,0,4,116,114,117,101,
+                            // NB: this is what Erlang generates, an old-style float
+                            // 99,51,46,52,50,57,57,57,57,57,57,57,57,57,57,57,57,
+                            //     57,55,49,53,55,56,101,43,48,49,0,0,0,0,0, // float_ext len 31
+                            // NB: this is what JInterface generates, a new-style float
+                            70,64,65,38,102,102,102,102,102,
+                            106,
+                        106};
+
+        final List<String> columns = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
+        final ArrayList<Row> rows = new ArrayList<>(1);
+        rows.add(new Row(new Cell("series"), new Cell("family"), Cell.newTimestamp(12345678),
+                         new Cell(1L), new Cell(true), new Cell(34.3), null));
+
+        try
+        {
+            OtpOutputStream os = TermToBinaryCodec.encodeTsPutRequest(TABLE_NAME, columns, rows);
+            os.flush();
+            byte[] msg = os.toByteArray();
+            Assert.assertArrayEquals(exp, msg);
+        }
+        catch (IOException ex)
+        {
+            Assert.fail(ex.getMessage());
+        }
+    }
+
+    @Test
+    public void encodesGetRequestCorrectly()
+    {
         // {tsgetreq, <<"test_table">>, [<<"series">>, <<"family">>, 12345678], 5000}
         final byte[] exp = {(byte)131, 104, 4, 100, 0, 8, 116, 115, 103, 101, 116, 114, 101, 113, 109, 0,
             0, 0, 10, 116, 101, 115, 116, 95, 116, 97, 98, 108, 101, 108, 0, 0, 0, 3,
@@ -119,19 +185,23 @@ public class TermToBinaryCodecTest
         Cell k3 = new Cell(12345678);
         Cell[] key = {k1, k2, k3};
 
-        try {
+        try
+        {
             OtpOutputStream os = TermToBinaryCodec.encodeTsGetRequest(TABLE_NAME, Arrays.asList(key), 5000);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
             Assert.fail(ex.getMessage());
         }
     }
 
     @Test
-    public void encodesQueryRequestCorrectly() {
-        // {tsqueryreq, {tsinterpolation, <<"SELECT * FROM FRAZZLE">>, []}, false, []}
+    public void encodesQueryRequestCorrectly()
+    {
+        // {tsqueryreq,{tsinterpolation,<<"SELECT * FROM FRAZZLE">>,[]},false,undefined}
         final byte[] exp = {(byte)131,104,4,100,0,10,116,115,113,117,101,114,121,114,101,
                             113,104,3,100,0,15,116,115,105,110,116,101,114,112,111,
                             108,97,116,105,111,110,109,0,0,0,21,83,69,76,69,67,84,
@@ -139,12 +209,41 @@ public class TermToBinaryCodecTest
                             5,102,97,108,115,101,100,0,9,117,110,100,101,102,105,
                             110,101,100};
 
-        try {
-            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY);
+        try
+        {
+            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, null);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex)
+        {
+            Assert.fail(ex.getMessage());
+        }
+    }
+
+    @Test
+    public void encodesQueryRequestWithCoverageContextCorrectly()
+    {
+        // {tsqueryreq, {tsinterpolation, <<"SELECT * FROM FRAZZLE">>, []},
+        //              false,
+        //              <<131,104,2,98,40,26,4,204,109,0,0,0,12,131,104,1,100,0,6,102,111,111,98,97,114>>}
+        final byte[] exp = {(byte)131,104,4,100,0,10,116,115,113,117,101,114,121,114,101,
+                            113,104,3,100,0,15,116,115,105,110,116,101,114,112,111,
+                            108,97,116,105,111,110,109,0,0,0,21,83,69,76,69,67,84,
+                            32,42,32,70,82,79,77,32,70,82,65,90,90,76,69,106,100,0,
+                            5,102,97,108,115,101,109,0,0,0,25,(byte)131,104,2,98,40,26,4,
+                            (byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114};
+
+        try
+        {
+            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, CONTEXT);
+            os.flush();
+            byte[] msg = os.toByteArray();
+            Assert.assertArrayEquals(exp, msg);
+        }
+        catch (IOException ex)
+        {
             Assert.fail(ex.getMessage());
         }
     }
@@ -152,7 +251,6 @@ public class TermToBinaryCodecTest
     @Test
     public void decodesQueryResultCorrectly() throws OtpErlangDecodeException
     {
-
         /* MSG = {tsqueryresp, DATA}
            DATA = {COLUMN_NAMES, COLUMN_TYPES, ROWS}
            COLUMN_NAMES = [binary, ...]
@@ -192,7 +290,8 @@ public class TermToBinaryCodecTest
         expectedColumnDescriptions[5] = new ColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64);
         expectedColumnDescriptions[6] = new ColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN);
 
-        final Row row = new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(1443806600000L), new Cell("cloudy"), null, null, new Cell(true));
+        final Row row = new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(1443806600000L),
+                                new Cell("cloudy"), null, null, new Cell(true));
         final Row[] expectedRows = new Row[1];
         expectedRows[0] = (row);
 
@@ -204,7 +303,8 @@ public class TermToBinaryCodecTest
             final List<Row> actualRows = actual.getRowsCopy();
 
             Assert.assertArrayEquals(expectedColumnDescriptions,
-                                     actualColumnDescriptions.toArray(new ColumnDescription[actualColumnDescriptions.size()]));
+                                     actualColumnDescriptions.toArray(
+                                             new ColumnDescription[actualColumnDescriptions.size()]));
 
             Assert.assertArrayEquals(expectedRows, actualRows.toArray(new Row[actualRows.size()]));
         }
@@ -212,6 +312,5 @@ public class TermToBinaryCodecTest
         {
             Assert.fail(ex.getMessage());
         }
-
     }
 }

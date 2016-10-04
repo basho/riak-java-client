@@ -26,23 +26,22 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * When you have multiple writers there may be multiple versions of the same
  * object stored in Riak. When fetching all of these will be returned and you
- * will need to resolve the conflict. 
+ * will need to resolve the conflict.
  * </p>
  * <p>
  * To facilitate this, you can store an instance of the {@link ConflictResolver}
  * in this factory for a class. It will then be used by the {@link com.basho.riak.client.api.commands.kv.FetchValue.Response}
  * to resolve a set a of siblings to a single object.
  * </p>
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
 public enum ConflictResolverFactory
 {
     INSTANCE;
-    
-    private final Map<Type, ConflictResolver<?>> resolverInstances =
-        new ConcurrentHashMap<Type, ConflictResolver<?>>();
+
+    private final Map<Type, ConflictResolver<?>> resolverInstances = new ConcurrentHashMap<>();
 
     /**
      * Returns the instance of the ConflictResolverFactory.
@@ -52,7 +51,7 @@ public enum ConflictResolverFactory
     {
         return INSTANCE;
     }
-    
+
     public <T> ConflictResolver<T> getConflictResolver(Class<T> clazz)
     {
         if (clazz == null)
@@ -61,7 +60,7 @@ public enum ConflictResolverFactory
         }
         return getConflictResolver(clazz, null);
     }
-    
+
     public <T> ConflictResolver<T> getConflictResolver(TypeReference<T> typeReference)
     {
         if (typeReference == null)
@@ -70,25 +69,23 @@ public enum ConflictResolverFactory
         }
         return getConflictResolver(null, typeReference);
     }
-    
-    
+
     /**
      * Return the ConflictResolver for the given class.
      * <p>
-     * If no ConflictResolver is registered for the provided class, an instance of the 
-     * {@link com.basho.riak.client.cap.DefaultResolver} is returned. 
+     * If no ConflictResolver is registered for the provided class, an instance of the
+     * {@link com.basho.riak.client.cap.DefaultResolver} is returned.
      * </p>
      * @param <T> The type being resolved
      * @param clazz the class of the type being resolved
      * @return The conflict resolver for the type.
-     * @throws UnresolvedConflictException 
+     * @throws UnresolvedConflictException
      */
     @SuppressWarnings("unchecked")
-    private <T> ConflictResolver<T> getConflictResolver(Type type, TypeReference<T> typeReference) 
+    private <T> ConflictResolver<T> getConflictResolver(Type type, TypeReference<T> typeReference)
     {
-        
         type = type != null ? type : typeReference.getType();
-        
+
         ConflictResolver<T> resolver = (ConflictResolver<T>) resolverInstances.get(type);
         if (resolver == null)
         {
@@ -97,16 +94,14 @@ public enum ConflictResolverFactory
         }
 
         return resolver;
-            
-
     }
-    
+
     /**
      * Register a ConflictResolver.
      * <p>
      * The instance provided will be used to resolve siblings for the given type.
      * </p>
-     * 
+     *
      * @param <T> The type being resolved
      * @param clazz the class of the type being resolved
      * @param resolver an instance of a class implementing ConflictResolver.
@@ -115,13 +110,12 @@ public enum ConflictResolverFactory
     {
         resolverInstances.put(clazz, resolver);
     }
-    
+
     public <T> void registerConflictResolver(TypeReference<T> typeReference, ConflictResolver<T> resolver)
     {
         resolverInstances.put(typeReference.getType(), resolver);
     }
-    
-    
+
     /**
      * Unregister a ConflictResolver.
      * @param <T> The type being Resolved
@@ -131,7 +125,7 @@ public enum ConflictResolverFactory
     {
         resolverInstances.remove(clazz);
     }
- 
+
     public <T> void unregisterConflictResolver(TypeReference<T> typeReference)
     {
         resolverInstances.remove(typeReference.getType());

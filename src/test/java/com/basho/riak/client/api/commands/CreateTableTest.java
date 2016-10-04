@@ -19,6 +19,7 @@ import com.basho.riak.client.api.commands.timeseries.CreateTable;
 import com.basho.riak.client.core.operations.ts.CreateTableOperation;
 import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import com.basho.riak.client.core.query.timeseries.FullColumnDescription;
+import com.basho.riak.client.core.query.timeseries.Quantum;
 import com.basho.riak.client.core.query.timeseries.TableDefinition;
 import com.basho.riak.protobuf.RiakTsPB;
 import org.junit.Test;
@@ -43,13 +44,24 @@ public class CreateTableTest extends OperationTestBase<CreateTableOperation>
             new FullColumnDescription("field5", ColumnDescription.ColumnType.VARCHAR, true)
     ));
 
-    private void verifyTableCreation(final TableDefinition td, int quantum,
+    private static final TableDefinition newTableDefinition = new TableDefinition("TestTable", Arrays.asList(
+            new FullColumnDescription("field1", ColumnDescription.ColumnType.TIMESTAMP,  false, 1, 1, new Quantum(1, TimeUnit.SECONDS)),
+            new FullColumnDescription("field2", ColumnDescription.ColumnType.SINT64, false, null, 2),
+            new FullColumnDescription("field3", ColumnDescription.ColumnType.BOOLEAN, true),
+            new FullColumnDescription("field4", ColumnDescription.ColumnType.DOUBLE, false),
+            new FullColumnDescription("field5", ColumnDescription.ColumnType.VARCHAR, true)
+                                                                                                         ));
+
+    private void verifyTableCreation(final TableDefinition td, Integer quantum,
                                      TimeUnit tm, String expected) throws ExecutionException, InterruptedException
     {
-        final CreateTable cmd = new CreateTable.Builder(td)
-                .withQuantum(quantum, tm)
-                .build();
+        final CreateTable.Builder cmdBuilder = new CreateTable.Builder(td);
+        if (quantum != null && tm != null)
+        {
+            cmdBuilder.withQuantum(quantum, tm);
+        }
 
+        final CreateTable cmd = cmdBuilder.build();
         final CreateTableOperation operation = executeAndVerify(cmd);
 
         final RiakTsPB.TsQueryReq.Builder builder =
@@ -106,6 +118,38 @@ public class CreateTableTest extends OperationTestBase<CreateTableOperation>
     }
 
     @Test
+    public void testNewFormatQuantumGetsUsed() throws ExecutionException, InterruptedException
+    {
+        verifyTableCreation(
+                newTableDefinition, // Contains 1 second quantum
+                null,
+                null,
+                "CREATE TABLE TestTable ("
+                        + "field1 TIMESTAMP not null,\n"
+                        + " field2 SINT64 not null,\n"
+                        + " field3 BOOLEAN,\n"
+                        + " field4 DOUBLE not null,\n"
+                        + " field5 VARCHAR,\n\n"
+                        + " primary key ((quantum(field1,1,s)), field1, field2))");
+    }
+
+    @Test
+    public void testOldFormatQuantumOverridesNewFormat() throws ExecutionException, InterruptedException
+    {
+        verifyTableCreation(
+                newTableDefinition, // Contains 1 second quantum
+                15,
+                TimeUnit.MINUTES,
+                "CREATE TABLE TestTable ("
+                        + "field1 TIMESTAMP not null,\n"
+                        + " field2 SINT64 not null,\n"
+                        + " field3 BOOLEAN,\n"
+                        + " field4 DOUBLE not null,\n"
+                        + " field5 VARCHAR,\n\n"
+                        + " primary key ((quantum(field1,15,m)), field1, field2))");
+    }
+
+    @Test
     public void failOnUnsupportedTimeUnits() throws ExecutionException, InterruptedException
     {
         final EnumSet<TimeUnit> supported =  EnumSet.of(TimeUnit.DAYS, TimeUnit.HOURS,
@@ -128,7 +172,6 @@ public class CreateTableTest extends OperationTestBase<CreateTableOperation>
             fail("In case of using unsupported time unit IllegalArgumentException must be thrown");
         }
     }
-
 
     private static String normString(final String str)
     {

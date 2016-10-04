@@ -34,8 +34,6 @@ import org.junit.Test;
  */
 public class RawIndexTest
 {
-    
-    
     @Test
     public void builderCreatesIndex()
     {
@@ -44,15 +42,14 @@ public class RawIndexTest
         assertEquals(index.getName(), "index_name");
         assertEquals(index.getType(), IndexType.INT);
         assertEquals(index.getFullname(), "index_name" + IndexType.INT.suffix());
-        
+
         builder = RawIndex.named("index_name", IndexType.BIN);
         index = builder.createIndex();
         assertEquals(index.getName(), "index_name");
         assertEquals(index.getType(), IndexType.BIN);
         assertEquals(index.getFullname(), "index_name" + IndexType.BIN.suffix());
-        
     }
-    
+
     @Test
     public void stripSuffix()
     {
@@ -60,7 +57,7 @@ public class RawIndexTest
         RawIndex index = builder.createIndex();
         assertEquals(index.getName(), "index_name");
     }
-    
+
     @Test
     public void addValue()
     {
@@ -68,35 +65,35 @@ public class RawIndexTest
         RawIndex index = builder.createIndex();
         byte[] array = "value".getBytes();
         BinaryValue baw = BinaryValue.unsafeCreate(array);
-        
+
         assertEquals(index.size(), 0);
         index.add(baw);
         assertEquals(index.size(), 1);
         assertTrue(index.hasValue(baw));
     }
-    
+
     @Test
     public void addValues()
     {
         RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
-        
-        List<BinaryValue> values = new LinkedList<BinaryValue>();
+
+        List<BinaryValue> values = new LinkedList<>();
         for (int i = 0; i < 5; i++)
         {
             values.add(BinaryValue.unsafeCreate(("value" + i).getBytes()));
         }
-        
+
         index.add(values);
-        
+
         assertEquals(index.size(), 5);
-        
+
         for (BinaryValue baw : values)
         {
             assertTrue(index.hasValue(baw));
         }
     }
-    
+
     @Test
     public void removeValue()
     {
@@ -108,28 +105,28 @@ public class RawIndexTest
             baw = BinaryValue.unsafeCreate(("value" + i).getBytes());
             index.add(baw);
         }
-        
+
         assertEquals(index.size(), 3);
         assertTrue(index.hasValue(baw));
         index.remove(baw);
         assertFalse(index.hasValue(baw));
         assertEquals(index.size(), 2);
     }
-    
+
     @Test
     public void removeValues()
     {
         RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
-        
-        List<BinaryValue> values = new LinkedList<BinaryValue>();
+
+        List<BinaryValue> values = new LinkedList<>();
         for (int i = 0; i < 5; i++)
         {
             values.add(BinaryValue.unsafeCreate(("value" + i).getBytes()));
         }
-        
+
         index.add(values);
-        
+
         assertEquals(index.size(), 5);
         BinaryValue baw = values.remove(0);
         index.remove(values);
@@ -140,92 +137,90 @@ public class RawIndexTest
             assertFalse(index.hasValue(b));
         }
     }
-    
+
     @Test
     public void noDuplicates()
     {
         RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
-        
+
         for (int i = 0; i < 5; i++)
         {
             index.add(BinaryValue.unsafeCreate("value".getBytes()));
         }
-        
+
         assertEquals(index.size(), 1);
-        
     }
-    
+
     @Test
     public void wrap()
     {
         RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
-        
-        List<BinaryValue> values = new LinkedList<BinaryValue>();
+
+        List<BinaryValue> values = new LinkedList<>();
         for (int i = 0; i < 5; i++)
         {
             values.add(BinaryValue.unsafeCreate(("value" + i).getBytes()));
         }
-        
+
         index.add(values);
-        
+
         builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index2 = builder.wrap(index).createIndex();
-        
+
         assertEquals(index, index2);
         assertNotSame(index, index2);
         assertTrue(index2.hasValue(values.get(0)));
         index.remove(values.get(0));
         assertFalse(index2.hasValue(values.get(0)));
-        
     }
-    
+
     @Test
     public void copy()
     {
         RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
-        
-        List<BinaryValue> values = new LinkedList<BinaryValue>();
+
+        List<BinaryValue> values = new LinkedList<>();
         for (int i = 0; i < 5; i++)
         {
             values.add(BinaryValue.unsafeCreate(("value" + i).getBytes()));
         }
-        
+
         index.add(values);
-        
+
         builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index2 = builder.copyFrom(index).createIndex();
-        
+
         assertEquals(index, index2);
         assertNotSame(index, index2);
         assertTrue(index2.hasValue(values.get(0)));
         index.remove(values.get(0));
         assertTrue(index2.hasValue(values.get(0)));
     }
-    
+
     @Test
     public void iterator()
     {
         RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
-        
-        List<BinaryValue> values = new LinkedList<BinaryValue>();
+
+        List<BinaryValue> values = new LinkedList<>();
         for (int i = 0; i < 5; i++)
         {
             values.add(BinaryValue.unsafeCreate(("value" + i).getBytes()));
         }
-        
+
         index.add(values);
-        
+
         for (BinaryValue b : index)
         {
             assertTrue(index.hasValue(b));
         }
-        
+
         Iterator<BinaryValue> i = index.iterator();
-        
+
         while (i.hasNext())
         {
             BinaryValue b = i.next();
@@ -233,27 +228,26 @@ public class RawIndexTest
             assertFalse(index.hasValue(b));
         }
     }
-    
+
     @Test
     public void values()
     {
         RawIndex.Name builder = RawIndex.named("index_name", IndexType.BIN);
         RawIndex index = builder.createIndex();
-        
-        List<BinaryValue> values = new LinkedList<BinaryValue>();
+
+        List<BinaryValue> values = new LinkedList<>();
         for (int i = 0; i < 5; i++)
         {
             values.add(BinaryValue.unsafeCreate(("value" + i).getBytes()));
         }
-        
+
         index.add(values);
-        
+
         Set<BinaryValue> valueSet = index.values();
-        
+
         for (BinaryValue b : values)
         {
             assertTrue(valueSet.contains(b));
         }
     }
-    
 }

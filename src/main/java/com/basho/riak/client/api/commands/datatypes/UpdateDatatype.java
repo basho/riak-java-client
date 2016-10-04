@@ -36,11 +36,10 @@ import java.util.Map;
  */
 public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCommand<S,U>
 {
-
     protected final Namespace namespace;
     protected final BinaryValue key;
     private final Context ctx;
-    private final Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+    private final Map<Option<?>, Object> options = new HashMap<>();
 
     @SuppressWarnings("unchecked")
     UpdateDatatype(Builder builder)
@@ -48,13 +47,13 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
         this.namespace = builder.namespace;
         this.key = builder.key;
         this.ctx = builder.ctx;
-	    this.options.putAll(builder.options);
+        this.options.putAll(builder.options);
     }
-    
+
     protected final DtUpdateOperation buildCoreOperation(DatatypeUpdate update)
     {
         DtUpdateOperation.Builder builder;
-        
+
         if (key != null)
         {
             Location loc = new Location(namespace, key);
@@ -64,7 +63,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
         {
             builder = new DtUpdateOperation.Builder(namespace);
         }
-        
+
         if (ctx != null)
         {
             builder.withContext(ctx.getValue());
@@ -105,7 +104,6 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
         }
 
         return builder.build();
-
     }
 
     /**
@@ -115,74 +113,73 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
     */
    public static final class Option<T> extends RiakOption<T>
    {
-
        /**
         * Durable Write Quorum.
         * How many replicas to commit to durable storage before returning a successful response.
         */
-       public static final Option<Quorum> DW = new Option<Quorum>("DW");
-       public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+       public static final Option<Quorum> DW = new Option<>("DW");
+       public static final Option<Integer> N_VAL = new Option<>("N_VAL");
        /**
         * Primary Write Quorum.
         * How many primary nodes must be up when the write is attempted.
         */
-       public static final Option<Quorum> PW = new Option<Quorum>("PW");
+       public static final Option<Quorum> PW = new Option<>("PW");
        /**
         * Return Body.
         * Return the object stored in Riak. Note this will return all siblings.
         */
-       public static final Option<Boolean> RETURN_BODY = new Option<Boolean>("RETURN_BODY");
-       public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
+       public static final Option<Boolean> RETURN_BODY = new Option<>("RETURN_BODY");
+       public static final Option<Boolean> SLOPPY_QUORUM = new Option<>("SLOPPY_QUORUM");
        /**
         * Timeout.
         * Sets the server-side timeout for this operation. The default in Riak is 60 seconds.
         */
-       public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
+       public static final Option<Integer> TIMEOUT = new Option<>("TIMEOUT");
        /**
         * Write Quorum.
         * How many replicas to write to before returning a successful response.
         */
-       public static final Option<Quorum> W = new Option<Quorum>("W");
+       public static final Option<Quorum> W = new Option<>("W");
 
        public Option(String name)
        {
            super(name);
        }
    }
-    
+
    /**
     * Base abstract builder for all datatype update builders.
     */
     public static abstract class Builder<T extends Builder<T>>
-	{
-		private final Namespace namespace;
+    {
+        private final Namespace namespace;
         private BinaryValue key;
-		private Context ctx;
-		private Map<Option<?>, Object> options = new HashMap<Option<?>, Object>();
+        private Context ctx;
+        private Map<Option<?>, Object> options = new HashMap<>();
 
         /**
          * Constructs a builder for a datatype update.
          * @param location the location of the datatype object in Riak.
          */
-		Builder(Location location)
-		{
-			if (location == null)
+        Builder(Location location)
+        {
+            if (location == null)
             {
                 throw new IllegalArgumentException("Location cannot be null.");
             }
             this.namespace = location.getNamespace();
             this.key = location.getKey();
-		}
+        }
 
         /**
          * Constructs a builder for a datatype update with only a Namespace.
          * <p>
-         * By providing only a Namespace with the update, Riak will create the 
-         * datatype object, generate the key, 
-         * and return it in the response. 
+         * By providing only a Namespace with the update, Riak will create the
+         * datatype object, generate the key,
+         * and return it in the response.
          * </p>
          * @param namespace the namespace to create the datatype.
-         * @see Response#getGeneratedKey() 
+         * @see Response#getGeneratedKey()
          */
         Builder(Namespace namespace)
         {
@@ -192,41 +189,41 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
             }
             this.namespace = namespace;
         }
-        
+
         /**
          * Include the context from a previous fetch.
          * <p>
-         * When updating a previously fetched set or map you generally 
+         * When updating a previously fetched set or map you generally
          * want to include the context returned from that query with the update.
          * </p>
          * @param context the Context from a previous fetch.
          * @return a reference to this object.
          */
         public T withContext(Context context)
-		{
-			if (context == null)
+        {
+            if (context == null)
             {
                 throw new IllegalArgumentException("Context cannot be null.");
             }
             this.ctx = context;
-			return self();
-		}
+            return self();
+        }
 
         /**
-		 * Add an optional setting for this command. 
+         * Add an optional setting for this command.
          * This will be passed along with the request to Riak to tell it how
-		 * to behave when servicing the request.
-		 *
-		 * @param option the option
-		 * @param value the value for the option
-		 * @return a reference to this object.
+         * to behave when servicing the request.
+         *
+         * @param option the option
+         * @param value the value for the option
+         * @return a reference to this object.
          * @see Option
-		 */
-		public <U> T withOption(Option<U> option, U value)
-		{
-			this.options.put(option, value);
-			return self();
-		}
+         */
+        public <U> T withOption(Option<U> option, U value)
+        {
+            this.options.put(option, value);
+            return self();
+        }
 
         /**
          * Set the Riak-side timeout value.
@@ -242,7 +239,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
             withOption(Option.TIMEOUT, timeout);
             return self();
         }
-        
+
         /**
          * Return the updated datatype.
          * <p>
@@ -258,7 +255,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
             withOption(Option.RETURN_BODY, true);
             return self();
         }
-        
+
         protected abstract T self();
         protected abstract UpdateDatatype build();
     }
@@ -300,7 +297,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
         /**
          * Check to see if this resposne includes the updated datatype.
          * @return true if datatype is present, false otherwise.
-         * @see Builder#withReturnDatatype(boolean) 
+         * @see Builder#withReturnDatatype(boolean)
          */
         public boolean hasDatatype()
         {
@@ -310,13 +307,13 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
         /**
          * Get the returned datatype.
          * @return the updated datatype, or null if not present.
-         * @see Builder#withReturnDatatype(boolean) 
+         * @see Builder#withReturnDatatype(boolean)
          */
         public T getDatatype()
         {
             return datatype;
         }
-        
+
         /**
          * Check to see if the response includes a generated key.
          * <p>This will only be true if the datatype update was sent with
@@ -327,11 +324,11 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
         {
             return generatedKey != null;
         }
-        
+
         /**
          * Get the returned generated key.
          * @return the key, or null if not present.
-         * @see #hasGeneratedKey() 
+         * @see #hasGeneratedKey()
          */
         public BinaryValue getGeneratedKey()
         {

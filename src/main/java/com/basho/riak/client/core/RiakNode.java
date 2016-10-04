@@ -25,6 +25,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.BlockingOperationException;
 import io.netty.util.concurrent.DefaultPromise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,14 +58,11 @@ public class RiakNode implements RiakResponseListener
 
     private final Logger logger = LoggerFactory.getLogger(RiakNode.class);
 
-    private final LinkedBlockingDeque<ChannelWithIdleTime> available =
-        new LinkedBlockingDeque<ChannelWithIdleTime>();
-    private final ConcurrentLinkedQueue<ChannelWithIdleTime> recentlyClosed =
-        new ConcurrentLinkedQueue<ChannelWithIdleTime>();
+    private final LinkedBlockingDeque<ChannelWithIdleTime> available = new LinkedBlockingDeque<>();
+    private final ConcurrentLinkedQueue<ChannelWithIdleTime> recentlyClosed = new ConcurrentLinkedQueue<>();
     private final List<NodeStateListener> stateListeners =
         Collections.synchronizedList(new LinkedList<NodeStateListener>());
-    private final Map<Channel, FutureOperation> inProgressMap =
-        new ConcurrentHashMap<Channel, FutureOperation>();
+    private final Map<Channel, FutureOperation> inProgressMap = new ConcurrentHashMap<>();
 
     private final Sync permits;
     private final String remoteAddress;
@@ -122,7 +120,6 @@ public class RiakNode implements RiakResponseListener
                     future.channel().closeFuture().addListener(inProgressCloseListener);
                 }
             }
-
         };
 
     private final ChannelFutureListener inAvailableCloseListener =
@@ -136,7 +133,7 @@ public class RiakNode implements RiakResponseListener
                 // the next time it's pulled from the pool.
                 // We record the disco for the health check.
                 recentlyClosed.add(new ChannelWithIdleTime(future.channel()));
-                logger.error("inAvailable channel closed; id:{} {}:{}",
+                logger.info("Available channel closed; id:{} {}:{}",
                              future.channel().hashCode(), remoteAddress, port);
             }
         };
@@ -163,13 +160,11 @@ public class RiakNode implements RiakResponseListener
                     }
                     else
                     {
-                        inProgress.setException(new Exception("Connection closed unexpectedly"));
+                        inProgress.setException(new Exception("Connection closed unexpectantly"));
                     }
                 }
-
             }
         };
-
 
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
 
@@ -259,7 +254,7 @@ public class RiakNode implements RiakResponseListener
 
         if (minConnections > 0)
         {
-            List<Channel> minChannels = new LinkedList<Channel>();
+            List<Channel> minChannels = new LinkedList<>();
             for (int i = 0; i < minConnections; i++)
             {
                 Channel channel;
@@ -321,7 +316,8 @@ public class RiakNode implements RiakResponseListener
 
         executor.schedule(new ShutdownTask(), 0, TimeUnit.SECONDS);
 
-        return new Future<Boolean>() {
+        return new Future<Boolean>()
+        {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning)
             {
@@ -348,9 +344,7 @@ public class RiakNode implements RiakResponseListener
             {
                 return shutdownLatch.getCount() <= 0;
             }
-
         };
-
     }
 
     /**
@@ -564,7 +558,8 @@ public class RiakNode implements RiakResponseListener
     {
         synchronized (stateListeners)
         {
-            for (NodeStateListener listener : stateListeners) {
+            for (NodeStateListener listener : stateListeners)
+            {
                 listener.nodeStateChanged(this, state);
             }
         }
@@ -590,13 +585,14 @@ public class RiakNode implements RiakResponseListener
             inProgressMap.put(channel, operation);
             ChannelFuture writeFuture = channel.writeAndFlush(operation);
             writeFuture.addListener(writeListener);
-            logger.debug("Operation being executed on RiakNode {}:{}", remoteAddress, port);
+            logger.debug("Operation {} being executed on RiakNode {}:{}",
+                         System.identityHashCode(operation), remoteAddress, port);
             return true;
         }
         else
         {
-            logger.debug("Operation not being executed Riaknode {}:{}; no connections available",
-                            remoteAddress, port);
+            logger.debug("Operation {} not being executed Riaknode {}:{}; no connections available",
+                         System.identityHashCode(operation), remoteAddress, port);
             return false;
         }
     }
@@ -640,6 +636,11 @@ public class RiakNode implements RiakResponseListener
             catch (InterruptedException ex)
             {
                 // no-op, don't care
+            }
+            catch (BlockingOperationException ex)
+            {
+                logger.error("Netty interrupted waiting for connection permit to be available; {}",
+                             remoteAddress);
             }
         }
         else
@@ -685,7 +686,7 @@ public class RiakNode implements RiakResponseListener
             }
         }
 
-        if(forceAddressRefresh)
+        if (forceAddressRefresh)
         {
             refreshBootstrapRemoteAddress();
         }
@@ -701,6 +702,12 @@ public class RiakNode implements RiakResponseListener
             logger.error("Thread interrupted waiting for new connection to be made; {}",
                 remoteAddress);
             Thread.currentThread().interrupt();
+            throw new ConnectionFailedException(ex);
+        }
+        catch (BlockingOperationException ex)
+        {
+            logger.error("Netty interrupted waiting for new connection to be made; {}",
+                         remoteAddress);
             throw new ConnectionFailedException(ex);
         }
 
@@ -721,7 +728,6 @@ public class RiakNode implements RiakResponseListener
         }
 
         return c;
-
     }
 
     private void setupTLSAndAuthenticate(Channel c) throws ConnectionFailedException
@@ -733,7 +739,7 @@ public class RiakNode implements RiakResponseListener
             TrustManagerFactory tmf =
                 TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(trustStore);
-                if(keyStore!=null)
+                if (keyStore!=null)
             {
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 kmf.init(keyStore, keyPassword==null?"".toCharArray():keyPassword.toCharArray());
@@ -743,7 +749,6 @@ public class RiakNode implements RiakResponseListener
             {
                 context.init(null, tmf.getTrustManagers(), null);
             }
-
         }
         catch (Exception ex)
         {
@@ -754,7 +759,7 @@ public class RiakNode implements RiakResponseListener
 
         SSLEngine engine = context.createSSLEngine();
 
-        Set<String> protocols = new HashSet<String>(Arrays.asList(engine.getSupportedProtocols()));
+        Set<String> protocols = new HashSet<>(Arrays.asList(engine.getSupportedProtocols()));
 
         if (protocols.contains("TLSv1.2"))
         {
@@ -787,8 +792,6 @@ public class RiakNode implements RiakResponseListener
                 logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause());
                 throw new ConnectionFailedException(promise.cause());
             }
-
-
         }
         catch (InterruptedException e)
         {
@@ -849,14 +852,12 @@ public class RiakNode implements RiakResponseListener
         c.close();
     }
 
-
     // End ConnectionPool stuff
 
     @Override
     public void onSuccess(Channel channel, final RiakMessage response)
     {
-        logger.debug("Operation onSuccess() channel: id:{} {}:{}", channel.hashCode(),
-            remoteAddress, port);
+        logger.debug("Operation onSuccess() channel: id:{} {}:{}", channel.hashCode(), remoteAddress, port);
         consecutiveFailedOperations.set(0);
         final FutureOperation inProgress = inProgressMap.get(channel);
 
@@ -920,11 +921,11 @@ public class RiakNode implements RiakResponseListener
         final boolean propertyUndefined = property == null;
         boolean logWarning = false;
 
-        if(propertyUndefined && usingSecurityMgr)
+        if (propertyUndefined && usingSecurityMgr)
         {
             logWarning = true;
         }
-        else if(!propertyUndefined)
+        else if (!propertyUndefined)
         {
             final int cacheTTL = Integer.parseInt(property);
             logWarning = (cacheTTL == -1);
@@ -992,7 +993,7 @@ public class RiakNode implements RiakResponseListener
         }
     }
 
-    private class Sync extends Semaphore
+    static class Sync extends Semaphore
     {
         private static final long serialVersionUID = -5118488872281021072L;
         private volatile int maxPermits;
@@ -1034,7 +1035,6 @@ public class RiakNode implements RiakResponseListener
 
             this.maxPermits = maxPermits;
         }
-
     }
 
     private class IdleReaper implements Runnable
@@ -1138,8 +1138,6 @@ public class RiakNode implements RiakResponseListener
             Channel c = doGetConnection(true);
             logger.debug("Healthcheck channel: {} isOpen: {} handlers:{}", c.hashCode(), c.isOpen(), c.pipeline().names());
 
-
-
             // If the channel closes between when we got it and now, the pipeline is emptied. If the handlers
             // aren't there we fail the healthcheck
 
@@ -1166,7 +1164,6 @@ public class RiakNode implements RiakResponseListener
                 {
                     healthCheckFailed(future.cause());
                 }
-
             }
             catch (InterruptedException ex)
             {
@@ -1181,11 +1178,7 @@ public class RiakNode implements RiakResponseListener
                 closeConnection(c);
             }
         }
-        catch (ConnectionFailedException ex)
-        {
-            healthCheckFailed(ex);
-        }
-        catch (UnknownHostException ex)
+        catch (ConnectionFailedException | UnknownHostException ex)
         {
             healthCheckFailed(ex);
         }
@@ -1243,7 +1236,7 @@ public class RiakNode implements RiakResponseListener
                 }
                 if (ownsBootstrap)
                 {
-                    bootstrap.group().shutdownGracefully();
+                    bootstrap.config().group().shutdownGracefully();
                 }
                 logger.debug("RiakNode shut down {}:{}", remoteAddress, port);
                 shutdownLatch.countDown();
@@ -1319,14 +1312,25 @@ public class RiakNode implements RiakResponseListener
         private KeyStore keyStore;
         private String keyPassword;
 
-
         /**
          * Default constructor. Returns a new builder for a RiakNode with
          * default values set.
          */
         public Builder()
         {
+        }
 
+        /**
+         * Sets the remote host and port for this RiakNode.
+         *
+         * @param hostAndPOrt
+         * @return this
+         */
+        public Builder withRemoteHost(HostAndPort hostAndPOrt)
+        {
+            this.withRemoteAddress(hostAndPOrt.getHost());
+            this.withRemotePort(hostAndPOrt.getPort());
+            return this;
         }
 
         /**
@@ -1581,13 +1585,39 @@ public class RiakNode implements RiakResponseListener
          */
         public static List<RiakNode> buildNodes(Builder builder, List<String> remoteAddresses)
         {
-            final Set<HostAndPort> hps = new HashSet<HostAndPort>();
+            final Set<HostAndPort> hps = new HashSet<>();
             for (String remoteAddress: remoteAddresses)
             {
                 hps.addAll( HostAndPort.hostsFromString(remoteAddress, builder.port) );
             }
 
-            final List<RiakNode> nodes = new ArrayList<RiakNode>(hps.size());
+            return buildNodes(hps, builder);
+        }
+
+        /**
+         * Build a set of RiakNodes.
+         * The provided builder will be used to construct a set of RiakNodes
+         * using the supplied hosts.
+         *
+         * @param remoteHosts     a list of hosts w/wo ports.
+         * @param builder         a configured builder, used for common properties among the nodes
+         *
+         * @return a list of constructed RiakNodes
+         * @@since 2.0.6
+         */
+        public static List<RiakNode> buildNodes(Collection<HostAndPort> remoteHosts, Builder builder)
+        {
+            final Set<HostAndPort> hps;
+            if (!(remoteHosts instanceof Set))
+            {
+                hps = new HashSet<>(remoteHosts);
+            }
+            else
+            {
+                hps = (Set<HostAndPort>) remoteHosts;
+            }
+
+            final List<RiakNode> nodes = new ArrayList<>(hps.size());
             for (HostAndPort hp : hps)
             {
                 builder.withRemoteAddress(hp);

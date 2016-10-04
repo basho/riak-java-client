@@ -23,10 +23,10 @@ import com.basho.riak.client.core.query.Namespace;
  */
 public class ResetBucketProperties extends RiakCommand<Void, Namespace>
 {
-
     private final Namespace namespace;
 
-    public ResetBucketProperties(Builder builder) {
+    public ResetBucketProperties(Builder builder)
+    {
         this.namespace = builder.namespace;
     }
 
@@ -55,15 +55,16 @@ public class ResetBucketProperties extends RiakCommand<Void, Namespace>
         return future;
     }
 
-    private ResetBucketPropsOperation buildCoreOperation() {
+    private ResetBucketPropsOperation buildCoreOperation()
+    {
         ResetBucketPropsOperation.Builder builder =
                 new ResetBucketPropsOperation.Builder(namespace);
 
         return builder.build();
     }
 
-    public static class Builder {
-
+    public static class Builder
+    {
         private final Namespace namespace;
 
         public Builder(Namespace namespace)
@@ -79,6 +80,5 @@ public class ResetBucketProperties extends RiakCommand<Void, Namespace>
         {
             return new ResetBucketProperties(this);
         }
-
     }
 }

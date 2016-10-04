@@ -22,6 +22,8 @@ import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.util.BinaryValue;
+
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -33,59 +35,65 @@ import org.junit.Test;
  */
 public class ITestDeleteOperation extends ITestAutoCleanupBase
 {
+    private static long keySeed = new Random().nextLong();
+
     @Test
     public void testDeleteObjectDefaultType() throws InterruptedException, ExecutionException
     {
         testDeleteObject(Namespace.DEFAULT_BUCKET_TYPE);
     }
-    
+
     @Test
     public void testDeleteObjectTestType() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
         testDeleteObject(bucketType.toString());
     }
-    
+
     private void testDeleteObject(String bucketType) throws InterruptedException, ExecutionException
     {
-        final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
+        final BinaryValue key = generateKey();
         final String value = "{\"value\":\"value\"}";
-        
+
         RiakObject rObj = new RiakObject().setValue(BinaryValue.unsafeCreate(value.getBytes()));
-        
+
         Location location = new Location(new Namespace(bucketType, bucketName.toString()), key);
-        StoreOperation storeOp = 
+        StoreOperation storeOp =
             new StoreOperation.Builder(location)
                 .withContent(rObj)
-                .build(); 
-        
+                .build();
+
         cluster.execute(storeOp);
         storeOp.get();
-        
-        FetchOperation fetchOp = 
+
+        FetchOperation fetchOp =
             new FetchOperation.Builder(location).build();
-                
-        
+
         cluster.execute(fetchOp);
         FetchOperation.Response response = fetchOp.get();
+
         RiakObject rObj2 = response.getObjectList().get(0);
-        
+
         assertEquals(rObj.getValue(), rObj2.getValue());
-        
+
         DeleteOperation delOp =
             new DeleteOperation.Builder(location)
                 .withVclock(rObj2.getVClock()).build();
         cluster.execute(delOp);
         delOp.get();
-        
-        fetchOp = 
+
+        fetchOp =
             new FetchOperation.Builder(location).build();
-        
+
         cluster.execute(fetchOp);
         response = fetchOp.get();
         assertTrue(response.isNotFound());
         assertTrue(response.getObjectList().isEmpty());
-        
-        
+    }
+
+    private BinaryValue generateKey()
+    {
+        final String key = testName.getMethodName() + keySeed;
+        return BinaryValue.unsafeCreate(key.getBytes());
     }
 }

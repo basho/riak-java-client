@@ -35,7 +35,6 @@ import com.basho.riak.client.core.query.Location;
  */
 public class DeleteOperation extends FutureOperation<Void, Void, Location>
 {
-
     private final RiakKvPB.RpbDelReq.Builder reqBuilder;
     private final Location location;
 
@@ -229,6 +228,5 @@ public class DeleteOperation extends FutureOperation<Void, Void, Location>
         {
             return new DeleteOperation(this);
         }
-
     }
 }

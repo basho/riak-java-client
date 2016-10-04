@@ -25,7 +25,7 @@ import java.util.Set;
  * An update to a Riak set datatype.
  * <p>
  * When building an {@link UpdateSet} or {@link UpdateMap} command
- * this class is used to encapsulate the update to be performed on a 
+ * this class is used to encapsulate the update to be performed on a
  * Riak set datatype.
  * </p>
  * @author Dave Rusek <drusek at basho dot com>
@@ -33,9 +33,8 @@ import java.util.Set;
  */
 public class SetUpdate implements DatatypeUpdate
 {
-
-    private final Set<BinaryValue> adds = new HashSet<BinaryValue>();
-    private final Set<BinaryValue> removes = new HashSet<BinaryValue>();
+    private final Set<BinaryValue> adds = new HashSet<>();
+    private final Set<BinaryValue> removes = new HashSet<>();
 
     /**
      * Constructs an empty SetUpdate.
@@ -65,7 +64,7 @@ public class SetUpdate implements DatatypeUpdate
         this.adds.add(BinaryValue.create(value));
         return this;
     }
-    
+
     /**
      * Remove the provided value from the set in Riak.
      * @param value the value to be removed.
@@ -76,7 +75,7 @@ public class SetUpdate implements DatatypeUpdate
         this.removes.add(value);
         return this;
     }
-    
+
     /**
      * Remove the provided value from the set in Riak.
      * @param value the value to be removed.
@@ -115,7 +114,7 @@ public class SetUpdate implements DatatypeUpdate
     {
         return new SetOp(adds, removes);
     }
-    
+
     @Override
     public String toString()
     {

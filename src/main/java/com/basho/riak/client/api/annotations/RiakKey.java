@@ -26,24 +26,24 @@ import java.lang.annotation.Target;
  * The type must be a {@code String}.
  * <p>
  * <pre>
- * public class MyPojo 
+ * public class MyPojo
  * {
- *     {@literal @}RiakKey 
+ *     {@literal @}RiakKey
  *     public String key;
  * }
- * 
- * public class AnotherPojo 
+ *
+ * public class AnotherPojo
  * {
  *     private String key;
- *     
- *     {@literal @}RiakKey 
- *     public String getKey() 
+ *
+ *     {@literal @}RiakKey
+ *     public String getKey()
  *     {
  *         return key;
  *     }
- * 
- *     {@literal @}RiakKey 
- *     public void setKey(String key) 
+ *
+ *     {@literal @}RiakKey
+ *     public void setKey(String key)
  *     {
  *         this.key = key;
  *     }
@@ -53,6 +53,6 @@ import java.lang.annotation.Target;
  * @author Brian Roach <roach at basho dot com>
  * @since 1.0
  */
-@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakKey {
-
+@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakKey
+{
 }

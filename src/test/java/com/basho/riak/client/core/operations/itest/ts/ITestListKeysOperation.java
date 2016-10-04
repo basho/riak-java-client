@@ -34,6 +34,7 @@ public class ITestListKeysOperation extends ITestTsBase
 
         future.get();
         assertTrue(future.isSuccess());
+        Thread.sleep(1000);
     }
 
     @Test
@@ -52,12 +53,12 @@ public class ITestListKeysOperation extends ITestTsBase
 
         final List<Row> rows = result.getRowsCopy();
         final List<Row> expectedKeys = getKeyHeads();
-        assertTrue(expectedKeys.containsAll(rows));
+        assertTrue(rows.containsAll(expectedKeys));
     }
 
     private static List<Row> getKeyHeads()
     {
-        List<Row> keyHeads = new ArrayList<Row>(rows.size());
+        List<Row> keyHeads = new ArrayList<>(rows.size());
 
         for (Row row : rows)
         {

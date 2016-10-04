@@ -4,6 +4,7 @@ import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Alex Moore <amoore at basho dot com>
@@ -17,8 +18,7 @@ public final class CollectionConverters
     public static Collection<RiakTsPB.TsColumnDescription> convertColumnDescriptionsToPb
             (Collection<ColumnDescription> columns)
     {
-        final ArrayList<RiakTsPB.TsColumnDescription> pbColumns =
-                new ArrayList<RiakTsPB.TsColumnDescription>(columns.size());
+        final ArrayList<RiakTsPB.TsColumnDescription> pbColumns = new ArrayList<>(columns.size());
 
         for (ColumnDescription column : columns)
         {
@@ -45,7 +45,7 @@ public final class CollectionConverters
             return Collections.emptyList();
         }
 
-        final ArrayList<ColumnDescription> columns = new ArrayList<ColumnDescription>(pbColumns.size());
+        final ArrayList<ColumnDescription> columns = new ArrayList<>(pbColumns.size());
 
         for (RiakTsPB.TsColumnDescription pbColumn : pbColumns)
         {
@@ -63,61 +63,5 @@ public final class CollectionConverters
         final ColumnDescription.ColumnType type = ColumnDescription.ColumnType.values()[pbColumn.getType().getNumber()];
 
         return new ColumnDescription(name, type);
-    }
-
-    public static List<FullColumnDescription> convertDescribeQueryResultToColumnDescriptions(QueryResult queryResult)
-    {
-        final List<FullColumnDescription> fullColumnDescriptions = new ArrayList<>(queryResult.getRowsCount());
-
-        for (Row row : queryResult)
-        {
-            fullColumnDescriptions.add(convertDescribeResultRowToFullColumnDescription(row));
-        }
-
-        return fullColumnDescriptions;
-    }
-
-    private static FullColumnDescription convertDescribeResultRowToFullColumnDescription(Row row)
-    {
-        /*
-         * Expected Format for the DESCRIBE function is 5 columns:
-         *
-         *   "Column"        (non-null Varchar)
-         *   "Type"          (non-null Varchar)
-         *   "Is Null"       (non-null Boolean)
-         *   "Partition Key" (nullable SInt64)
-         *   "Local Key"     (nullable SInt64)
-         */
-
-        final List<Cell> cells = row.getCellsCopy();
-
-        assert(DescribeFnRowResultIsValid(cells));
-
-        final String name = cells.get(0).getVarcharAsUTF8String();
-        final String typeString = cells.get(1).getVarcharAsUTF8String();
-        final boolean isNullable = cells.get(2).getBoolean();
-        final boolean isPartitionKeyMember = cells.get(3) != null;
-        final boolean isLocalKeyMember = cells.get(4) != null;
-        final Integer partitionKeyOrdinal = isPartitionKeyMember ? new Long(cells.get(3).getLong()).intValue() : null;
-        final Integer localKeyOrdinal = isLocalKeyMember ? new Long(cells.get(4).getLong()).intValue() : null;
-
-        final ColumnDescription.ColumnType type =
-                ColumnDescription.ColumnType.valueOf(typeString.toUpperCase(Locale.ENGLISH));
-
-        return new FullColumnDescription(name,
-                                         type,
-                                         isNullable,
-                                         partitionKeyOrdinal,
-                                         localKeyOrdinal);
-    }
-
-    private static boolean DescribeFnRowResultIsValid(List<Cell> cells)
-    {
-        return cells.size() == 5 &&
-               cells.get(0).hasVarcharValue() &&
-               cells.get(1).hasVarcharValue() &&
-               cells.get(2).hasBoolean() &&
-               cells.get(3) != null ? cells.get(3).hasLong() : true &&
-               cells.get(4) != null ? cells.get(4).hasLong() : true;
     }
 }

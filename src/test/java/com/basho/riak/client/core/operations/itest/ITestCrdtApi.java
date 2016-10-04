@@ -16,6 +16,7 @@
 package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.api.commands.datatypes.*;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.core.query.Location;
@@ -27,6 +28,7 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -34,7 +36,6 @@ import static org.junit.Assert.*;
 
 public class ITestCrdtApi extends ITestAutoCleanupBase
 {
-
     @Test
     public void simpleTest() throws ExecutionException, InterruptedException
     {
@@ -99,7 +100,6 @@ public class ITestCrdtApi extends ITestAutoCleanupBase
         cluster.execute(update);
         update.get();
 
-        
         DtFetchOperation fetch = new DtFetchOperation.Builder(location)
             .build();
         cluster.execute(fetch);
@@ -113,40 +113,91 @@ public class ITestCrdtApi extends ITestAutoCleanupBase
         // username
         List<RiakDatatype> usernameElement = usersMap.get(BinaryValue.create(username));
         assertNotNull(usernameElement);
-	    assertEquals(1, usernameElement.size());
+        assertEquals(1, usernameElement.size());
         assertTrue(usernameElement.get(0).isMap());
         RiakMap usernameMap = usernameElement.get(0).getAsMap();
 
         // logins - counter
         List<RiakDatatype> numLoginsElement = usernameMap.get(BinaryValue.create(numLogins));
         assertNotNull(numLoginsElement);
-	    assertEquals(1, numLoginsElement.size());
-	    assertTrue(numLoginsElement.get(0).isCounter());
+        assertEquals(1, numLoginsElement.size());
+        assertTrue(numLoginsElement.get(0).isCounter());
         RiakCounter numLoginsCounter = numLoginsElement.get(0).getAsCounter();
         assertEquals((Long) 1L, numLoginsCounter.view());
 
         // last-login - register
         List<RiakDatatype> lastLoginTimeElement = usernameMap.get(BinaryValue.create(lastLoginTime));
         assertNotNull(lastLoginTimeElement);
-	    assertEquals(1, lastLoginTimeElement.size());
-	    assertTrue(lastLoginTimeElement.get(0).isRegister());
+        assertEquals(1, lastLoginTimeElement.size());
+        assertTrue(lastLoginTimeElement.get(0).isRegister());
         RiakRegister lastLoginTimeRegister = lastLoginTimeElement.get(0).getAsRegister();
         assertTrue(Arrays.equals(now, lastLoginTimeRegister.getValue().getValue()));
 
         // logged-in - flag
         List<RiakDatatype> loggedInElement = usernameMap.get(BinaryValue.create(loggedIn));
         assertNotNull(loggedInElement);
-	    assertEquals(1, loggedInElement.size());
-	    assertTrue(loggedInElement.get(0).isFlag());
+        assertEquals(1, loggedInElement.size());
+        assertTrue(loggedInElement.get(0).isFlag());
         RiakFlag loggedInFlag = loggedInElement.get(0).getAsFlag();
         assertEquals(true, loggedInFlag.getEnabled());
 
         // cart - asSet
         List<RiakDatatype> shoppingCartElement = usernameMap.get(BinaryValue.create(shoppingCart));
         assertNotNull(shoppingCartElement);
-	    assertEquals(1, shoppingCartElement.size());
-	    assertTrue(shoppingCartElement.get(0).isSet());
-
+        assertEquals(1, shoppingCartElement.size());
+        assertTrue(shoppingCartElement.get(0).isSet());
     }
 
+    @Test
+    public void testNonExistingDatatypeReturnsBottomValueAndNotFoundFlag() throws ExecutionException, InterruptedException
+    {
+        RiakMap mapBottomValue = new RiakMap(Collections.<RiakMap.MapEntry>emptyList());
+        RiakCounter counterBottomValue = new RiakCounter(0);
+        RiakSet setBottomValue = new RiakSet(Collections.<BinaryValue>emptyList());
+
+        // Maps
+        Location mapLocation = new Location(new Namespace(mapBucketType, bucketName), "404");
+        DtFetchOperation mapFetch = new DtFetchOperation.Builder(mapLocation).build();
+        final RiakFuture<DtFetchOperation.Response, Location> mapFuture = cluster.execute(mapFetch);
+
+        final DtFetchOperation.Response mapResponse = mapFuture.get();
+        assertTrue(mapResponse.isNotFound());
+        assertTrue(mapResponse.hasCrdtElement());
+        assertEquals(mapBottomValue, mapResponse.getCrdtElement().getAsMap());
+
+        // Sets
+        Location setLocation = new Location(new Namespace(setBucketType, bucketName), "404");
+        DtFetchOperation setFetch = new DtFetchOperation.Builder(setLocation).build();
+        final RiakFuture<DtFetchOperation.Response, Location> setFuture = cluster.execute(setFetch);
+
+        final DtFetchOperation.Response setResponse = setFuture.get();
+        assertTrue(setResponse.isNotFound());
+        assertTrue(setResponse.hasCrdtElement());
+        assertEquals(setBottomValue, setResponse.getCrdtElement().getAsSet());
+
+        // Counters
+        Location counterLocation = new Location(new Namespace(counterBucketType, bucketName), "404");
+        DtFetchOperation counterFetch = new DtFetchOperation.Builder(counterLocation).build();
+        final RiakFuture<DtFetchOperation.Response, Location> counterFuture = cluster.execute(counterFetch);
+
+        final DtFetchOperation.Response counterResponse = counterFuture.get();
+        assertTrue(counterResponse.isNotFound());
+        assertTrue(counterResponse.hasCrdtElement());
+        assertEquals(counterBottomValue, counterResponse.getCrdtElement().getAsCounter());
+    }
+
+    @Test
+    public void testNonExistingHLLReturnsBottomValueAndNotFoundFlag() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testHllDataType);
+        RiakHll hllBottomValue = new RiakHll(0);
+        Location hllLocation = new Location(new Namespace(hllBucketType, bucketName), "404");
+        DtFetchOperation hllFetch = new DtFetchOperation.Builder(hllLocation).build();
+        final RiakFuture<DtFetchOperation.Response, Location> hllFuture = cluster.execute(hllFetch);
+
+        final DtFetchOperation.Response hllResponse = hllFuture.get();
+        assertTrue(hllResponse.isNotFound());
+        assertTrue(hllResponse.hasCrdtElement());
+        assertEquals(hllBottomValue, hllResponse.getCrdtElement().getAsHll());
+    }
 }

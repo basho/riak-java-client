@@ -37,11 +37,11 @@ public class ITestPingOperation extends ITestAutoCleanupBase
     {
         PingOperation ping = new PingOperation();
         cluster.execute(ping);
-        
+
         ping.await();
         assertTrue(ping.isSuccess());
     }
-    
+
     @Test
     public void theMachineThatDoesntGoPing() throws UnknownHostException, InterruptedException
     {
@@ -49,18 +49,17 @@ public class ITestPingOperation extends ITestAutoCleanupBase
                                         .withRemotePort(10001)
                                         .withConnectionTimeout(500)
                                         .withMinConnections(10);
-        
+
         RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
-        
+
         PingOperation ping = new PingOperation();
         cluster.execute(ping);
         ping.await();
-        
+
         assertFalse(ping.isSuccess());
         assertNotNull(ping.cause());
-        
+
         cluster.shutdown();
-        
     }
 }

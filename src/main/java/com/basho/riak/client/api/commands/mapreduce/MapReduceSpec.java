@@ -11,31 +11,30 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 class MapReduceSpec
 {
+    private final MapReduceInput inputs;
+    @JsonProperty(value = "query")
+    private final List<MapReducePhase> phases;
+    private final Long timeout;
 
-	private final MapReduceInput inputs;
-	@JsonProperty(value = "query")
-	private final List<MapReducePhase> phases;
-	private final Long timeout;
+    MapReduceSpec(MapReduceInput inputs, List<MapReducePhase> phases, Long timeout)
+    {
+        this.inputs = inputs;
+        this.phases = phases;
+        this.timeout = timeout;
+    }
 
-	MapReduceSpec(MapReduceInput inputs, List<MapReducePhase> phases, Long timeout)
-	{
-		this.inputs = inputs;
-		this.phases = phases;
-		this.timeout = timeout;
-	}
+    public List<MapReducePhase> getPhases()
+    {
+        return phases;
+    }
 
-	public List<MapReducePhase> getPhases()
-	{
-		return phases;
-	}
+    public Long getTimeout()
+    {
+        return timeout;
+    }
 
-	public Long getTimeout()
-	{
-		return timeout;
-	}
-
-	public MapReduceInput getInputs()
-	{
-		return inputs;
-	}
+    public MapReduceInput getInputs()
+    {
+        return inputs;
+    }
 }

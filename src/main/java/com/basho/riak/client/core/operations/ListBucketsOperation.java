@@ -101,7 +101,6 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
         {
             throw new IllegalArgumentException("Invalid message received", e);
         }
-
     }
 
     @Override
@@ -185,7 +184,6 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
         {
             return new ListBucketsOperation(this);
         }
-
     }
 
     public static class Response
@@ -209,5 +207,4 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
             return buckets;
         }
     }
-
 }

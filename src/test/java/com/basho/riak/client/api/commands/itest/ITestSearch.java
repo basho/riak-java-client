@@ -27,7 +27,6 @@ public class ITestSearch extends ISearchTestBase
     private static final String indexName = "search_index_ITestSearch";
     private final String thundercatsQuery = "doc_type_i:1 AND NOT leader_b:true";
 
-
     @BeforeClass
     public static void Setup() throws ExecutionException, InterruptedException
     {
@@ -76,12 +75,12 @@ public class ITestSearch extends ISearchTestBase
         final SearchOperation.Response response = client.execute(searchCmd);
         assertEquals(3, response.numResults());
 
-        ArrayList<String> ages = new ArrayList<String>();
+        ArrayList<String> ages = new ArrayList<>();
         for (Map<String, List<String>> stringListMap : response.getAllResults())
         {
             ages.add(stringListMap.get("age_i").get(0));
         }
 
-        assertArrayEquals(new String[]{"28", "36", "43"}, ages.toArray());
+        assertArrayEquals(new String[] {"28", "36", "43"}, ages.toArray());
     }
 }

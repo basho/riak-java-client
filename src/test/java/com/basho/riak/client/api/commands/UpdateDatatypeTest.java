@@ -52,8 +52,8 @@ public class UpdateDatatypeTest extends MockedResponseOperationTest<DtUpdateOper
     {
         super.setupResponse(mockedResponse);
 
-        when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<RiakMap.MapEntry>()));
-        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[]{'1'}));
+        when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<>()));
+        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[] {'1'}));
 
         when(context.getValue()).thenReturn(BinaryValue.unsafeCreate(new byte[] {'1'}));
     }
@@ -61,11 +61,10 @@ public class UpdateDatatypeTest extends MockedResponseOperationTest<DtUpdateOper
     @Test
     public void testStore() throws ExecutionException, InterruptedException
     {
-
         MapUpdate update = new MapUpdate();
 
         UpdateMap store = new UpdateMap.Builder(key, update)
-	        .withContext(context)
+            .withContext(context)
             .withOption(Option.DW, new Quorum(1))
             .withOption(Option.PW, new Quorum(1))
             .withOption(Option.N_VAL, 1)
@@ -73,7 +72,7 @@ public class UpdateDatatypeTest extends MockedResponseOperationTest<DtUpdateOper
             .withOption(Option.SLOPPY_QUORUM, true)
             .withOption(Option.TIMEOUT, 1000)
             .withOption(Option.W, new Quorum(1))
-	        .build();
+            .build();
 
         final DtUpdateOperation operation = executeAndVerify(store);
 

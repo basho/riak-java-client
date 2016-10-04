@@ -1,22 +1,12 @@
 package com.basho.riak.client.api.commands.itest;
 
-import com.basho.riak.client.core.query.crdt.types.RiakSet;
-import com.basho.riak.client.core.query.crdt.types.RiakMap;
-import com.basho.riak.client.core.query.crdt.types.RiakCounter;
-import com.basho.riak.client.core.query.crdt.types.RiakRegister;
-import com.basho.riak.client.core.query.crdt.types.RiakFlag;
-import com.basho.riak.client.api.commands.datatypes.CounterUpdate;
-import com.basho.riak.client.api.commands.datatypes.MapUpdate;
-import com.basho.riak.client.api.commands.datatypes.RegisterUpdate;
-import com.basho.riak.client.api.commands.datatypes.FlagUpdate;
-import com.basho.riak.client.api.commands.datatypes.SetUpdate;
-import com.basho.riak.client.api.commands.datatypes.FetchMap;
-import com.basho.riak.client.api.commands.datatypes.UpdateDatatype.Option;
 import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.commands.datatypes.*;
+import com.basho.riak.client.api.commands.datatypes.UpdateDatatype.Option;
 import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
-import com.basho.riak.client.api.commands.datatypes.UpdateMap;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.crdt.types.*;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.Test;
@@ -25,40 +15,37 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ITestDatatype extends ITestAutoCleanupBase
 {
-
-	private final String numLogins = "logins";
-	private final String lastLoginTime = "last-login";
-	private final ByteBuffer nowBinary = ByteBuffer.allocate(8).putLong(System.currentTimeMillis());
-	private final byte[] now = nowBinary.array();
-	private final String username = "username";
-	private final String loggedIn = "logged-in";
-	private final String shoppingCart = "cart";
+    private final String numLogins = "logins";
+    private final String lastLoginTime = "last-login";
+    private final ByteBuffer nowBinary = ByteBuffer.allocate(8).putLong(System.currentTimeMillis());
+    private final byte[] now = nowBinary.array();
+    private final String username = "username";
+    private final String loggedIn = "logged-in";
+    private final String shoppingCart = "cart";
 
     private final Namespace carts = new Namespace(mapBucketType, bucketName);
+    private final Namespace uniqueUsers = new Namespace(hllBucketType, BinaryValue.create("uniqueUsers"));
 
-	private final RiakClient client = new RiakClient(cluster);
+    private final RiakClient client = new RiakClient(cluster);
 
-	@Test
-	public void simpleTest() throws ExecutionException, InterruptedException
-	{
-		Assume.assumeTrue(testCrdt);
+    @Test
+    public void simpleTest() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testCrdt);
 
-		/**
-		 * Update some info about a user in a table of users
-		 */
+        /**
+         * Update some info about a user in a table of users
+         */
 
-		resetAndEmptyBucket(carts);
+        resetAndEmptyBucket(carts);
 
-		BinaryValue key = BinaryValue.create("user-info");
+        BinaryValue key = BinaryValue.create("user-info");
 
         /*
 
@@ -73,95 +60,132 @@ public class ITestDatatype extends ITestAutoCleanupBase
 
          */
 
-		// Build a shopping cart. We're buying the digits!!!!
-		ByteBuffer buffer = ByteBuffer.allocate(4);
-		SetUpdate favorites = new SetUpdate();
-		for (int i = 0; i < 10; ++i)
-		{
-			buffer.putInt(i);
-			favorites.add(BinaryValue.create(buffer.array()));
-			buffer.rewind();
-		}
+        // Build a shopping cart. We're buying the digits!!!!
+        ByteBuffer buffer = ByteBuffer.allocate(4);
+        SetUpdate favorites = new SetUpdate();
+        for (int i = 0; i < 10; ++i)
+        {
+            buffer.putInt(i);
+            favorites.add(BinaryValue.create(buffer.array()));
+            buffer.rewind();
+        }
 
-		// Create an update for the user's values
-		MapUpdate userMapUpdate = new MapUpdate()
-			.update(numLogins, new CounterUpdate(1))                // counter
-			.update(lastLoginTime, new RegisterUpdate(now))     // register
-			.update(loggedIn, new FlagUpdate(true))                   // flag
-			.update(shoppingCart, favorites);              // asSet
+        // Create an update for the user's values
+        MapUpdate userMapUpdate = new MapUpdate()
+            .update(numLogins, new CounterUpdate(1))                // counter
+            .update(lastLoginTime, new RegisterUpdate(now))     // register
+            .update(loggedIn, new FlagUpdate(true))                   // flag
+            .update(shoppingCart, favorites);              // asSet
 
-		// Now create an update for the user's entry
-		MapUpdate userEntryUpdate = new MapUpdate()
-			.update(username, userMapUpdate);
+        // Now create an update for the user's entry
+        MapUpdate userEntryUpdate = new MapUpdate()
+            .update(username, userMapUpdate);
 
-		UpdateMap update = new UpdateMap.Builder(carts, userEntryUpdate)
-			.withOption(Option.RETURN_BODY, true)
-			.build();
-		UpdateMap.Response updateResponse = client.execute(update);
+        UpdateMap update = new UpdateMap.Builder(carts, userEntryUpdate)
+            .withOption(Option.RETURN_BODY, true)
+            .build();
+        UpdateMap.Response updateResponse = client.execute(update);
 
         Location loc = new Location(carts, updateResponse.getGeneratedKey());
-		FetchMap fetch = new FetchMap.Builder(loc).build();
-		FetchMap.Response fetchResponse = client.execute(fetch);
+        FetchMap fetch = new FetchMap.Builder(loc).build();
+        FetchMap.Response fetchResponse = client.execute(fetch);
 
-		// users
-		RiakMap usersMap = fetchResponse.getDatatype();
+        // users
+        RiakMap usersMap = fetchResponse.getDatatype();
 
-		// username
-		RiakMap usernameMap = usersMap.getMap(username);
-		assertNotNull(usernameMap);
+        // username
+        RiakMap usernameMap = usersMap.getMap(username);
+        assertNotNull(usernameMap);
 
-		// logins - counter
-		RiakCounter numLoginsCounter = usernameMap.getCounter(numLogins);
-		assertEquals((Long) 1L, numLoginsCounter.view());
+        // logins - counter
+        RiakCounter numLoginsCounter = usernameMap.getCounter(numLogins);
+        assertEquals((Long) 1L, numLoginsCounter.view());
 
-		// last-login - register
-		RiakRegister lastLoginTimeRegister = usernameMap.getRegister(lastLoginTime);
+        // last-login - register
+        RiakRegister lastLoginTimeRegister = usernameMap.getRegister(lastLoginTime);
 
-		assertTrue(Arrays.equals(now, lastLoginTimeRegister.view().getValue()));
+        assertTrue(Arrays.equals(now, lastLoginTimeRegister.view().getValue()));
 
+        // logged-in - flag
+        RiakFlag loggedInFlag = usernameMap.getFlag(loggedIn);
+        assertEquals((Boolean) true, loggedInFlag.view());
 
-		// logged-in - flag
-		RiakFlag loggedInFlag = usernameMap.getFlag(loggedIn);
-		assertEquals((Boolean) true, loggedInFlag.view());
+        // cart - asSet
+        RiakSet shoppingCartSet = usernameMap.getSet(shoppingCart);
+        Set<BinaryValue> setView = shoppingCartSet.view();
+        Set<BinaryValue> expectedSet = new HashSet<>();
+        for (int i = 0; i < 10; ++i)
+        {
+            ByteBuffer b = ByteBuffer.allocate(4);
+            b.putInt(i);
+            expectedSet.add(BinaryValue.create(b.array()));
+        }
+        assertTrue(setView.containsAll(expectedSet));
+        assertTrue(expectedSet.containsAll(setView));
+    }
 
-		// cart - asSet
-		RiakSet shoppingCartSet = usernameMap.getSet(shoppingCart);
-		Set<BinaryValue> setView = shoppingCartSet.view();
-		Set<BinaryValue> expectedSet = new HashSet<BinaryValue>();
-		for (int i = 0; i < 10; ++i)
-		{
-			ByteBuffer b = ByteBuffer.allocate(4);
-			b.putInt(i);
-			expectedSet.add(BinaryValue.create(b.array()));
-		}
-		assertTrue(setView.containsAll(expectedSet));
-		assertTrue(expectedSet.containsAll(setView));
-
-
-	}
-
-	public void testConflict() throws ExecutionException, InterruptedException
-	{
-
-		resetAndEmptyBucket(carts);
+    public void testConflict() throws ExecutionException, InterruptedException
+    {
+        resetAndEmptyBucket(carts);
 
         MapUpdate innerMapUpdate = new MapUpdate().update("flag", new FlagUpdate(true));
         CounterUpdate innerCounterUpdate = new CounterUpdate(1);
-        
-		// Insert a Map and Counter into logins and observe both counter and map returned
-		UpdateMap conflictedUpdateCmd =
-			new UpdateMap.Builder(carts, new MapUpdate().update(numLogins, innerMapUpdate).update(numLogins, innerCounterUpdate))
-				.withOption(Option.RETURN_BODY, true)
-				.build();
 
-		UpdateMap.Response conflictedResponse =
-			client.execute(conflictedUpdateCmd);
+        // Insert a Map and Counter into logins and observe both counter and map returned
+        UpdateMap conflictedUpdateCmd =
+            new UpdateMap.Builder(carts, new MapUpdate().update(numLogins, innerMapUpdate).update(numLogins, innerCounterUpdate))
+                .withOption(Option.RETURN_BODY, true)
+                .build();
 
-		assertNotNull(conflictedResponse.getDatatype());
-		assertEquals(2, conflictedResponse.getDatatype().view().size());
-		assertNotNull(conflictedResponse.getDatatype().getMap(numLogins));
-		assertNotNull(conflictedResponse.getDatatype().getCounter(numLogins));
+        UpdateMap.Response conflictedResponse =
+            client.execute(conflictedUpdateCmd);
 
-	}
+        assertNotNull(conflictedResponse.getDatatype());
+        assertEquals(2, conflictedResponse.getDatatype().view().size());
+        assertNotNull(conflictedResponse.getDatatype().getMap(numLogins));
+        assertNotNull(conflictedResponse.getDatatype().getCounter(numLogins));
+    }
 
+    @Test
+    public void testHyperLogLog() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testHllDataType);
+        resetAndEmptyBucket(uniqueUsers);
+
+        HllUpdate hllUpdate = new HllUpdate().add("user1").add("user2")
+                                             .addAll(Arrays.asList("foo", "bar", "baz"))
+                                             .add("user1");
+
+        final UpdateHll hllUpdateCmd = new UpdateHll.Builder(uniqueUsers, hllUpdate)
+                                                                    .withOption(Option.RETURN_BODY, true)
+                                                                    .build();
+
+        final UpdateHll.Response hllResponse = client.execute(hllUpdateCmd);
+
+        assertNotNull(hllResponse.getDatatype());
+        assertEquals(Long.valueOf(5), hllResponse.getDatatype().view());
+
+        final Location location = new Location(uniqueUsers, hllResponse.getGeneratedKey());
+
+        FetchHll hllFetchCmd = new FetchHll.Builder(location).build();
+        final RiakHll fetchHll = client.execute(hllFetchCmd);
+
+        assertNotNull(fetchHll);
+        assertEquals(5l, fetchHll.getCardinality());
+    }
+
+    @Test
+    public void testNotFoundHyperLogLog() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testHllDataType);
+        resetAndEmptyBucket(uniqueUsers);
+
+        final Location location = new Location(uniqueUsers, "hll_not_found");
+
+        FetchHll hllFetchCmd = new FetchHll.Builder(location).build();
+        final RiakHll fetchHll = client.execute(hllFetchCmd);
+
+        assertNotNull(fetchHll);
+        assertEquals(0l, fetchHll.getCardinality());
+    }
 }

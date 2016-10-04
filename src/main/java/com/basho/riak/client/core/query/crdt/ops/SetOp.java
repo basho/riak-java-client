@@ -22,9 +22,8 @@ import java.util.Set;
 
 public class SetOp implements CrdtOp
 {
-
-    private final Set<BinaryValue> adds = new HashSet<BinaryValue>();
-    private final Set<BinaryValue> removes = new HashSet<BinaryValue>();
+    private final Set<BinaryValue> adds = new HashSet<>();
+    private final Set<BinaryValue> removes = new HashSet<>();
 
     public SetOp(Set<BinaryValue> adds, Set<BinaryValue> removes)
     {
@@ -55,7 +54,7 @@ public class SetOp implements CrdtOp
     {
         return removes;
     }
-    
+
     @Override
     public String toString()
     {

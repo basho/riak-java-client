@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technoilogies Inc. 
+ * Copyright 2013 Basho Technoilogies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import java.util.List;
  */
 public class BucketProperties
 {
-
     private final Function linkwalkFunction;
     private final Function chashKeyFunction;
     private final Quorum rw;
@@ -56,6 +55,7 @@ public class BucketProperties
     private final Boolean allowSiblings;
     private final Boolean search;
     private final String yokozunaIndex;
+    private final Integer hllPrecision;
 
     private BucketProperties(Builder builder)
     {
@@ -81,6 +81,7 @@ public class BucketProperties
         this.w = builder.w;
         this.yokozunaIndex = builder.yokozunaIndex;
         this.youngVClock = builder.youngVClock;
+        this.hllPrecision = builder.hllPrecision;
     }
 
     /**
@@ -300,7 +301,7 @@ public class BucketProperties
      *
      * @return a List containing the pre-commit hooks.
      * @see
-     * BucketProperties.Builder#withPrecommitHook(com.basho.riak.client.core.query.functions.Function) 
+     * BucketProperties.Builder#withPrecommitHook(com.basho.riak.client.core.query.functions.Function)
      */
     public List<Function> getPrecommitHooks()
     {
@@ -322,7 +323,7 @@ public class BucketProperties
      *
      * @return a List containing the post-commit hooks
      * @see
-     * BucketProperties.Builder#withPostcommitHook(com.basho.riak.client.core.query.functions.Function) 
+     * BucketProperties.Builder#withPostcommitHook(com.basho.riak.client.core.query.functions.Function)
      */
     public List<Function> getPostcommitHooks()
     {
@@ -534,6 +535,26 @@ public class BucketProperties
         return yokozunaIndex;
     }
 
+    /**
+     * Determine if an hllPrecision value has been set.
+     *
+     * @return true if set, false otherwise.
+     */
+    public boolean hasHllPrecision()
+    {
+        return hllPrecision != null;
+    }
+
+    /**
+     * Get the HyperLogLog Precision.
+     *
+     * @return the hllPrecision value or null if not set.
+     */
+    public Integer getHllPrecision()
+    {
+        return hllPrecision;
+    }
+
     @Override
     public String toString()
     {
@@ -543,106 +564,151 @@ public class BucketProperties
             + "vclockProps=[oldVClock=%s, youngVClock=%s, bigVClock=%s, smallVClock=%s],"
             + "precommitHooks=%s, postcommitHooks=%s, "
             + ", chashKeyFunction=%s, linkWalkFunction=%s, search=%s,"
-            + "yokozunaIndex=%s]",
+            + "yokozunaIndex=%s, hllPrecision=%s]",
                              allowSiblings, lastWriteWins, nVal, backend, rw, dw,
                              w, r, pr, pw, oldVClock, youngVClock, bigVClock, smallVClock,
                              precommitHooks, postcommitHooks,
                              chashKeyFunction, linkwalkFunction, search,
-                             yokozunaIndex);
+                             yokozunaIndex, hllPrecision);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        BucketProperties that = (BucketProperties) o;
+
+        if (linkwalkFunction != null ? !linkwalkFunction.equals(that.linkwalkFunction) : that.linkwalkFunction != null)
+        {
+            return false;
+        }
+        if (chashKeyFunction != null ? !chashKeyFunction.equals(that.chashKeyFunction) : that.chashKeyFunction != null)
+        {
+            return false;
+        }
+        if (rw != null ? !rw.equals(that.rw) : that.rw != null)
+        {
+            return false;
+        }
+        if (dw != null ? !dw.equals(that.dw) : that.dw != null)
+        {
+            return false;
+        }
+        if (w != null ? !w.equals(that.w) : that.w != null)
+        {
+            return false;
+        }
+        if (r != null ? !r.equals(that.r) : that.r != null)
+        {
+            return false;
+        }
+        if (pr != null ? !pr.equals(that.pr) : that.pr != null)
+        {
+            return false;
+        }
+        if (pw != null ? !pw.equals(that.pw) : that.pw != null)
+        {
+            return false;
+        }
+        if (notFoundOk != null ? !notFoundOk.equals(that.notFoundOk) : that.notFoundOk != null)
+        {
+            return false;
+        }
+        if (basicQuorum != null ? !basicQuorum.equals(that.basicQuorum) : that.basicQuorum != null)
+        {
+            return false;
+        }
+        if (precommitHooks != null ? !precommitHooks.equals(that.precommitHooks) : that.precommitHooks != null)
+        {
+            return false;
+        }
+        if (postcommitHooks != null ? !postcommitHooks.equals(that.postcommitHooks) : that.postcommitHooks != null)
+        {
+            return false;
+        }
+        if (oldVClock != null ? !oldVClock.equals(that.oldVClock) : that.oldVClock != null)
+        {
+            return false;
+        }
+        if (youngVClock != null ? !youngVClock.equals(that.youngVClock) : that.youngVClock != null)
+        {
+            return false;
+        }
+        if (bigVClock != null ? !bigVClock.equals(that.bigVClock) : that.bigVClock != null)
+        {
+            return false;
+        }
+        if (smallVClock != null ? !smallVClock.equals(that.smallVClock) : that.smallVClock != null)
+        {
+            return false;
+        }
+        if (backend != null ? !backend.equals(that.backend) : that.backend != null)
+        {
+            return false;
+        }
+        if (nVal != null ? !nVal.equals(that.nVal) : that.nVal != null)
+        {
+            return false;
+        }
+        if (lastWriteWins != null ? !lastWriteWins.equals(that.lastWriteWins) : that.lastWriteWins != null)
+        {
+            return false;
+        }
+        if (allowSiblings != null ? !allowSiblings.equals(that.allowSiblings) : that.allowSiblings != null)
+        {
+            return false;
+        }
+        if (search != null ? !search.equals(that.search) : that.search != null)
+        {
+            return false;
+        }
+        if (yokozunaIndex != null ? !yokozunaIndex.equals(that.yokozunaIndex) : that.yokozunaIndex != null)
+        {
+            return false;
+        }
+        return hllPrecision != null ? hllPrecision.equals(that.hllPrecision) : that.hllPrecision == null;
+
     }
 
     @Override
     public int hashCode()
     {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((null == linkwalkFunction) ? 0 : linkwalkFunction.hashCode());
-        result = prime * result + ((null == chashKeyFunction) ? 0 : chashKeyFunction.hashCode());
-        result = prime * result + ((null == rw) ? 0 : rw.hashCode());
-        result = prime * result + ((null == dw) ? 0 : dw.hashCode());
-        result = prime * result + ((null == w) ? 0 : w.hashCode());
-        result = prime * result + ((null == r) ? 0 : r.hashCode());
-        result = prime * result + ((null == pr) ? 0 : pr.hashCode());
-        result = prime * result + ((null == pw) ? 0 : pw.hashCode());
-        result = prime * result + ((null == notFoundOk) ? 0 : notFoundOk.hashCode());
-        result = prime * result + ((null == basicQuorum) ? 0 : basicQuorum.hashCode());
-        result = prime * result + precommitHooks.hashCode();
-        result = prime * result + postcommitHooks.hashCode();
-        result = prime * result + (null == oldVClock ? 0 : oldVClock.hashCode());
-        result = prime * result + (null == youngVClock ? 0 : youngVClock.hashCode());
-        result = prime * result + (null == bigVClock ? 0 : bigVClock.hashCode());
-        result = prime * result + (null == smallVClock ? 0 : smallVClock.hashCode());
-        result = prime * result + (null == backend ? 0 : backend.hashCode());
-        result = prime * result + (null == nVal ? 0 : nVal.hashCode());
-        result = prime * result + (null == lastWriteWins ? 0 : lastWriteWins.hashCode());
-        result = prime * result + (null == allowSiblings ? 0 : allowSiblings.hashCode());
-        result = prime * result + (null == yokozunaIndex ? 0 : yokozunaIndex.hashCode());
-        result = prime * result + (null == search ? 0 : search.hashCode());
+        int result = linkwalkFunction != null ? linkwalkFunction.hashCode() : 0;
+        result = 31 * result + (chashKeyFunction != null ? chashKeyFunction.hashCode() : 0);
+        result = 31 * result + (rw != null ? rw.hashCode() : 0);
+        result = 31 * result + (dw != null ? dw.hashCode() : 0);
+        result = 31 * result + (w != null ? w.hashCode() : 0);
+        result = 31 * result + (r != null ? r.hashCode() : 0);
+        result = 31 * result + (pr != null ? pr.hashCode() : 0);
+        result = 31 * result + (pw != null ? pw.hashCode() : 0);
+        result = 31 * result + (notFoundOk != null ? notFoundOk.hashCode() : 0);
+        result = 31 * result + (basicQuorum != null ? basicQuorum.hashCode() : 0);
+        result = 31 * result + (precommitHooks != null ? precommitHooks.hashCode() : 0);
+        result = 31 * result + (postcommitHooks != null ? postcommitHooks.hashCode() : 0);
+        result = 31 * result + (oldVClock != null ? oldVClock.hashCode() : 0);
+        result = 31 * result + (youngVClock != null ? youngVClock.hashCode() : 0);
+        result = 31 * result + (bigVClock != null ? bigVClock.hashCode() : 0);
+        result = 31 * result + (smallVClock != null ? smallVClock.hashCode() : 0);
+        result = 31 * result + (backend != null ? backend.hashCode() : 0);
+        result = 31 * result + (nVal != null ? nVal.hashCode() : 0);
+        result = 31 * result + (lastWriteWins != null ? lastWriteWins.hashCode() : 0);
+        result = 31 * result + (allowSiblings != null ? allowSiblings.hashCode() : 0);
+        result = 31 * result + (search != null ? search.hashCode() : 0);
+        result = 31 * result + (yokozunaIndex != null ? yokozunaIndex.hashCode() : 0);
+        result = 31 * result + (hllPrecision != null ? hllPrecision.hashCode() : 0);
         return result;
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-        {
-            return true;
-        }
-        if (null == obj)
-        {
-            return false;
-        }
-        if (!(obj instanceof BucketProperties))
-        {
-            return false;
-        }
-
-        BucketProperties other = (BucketProperties) obj;
-        if ((linkwalkFunction == other.linkwalkFunction
-            || (linkwalkFunction != null && linkwalkFunction.equals(other.linkwalkFunction)))
-            && (chashKeyFunction == other.chashKeyFunction
-            || (chashKeyFunction != null && chashKeyFunction.equals(other.chashKeyFunction)))
-            && (rw == other.rw || (rw != null && rw.equals(other.rw)))
-            && (dw == other.dw || (dw != null && dw.equals(other.rw)))
-            && (w == other.w || (w != null && w.equals(other.w)))
-            && (r == other.r || (r != null && r.equals(other.r)))
-            && (pr == other.pr || (pr != null && pr.equals(other.pr)))
-            && (pw == other.pw || (pw != null && pw.equals(other.pw)))
-            && (notFoundOk == other.notFoundOk
-            || (notFoundOk != null && notFoundOk.equals(other.notFoundOk)))
-            && (basicQuorum == other.basicQuorum
-            || (basicQuorum != null && basicQuorum.equals(other.basicQuorum)))
-            && (precommitHooks.equals(other.precommitHooks))
-            && (postcommitHooks.equals(other.postcommitHooks))
-            && (oldVClock == other.oldVClock
-            || (oldVClock != null && oldVClock.equals(other.oldVClock)))
-            && (youngVClock == other.youngVClock
-            || (youngVClock != null && youngVClock.equals(other.youngVClock)))
-            && (bigVClock == other.bigVClock
-            || (bigVClock != null && bigVClock.equals(other.bigVClock)))
-            && (smallVClock == other.smallVClock
-            || (smallVClock != null && smallVClock.equals(other.smallVClock)))
-            && ((null == backend && other.backend == null) || backend.equals(other.backend))
-            && (nVal == other.nVal || (nVal != null && nVal.equals(other.nVal)))
-            && (lastWriteWins == other.lastWriteWins
-            || (lastWriteWins != null && lastWriteWins.equals(other.lastWriteWins)))
-            && (allowSiblings == other.allowSiblings
-            || (allowSiblings != null && allowSiblings.equals(other.allowSiblings)))
-            && ((null == yokozunaIndex && null == other.yokozunaIndex)
-            || yokozunaIndex.equals(other.yokozunaIndex))
-            && (search == other.search || (search != null && search.equals(other.search))))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
     }
 
     public static class Builder
     {
-
         private Function linkwalkFunction;
         private Function chashKeyFunction;
         private Quorum rw;
@@ -653,10 +719,8 @@ public class BucketProperties
         private Quorum pw;
         private Boolean notFoundOk;
         private Boolean basicQuorum;
-        private final List<Function> precommitHooks
-            = new LinkedList<Function>();
-        private final List<Function> postcommitHooks
-            = new LinkedList<Function>();
+        private final List<Function> precommitHooks = new LinkedList<>();
+        private final List<Function> postcommitHooks = new LinkedList<>();
         private Long oldVClock;
         private Long youngVClock;
         private Long bigVClock;
@@ -667,6 +731,7 @@ public class BucketProperties
         private Boolean allowSiblings;
         private Boolean search;
         private String yokozunaIndex;
+        private Integer hllPrecision;
 
         public Builder()
         {
@@ -1032,7 +1097,7 @@ public class BucketProperties
          * hook to be added.
          *
          * <b>Note this is only for legacy Riak (&lt; v2.0) Search support.</b>
-         * 
+         *
          * @param enable add/remove (true/false) the pre-commit hook for Riak
          * Search.
          * @return a reference to this object.
@@ -1059,7 +1124,26 @@ public class BucketProperties
             this.yokozunaIndex = indexName;
             return this;
         }
-        
+
+        /**
+         * Set the HyperLogLog Precision.
+         *
+         * @param precision the number of bits to use in the HyperLogLog precision.
+         *                  Valid values are [4 - 16] inclusive, default is 14 on new buckets.
+         *                  <b>NOTE:</b> When changing precision, it may only be reduced from
+         *                  it's current value, and never increased.
+         * @return a reference to this object.
+         */
+        public Builder withHllPrecision(int precision)
+        {
+            if (precision < 4 || precision > 16)
+            {
+                throw new IllegalArgumentException("Precision must be between 4 and 16, inclusive.");
+            }
+            this.hllPrecision = precision;
+            return this;
+        }
+
         public BucketProperties build()
         {
             return new BucketProperties(this);
@@ -1072,7 +1156,5 @@ public class BucketProperties
                 throw new IllegalArgumentException("Must be an Erlang Function.");
             }
         }
-
     }
-
 }

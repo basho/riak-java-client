@@ -79,16 +79,20 @@ public class Fetch extends RiakCommand<QueryResult, String>
 
         /**
          * Set the Riak-side timeout value.
-         *
-         * @param timeout The timeout, in milliseconds.
+         * <p>
+         * By default, Riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * </p>
+         * @param timeout the timeout in milliseconds to be sent to riak.
          * @return a reference to this object.
          */
         public Builder withTimeout(int timeout)
         {
-            if (timeout < 0)
+            if (timeout < 1)
             {
-                throw new IllegalArgumentException("Timeout must be positive, or 0 for no timeout.");
+                throw new IllegalArgumentException("Timeout must be a positive integer");
             }
+
             this.timeout = timeout;
             return this;
         }

@@ -20,8 +20,12 @@ import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.query.BucketProperties;
 import com.basho.riak.client.core.query.Namespace;
+
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.*;
+
+import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -31,7 +35,6 @@ import org.junit.Test;
  */
 public class ITestBucketProperties extends ITestAutoCleanupBase
 {
-    
     @Test
     public void testFetchDefaultBucketProps() throws InterruptedException, ExecutionException
     {
@@ -56,54 +59,52 @@ public class ITestBucketProperties extends ITestAutoCleanupBase
         assertTrue(props.hasSmallVClock());
         assertTrue(props.hasW());
         assertTrue(props.hasYoungVClock());
-        
+
         assertFalse(props.hasBackend());
         assertFalse(props.hasPostcommitHooks());
         assertFalse(props.hasPrecommitHooks());
         assertFalse(props.hasSearchIndex());
     }
-    
+
     @Test
     public void testSetDefaultBucketProps() throws InterruptedException, ExecutionException
     {
         Namespace namespace = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
-        StoreBucketPropsOperation.Builder builder = 
+        StoreBucketPropsOperation.Builder builder =
             new StoreBucketPropsOperation.Builder(namespace)
                 .withAllowMulti(true)
                 .withNVal(4);
-        
+
         storeBucketProps(builder);
-        
+
         BucketProperties props = fetchBucketProps(namespace);
-        
+
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertTrue(props.getAllowMulti());
-        
     }
-    
+
     @Test
     public void testResetBucketProps() throws InterruptedException, ExecutionException
     {
         Namespace namespace = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
-        StoreBucketPropsOperation.Builder builder = 
+        StoreBucketPropsOperation.Builder builder =
             new StoreBucketPropsOperation.Builder(namespace)
                 .withNVal(4)
                 .withR(1);
-        
+
         storeBucketProps(builder);
         BucketProperties props = fetchBucketProps(namespace);
-        
+
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertEquals(props.getR().getIntValue(), 1);
-        
+
         resetAndEmptyBucket(bucketName);
-        
+
         props = fetchBucketProps(namespace);
         assertEquals(props.getNVal(), Integer.valueOf(3));
         assertEquals(props.getR(), Quorum.quorumQuorum());
-        
     }
-    
+
     @Test
     public void testFetchBucketPropsFromType() throws InterruptedException, ExecutionException
     {
@@ -127,34 +128,60 @@ public class ITestBucketProperties extends ITestAutoCleanupBase
         assertTrue(props.hasSmallVClock());
         assertTrue(props.hasW());
         assertTrue(props.hasYoungVClock());
-        
+
         assertFalse(props.hasBackend());
         assertFalse(props.hasPostcommitHooks());
         assertFalse(props.hasPrecommitHooks());
         assertFalse(props.hasSearchIndex());
     }
-    
+
     @Test
     public void testSetBucketPropsInType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
         Namespace namespace = new Namespace(bucketType, bucketName);
-        StoreBucketPropsOperation.Builder builder = 
+        StoreBucketPropsOperation.Builder builder =
             new StoreBucketPropsOperation.Builder(namespace)
                 .withR(1)
                 .withNVal(4);
-        
+
         storeBucketProps(builder);
         BucketProperties props = fetchBucketProps(namespace);
-        
+
         assertEquals(props.getNVal(), Integer.valueOf(4));
         assertEquals(props.getR().getIntValue(), 1);
-        
+
         namespace = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
         props = fetchBucketProps(namespace);
         assertEquals(props.getNVal(), Integer.valueOf(3));
     }
-    
+
+    @Test
+    public void testSetHllPrecision() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testHllDataType);
+        Namespace namespace = new Namespace(hllBucketType, BinaryValue.create("hll_" + new Random().nextLong()));
+        StoreBucketPropsOperation.Builder storeOp =
+                new StoreBucketPropsOperation.Builder(namespace).withHllPrecision(13);
+
+        storeBucketProps(storeOp);
+
+        BucketProperties props = fetchBucketProps(namespace);
+
+        assertEquals(Integer.valueOf(13), props.getHllPrecision());
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void testIncreaseHllPrecisionThrowsError() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(testHllDataType);
+        Namespace namespace = new Namespace(hllBucketType, BinaryValue.create("hll_" + new Random().nextLong()));
+        StoreBucketPropsOperation.Builder storeOp =
+                new StoreBucketPropsOperation.Builder(namespace).withHllPrecision(15);
+
+        storeBucketProps(storeOp);
+    }
+
     private BucketProperties fetchBucketProps(Namespace namespace) throws InterruptedException, ExecutionException
     {
         FetchBucketPropsOperation.Builder builder = new FetchBucketPropsOperation.Builder(namespace);
@@ -162,14 +189,13 @@ public class ITestBucketProperties extends ITestAutoCleanupBase
         cluster.execute(op);
         return op.get().getBucketProperties();
     }
-    
+
     private void storeBucketProps(StoreBucketPropsOperation.Builder builder) throws InterruptedException, ExecutionException
     {
-        StoreBucketPropsOperation op = 
+        StoreBucketPropsOperation op =
             builder.build();
         cluster.execute(op);
-        
+
         op.get();
     }
-    
 }

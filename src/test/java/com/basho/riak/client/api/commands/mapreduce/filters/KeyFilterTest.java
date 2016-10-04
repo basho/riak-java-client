@@ -14,7 +14,6 @@ import static org.junit.Assert.assertEquals;
 
 public class KeyFilterTest
 {
-
     private ObjectWriter writer;
     private StringWriter serialized;
 
@@ -29,19 +28,16 @@ public class KeyFilterTest
     @Test
     public void testGreaterThanInt() throws IOException
     {
-        GreaterThanFilter<Integer> filter =
-            new GreaterThanFilter<Integer>(1);
+        GreaterThanFilter<Integer> filter = new GreaterThanFilter<>(1);
 
         writer.writeValue(serialized, filter);
         assertEquals("[\"greater_than\",1]", serialized.toString());
-
     }
 
     @Test
     public void testLessThanInt() throws Exception
     {
-        LessThanFilter<Integer> filter =
-            new LessThanFilter<Integer>(1);
+        LessThanFilter<Integer> filter = new LessThanFilter<>(1);
 
         writer.writeValue(serialized, filter);
         assertEquals("[\"less_than\",1]", serialized.toString());
@@ -50,19 +46,16 @@ public class KeyFilterTest
     @Test
     public void testGreaterThanEqInt() throws IOException
     {
-        GreaterThanOrEqualFilter<Integer> filter =
-            new GreaterThanOrEqualFilter<Integer>(1);
+        GreaterThanOrEqualFilter<Integer> filter = new GreaterThanOrEqualFilter<>(1);
 
         writer.writeValue(serialized, filter);
         assertEquals("[\"greater_than_eq\",1]", serialized.toString());
-
     }
 
     @Test
     public void testLessThanEqInt() throws Exception
     {
-        LessThanOrEqualFilter<Integer> filter =
-            new LessThanOrEqualFilter<Integer>(1);
+        LessThanOrEqualFilter<Integer> filter = new LessThanOrEqualFilter<>(1);
 
         writer.writeValue(serialized, filter);
         assertEquals("[\"less_than_eq\",1]", serialized.toString());
@@ -71,8 +64,7 @@ public class KeyFilterTest
     @Test
     public void testBetweenInt() throws Exception
     {
-        BetweenFilter<Integer> filter =
-            new BetweenFilter<Integer>(1, 2);
+        BetweenFilter<Integer> filter = new BetweenFilter<>(1, 2);
 
         writer.writeValue(serialized, filter);
         assertEquals("[\"between\",1,2]", serialized.toString());
@@ -90,8 +82,7 @@ public class KeyFilterTest
     @Test
     public void testNeqInt() throws IOException
     {
-        NotEqualToFilter<Integer> filter =
-            new NotEqualToFilter<Integer>(1);
+        NotEqualToFilter<Integer> filter = new NotEqualToFilter<>(1);
 
         writer.writeValue(serialized, filter);
         assertEquals("[\"neq\",1]", serialized.toString());
@@ -100,8 +91,7 @@ public class KeyFilterTest
     @Test
     public void testEqInt() throws IOException
     {
-        EqualToFilter<Integer> filter =
-            new EqualToFilter<Integer>(1);
+        EqualToFilter<Integer> filter = new EqualToFilter<>(1);
 
         writer.writeValue(serialized, filter);
         assertEquals("[\"eq\",1]", serialized.toString());
@@ -110,8 +100,7 @@ public class KeyFilterTest
     @Test
     public void testSetMemberInt() throws Exception
     {
-        SetMemberFilter<Integer> filter =
-            new SetMemberFilter<Integer>(1, 2, 3);
+        SetMemberFilter<Integer> filter = new SetMemberFilter<>(1, 2, 3);
 
         writer.writeValue(serialized, filter);
         assertEquals("[\"set_member\",1,2,3]", serialized.toString());
@@ -150,7 +139,6 @@ public class KeyFilterTest
     @Test
     public void testAnd() throws IOException
     {
-
         LogicalAndFilter filter =
             new LogicalAndFilter(new EmptyFilter(), new EmptyFilter());
 
@@ -161,7 +149,6 @@ public class KeyFilterTest
     @Test
     public void testOr() throws IOException
     {
-
         LogicalOrFilter filter =
             new LogicalOrFilter(new EmptyFilter(), new EmptyFilter());
 
@@ -172,7 +159,6 @@ public class KeyFilterTest
     @Test
     public void testNot() throws IOException
     {
-
         LogicalNotFilter filter =
             new LogicalNotFilter(new EmptyFilter(), new EmptyFilter());
 
@@ -254,12 +240,9 @@ public class KeyFilterTest
 
     private static class EmptyFilter extends KeyFilter
     {
-
         protected EmptyFilter()
         {
             super("empty");
         }
-
     }
-
 }

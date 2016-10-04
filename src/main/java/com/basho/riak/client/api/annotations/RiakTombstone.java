@@ -22,36 +22,36 @@ import java.lang.annotation.Target;
  * <p>
  * This annotation is used to denote a boolean field or getter/setter pair that will be marked true
  * if the object is a tombstone (deleted vector clock)
- * 
+ *
  * <pre>
- * public class MyPojo 
+ * public class MyPojo
  * {
- *     {@literal @}RiakTombstone 
+ *     {@literal @}RiakTombstone
  *     public boolean tombstone;
  * }
- * 
- * public class AnotherPojo 
+ *
+ * public class AnotherPojo
  * {
  *     private boolean tombstone;
- *     
- *     {@literal @}RiakTombstone 
- *     public boolean getTombstone() 
+ *
+ *     {@literal @}RiakTombstone
+ *     public boolean getTombstone()
  *     {
  *         return tombstone;
  *     }
- * 
- *     {@literal @}RiakTombstone 
- *     public void setTombstone(boolean tombstone) 
+ *
+ *     {@literal @}RiakTombstone
+ *     public void setTombstone(boolean tombstone)
  *     {
  *         this.tombstone = tombstone;
  *     }
  * }
  * </pre>
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
 
-@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakTombstone {
-
+@Retention(RetentionPolicy.RUNTIME) @Target({ElementType.FIELD, ElementType.METHOD}) public @interface RiakTombstone
+{
 }

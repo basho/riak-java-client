@@ -15,12 +15,7 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.core.query.crdt.ops.CounterOp;
-import com.basho.riak.client.core.query.crdt.ops.RegisterOp;
-import com.basho.riak.client.core.query.crdt.ops.MapOp;
-import com.basho.riak.client.core.query.crdt.ops.CrdtOp;
-import com.basho.riak.client.core.query.crdt.ops.FlagOp;
-import com.basho.riak.client.core.query.crdt.ops.SetOp;
+import com.basho.riak.client.core.query.crdt.ops.*;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.converters.CrdtResponseConverter;
@@ -64,7 +59,7 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         if (response.hasKey())
         {
             BinaryValue key = BinaryValue.unsafeCreate(response.getKey().toByteArray());
-	        responseBuilder.withGeneratedKey(key);
+            responseBuilder.withGeneratedKey(key);
         }
 
         if (response.hasContext())
@@ -74,7 +69,6 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
         }
 
         return responseBuilder.build();
-
     }
 
     @Override
@@ -150,7 +144,6 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             reqBuilder.setType(ByteString.copyFrom(loc.getNamespace().getBucketType().unsafeGetValue()));
 
             this.location = loc;
-
         }
 
         /**
@@ -219,7 +212,6 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             reqBuilder.setReturnBody(returnBody);
             return this;
         }
-
 
         /**
          * Set a timeout for this operation.
@@ -299,6 +291,18 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
                 removeOpPresent = true;
             }
             return setOpBuilder.build();
+        }
+
+        RiakDtPB.HllOp getHllOp(HllOp op)
+        {
+            RiakDtPB.HllOp.Builder hllOpBuilder = RiakDtPB.HllOp.newBuilder();
+
+            for (BinaryValue element : op.getElements())
+            {
+                hllOpBuilder.addAdds(ByteString.copyFrom(element.unsafeGetValue()));
+            }
+
+            return hllOpBuilder.build();
         }
 
         RiakDtPB.MapUpdate.FlagOp getFlagOp(FlagOp op)
@@ -385,7 +389,6 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             }
 
             return mapOpBuilder.build();
-
         }
 
         /**
@@ -408,6 +411,10 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 withOp((SetOp) op);
             }
+            else if (op instanceof HllOp)
+            {
+                withOp((HllOp) op);
+            }
 
             return this;
         }
@@ -429,13 +436,18 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
 
         private Builder withOp(SetOp op)
         {
-
             reqBuilder.setOp(RiakDtPB.DtOp.newBuilder()
                 .setSetOp(getSetOp(op)));
 
             return this;
         }
 
+        private Builder withOp(HllOp op)
+        {
+            reqBuilder.setOp(RiakDtPB.DtOp.newBuilder()
+                .setHllOp(getHllOp(op)));
+            return this;
+        }
     }
 
     public static class Response extends DtFetchOperation.Response
@@ -482,8 +494,6 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 return new Response(this);
             }
-
         }
     }
-
 }

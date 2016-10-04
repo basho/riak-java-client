@@ -19,7 +19,6 @@ import com.basho.riak.client.core.util.BinaryValue;
 
 public class RegisterOp implements CrdtOp
 {
-
     private final BinaryValue value;
 
     public RegisterOp(BinaryValue value)

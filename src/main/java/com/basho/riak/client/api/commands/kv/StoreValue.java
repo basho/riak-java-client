@@ -49,7 +49,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * Location loc = new Location(ns, "my_key");
  * RiakObject ro = new RiakObject();
  * ro.setValue(BinaryValue.create("This is my value"));
- * StoreValue sv = 
+ * StoreValue sv =
  *      new StoreValue.Builder(ro).withLocation(loc).build();
  * StoreValue.Response response = client.execute(sv);}</pre>
  * </p>
@@ -62,8 +62,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * ...
  * future.await();
  * if (future.isSuccess())
- * { 
- *     ... 
+ * {
+ *     ...
  * }}</pre>
  * </p>
  * @author Dave Rusek <drusek at basho dot com>
@@ -73,12 +73,11 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
 {
     private final Namespace namespace;
     private final BinaryValue key;
-    private final Map<Option<?>, Object> options =
-        new HashMap<Option<?>, Object>();
+    private final Map<Option<?>, Object> options = new HashMap<>();
     private final Object value;
     private final TypeReference<?> typeReference;
     private final VClock vclock;
-    
+
     StoreValue(Builder builder)
     {
         this.options.putAll(builder.options);
@@ -89,13 +88,12 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
         this.vclock = builder.vclock;
     }
 
-    
     @SuppressWarnings("unchecked")
     @Override
     protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
     {
         Converter converter;
-        
+
         if (typeReference == null)
         {
             converter = ConverterFactory.getInstance().getConverter(value.getClass());
@@ -104,20 +102,20 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
         {
             converter = ConverterFactory.getInstance().getConverter(typeReference);
         }
-        
+
         final OrmExtracted orm = converter.fromDomain(value, namespace, key);
-        
+
         // If there's no vector clock in the object, use one possibly given via
         // the builder.
         if (orm.getRiakObject().getVClock() == null)
         {
             orm.getRiakObject().setVClock(vclock);
         }
-        
+
         RiakFuture<StoreOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation(orm));
-        
-        CoreFutureAdapter<Response, Location, StoreOperation.Response, Location> future = 
+
+        CoreFutureAdapter<Response, Location, StoreOperation.Response, Location> future =
             new CoreFutureAdapter<Response, Location, StoreOperation.Response, Location>(coreFuture)
             {
                 @Override
@@ -129,9 +127,9 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
                     {
                         key = coreResponse.getGeneratedKey();
                     }
-                    
+
                     Location loc = new Location(ns, key);
-                    
+
                     return new Response.Builder()
                         .withValues(coreResponse.getObjectList())
                         .withGeneratedKey(coreResponse.getGeneratedKey())
@@ -144,16 +142,15 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
                 {
                     return coreQueryInfo;
                 }
-                
             };
         coreFuture.addListener(future);
         return future;
     }
-    
+
     private StoreOperation buildCoreOperation(OrmExtracted orm)
     {
         StoreOperation.Builder builder;
-        
+
         if (orm.hasKey())
         {
             Location loc = new Location(orm.getNamespace(), orm.getKey());
@@ -163,12 +160,11 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
         {
             builder = new StoreOperation.Builder(orm.getNamespace());
         }
-        
+
         builder.withContent(orm.getRiakObject());
-        
+
         for (Map.Entry<Option<?>, Object> opPair : options.entrySet())
         {
-
             RiakOption<?> option = opPair.getKey();
 
             if (option == Option.TIMEOUT)
@@ -215,12 +211,11 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             {
                 builder.withReturnBody((Boolean) opPair.getValue());
             }
-
         }
 
         return builder.build();
     }
-    
+
     /**
     * Options For controlling how Riak performs the store operation.
     * <p>
@@ -234,53 +229,51 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     */
    public final static class Option<T> extends RiakOption<T>
    {
-
        /**
         * Write Quorum.
         * How many replicas to write to before returning a successful response.
         */
-       public static final Option<Quorum> W = new Option<Quorum>("W");
+       public static final Option<Quorum> W = new Option<>("W");
        /**
         * Durable Write Quorum.
         * How many replicas to commit to durable storage before returning a successful response.
         */
-       public static final Option<Quorum> DW = new Option<Quorum>("DW");
+       public static final Option<Quorum> DW = new Option<>("DW");
        /**
         * Primary Write Quorum.
         * How many primary nodes must be up when the write is attempted.
         */
-       public static final Option<Quorum> PW = new Option<Quorum>("PW");
+       public static final Option<Quorum> PW = new Option<>("PW");
        /**
         * If Not Modified.
         * Update the value only if the vclock in the supplied object matches the one in the database.
         */
-       public static final Option<Boolean> IF_NOT_MODIFIED = new Option<Boolean>("IF_NOT_MODIFIED");
+       public static final Option<Boolean> IF_NOT_MODIFIED = new Option<>("IF_NOT_MODIFIED");
        /**
         * If None Match.
         * Store the value only if this bucket/key combination are not already defined.
         */
-       public static final Option<Boolean> IF_NONE_MATCH = new Option<Boolean>("IF_NONE_MATCH");
+       public static final Option<Boolean> IF_NONE_MATCH = new Option<>("IF_NONE_MATCH");
        /**
         * Return Body.
         * Return the object stored in Riak. Note this will return all siblings.
         */
-       public static final Option<Boolean> RETURN_BODY = new Option<Boolean>("RETURN_BODY");
+       public static final Option<Boolean> RETURN_BODY = new Option<>("RETURN_BODY");
        /**
         * Return Head.
-        * Like {@link #RETURN_BODY} except that the value(s) in the object are blank to 
+        * Like {@link #RETURN_BODY} except that the value(s) in the object are blank to
         * avoid returning potentially large value(s).
         */
-       public static final Option<Boolean> RETURN_HEAD = new Option<Boolean>("RETURN_HEAD");
+       public static final Option<Boolean> RETURN_HEAD = new Option<>("RETURN_HEAD");
        /**
         * Timeout.
         * Sets the server-side timeout for this operation. The default in Riak is 60 seconds.
         */
-       public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
+       public static final Option<Integer> TIMEOUT = new Option<>("TIMEOUT");
 
-       public static final Option<Boolean> ASIS = new Option<Boolean>("ASIS");
-       public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
-       public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
-
+       public static final Option<Boolean> ASIS = new Option<>("ASIS");
+       public static final Option<Boolean> SLOPPY_QUORUM = new Option<>("SLOPPY_QUORUM");
+       public static final Option<Integer> N_VAL = new Option<>("N_VAL");
 
        private Option(String name)
        {
@@ -288,11 +281,10 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
        }
    }
 
-    
     public static class Response extends KvResponseBase
     {
         private final BinaryValue generatedKey;
-        
+
         Response(Init<?> builder)
         {
             super(builder);
@@ -303,26 +295,25 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
         {
             return generatedKey != null;
         }
-        
+
         public BinaryValue getGeneratedKey()
         {
             return generatedKey;
         }
-        
+
         protected static abstract class Init<T extends Init<T>> extends KvResponseBase.Init<T>
         {
             private BinaryValue generatedKey;
-            
+
             T withGeneratedKey(BinaryValue generatedKey)
             {
                 this.generatedKey = generatedKey;
                 return self();
             }
         }
-        
+
         static class Builder extends Init<Builder>
         {
-
             @Override
             protected Builder self()
             {
@@ -342,16 +333,12 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
      */
     public static class Builder
     {
-
-        private final Map<Option<?>, Object> options =
-            new HashMap<Option<?>, Object>();
+        private final Map<Option<?>, Object> options = new HashMap<>();
         private final Object value;
         private Namespace namespace;
         private BinaryValue key;
         private TypeReference<?> typeReference;
         private VClock vclock;
-
-        
 
         /**
          * Construct a Builder for a StoreValue command.
@@ -361,13 +348,13 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
          * For anything other than a RiakObject this is the {@link com.basho.riak.client.api.convert.JSONConverter}
          * by default.
          * </p>
-         * @param value The object to be stored in Riak. 
+         * @param value The object to be stored in Riak.
          */
         public Builder(Object value)
         {
             this.value = value;
         }
-        
+
         /**
          * Construct a Builder for a StoreValue command.
          * <p>
@@ -376,7 +363,7 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
          * For anything other than a RiakObject this is the {@link com.basho.riak.client.api.convert.JSONConverter}
          * by default.
          * </p>
-         * @param value The object to be stored in Riak. 
+         * @param value The object to be stored in Riak.
          * @param typeReference the TypeReference for the object.
          */
         public Builder(Object value, TypeReference<?> typeReference)
@@ -384,12 +371,12 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             this.value = value;
             this.typeReference = typeReference;
         }
-        
+
         /**
          * Set the location to store the object.
          * <p>
          * When storing a RiakObject or a POJO that does not have annotations for
-         * the bucket and key, a {@link com.basho.riak.client.core.query.Location} 
+         * the bucket and key, a {@link com.basho.riak.client.core.query.Location}
          * must be provided.
          * </p>
          * @param location the location to store the object in Riak.
@@ -401,12 +388,12 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             this.key = location.getKey();
             return this;
         }
-        
+
         /**
          * Set the namespace to store the object.
          * <p>
-         * When storing a POJO that does not have an annotation for the 
-         * bucket type and bucket, a {@link com.basho.riak.client.core.query.Namespace} 
+         * When storing a POJO that does not have an annotation for the
+         * bucket type and bucket, a {@link com.basho.riak.client.core.query.Namespace}
          * must be supplied.
          * </p>
          * @param namespace The namespaec to store the object.
@@ -417,7 +404,7 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             this.namespace = namespace;
             return this;
         }
-        
+
         /**
          * Set the Riak-side timeout value.
          * <p>
@@ -432,7 +419,7 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             withOption(Option.TIMEOUT, timeout);
             return this;
         }
-        
+
         /**
          * Add an optional setting for this command.
          * This will be passed along with the request to Riak to tell it how
@@ -453,8 +440,8 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
          * <p>
          * When storing core Java types ({@code HashMap},
          * {@code ArrayList},{@code String}, etc) or non-annotated POJOs this
-         * method allows you to specify the vector clock retrieved from a 
-         * prior fetch operation. 
+         * method allows you to specify the vector clock retrieved from a
+         * prior fetch operation.
          * </p>
          * @param vclock The vector clock to send to Riak.
          * @return a reference to this object.
@@ -464,7 +451,7 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             this.vclock = vclock;
             return this;
         }
-        
+
         /**
          * Construct the StoreValue command.
          * @return the new StoreValue command.
@@ -476,7 +463,8 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         final int prime = 31;
         int result = 1;
         result = prime * result + (namespace != null ? namespace.hashCode() : 0);
@@ -489,41 +477,52 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
             return true;
         }
-        if (obj == null) {
+        if (obj == null)
+        {
             return false;
         }
-        if (!(obj instanceof StoreValue)) {
+        if (!(obj instanceof StoreValue))
+        {
             return false;
         }
 
         final StoreValue other = (StoreValue) obj;
-        if (this.namespace != other.namespace && (this.namespace == null || !this.namespace.equals(other.namespace))) {
+        if (this.namespace != other.namespace && (this.namespace == null || !this.namespace.equals(other.namespace)))
+        {
             return false;
         }
-        if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
+        if (this.key != other.key && (this.key == null || !this.key.equals(other.key)))
+        {
             return false;
         }
-        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options)))
+        {
             return false;
         }
-        if (this.value != other.value && (this.value == null || !this.value.equals(other.value))) {
+        if (this.value != other.value && (this.value == null || !this.value.equals(other.value)))
+        {
             return false;
         }
-        if (this.typeReference != other.typeReference && (this.typeReference == null || !this.typeReference.equals(other.typeReference))) {
+        if (this.typeReference != other.typeReference && (this.typeReference == null || !this.typeReference.equals(other.typeReference)))
+        {
             return false;
         }
-        if (this.vclock != other.vclock && (this.vclock == null || !this.vclock.equals(other.vclock))) {
+        if (this.vclock != other.vclock && (this.vclock == null || !this.vclock.equals(other.vclock)))
+        {
             return false;
         }
         return true;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("{namespace: %s, key: %s, options: %s, value: %s,"
                 + " typeReference: %s, vclock: %s}", namespace, key, options,
                 value, typeReference, vclock);

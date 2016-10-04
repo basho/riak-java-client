@@ -185,7 +185,7 @@ public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperatio
 
         static class Builder
         {
-            private List<BinaryValue> keys = new ArrayList<BinaryValue>();
+            private List<BinaryValue> keys = new ArrayList<>();
 
             Builder addKeys(List<BinaryValue> keys)
             {
@@ -203,8 +203,6 @@ public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperatio
             {
                 return new Response(this);
             }
-
         }
-
     }
 }

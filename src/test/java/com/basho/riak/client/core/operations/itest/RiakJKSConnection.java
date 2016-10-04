@@ -10,8 +10,8 @@ import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakNode;
 
-public class RiakJKSConnection {
-
+public class RiakJKSConnection
+{
     private static final String trustStorePasswd = "riak123";
     private static final String trustStrorePath = "truststore.jks";
     private static final KeyStore trustStore = loadKeystore(trustStrorePath,trustStorePasswd);
@@ -29,13 +29,15 @@ public class RiakJKSConnection {
      * @param storePasswd passowrd of Keystore file
      * @return a keystore with all certificate entries loaded
      */
-    private static KeyStore loadKeystore(String storePath, String storePasswd){
+    private static KeyStore loadKeystore(String storePath, String storePasswd)
+    {
         KeyStore store = null;
         try
         {
             store = KeyStore.getInstance("JKS");
             store.load(Thread.currentThread().getContextClassLoader().getResourceAsStream(storePath), storePasswd.toCharArray());
-        } catch (KeyStoreException | NoSuchAlgorithmException | IOException | CertificateException e)
+        }
+        catch (KeyStoreException | NoSuchAlgorithmException | IOException | CertificateException e)
         {
             e.printStackTrace();
         }
@@ -60,7 +62,6 @@ public class RiakJKSConnection {
      */
     public static RiakCluster getRiakCluster()
     {
-
         RiakNode.Builder builder = createRiakNodeBuilder();
         RiakCluster cluster = initializeRiakCluster(builder);
 
@@ -75,7 +76,8 @@ public class RiakJKSConnection {
     {
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster();
-        if (cluster!=null){
+        if (cluster!=null)
+        {
             client= new RiakClient(cluster);
         }
         return client;
@@ -106,7 +108,8 @@ public class RiakJKSConnection {
     {
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password);
-        if (cluster!=null){
+        if (cluster!=null)
+        {
             client= new RiakClient(cluster);
         }
         return client;

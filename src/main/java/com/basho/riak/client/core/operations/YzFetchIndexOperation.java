@@ -44,7 +44,7 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
     {
         // This isn't a streaming op, so there's only one protobuf in the list
         RiakYokozunaPB.RpbYokozunaIndexGetResp response = rawResponse.get(0);
-        List<YokozunaIndex> indexList = new ArrayList<YokozunaIndex>(response.getIndexCount());
+        List<YokozunaIndex> indexList = new ArrayList<>(response.getIndexCount());
 
         for (RiakYokozunaPB.RpbYokozunaIndex pbIndex : response.getIndexList())
         {
@@ -61,7 +61,6 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
     {
         RiakYokozunaPB.RpbYokozunaIndexGetReq req = reqBuilder.build();
         return new RiakMessage(RiakMessageCodes.MSG_YokozunaIndexGetReq, req.toByteArray());
-
     }
 
     @Override
@@ -76,7 +75,6 @@ public class YzFetchIndexOperation extends FutureOperation<YzFetchIndexOperation
         {
             throw new IllegalArgumentException("Invalid message received", ex);
         }
-
     }
 
     @Override

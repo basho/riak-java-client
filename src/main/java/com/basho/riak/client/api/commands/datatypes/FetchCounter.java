@@ -42,89 +42,88 @@ import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
  */
 public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.Response, Location>
 {
-	private FetchCounter(Builder builder)
-	{
-		super(builder);
-	}
+    private FetchCounter(Builder builder)
+    {
+        super(builder);
+    }
 
     @Override
     protected final RiakFuture<FetchCounter.Response, Location> executeAsync(RiakCluster cluster)
     {
         RiakFuture<DtFetchOperation.Response, Location> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<FetchCounter.Response, Location, DtFetchOperation.Response, Location> future =
-            new CoreFutureAdapter<FetchCounter.Response, Location, DtFetchOperation.Response, Location>(coreFuture) {
-
-            @Override
-            protected FetchCounter.Response convertResponse(DtFetchOperation.Response coreResponse)
+            new CoreFutureAdapter<FetchCounter.Response, Location, DtFetchOperation.Response, Location>(coreFuture)
             {
-                RiakDatatype element = coreResponse.getCrdtElement();
-                
-                Context context = null;
-                if (coreResponse.hasContext())
+                @Override
+                protected FetchCounter.Response convertResponse(DtFetchOperation.Response coreResponse)
                 {
-                    context = new Context(coreResponse.getContext());
+                    RiakDatatype element = coreResponse.getCrdtElement();
+
+                    Context context = null;
+                    if (coreResponse.hasContext())
+                    {
+                        context = new Context(coreResponse.getContext());
+                    }
+
+                    RiakCounter datatype = extractDatatype(element);
+
+                    return new Response(datatype, context);
                 }
-                
-                RiakCounter datatype = extractDatatype(element);
 
-                return new Response(datatype, context);
-            }
-
-            @Override
-            protected Location convertQueryInfo(Location coreQueryInfo)
-            {
-                return coreQueryInfo;
-            }
-        };
+                @Override
+                protected Location convertQueryInfo(Location coreQueryInfo)
+                {
+                    return coreQueryInfo;
+                }
+            };
         coreFuture.addListener(future);
         return future;
     }
-    
-	@Override
-	public RiakCounter extractDatatype(RiakDatatype element)
-	{
-		return element.getAsCounter();
-	}
+
+    @Override
+    public RiakCounter extractDatatype(RiakDatatype element)
+    {
+        return element.getAsCounter();
+    }
 
     /**
      * Builder used to construct a FetchCounter command.
      */
-	public static class Builder extends FetchDatatype.Builder<Builder>
-	{
-
+    public static class Builder extends FetchDatatype.Builder<Builder>
+    {
         /**
          * Construct a builder for a FetchCounter command.
          * @param location the location of the counter in Riak.
          */
-		public Builder(Location location)
-		{
-			super(location);
-		}
+        public Builder(Location location)
+        {
+            super(location);
+        }
 
-		@Override
-		protected Builder self()
-		{
-			return this;
-		}
+        @Override
+        protected Builder self()
+        {
+            return this;
+        }
 
         /**
          * Build a FetchCounter command.
          * @return a new FetchCounter command.
          */
-		public FetchCounter build()
-		{
-			return new FetchCounter(this);
-		}
-	}
-    
+        public FetchCounter build()
+        {
+            return new FetchCounter(this);
+        }
+    }
+
     /**
      * Response from a FetchCounter command.
      * <p>
-     * Encapsulates a RiakCounter returned from the command. 
+     * Encapsulates a RiakCounter returned from the command.
      * <pre>
-     * {@code 
+     * {@code
      * ...
      * RiakCounter counter = response.getDatatype();
      * Long value = counter.view();

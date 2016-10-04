@@ -31,17 +31,15 @@ import org.junit.Test;
  */
 public class StringConverterTest
 {
-    
     @Test
     public void producesRiakObject()
     {
         String foo = "some value";
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, "bucket");
         StringConverter converter = new StringConverter();
-        
-        
+
         Converter.OrmExtracted orm = converter.fromDomain(foo, ns, BinaryValue.create("key"));
-        
+
         assertNotNull(orm.getRiakObject());
         RiakObject obj = orm.getRiakObject();
         assertEquals(foo, obj.getValue().toString());
@@ -49,7 +47,7 @@ public class StringConverterTest
         assertEquals(ns, orm.getNamespace());
         assertEquals("key", orm.getKey().toString());
     }
-    
+
     @Test
     public void producesString()
     {
@@ -57,12 +55,9 @@ public class StringConverterTest
         RiakObject obj = new RiakObject()
                         .setValue(BinaryValue.create(value));
         StringConverter converter = new StringConverter();
-        
+
         String result = converter.toDomain(obj, null);
-        
+
         assertEquals(value, result);
-        
-                        
     }
-    
 }

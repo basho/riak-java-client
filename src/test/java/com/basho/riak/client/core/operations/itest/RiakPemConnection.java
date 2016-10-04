@@ -25,7 +25,6 @@ import com.basho.riak.client.core.RiakNode;
 
 public class RiakPemConnection
 {
-
     private static final KeyStore trustStore = loadTruststore();
 
     /**
@@ -39,8 +38,8 @@ public class RiakPemConnection
      * Load Truststore using Trusted Certificates.
      * @return a keystore with all trusted certificate entries loaded
      */
-    private static KeyStore loadTruststore(){
-
+    private static KeyStore loadTruststore()
+    {
         KeyStore truststore = null;
         try
         {
@@ -58,8 +57,8 @@ public class RiakPemConnection
             truststore.load(null, "basho".toCharArray());
             truststore.setCertificateEntry("cacert", caCert);
             truststore.setCertificateEntry("server", serverCert);
-
-        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e)
+        }
+        catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e)
         {
             e.printStackTrace();
         }
@@ -72,10 +71,11 @@ public class RiakPemConnection
      * @param publicCertPemPath path to the Public Cert Pem file
      * @return a keystore with private certificate entry loaded
      */
-    private static KeyStore loadKeystore(String privateKeyPemPath, String publicCertPemPath) {
-
+    private static KeyStore loadKeystore(String privateKeyPemPath, String publicCertPemPath)
+    {
         KeyStore keystore = null;
-        try {
+        try
+        {
             CertificateFactory cFactory = CertificateFactory.getInstance("X.509");
             InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(publicCertPemPath);
             X509Certificate public_cert = (X509Certificate) cFactory.generateCertificate(in);
@@ -98,8 +98,9 @@ public class RiakPemConnection
             keystore = KeyStore.getInstance(KeyStore.getDefaultType());
             keystore.load(null, "basho".toCharArray());
             keystore.setKeyEntry("private-key", privKey,"".toCharArray(),new java.security.cert.Certificate[] { public_cert });
-
-        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | InvalidKeySpecException e) {
+        }
+        catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException | InvalidKeySpecException e)
+        {
             e.printStackTrace();
         }
         return keystore;
@@ -110,7 +111,8 @@ public class RiakPemConnection
      * @param builder all builder properties required to make connection to a node.
      * @return Riak Cluster object based on builder properties
      */
-    private static RiakCluster initializeRiakCluster(RiakNode.Builder builder){
+    private static RiakCluster initializeRiakCluster(RiakNode.Builder builder)
+    {
         RiakCluster cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
         return cluster;
@@ -120,8 +122,8 @@ public class RiakPemConnection
      * Get Riak Cluster Handle. This is for unsecured connection when Riak security is disabled.
      * @return Riak Cluster Object
      */
-    public static RiakCluster getRiakCluster(){
-
+    public static RiakCluster getRiakCluster()
+    {
         RiakNode.Builder builder = createRiakNodeBuilder();
         RiakCluster cluster = initializeRiakCluster(builder);
 
@@ -140,10 +142,12 @@ public class RiakPemConnection
      * Get Riak Client Handle. This is for unsecured connection when Riak security is disabled.
      * @return Riak Client Object
      */
-    public static RiakClient getRiakConnection(){
+    public static RiakClient getRiakConnection()
+    {
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster();
-        if (cluster!=null){
+        if (cluster!=null)
+        {
             client= new RiakClient(cluster);
         }
         return client;
@@ -155,8 +159,8 @@ public class RiakPemConnection
      * @param password password of the username provided
      * @return Riak Cluster Object
      */
-    public static RiakCluster getRiakCluster(String username, String password){
-
+    public static RiakCluster getRiakCluster(String username, String password)
+    {
         RiakNode.Builder builder = createRiakNodeBuilder();
         builder.withAuth(username, password, trustStore);
         RiakCluster cluster = initializeRiakCluster(builder);
@@ -170,10 +174,12 @@ public class RiakPemConnection
      * @param password password of the username provided
      * @return Riak Client Object
      */
-    public static RiakClient getRiakConnection(String username, String password){
+    public static RiakClient getRiakConnection(String username, String password)
+    {
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password);
-        if (cluster!=null){
+        if (cluster!=null)
+        {
             client= new RiakClient(cluster);
         }
         return client;
@@ -187,7 +193,8 @@ public class RiakPemConnection
      * @param publicCertPemPath path to the Public Cert Pem file of the Private key provided.
      * @return Riak Cluster Object
      */
-    public static RiakCluster getRiakCluster(String username, String password, String privateKeyPemPath, String publicCertPemPath){
+    public static RiakCluster getRiakCluster(String username, String password, String privateKeyPemPath, String publicCertPemPath)
+    {
         KeyStore keyStore = loadKeystore(privateKeyPemPath,publicCertPemPath);
 
         RiakNode.Builder builder = createRiakNodeBuilder();
@@ -205,10 +212,12 @@ public class RiakPemConnection
      * @param publicCertPemPath path to the Public Cert Pem file of the Private key provided.
      * @return Riak Client Object
      */
-    public static RiakClient getRiakConnection(String username, String password, String privateKeyPemPath, String publicCertPemPath){
+    public static RiakClient getRiakConnection(String username, String password, String privateKeyPemPath, String publicCertPemPath)
+    {
         RiakClient client = null;
         RiakCluster cluster = getRiakCluster(username,password,privateKeyPemPath,publicCertPemPath);
-        if (cluster!=null){
+        if (cluster!=null)
+        {
             client= new RiakClient(cluster);
         }
         return client;

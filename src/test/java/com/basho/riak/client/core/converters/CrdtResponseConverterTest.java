@@ -34,11 +34,9 @@ import static org.junit.Assert.assertTrue;
 
 public class CrdtResponseConverterTest
 {
-
     @Test
     public void testDtUpdateRespCounter()
     {
-
         RiakDtPB.DtUpdateResp resp = RiakDtPB.DtUpdateResp.newBuilder()
             .setCounterValue(1)
             .build();
@@ -49,19 +47,17 @@ public class CrdtResponseConverterTest
 
         assertTrue(element.isCounter());
         assertEquals((Long) 1L, element.getAsCounter().view());
-
     }
 
     @Test
     public void testDtUpdateRespSet()
     {
-
-        Set<ByteString> values = new HashSet<ByteString>();
+        Set<ByteString> values = new HashSet<>();
         values.add(ByteString.copyFromUtf8("1"));
         values.add(ByteString.copyFromUtf8("2"));
         values.add(ByteString.copyFromUtf8("3"));
 
-        Set<BinaryValue> wrappedValues = new HashSet<BinaryValue>();
+        Set<BinaryValue> wrappedValues = new HashSet<>();
         wrappedValues.add(BinaryValue.create("1"));
         wrappedValues.add(BinaryValue.create("2"));
         wrappedValues.add(BinaryValue.create("3"));
@@ -76,19 +72,17 @@ public class CrdtResponseConverterTest
 
         assertTrue(element.isSet());
         assertEquals(wrappedValues, element.getAsSet().view());
-
     }
 
     @Test
     public void testDtUpdateRespMap()
     {
-
-        Set<ByteString> setValues = new HashSet<ByteString>();
+        Set<ByteString> setValues = new HashSet<>();
         setValues.add(ByteString.copyFromUtf8("1"));
         setValues.add(ByteString.copyFromUtf8("2"));
         setValues.add(ByteString.copyFromUtf8("3"));
 
-        Set<BinaryValue> wrappedSetValues = new HashSet<BinaryValue>();
+        Set<BinaryValue> wrappedSetValues = new HashSet<>();
         wrappedSetValues.add(BinaryValue.create("1"));
         wrappedSetValues.add(BinaryValue.create("2"));
         wrappedSetValues.add(BinaryValue.create("3"));
@@ -192,8 +186,5 @@ public class CrdtResponseConverterTest
         assertTrue(map.get(mapKey).get(0).isMap());
         map = map.get(mapKey).get(0).getAsMap();
         assertTrue(map.get(mapKey).get(0).isMap());
-
-
     }
-
 }

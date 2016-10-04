@@ -20,21 +20,16 @@ import org.junit.Test;
 
 public class IndexTest
 {
-
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidIndexName()
     {
-
         IndexType.typeFromFullname("notavaildname");
-
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidIndexTypeExtension()
     {
-
         IndexType.typeFromFullname("notavalidname_notavalidextension");
-
     }
 
     @Test
@@ -45,21 +40,20 @@ public class IndexTest
         Assert.assertEquals(IndexType.BUCKET.suffix(), "");
         Assert.assertEquals(IndexType.KEY.suffix(), "");
     }
-    
-    @Test
-    public void testValidIndexTypeExtensions() {
 
+    @Test
+    public void testValidIndexTypeExtensions()
+    {
         IndexType indexType = IndexType.typeFromFullname("indexname_int");
         Assert.assertTrue(indexType.equals(IndexType.INT));
 
         IndexType indexType1 = IndexType.typeFromFullname("indexname_bin");
         Assert.assertTrue(indexType1.equals(IndexType.BIN));
-        
-        IndexType indexType2 = IndexType.typeFromFullname("$bucket");
-        Assert.assertTrue(indexType2.equals(IndexType.BUCKET));
-        
-        IndexType indexType3 = IndexType.typeFromFullname("$key");
-        Assert.assertTrue(indexType3.equals(IndexType.KEY));
 
+        IndexType indexType2 = IndexType.typeFromFullname(IndexNames.BUCKET);
+        Assert.assertTrue(indexType2.equals(IndexType.BUCKET));
+
+        IndexType indexType3 = IndexType.typeFromFullname(IndexNames.KEY);
+        Assert.assertTrue(indexType3.equals(IndexType.KEY));
     }
 }

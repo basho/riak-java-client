@@ -30,7 +30,6 @@ import static org.mockito.Mockito.when;
  */
 public class ListBucketsTest
 {
-
     @Mock RiakCluster mockCluster;
     @Mock StreamingRiakFuture mockFuture;
     @Mock ListBucketsOperation.Response mockResponse;
@@ -41,7 +40,7 @@ public class ListBucketsTest
     public void init() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        when(mockResponse.getBuckets()).thenReturn(new ArrayList<BinaryValue>());
+        when(mockResponse.getBuckets()).thenReturn(new ArrayList<>());
         when(mockFuture.get()).thenReturn(mockResponse);
         when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
         when(mockFuture.getNow()).thenReturn(mockResponse);
@@ -54,7 +53,6 @@ public class ListBucketsTest
 
     private void testListBuckets(String bucketType) throws Exception
     {
-
         final BinaryValue type = BinaryValue.createFromUtf8(bucketType);
         ListBuckets.Builder list = new ListBuckets.Builder(type);
         client.execute(list.build());

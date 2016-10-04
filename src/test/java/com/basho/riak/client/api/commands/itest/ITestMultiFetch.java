@@ -39,18 +39,17 @@ import org.junit.Test;
  */
 public class ITestMultiFetch extends ITestAutoCleanupBase
 {
-    
     @Test
     public void simpleTest() throws ExecutionException, InterruptedException
     {
         RiakClient client = new RiakClient(cluster);
-        
+
         String keyPrefix = "key_";
         String valuePrefix = "value_";
-        List<Location> locations = new LinkedList<Location>();
-        List<BinaryValue> values = new LinkedList<BinaryValue>();
+        List<Location> locations = new LinkedList<>();
+        List<BinaryValue> values = new LinkedList<>();
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
-        
+
         // Store some stuff
         for (int i = 0; i < 5; i++)
         {
@@ -60,31 +59,27 @@ public class ITestMultiFetch extends ITestAutoCleanupBase
             locations.add(loc);
             values.add(BinaryValue.create(value));
             RiakObject o = new RiakObject().setValue(BinaryValue.create(value));
-            
+
             StoreValue sv = new StoreValue.Builder(o).withLocation(loc).build();
             client.execute(sv);
         }
-        
+
         MultiFetch mf = new MultiFetch.Builder().addLocations(locations).build();
-        
+
         MultiFetch.Response mfr = client.execute(mf);
-        
+
         assertEquals(locations.size(), mfr.getResponses().size());
-        
-        List<Location> returnedLocations = new LinkedList<Location>();
-        List<BinaryValue> returnedValues = new LinkedList<BinaryValue>();
-        
+
+        List<Location> returnedLocations = new LinkedList<>();
+        List<BinaryValue> returnedValues = new LinkedList<>();
+
         for (RiakFuture<FetchValue.Response, Location> future : mfr.getResponses())
         {
             returnedLocations.add(future.getQueryInfo());
             returnedValues.add(future.get().getValue(RiakObject.class).getValue());
         }
-        
+
         assertTrue(returnedLocations.containsAll(locations));
         assertTrue(returnedValues.containsAll(values));
-        
-        
-        
-        
     }
 }

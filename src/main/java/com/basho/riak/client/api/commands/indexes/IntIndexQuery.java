@@ -67,10 +67,13 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
             @Override
             public BinaryValue convert(Long input)
             {
+                if (input == null)
+                {
+                    return null;
+                }
                 // Riak. US_ASCII string instead of integer
                 return BinaryValue.createFromUtf8(String.valueOf(input));
             }
-
         };
     }
 
@@ -79,20 +82,23 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
     {
         RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
             executeCoreAsync(cluster);
-        
+
         IntQueryFuture future = new IntQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
-            
     }
 
-    protected final class IntQueryFuture extends CoreFutureAdapter<Response, IntIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+    protected final class IntQueryFuture
+            extends CoreFutureAdapter<Response,
+                                      IntIndexQuery,
+                                      SecondaryIndexQueryOperation.Response,
+                                      SecondaryIndexQueryOperation.Query>
     {
         public IntQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
         {
             super(coreFuture);
         }
-        
+
         @Override
         protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
         {
@@ -105,20 +111,24 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
             return IntIndexQuery.this;
         }
     }
-    
+
     protected static abstract class Init<S, T extends Init<S,T>> extends SecondaryIndexQuery.Init<S,T>
     {
-
         public Init(Namespace namespace, String indexName, S start, S end)
         {
             super(namespace, indexName + Type._INT, start, end);
+        }
+
+        public Init(Namespace namespace, String indexName, byte[] coverContext)
+        {
+            super(namespace, indexName + Type._INT, coverContext);
         }
 
         public Init(Namespace namespace, String indexName, S match)
         {
             super(namespace, indexName + Type._INT, match);
         }
-        
+
         @Override
         public T withRegexTermFilter(String filter)
         {
@@ -131,12 +141,26 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
      */
     public static class Builder extends Init<Long, Builder>
     {
+        /**
+         * Construct a Builder for a IntIndexQuery with a cover context.
+         * <p>
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension.
+         * <p>
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The name of the index in Riak.
+         * @param coverContext cover context.
+         */
+        public Builder(Namespace namespace, String indexName, byte[] coverContext)
+        {
+            super(namespace, indexName, coverContext);
+        }
 
         /**
          * Construct a Builder for a IntIndexQuery with a range.
          * <p>
          * Note that your index name should not include the Riak {@literal _int} or
-         * {@literal _bin} extension. 
+         * {@literal _bin} extension.
          * <p>
          * @param namespace The namespace in Riak to query.
          * @param indexName The name of the index in Riak.
@@ -152,7 +176,7 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
          * Construct a Builder for a IntIndexQuery with a single 2i key.
          * <p>
          * Note that your index name should not include the Riak {@literal _int} or
-         * {@literal _bin} extension. 
+         * {@literal _bin} extension.
          * <p>
          * @param namespace The namespace in Riak to query.
          * @param indexName The name of the index in Riak.
@@ -178,18 +202,18 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
             return new IntIndexQuery(this);
         }
     }
-    
+
     public static class Response extends SecondaryIndexQuery.Response<Long>
     {
         protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<Long> converter)
         {
             super(queryLocation, coreResponse, converter);
         }
-        
+
         @Override
         public List<Entry> getEntries()
         {
-            List<Entry> convertedList = new ArrayList<Entry>();
+            List<Entry> convertedList = new ArrayList<>();
             for (SecondaryIndexQueryOperation.Response.Entry e : coreResponse.getEntryList())
             {
                 Location loc = getLocationFromCoreEntry(e);
@@ -205,7 +229,6 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
             {
                 super(riakObjectLocation, indexKey, converter);
             }
-
         }
     }
 }

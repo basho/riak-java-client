@@ -38,7 +38,7 @@ import java.util.Map;
  * <p>
  * Note that this operation returns a {@code Void} type upon success. Any failure
  * will be thrown as an exception when calling {@code DeleteValue} synchronously or
- * when calling the future's get methods. 
+ * when calling the future's get methods.
  * </p>
  * <pre class="prettyprint">
  * {@code
@@ -56,20 +56,18 @@ import java.util.Map;
  * ...
  * future.await();
  * if (future.isSuccess())
- * { 
- *     ... 
+ * {
+ *     ...
  * }}</pre>
  * </p>
- * 
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public final class DeleteValue extends RiakCommand<Void, Location>
 {
-
     private final Location location;
-    private final Map<Option<?>, Object> options =
-        new HashMap<Option<?>, Object>();
+    private final Map<Option<?>, Object> options = new HashMap<>();
     private final VClock vClock;
 
     public DeleteValue(Builder builder)
@@ -84,7 +82,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
     {
         RiakFuture<Void, Location> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<Void, Location, Void, Location> future =
             new CoreFutureAdapter<Void, Location, Void, Location>(coreFuture)
             {
@@ -115,7 +113,6 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 
         for (Map.Entry<Option<?>, Object> optPair : options.entrySet())
         {
-
             Option<?> option = optPair.getKey();
 
             if (option == Option.DW)
@@ -161,44 +158,43 @@ public final class DeleteValue extends RiakCommand<Void, Location>
 
     public final static class Option<T> extends RiakOption<T>
     {
-
         /**
          * Read Write Quorum.
-         * Quorum for both operations (get and put) involved in deleting an object 
+         * Quorum for both operations (get and put) involved in deleting an object
          */
-        public static final Option<Quorum> RW = new Option<Quorum>("RW");
+        public static final Option<Quorum> RW = new Option<>("RW");
         /**
          * Read Quorum.
          * How many replicas need to agree when fetching the object.
          */
-        public static final Option<Quorum> R = new Option<Quorum>("R");
+        public static final Option<Quorum> R = new Option<>("R");
         /**
          * Write Quorum.
          * How many replicas to write to before returning a successful response.
          */
-        public static final Option<Quorum> W = new Option<Quorum>("W");
+        public static final Option<Quorum> W = new Option<>("W");
         /**
          * Primary Read Quorum.
          * How many primary replicas need to be available when retrieving the object.
          */
-        public static final Option<Quorum> PR = new Option<Quorum>("PR");
+        public static final Option<Quorum> PR = new Option<>("PR");
         /**
-         * Primary Write Quorum. 
+         * Primary Write Quorum.
          * How many primary nodes must be up when the write is attempted
          */
-        public static final Option<Quorum> PW = new Option<Quorum>("PW");
+        public static final Option<Quorum> PW = new Option<>("PW");
         /**
          * Durable Write Quorum.
          * How many replicas to commit to durable storage before returning a successful response.
          */
-        public static final Option<Quorum> DW = new Option<Quorum>("DW");
+        public static final Option<Quorum> DW = new Option<>("DW");
         /**
          * Timeout.
          * Sets the server-side timeout for this operation. The default is 60 seconds.
          */
-        public static final Option<Integer> TIMEOUT = new Option<Integer>("TIMEOUT");
-        public static final Option<Boolean> SLOPPY_QUORUM = new Option<Boolean>("SLOPPY_QUORUM");
-        public static final Option<Integer> N_VAL = new Option<Integer>("N_VAL");
+        public static final Option<Integer> TIMEOUT = new Option<>("TIMEOUT");
+        public static final Option<Boolean> SLOPPY_QUORUM = new Option<>("SLOPPY_QUORUM");
+        public static final Option<Integer> N_VAL = new Option<>("N_VAL");
 
         private Option(String name)
         {
@@ -209,12 +205,9 @@ public final class DeleteValue extends RiakCommand<Void, Location>
     /**
      * Used to construct a DeleteValue command.
      */
-    public static class Builder
+    public static class Builder extends KvBuilderBase<DeleteValue>
     {
-
-        private final Location location;
-        private final Map<Option<?>, Object> options =
-            new HashMap<Option<?>, Object>();
+        private final Map<Option<?>, Object> options = new HashMap<>();
         private VClock vClock;
 
         /**
@@ -223,11 +216,7 @@ public final class DeleteValue extends RiakCommand<Void, Location>
          */
         public Builder(Location location)
         {
-            if (location == null)
-            {
-                throw new IllegalArgumentException("Location cannot be null");
-            }
-            this.location = location;
+            super(location);
         }
 
         /**
@@ -270,16 +259,16 @@ public final class DeleteValue extends RiakCommand<Void, Location>
             withOption(Option.TIMEOUT, timeout);
             return this;
         }
-        
+
         /**
          * Construct a DeleteValue object.
          * @return a new DeleteValue instance.
          */
+        @Override
         public DeleteValue build()
         {
             return new DeleteValue(this);
         }
-
     }
 
     @Override
@@ -294,32 +283,40 @@ public final class DeleteValue extends RiakCommand<Void, Location>
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
             return true;
         }
-        if (obj == null) {
+        if (obj == null)
+        {
             return false;
         }
-        if (!(obj instanceof DeleteValue)) {
+        if (!(obj instanceof DeleteValue))
+        {
             return false;
         }
 
         final DeleteValue other = (DeleteValue) obj;
-        if (this.location != other.location && (this.location == null || !this.location.equals(other.location))) {
+        if (this.location != other.location && (this.location == null || !this.location.equals(other.location)))
+        {
             return false;
         }
-        if (this.options != other.options && (this.options == null || !this.options.equals(other.options))) {
+        if (this.options != other.options && (this.options == null || !this.options.equals(other.options)))
+        {
             return false;
         }
-        if (this.vClock != other.vClock && (this.vClock == null || !this.vClock.equals(other.vClock))) {
+        if (this.vClock != other.vClock && (this.vClock == null || !this.vClock.equals(other.vClock)))
+        {
             return false;
         }
         return true;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("{location: %s, options: %s, vClock: %s}",
                 location, options, vClock);
     }

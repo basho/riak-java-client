@@ -69,7 +69,6 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void, Names
 
     static abstract class PropsBuilder<T extends PropsBuilder<T>>
     {
-
         protected final RiakPB.RpbBucketProps.Builder propsBuilder
                 = RiakPB.RpbBucketProps.newBuilder();
 
@@ -393,6 +392,25 @@ public class StoreBucketPropsOperation extends FutureOperation<Void, Void, Names
                 throw new IllegalArgumentException("Index name cannot be null or zero length");
             }
             propsBuilder.setSearchIndex(ByteString.copyFromUtf8(indexName));
+            return self();
+        }
+
+        /**
+         * Set the HyperLogLog Precision.
+         *
+         * @param precision the number of bits to use in the HyperLogLog precision.
+         *                  Valid values are [4 - 16] inclusive, default is 14 on new buckets.
+         *                  <b>NOTE:</b> When changing precision, it may only be reduced from
+         *                  it's current value, and never increased.
+         * @return a reference to this object.
+         */
+        public T withHllPrecision(int precision)
+        {
+            if (precision < 4 || precision > 16)
+            {
+                throw new IllegalArgumentException("Precision must be between 4 and 16, inclusive.");
+            }
+            propsBuilder.setHllPrecision(precision);
             return self();
         }
 

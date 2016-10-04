@@ -1,23 +1,44 @@
+/*
+ * Copyright 2013 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.commands.kv.ListKeys;
+import com.basho.riak.client.api.commands.kv.MultiDelete;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.netty.RiakResponseException;
-import com.basho.riak.client.core.operations.DeleteOperation;
-import com.basho.riak.client.core.operations.ListKeysOperation;
-import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
-import com.basho.riak.client.core.operations.YzFetchIndexOperation;
+import com.basho.riak.client.core.operations.*;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.query.indexes.LongIntIndex;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -27,32 +48,37 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.concurrent.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
- * Created by alex on 3/2/16.
+ *
+ * @author Brian Roach <roach at basho dot com>
+ * @since 2.0
  */
-public class ITestBase
+public abstract class ITestBase
 {
-    protected static final int NUMBER_OF_PARALLEL_REQUESTS = 10;
     protected static RiakCluster cluster;
     protected static boolean testYokozuna;
     protected static boolean test2i;
     protected static boolean testBucketType;
     protected static boolean testCrdt;
+    protected static boolean testHllDataType;
     protected static boolean testTimeSeries;
+    protected static boolean testCoveragePlan;
     protected static boolean legacyRiakSearch;
     protected static boolean security;
     protected static BinaryValue bucketName;
     protected static BinaryValue counterBucketType;
     protected static BinaryValue setBucketType;
+    protected static BinaryValue hllBucketType;
     protected static BinaryValue mapBucketType;
     protected static BinaryValue bucketType;
     protected static BinaryValue yokozunaBucketType;
     protected static BinaryValue mapReduceBucketType;
     protected static String overrideCert;
+    protected static final int NUMBER_OF_PARALLEL_REQUESTS = 10;
+    protected static final int NUMBER_OF_TEST_VALUES = 100;
+
     protected static String hostname;
     protected static int pbcPort;
     @Rule
@@ -62,7 +88,7 @@ public class ITestBase
     public static void setUp() throws CertificateException, IOException, KeyStoreException,
             NoSuchAlgorithmException
     {
-        bucketName = BinaryValue.unsafeCreate("ITestAutoCleanupBase".getBytes());
+        bucketName = BinaryValue.unsafeCreate("ITestBase".getBytes());
 
         /**
          * Riak security.
@@ -71,7 +97,7 @@ public class ITestBase
          * in the README.md's "Security Tests" section.
          */
 
-        security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
+        security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security", "false"));
         overrideCert = System.getProperty("com.basho.riak.security.cacert");
 
         /**
@@ -83,7 +109,7 @@ public class ITestBase
          * riak-admin bucket-type activate yokozuna
          */
         yokozunaBucketType = BinaryValue.create("yokozuna");
-        testYokozuna = Boolean.parseBoolean(System.getProperty("com.basho.riak.yokozuna"));
+        testYokozuna = Boolean.parseBoolean(System.getProperty("com.basho.riak.yokozuna", "true"));
 
         /**
          * Bucket type
@@ -93,7 +119,7 @@ public class ITestBase
          * riak-admin bucket-type create plain '{"props":{}}'
          * riak-admin bucket-type activate plain
          */
-        testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype"));
+        testBucketType = Boolean.parseBoolean(System.getProperty("com.basho.riak.buckettype", "true"));
         bucketType = BinaryValue.unsafeCreate("plain".getBytes());
 
         /**
@@ -101,11 +127,9 @@ public class ITestBase
          *
          * The backend must be 'leveldb' in riak config to us this
          */
-        test2i = Boolean.parseBoolean(System.getProperty("com.basho.riak.2i"));
+        test2i = Boolean.parseBoolean(System.getProperty("com.basho.riak.2i", "true"));
 
-
-        legacyRiakSearch = Boolean.parseBoolean(System.getProperty("com.basho.riak.riakSearch"));
-
+        legacyRiakSearch = Boolean.parseBoolean(System.getProperty("com.basho.riak.riakSearch", "false"));
 
         /**
          * In order to run the CRDT itests you must first manually
@@ -121,12 +145,17 @@ public class ITestBase
          */
         counterBucketType = BinaryValue.create("counters");
         setBucketType = BinaryValue.create("sets");
+        hllBucketType = BinaryValue.create("hlls");
         mapBucketType = BinaryValue.create("maps");
 
         mapReduceBucketType = BinaryValue.create("mr");
 
-        testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt"));
-        testTimeSeries = Boolean.parseBoolean(System.getProperty("com.basho.riak.timeseries"));
+        testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt", "true"));
+        testHllDataType = Boolean.parseBoolean(System.getProperty("com.basho.riak.hlldt", "false"));
+
+        testTimeSeries = Boolean.parseBoolean(System.getProperty("com.basho.riak.timeseries", "false"));
+
+        testCoveragePlan = Boolean.parseBoolean(System.getProperty("com.basho.riak.coveragePlan", "false"));
 
         /**
          * Riak PBC host
@@ -141,7 +170,6 @@ public class ITestBase
          * In case you want/need to use a custom PBC port you may pass it by using the following system property
          */
         pbcPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
-
 
         RiakNode.Builder builder = new RiakNode.Builder()
                                         .withRemoteAddress(hostname)
@@ -168,48 +196,15 @@ public class ITestBase
         resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, name.toString()));
     }
 
-    public static void resetAndEmptyBucket(Namespace namespace) throws InterruptedException, ExecutionException
+    protected static void resetAndEmptyBucket(Namespace namespace) throws InterruptedException, ExecutionException
     {
-        ListKeysOperation.Builder keysOpBuilder = new ListKeysOperation.Builder(namespace);
+        RiakClient client = new RiakClient(cluster);
 
-        ListKeysOperation keysOp = keysOpBuilder.build();
-        cluster.execute(keysOp);
-        List<BinaryValue> keyList = keysOp.get().getKeys();
-        final Semaphore semaphore = new Semaphore(NUMBER_OF_PARALLEL_REQUESTS);
-        final CountDownLatch latch = new CountDownLatch(keyList.size());
+        ListKeys listKeys = new ListKeys.Builder(namespace).build();
+        final ListKeys.Response listKeyResponse = client.execute(listKeys);
 
-        RiakFutureListener<Void, Location> listener = new RiakFutureListener<Void, Location>() {
-            @Override
-            public void handle(RiakFuture<Void, Location> f)
-            {
-                try
-                {
-                    f.get();
-                }
-                catch (Exception ex)
-                {
-                    if (ex instanceof RuntimeException)
-                    {
-                        throw (RuntimeException)ex;
-                    }
-                    throw new RuntimeException(ex);
-                }
-                semaphore.release();
-                latch.countDown();
-            }
-
-        };
-
-        for (BinaryValue k : keyList)
-        {
-            Location location = new Location(namespace, k);
-            DeleteOperation delOp = new DeleteOperation.Builder(location).withRw(3).build();
-            delOp.addListener(listener);
-            semaphore.acquire();
-            cluster.execute(delOp);
-        }
-
-        latch.await();
+        MultiDelete multiDelete = new MultiDelete.Builder().addLocations(listKeyResponse).build();
+        final MultiDelete.Response deleteResponse = client.execute(multiDelete);
 
         ResetBucketPropsOperation.Builder resetOpBuilder =
                 new ResetBucketPropsOperation.Builder(namespace);
@@ -219,7 +214,8 @@ public class ITestBase
         resetOp.get();
     }
 
-    private static void setupUsernamePasswordSecurity(RiakNode.Builder builder) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
+    protected static void setupUsernamePasswordSecurity(RiakNode.Builder builder)
+            throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException
     {
         InputStream in;
         if (overrideCert != null)
@@ -245,24 +241,6 @@ public class ITestBase
         builder.withAuth("riakpass", "Test1234", ks);
     }
 
-    protected static void assertFutureSuccess(RiakFuture<?, ?> resultFuture)
-    {
-        if(resultFuture.cause() == null)
-        {
-            assertTrue(resultFuture.isSuccess());
-        }
-        else
-        {
-            assertTrue(resultFuture.cause().getMessage(), resultFuture.isSuccess());
-        }
-    }
-
-    protected static void assertFutureFailure(RiakFuture<?,?> resultFuture)
-    {
-        assertFalse(resultFuture.isSuccess());
-        assertEquals(resultFuture.cause().getClass(), RiakResponseException.class);
-    }
-
     protected void setBucketNameToTestName()
     {
         bucketName = BinaryValue.create(testName.getMethodName());
@@ -283,5 +261,52 @@ public class ITestBase
         }
 
         return false;
+    }
+
+    public static Namespace defaultNamespace()
+    {
+        return new Namespace(testBucketType ?
+                                     bucketType :
+                                     BinaryValue.createFromUtf8(Namespace.DEFAULT_BUCKET_TYPE), bucketName);
+    }
+
+    protected static void assertFutureSuccess(RiakFuture<?, ?> resultFuture)
+    {
+        if (resultFuture.cause() == null)
+        {
+            assertTrue(resultFuture.isSuccess());
+        }
+        else
+        {
+            assertTrue(resultFuture.cause().getMessage(), resultFuture.isSuccess());
+        }
+    }
+
+    protected static void assertFutureFailure(RiakFuture<?,?> resultFuture)
+    {
+        assertFalse(resultFuture.isSuccess());
+        assertEquals(resultFuture.cause().getClass(), RiakResponseException.class);
+    }
+
+    protected static void setupIndexTestData(Namespace ns, String indexName, String keyBase, String value)
+            throws InterruptedException, ExecutionException
+    {
+        for (long i = 0; i < NUMBER_OF_TEST_VALUES; ++i)
+        {
+            RiakObject obj = new RiakObject()
+                    .setValue(BinaryValue.create(value +i))
+                    .setContentType("plain/text");
+
+            obj.getIndexes().getIndex(LongIntIndex.named(indexName)).add(i);
+
+            Location location = new Location(ns, keyBase + i);
+            StoreOperation storeOp =
+                    new StoreOperation.Builder(location)
+                            .withContent(obj)
+                            .build();
+
+            cluster.execute(storeOp);
+            storeOp.get();
+        }
     }
 }

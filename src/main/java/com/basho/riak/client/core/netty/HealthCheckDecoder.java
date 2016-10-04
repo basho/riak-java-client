@@ -102,7 +102,8 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
     }
 
     @Override
-    public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(final ChannelHandlerContext ctx) throws Exception
+    {
         logger.debug("HealthCheckDecoder Channel Active");
         init(ctx);
     }
@@ -122,7 +123,8 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
         future.setException(new IOException("Exception in channel while performing health check op.", cause));
     }
 
-    public RiakFuture<RiakMessage, Void> getFuture() {
+    public RiakFuture<RiakMessage, Void> getFuture()
+    {
         return future;
     }
 
@@ -141,7 +143,6 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
 
     public static class HealthCheckFuture implements RiakFuture<RiakMessage, Void>
     {
-
         private final CountDownLatch latch = new CountDownLatch(1);
         private volatile Throwable exception;
         private volatile RiakMessage message;
@@ -256,6 +257,6 @@ public abstract class HealthCheckDecoder extends ByteToMessageDecoder
         {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-
+        
     }
 }

@@ -11,7 +11,6 @@ public final class RiakPB {
   public interface RpbErrorRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbErrorResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes errmsg = 1;</code>
      */
@@ -403,11 +402,9 @@ public final class RiakPB {
 
       public final boolean isInitialized() {
         if (!hasErrmsg()) {
-          
           return false;
         }
         if (!hasErrcode()) {
-          
           return false;
         }
         return true;
@@ -513,7 +510,6 @@ public final class RiakPB {
   public interface RpbGetServerInfoRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbGetServerInfoResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional bytes node = 1;</code>
      */
@@ -1002,7 +998,6 @@ public final class RiakPB {
   public interface RpbPairOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbPair)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes key = 1;</code>
      */
@@ -1390,7 +1385,6 @@ public final class RiakPB {
 
       public final boolean isInitialized() {
         if (!hasKey()) {
-          
           return false;
         }
         return true;
@@ -1499,7 +1493,6 @@ public final class RiakPB {
   public interface RpbGetBucketReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbGetBucketReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      */
@@ -1887,7 +1880,6 @@ public final class RiakPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         return true;
@@ -1996,7 +1988,6 @@ public final class RiakPB {
   public interface RpbGetBucketRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbGetBucketResp)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required .RpbBucketProps props = 1;</code>
      */
@@ -2369,11 +2360,9 @@ public final class RiakPB {
 
       public final boolean isInitialized() {
         if (!hasProps()) {
-          
           return false;
         }
         if (!getProps().isInitialized()) {
-          
           return false;
         }
         return true;
@@ -2501,7 +2490,7 @@ public final class RiakPB {
        * <code>required .RpbBucketProps props = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbBucketProps, com.basho.riak.protobuf.RiakPB.RpbBucketProps.Builder, com.basho.riak.protobuf.RiakPB.RpbBucketPropsOrBuilder> 
+          com.basho.riak.protobuf.RiakPB.RpbBucketProps, com.basho.riak.protobuf.RiakPB.RpbBucketProps.Builder, com.basho.riak.protobuf.RiakPB.RpbBucketPropsOrBuilder>
           getPropsFieldBuilder() {
         if (propsBuilder_ == null) {
           propsBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -2528,7 +2517,6 @@ public final class RiakPB {
   public interface RpbSetBucketReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbSetBucketReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      */
@@ -2997,15 +2985,12 @@ public final class RiakPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         if (!hasProps()) {
-          
           return false;
         }
         if (!getProps().isInitialized()) {
-          
           return false;
         }
         return true;
@@ -3168,7 +3153,7 @@ public final class RiakPB {
        * <code>required .RpbBucketProps props = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbBucketProps, com.basho.riak.protobuf.RiakPB.RpbBucketProps.Builder, com.basho.riak.protobuf.RiakPB.RpbBucketPropsOrBuilder> 
+          com.basho.riak.protobuf.RiakPB.RpbBucketProps, com.basho.riak.protobuf.RiakPB.RpbBucketProps.Builder, com.basho.riak.protobuf.RiakPB.RpbBucketPropsOrBuilder>
           getPropsFieldBuilder() {
         if (propsBuilder_ == null) {
           propsBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -3230,7 +3215,6 @@ public final class RiakPB {
   public interface RpbResetBucketReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbResetBucketReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes bucket = 1;</code>
      */
@@ -3618,7 +3602,6 @@ public final class RiakPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
-          
           return false;
         }
         return true;
@@ -3727,7 +3710,6 @@ public final class RiakPB {
   public interface RpbGetBucketTypeReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbGetBucketTypeReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes type = 1;</code>
      */
@@ -4069,7 +4051,6 @@ public final class RiakPB {
 
       public final boolean isInitialized() {
         if (!hasType()) {
-          
           return false;
         }
         return true;
@@ -4143,7 +4124,6 @@ public final class RiakPB {
   public interface RpbSetBucketTypeReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbSetBucketTypeReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes type = 1;</code>
      */
@@ -4566,15 +4546,12 @@ public final class RiakPB {
 
       public final boolean isInitialized() {
         if (!hasType()) {
-          
           return false;
         }
         if (!hasProps()) {
-          
           return false;
         }
         if (!getProps().isInitialized()) {
-          
           return false;
         }
         return true;
@@ -4737,7 +4714,7 @@ public final class RiakPB {
        * <code>required .RpbBucketProps props = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbBucketProps, com.basho.riak.protobuf.RiakPB.RpbBucketProps.Builder, com.basho.riak.protobuf.RiakPB.RpbBucketPropsOrBuilder> 
+          com.basho.riak.protobuf.RiakPB.RpbBucketProps, com.basho.riak.protobuf.RiakPB.RpbBucketProps.Builder, com.basho.riak.protobuf.RiakPB.RpbBucketPropsOrBuilder>
           getPropsFieldBuilder() {
         if (propsBuilder_ == null) {
           propsBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -4764,7 +4741,6 @@ public final class RiakPB {
   public interface RpbModFunOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbModFun)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes module = 1;</code>
      */
@@ -5158,11 +5134,9 @@ public final class RiakPB {
 
       public final boolean isInitialized() {
         if (!hasModule()) {
-          
           return false;
         }
         if (!hasFunction()) {
-          
           return false;
         }
         return true;
@@ -5271,7 +5245,6 @@ public final class RiakPB {
   public interface RpbCommitHookOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbCommitHook)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional .RpbModFun modfun = 1;</code>
      */
@@ -5691,7 +5664,6 @@ public final class RiakPB {
       public final boolean isInitialized() {
         if (hasModfun()) {
           if (!getModfun().isInitialized()) {
-            
             return false;
           }
         }
@@ -5820,7 +5792,7 @@ public final class RiakPB {
        * <code>optional .RpbModFun modfun = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbModFun, com.basho.riak.protobuf.RiakPB.RpbModFun.Builder, com.basho.riak.protobuf.RiakPB.RpbModFunOrBuilder> 
+          com.basho.riak.protobuf.RiakPB.RpbModFun, com.basho.riak.protobuf.RiakPB.RpbModFun.Builder, com.basho.riak.protobuf.RiakPB.RpbModFunOrBuilder>
           getModfunFieldBuilder() {
         if (modfunBuilder_ == null) {
           modfunBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -5882,7 +5854,6 @@ public final class RiakPB {
   public interface RpbBucketPropsOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbBucketProps)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>optional uint32 n_val = 1;</code>
      *
@@ -5921,7 +5892,7 @@ public final class RiakPB {
     /**
      * <code>repeated .RpbCommitHook precommit = 4;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakPB.RpbCommitHook> 
+    java.util.List<com.basho.riak.protobuf.RiakPB.RpbCommitHook>
         getPrecommitList();
     /**
      * <code>repeated .RpbCommitHook precommit = 4;</code>
@@ -5934,7 +5905,7 @@ public final class RiakPB {
     /**
      * <code>repeated .RpbCommitHook precommit = 4;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder>
         getPrecommitOrBuilderList();
     /**
      * <code>repeated .RpbCommitHook precommit = 4;</code>
@@ -5954,7 +5925,7 @@ public final class RiakPB {
     /**
      * <code>repeated .RpbCommitHook postcommit = 6;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakPB.RpbCommitHook> 
+    java.util.List<com.basho.riak.protobuf.RiakPB.RpbCommitHook>
         getPostcommitList();
     /**
      * <code>repeated .RpbCommitHook postcommit = 6;</code>
@@ -5967,7 +5938,7 @@ public final class RiakPB {
     /**
      * <code>repeated .RpbCommitHook postcommit = 6;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder> 
+    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder>
         getPostcommitOrBuilderList();
     /**
      * <code>repeated .RpbCommitHook postcommit = 6;</code>
@@ -6240,6 +6211,23 @@ public final class RiakPB {
      * </pre>
      */
     boolean getWriteOnce();
+
+    /**
+     * <code>optional uint32 hll_precision = 29;</code>
+     *
+     * <pre>
+     * Hyperlolog DT Precision
+     * </pre>
+     */
+    boolean hasHllPrecision();
+    /**
+     * <code>optional uint32 hll_precision = 29;</code>
+     *
+     * <pre>
+     * Hyperlolog DT Precision
+     * </pre>
+     */
+    int getHllPrecision();
   }
   /**
    * Protobuf type {@code RpbBucketProps}
@@ -6465,6 +6453,11 @@ public final class RiakPB {
               writeOnce_ = input.readBool();
               break;
             }
+            case 232: {
+              bitField0_ |= 0x04000000;
+              hllPrecision_ = input.readUInt32();
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -6553,7 +6546,6 @@ public final class RiakPB {
        * <code>TRUE = 3;</code>
        */
       public static final int TRUE_VALUE = 3;
-
 
       public final int getNumber() { return value; }
 
@@ -6679,7 +6671,7 @@ public final class RiakPB {
     /**
      * <code>repeated .RpbCommitHook precommit = 4;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder>
         getPrecommitOrBuilderList() {
       return precommit_;
     }
@@ -6729,7 +6721,7 @@ public final class RiakPB {
     /**
      * <code>repeated .RpbCommitHook postcommit = 6;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder> 
+    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder>
         getPostcommitOrBuilderList() {
       return postcommit_;
     }
@@ -7155,6 +7147,29 @@ public final class RiakPB {
       return writeOnce_;
     }
 
+    public static final int HLL_PRECISION_FIELD_NUMBER = 29;
+    private int hllPrecision_;
+    /**
+     * <code>optional uint32 hll_precision = 29;</code>
+     *
+     * <pre>
+     * Hyperlolog DT Precision
+     * </pre>
+     */
+    public boolean hasHllPrecision() {
+      return ((bitField0_ & 0x04000000) == 0x04000000);
+    }
+    /**
+     * <code>optional uint32 hll_precision = 29;</code>
+     *
+     * <pre>
+     * Hyperlolog DT Precision
+     * </pre>
+     */
+    public int getHllPrecision() {
+      return hllPrecision_;
+    }
+
     private void initFields() {
       nVal_ = 0;
       allowMult_ = false;
@@ -7184,6 +7199,7 @@ public final class RiakPB {
       datatype_ = com.google.protobuf.ByteString.EMPTY;
       consistent_ = false;
       writeOnce_ = false;
+      hllPrecision_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -7306,6 +7322,9 @@ public final class RiakPB {
       if (((bitField0_ & 0x02000000) == 0x02000000)) {
         output.writeBool(28, writeOnce_);
       }
+      if (((bitField0_ & 0x04000000) == 0x04000000)) {
+        output.writeUInt32(29, hllPrecision_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -7426,6 +7445,10 @@ public final class RiakPB {
       if (((bitField0_ & 0x02000000) == 0x02000000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(28, writeOnce_);
+      }
+      if (((bitField0_ & 0x04000000) == 0x04000000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(29, hllPrecision_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -7624,6 +7647,8 @@ public final class RiakPB {
         bitField0_ = (bitField0_ & ~0x04000000);
         writeOnce_ = false;
         bitField0_ = (bitField0_ & ~0x08000000);
+        hllPrecision_ = 0;
+        bitField0_ = (bitField0_ & ~0x10000000);
         return this;
       }
 
@@ -7782,6 +7807,10 @@ public final class RiakPB {
           to_bitField0_ |= 0x02000000;
         }
         result.writeOnce_ = writeOnce_;
+        if (((from_bitField0_ & 0x10000000) == 0x10000000)) {
+          to_bitField0_ |= 0x04000000;
+        }
+        result.hllPrecision_ = hllPrecision_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -7825,7 +7854,7 @@ public final class RiakPB {
               precommitBuilder_ = null;
               precommit_ = other.precommit_;
               bitField0_ = (bitField0_ & ~0x00000008);
-              precommitBuilder_ = 
+              precommitBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getPrecommitFieldBuilder() : null;
             } else {
@@ -7854,7 +7883,7 @@ public final class RiakPB {
               postcommitBuilder_ = null;
               postcommit_ = other.postcommit_;
               bitField0_ = (bitField0_ & ~0x00000020);
-              postcommitBuilder_ = 
+              postcommitBuilder_ =
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getPostcommitFieldBuilder() : null;
             } else {
@@ -7928,6 +7957,9 @@ public final class RiakPB {
         if (other.hasWriteOnce()) {
           setWriteOnce(other.getWriteOnce());
         }
+        if (other.hasHllPrecision()) {
+          setHllPrecision(other.getHllPrecision());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -7935,25 +7967,21 @@ public final class RiakPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getPrecommitCount(); i++) {
           if (!getPrecommit(i).isInitialized()) {
-            
             return false;
           }
         }
         for (int i = 0; i < getPostcommitCount(); i++) {
           if (!getPostcommit(i).isInitialized()) {
-            
             return false;
           }
         }
         if (hasChashKeyfun()) {
           if (!getChashKeyfun().isInitialized()) {
-            
             return false;
           }
         }
         if (hasLinkfun()) {
           if (!getLinkfun().isInitialized()) {
-            
             return false;
           }
         }
@@ -8286,7 +8314,7 @@ public final class RiakPB {
       /**
        * <code>repeated .RpbCommitHook precommit = 4;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder>
            getPrecommitOrBuilderList() {
         if (precommitBuilder_ != null) {
           return precommitBuilder_.getMessageOrBuilderList();
@@ -8312,12 +8340,12 @@ public final class RiakPB {
       /**
        * <code>repeated .RpbCommitHook precommit = 4;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbCommitHook.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbCommitHook.Builder>
            getPrecommitBuilderList() {
         return getPrecommitFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbCommitHook, com.basho.riak.protobuf.RiakPB.RpbCommitHook.Builder, com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder> 
+          com.basho.riak.protobuf.RiakPB.RpbCommitHook, com.basho.riak.protobuf.RiakPB.RpbCommitHook.Builder, com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder>
           getPrecommitFieldBuilder() {
         if (precommitBuilder_ == null) {
           precommitBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -8558,7 +8586,7 @@ public final class RiakPB {
       /**
        * <code>repeated .RpbCommitHook postcommit = 6;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder> 
+      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder>
            getPostcommitOrBuilderList() {
         if (postcommitBuilder_ != null) {
           return postcommitBuilder_.getMessageOrBuilderList();
@@ -8584,12 +8612,12 @@ public final class RiakPB {
       /**
        * <code>repeated .RpbCommitHook postcommit = 6;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbCommitHook.Builder> 
+      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbCommitHook.Builder>
            getPostcommitBuilderList() {
         return getPostcommitFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbCommitHook, com.basho.riak.protobuf.RiakPB.RpbCommitHook.Builder, com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder> 
+          com.basho.riak.protobuf.RiakPB.RpbCommitHook, com.basho.riak.protobuf.RiakPB.RpbCommitHook.Builder, com.basho.riak.protobuf.RiakPB.RpbCommitHookOrBuilder>
           getPostcommitFieldBuilder() {
         if (postcommitBuilder_ == null) {
           postcommitBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -8738,7 +8766,7 @@ public final class RiakPB {
        * <code>optional .RpbModFun chash_keyfun = 8;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbModFun, com.basho.riak.protobuf.RiakPB.RpbModFun.Builder, com.basho.riak.protobuf.RiakPB.RpbModFunOrBuilder> 
+          com.basho.riak.protobuf.RiakPB.RpbModFun, com.basho.riak.protobuf.RiakPB.RpbModFun.Builder, com.basho.riak.protobuf.RiakPB.RpbModFunOrBuilder>
           getChashKeyfunFieldBuilder() {
         if (chashKeyfunBuilder_ == null) {
           chashKeyfunBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -8890,7 +8918,7 @@ public final class RiakPB {
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbModFun, com.basho.riak.protobuf.RiakPB.RpbModFun.Builder, com.basho.riak.protobuf.RiakPB.RpbModFunOrBuilder> 
+          com.basho.riak.protobuf.RiakPB.RpbModFun, com.basho.riak.protobuf.RiakPB.RpbModFun.Builder, com.basho.riak.protobuf.RiakPB.RpbModFunOrBuilder>
           getLinkfunFieldBuilder() {
         if (linkfunBuilder_ == null) {
           linkfunBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -9619,6 +9647,54 @@ public final class RiakPB {
         return this;
       }
 
+      private int hllPrecision_ ;
+      /**
+       * <code>optional uint32 hll_precision = 29;</code>
+       *
+       * <pre>
+       * Hyperlolog DT Precision
+       * </pre>
+       */
+      public boolean hasHllPrecision() {
+        return ((bitField0_ & 0x10000000) == 0x10000000);
+      }
+      /**
+       * <code>optional uint32 hll_precision = 29;</code>
+       *
+       * <pre>
+       * Hyperlolog DT Precision
+       * </pre>
+       */
+      public int getHllPrecision() {
+        return hllPrecision_;
+      }
+      /**
+       * <code>optional uint32 hll_precision = 29;</code>
+       *
+       * <pre>
+       * Hyperlolog DT Precision
+       * </pre>
+       */
+      public Builder setHllPrecision(int value) {
+        bitField0_ |= 0x10000000;
+        hllPrecision_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 hll_precision = 29;</code>
+       *
+       * <pre>
+       * Hyperlolog DT Precision
+       * </pre>
+       */
+      public Builder clearHllPrecision() {
+        bitField0_ = (bitField0_ & ~0x10000000);
+        hllPrecision_ = 0;
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:RpbBucketProps)
     }
 
@@ -9633,7 +9709,6 @@ public final class RiakPB {
   public interface RpbAuthReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RpbAuthReq)
       com.google.protobuf.MessageOrBuilder {
-
     /**
      * <code>required bytes user = 1;</code>
      */
@@ -10025,11 +10100,9 @@ public final class RiakPB {
 
       public final boolean isInitialized() {
         if (!hasUser()) {
-          
           return false;
         }
         if (!hasPassword()) {
-          
           return false;
         }
         return true;
@@ -10224,7 +10297,7 @@ public final class RiakPB {
       " \002(\0132\017.RpbBucketProps\"-\n\tRpbModFun\022\016\n\006mo" +
       "dule\030\001 \002(\014\022\020\n\010function\030\002 \002(\014\"9\n\rRpbCommi" +
       "tHook\022\032\n\006modfun\030\001 \001(\0132\n.RpbModFun\022\014\n\004nam" +
-      "e\030\002 \001(\014\"\260\005\n\016RpbBucketProps\022\r\n\005n_val\030\001 \001(" +
+      "e\030\002 \001(\014\"\307\005\n\016RpbBucketProps\022\r\n\005n_val\030\001 \001(" +
       "\r\022\022\n\nallow_mult\030\002 \001(\010\022\027\n\017last_write_wins" +
       "\030\003 \001(\010\022!\n\tprecommit\030\004 \003(\0132\016.RpbCommitHoo" +
       "k\022\034\n\rhas_precommit\030\005 \001(\010:\005false\022\"\n\npostc" +
@@ -10239,11 +10312,12 @@ public final class RiakPB {
       "\n\007backend\030\026 \001(\014\022\016\n\006search\030\027 \001(\010\022)\n\004repl\030" +
       "\030 \001(\0162\033.RpbBucketProps.RpbReplMode\022\024\n\014se" +
       "arch_index\030\031 \001(\014\022\020\n\010datatype\030\032 \001(\014\022\022\n\nco",
-      "nsistent\030\033 \001(\010\022\022\n\nwrite_once\030\034 \001(\010\">\n\013Rp" +
-      "bReplMode\022\t\n\005FALSE\020\000\022\014\n\010REALTIME\020\001\022\014\n\010FU" +
-      "LLSYNC\020\002\022\010\n\004TRUE\020\003\",\n\nRpbAuthReq\022\014\n\004user" +
-      "\030\001 \002(\014\022\020\n\010password\030\002 \002(\014B!\n\027com.basho.ri" +
-      "ak.protobufB\006RiakPB"
+      "nsistent\030\033 \001(\010\022\022\n\nwrite_once\030\034 \001(\010\022\025\n\rhl" +
+      "l_precision\030\035 \001(\r\">\n\013RpbReplMode\022\t\n\005FALS" +
+      "E\020\000\022\014\n\010REALTIME\020\001\022\014\n\010FULLSYNC\020\002\022\010\n\004TRUE\020" +
+      "\003\",\n\nRpbAuthReq\022\014\n\004user\030\001 \002(\014\022\020\n\010passwor" +
+      "d\030\002 \002(\014B!\n\027com.basho.riak.protobufB\006Riak" +
+      "PB"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -10328,7 +10402,7 @@ public final class RiakPB {
     internal_static_RpbBucketProps_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_RpbBucketProps_descriptor,
-        new java.lang.String[] { "NVal", "AllowMult", "LastWriteWins", "Precommit", "HasPrecommit", "Postcommit", "HasPostcommit", "ChashKeyfun", "Linkfun", "OldVclock", "YoungVclock", "BigVclock", "SmallVclock", "Pr", "R", "W", "Pw", "Dw", "Rw", "BasicQuorum", "NotfoundOk", "Backend", "Search", "Repl", "SearchIndex", "Datatype", "Consistent", "WriteOnce", });
+        new java.lang.String[] { "NVal", "AllowMult", "LastWriteWins", "Precommit", "HasPrecommit", "Postcommit", "HasPostcommit", "ChashKeyfun", "Linkfun", "OldVclock", "YoungVclock", "BigVclock", "SmallVclock", "Pr", "R", "W", "Pw", "Dw", "Rw", "BasicQuorum", "NotfoundOk", "Backend", "Search", "Repl", "SearchIndex", "Datatype", "Consistent", "WriteOnce", "HllPrecision", });
     internal_static_RpbAuthReq_descriptor =
       getDescriptor().getMessageTypes().get(12);
     internal_static_RpbAuthReq_fieldAccessorTable = new

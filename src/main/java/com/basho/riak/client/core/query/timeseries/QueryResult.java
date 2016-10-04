@@ -53,7 +53,8 @@ public class QueryResult implements Iterable<Row>
         this.rows = null;
     }
 
-    public QueryResult(Row[] rows) {
+    public QueryResult(Row[] rows)
+    {
         this.rows = rows;
         this.rowCount = rows.length;
         this.pbRows = Collections.emptyList();
@@ -75,9 +76,12 @@ public class QueryResult implements Iterable<Row>
      */
     public Iterator<Row> iterator()
     {
-        if (this.rows != null) {
+        if (this.rows != null)
+        {
             return Arrays.asList(this.rows).iterator();
-        } else {
+        }
+        else
+        {
             return ConvertibleIterator.iterateAsRow(this.pbRows.iterator());
         }
     }
@@ -97,12 +101,11 @@ public class QueryResult implements Iterable<Row>
      */
     public List<Row> getRowsCopy()
     {
-        final List<Row> rows = new ArrayList<Row>(this.getRowsCount());
+        final List<Row> rows = new ArrayList<>(this.getRowsCount());
 
-        final Iterator<Row> iter = this.iterator();
-        while (iter.hasNext())
+        for (Row cells : this)
         {
-            rows.add(iter.next());
+            rows.add(cells);
         }
 
         return rows;

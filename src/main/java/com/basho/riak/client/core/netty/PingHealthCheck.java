@@ -27,7 +27,6 @@ import com.basho.riak.client.core.operations.PingOperation;
  */
 public class PingHealthCheck extends HealthCheckDecoder implements HealthCheckFactory
 {
-
     @Override
     protected FutureOperation<?, ?, ?> buildOperation()
     {
@@ -39,5 +38,4 @@ public class PingHealthCheck extends HealthCheckDecoder implements HealthCheckFa
     {
         return new PingHealthCheck();
     }
-    
 }

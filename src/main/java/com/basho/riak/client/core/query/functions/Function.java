@@ -17,7 +17,7 @@ package com.basho.riak.client.core.query.functions;
 
 /**
  * A Function for use with bucket properties or asMap reduce.
- * 
+ *
  * Instances are created via the provided static factory methods or by using the Builder.
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
@@ -25,18 +25,18 @@ package com.basho.riak.client.core.query.functions;
 public class Function
 {
     private final boolean isJavascript;
-    
+
     private final String name;
     private final String bucket;
     private final String key;
     private final String source;
-    
+
     private final String module;
     private final String function;
-    
+
     private Function(Builder builder)
     {
-        switch(builder.type)
+        switch (builder.type)
         {
             case NAMED_JS:
             case STORED_JS:
@@ -47,7 +47,7 @@ public class Function
                 isJavascript = false;
                 break;
         }
-        
+
         this.name = builder.name;
         this.bucket = builder.bucket;
         this.key = builder.key;
@@ -55,7 +55,7 @@ public class Function
         this.module = builder.module;
         this.function = builder.function;
     }
-    
+
     /**
      * Returns whether this function is Javascript or not.
      * @return true if this is a JS function, false if Erlang.
@@ -64,7 +64,7 @@ public class Function
     {
         return isJavascript;
     }
-    
+
     // JS stuff
     /**
      * Return whether this is a named JS function or not.
@@ -74,7 +74,7 @@ public class Function
     {
         return name != null;
     }
-    
+
     /**
      * Return whether this is a JS function stored as an object in Riak.
      * @return true if this is a stored JS function, false otherwise.
@@ -83,7 +83,7 @@ public class Function
     {
         return bucket != null;
     }
-    
+
     /**
      * Return whether this is an anonymous JS function or not.
      * @return true if this is an anonymous JS function, false otherwise.
@@ -92,7 +92,7 @@ public class Function
     {
         return source != null;
     }
-    
+
     /**
      * Returns the name of this named JS function.
      * @return The name for this function or null if this is not a named JS function.
@@ -101,7 +101,7 @@ public class Function
     {
         return name;
     }
-    
+
     /**
      * Returns the bucket for this stored JS function.
      * @return The bucket for this function or null if this is not a stored JS function.
@@ -110,7 +110,7 @@ public class Function
     {
         return bucket;
     }
-    
+
     /**
      * Returns the key for this stored JS function.
      * @return The key for function or null is this is not a stored JS function.
@@ -119,7 +119,7 @@ public class Function
     {
         return key;
     }
-    
+
     /**
      * Returns the source for this anonymous JS function.
      * @return The source for this function, or null if it is not an anonymous function.
@@ -128,7 +128,7 @@ public class Function
     {
         return source;
     }
-    
+
     // Erlang
     /**
      * Returns the module for this Erlang function.
@@ -138,7 +138,7 @@ public class Function
     {
         return module;
     }
-    
+
     /**
      * Returns the function for this Erlang function.
      * @return the function or null if this is not an erlang function.
@@ -147,7 +147,7 @@ public class Function
     {
         return function;
     }
-    
+
     /**
      * Static factory method for Named Javascript Functions.
      * @param name the name of the Javascript function.
@@ -157,7 +157,7 @@ public class Function
     {
         return new Builder().withName(name).build();
     }
-    
+
     /**
      * Static factory method for Stored Javascript Functions.
      * @param bucket The bucket where the JS function is stored
@@ -168,7 +168,7 @@ public class Function
     {
         return new Builder().withBucket(bucket).withKey(key).build();
     }
-    
+
     /**
      * Static factory method for Anonymous JS Functions.
      * @param source the javascript source
@@ -178,7 +178,7 @@ public class Function
     {
         return new Builder().withSource(source).build();
     }
-    
+
     /**
      * Static factory method for Erlang Functions.
      * @param module the module that contains the Erlang function.
@@ -189,7 +189,7 @@ public class Function
     {
         return new Builder().withModule(module).withFunction(function).build();
     }
-    
+
     @Override
     public int hashCode()
     {
@@ -203,7 +203,7 @@ public class Function
         result = prime * result + (null == function ? 0 : function.hashCode());
         return result;
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -223,8 +223,8 @@ public class Function
         if ( (name == other.name || (name != null && name.equals(other.name))) &&
              (bucket == other.bucket || (bucket != null && bucket.equals(other.bucket))) &&
              (key == other.key || (key != null && key.equals(other.key))) &&
-             (source == other.source || (source != null && source.equals(other.source))) && 
-             (module == other.module || (module != null && module.equals(other.module))) && 
+             (source == other.source || (source != null && source.equals(other.source))) &&
+             (module == other.module || (module != null && module.equals(other.module))) &&
              (function == other.function || (function != null && function.equals(other.function)))
            )
         {
@@ -235,13 +235,14 @@ public class Function
             return false;
         }
     }
-    
+
     /**
      * Builder class for creating Function instances.
      */
     public static class Builder
     {
-        private enum Type {
+        private enum Type
+        {
             UNKNOWN,
             NAMED_JS,
             STORED_JS,
@@ -249,7 +250,7 @@ public class Function
             ERLANG
         }
         private Type type = Type.UNKNOWN;
-    
+
         private String name;
         private String bucket;
         private String key;
@@ -257,14 +258,11 @@ public class Function
 
         private String module;
         private String function;
-        
-        
-        
+
         public Builder()
         {
-            
         }
-        
+
         /**
          * Set the name for a Named Javascript function.
          * @param name the name of the function.
@@ -273,7 +271,7 @@ public class Function
         public Builder withName(String name)
         {
             stringCheck(name);
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                 case NAMED_JS:
@@ -283,10 +281,10 @@ public class Function
                 default:
                     throw new IllegalArgumentException(type + " can not have a name.");
             }
-            
+
             return this;
         }
-        
+
         /**
          * Set the bucket for a stored JS function.
          * @param bucket the name of the bucket where this function is stored.
@@ -295,7 +293,7 @@ public class Function
         public Builder withBucket(String bucket)
         {
             stringCheck(bucket);
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                 case STORED_JS:
@@ -305,10 +303,10 @@ public class Function
                 default:
                     throw new IllegalArgumentException(type + " can not have a bucket.");
             }
-            
+
             return this;
         }
-        
+
         /**
          * Set the key for a stored JS function.
          * @param key the key for the object that contains the JS function.
@@ -317,7 +315,7 @@ public class Function
         public Builder withKey(String key)
         {
             stringCheck(key);
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                 case STORED_JS:
@@ -329,7 +327,7 @@ public class Function
             }
             return this;
         }
-        
+
         /**
          * Set the source for an anonymous JS function
          * @param source the Javascript source.
@@ -338,7 +336,7 @@ public class Function
         public Builder withSource(String source)
         {
             stringCheck(source);
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                     this.source = source;
@@ -349,7 +347,7 @@ public class Function
             }
             return this;
         }
-        
+
         /**
          * Set the module for an Erlang function.
          * @param module the name of the module containing the Erlang function.
@@ -358,7 +356,7 @@ public class Function
         public Builder withModule(String module)
         {
             stringCheck(module);
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                 case ERLANG:
@@ -370,7 +368,7 @@ public class Function
             }
             return this;
         }
-        
+
         /**
          * Set the function name for an Erlang function.
          * @param function the name of the Erlang function.
@@ -379,7 +377,7 @@ public class Function
         public Builder withFunction(String function)
         {
             stringCheck(function);
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                 case ERLANG:
@@ -391,7 +389,7 @@ public class Function
             }
             return this;
         }
-        
+
         private void stringCheck(String arg)
         {
             if (null == arg || arg.length() == 0)
@@ -399,14 +397,14 @@ public class Function
                 throw new IllegalArgumentException("String can not be null or zero length.");
             }
         }
-        
+
         /**
          * Construct and return a Function.
-         * @return a Function 
+         * @return a Function
          */
         public Function build()
         {
-            switch(type)
+            switch (type)
             {
                 case UNKNOWN:
                     throw new IllegalStateException("Nothing to build.");
@@ -425,9 +423,8 @@ public class Function
                 default:
                     break;
             }
-            
+
             return new Function(this);
         }
     }
-    
 }

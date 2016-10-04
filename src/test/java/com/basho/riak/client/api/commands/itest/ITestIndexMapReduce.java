@@ -28,10 +28,15 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.functions.Function;
 import com.basho.riak.client.core.query.indexes.LongIntIndex;
+import com.basho.riak.client.core.query.indexes.StringBinIndex;
 import com.basho.riak.client.core.util.BinaryValue;
 import java.util.concurrent.ExecutionException;
+
+import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +49,7 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
 {
     private final RiakClient client = new RiakClient(cluster);
     private final  String mrBucketName = bucketName.toString() + "_mr";
-    
+
     @Before
     public void changeBucketProps() throws ExecutionException, InterruptedException
     {
@@ -55,8 +60,8 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
             client.execute(op);
         }
     }
-    
-    private void initValues(String bucketType) throws InterruptedException
+
+    private void initValuesInt(String bucketType) throws InterruptedException
     {
         String keyPrefix = "mr_test_";
         Namespace ns = new Namespace(bucketType, mrBucketName);
@@ -72,7 +77,24 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
             assertTrue(future.isSuccess());
         }
     }
-    
+
+    private void initValuesBin(String bucketType) throws InterruptedException
+    {
+        String keyPrefix = "mr_test_";
+        Namespace ns = new Namespace(bucketType, mrBucketName);
+        for (int i = 0; i < 200; i++)
+        {
+            Location loc = new Location(ns, keyPrefix + i);
+            RiakObject ro = new RiakObject().setContentType("text/plain")
+                                            .setValue(BinaryValue.create(Integer.toString(i)));
+            ro.getIndexes().getIndex(StringBinIndex.named("user_id")).add(Integer.toString(i));
+            StoreValue sv = new StoreValue.Builder(ro).withLocation(loc).build();
+            RiakFuture<StoreValue.Response, Location> future = client.executeAsync(sv);
+            future.await();
+            assertTrue(future.isSuccess());
+        }
+    }
+
     private void initValuesOneToN(String bucketType) throws InterruptedException
     {
         String keyPrefix = "mr_test_";
@@ -90,7 +112,7 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
             assertTrue(future.isSuccess());
         }
     }
-    
+
     @Test
     public void matchIndex() throws InterruptedException, ExecutionException
     {
@@ -107,21 +129,20 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
                                 "  return [data];" +
                                 "}"), true)
                             .build();
-        
-        MapReduce.Response response = client.execute(imr);
-        
-        assertEquals(200, response.getResultsFromAllPhases().size());
-                
-        resetAndEmptyBucket(ns);
 
+        MapReduce.Response response = client.execute(imr);
+
+        assertEquals(200, response.getResultsFromAllPhases().size());
+
+        resetAndEmptyBucket(ns);
     }
-    
+
     @Test
     public void matchIndexDiffType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
         Assume.assumeTrue(test2i);
-        
+
         initValuesOneToN(bucketType.toString());
         Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
         IndexMapReduce imr = new IndexMapReduce.Builder()
@@ -134,20 +155,20 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
                                 "  return [data];" +
                                 "}"), true)
                             .build();
-        
+
         MapReduce.Response response = client.execute(imr);
-        
+
         assertEquals(200, response.getResultsFromAllPhases().size());
-                
+
         resetAndEmptyBucket(ns);
     }
-    
+
     @Test
     public void rangeIndex() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
-        initValues(Namespace.DEFAULT_BUCKET_TYPE);
-        
+        initValuesInt(Namespace.DEFAULT_BUCKET_TYPE);
+
         Namespace ns = new Namespace(mrBucketName);
         IndexMapReduce imr = new IndexMapReduce.Builder()
                             .withNamespace(ns)
@@ -159,23 +180,21 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
                                 "  return [data];" +
                                 "}"), true)
                             .build();
-        
+
          MapReduce.Response response = client.execute(imr);
-        
+
         assertEquals(20, response.getResultsFromAllPhases().size());
-                
+
         resetAndEmptyBucket(ns);
-        
-        
     }
-    
+
     @Test
     public void rangeIndexDiffType() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(testBucketType);
         Assume.assumeTrue(test2i);
-        
-        initValues(bucketType.toString());
+
+        initValuesInt(bucketType.toString());
         Namespace ns = new Namespace(bucketType.toString(), mrBucketName);
         IndexMapReduce imr = new IndexMapReduce.Builder()
                             .withNamespace(ns)
@@ -187,13 +206,40 @@ public class ITestIndexMapReduce extends ITestAutoCleanupBase
                                 "  return [data];" +
                                 "}"), true)
                             .build();
-        
+
          MapReduce.Response response = client.execute(imr);
-        
+
         assertEquals(20, response.getResultsFromAllPhases().size());
-                
+
         resetAndEmptyBucket(ns);
-        
-        
+    }
+
+    @Test
+    public void testEncodeBinaryValueInputs() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(testBucketType);
+        Assume.assumeTrue(test2i);
+
+        initValuesBin(bucketType.toString());
+        Namespace namespace = new Namespace(bucketType.toString(), mrBucketName);
+
+        IndexMapReduce.Builder builder = new IndexMapReduce.Builder();
+        builder.withNamespace(namespace);
+        builder.withIndex("user_id_bin");
+        builder.withMatchValue(BinaryValue.createFromUtf8("15"));
+        builder.withMapPhase(Function.newAnonymousJsFunction(
+            "function(value, keydata, arg) {" +
+                    "  var data = value.values[0].data;" +
+                    "  return [data];" +
+                    "}"), true);
+
+        IndexMapReduce imr = builder.build();
+
+        final MapReduce.Response response = client.execute(imr);
+
+        assertNotNull(response);
+        final ArrayNode allResults = response.getResultsFromAllPhases();
+        assertEquals(1, allResults.size());
+        assertEquals("15", allResults.get(0).asText());
     }
 }

@@ -27,8 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * A threadsafe container for user metadata.
  * <p>
- * Arbitrary user metadata can be attached to an object in Riak. These are simply key/value 
- * pairs meaningful outside of the actual value of the object. This container 
+ * Arbitrary user metadata can be attached to an object in Riak. These are simply key/value
+ * pairs meaningful outside of the actual value of the object. This container
  * allows the user to manipulate that data.
  * </p>
  * <p>
@@ -36,57 +36,60 @@ import java.util.concurrent.ConcurrentHashMap;
  * to either use your default character asSet or supply a specific one to convert to and
  * from {@code String}s.
  * <p>
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
+ * @see com.basho.riak.client.core.query.RiakObject#getUserMeta()
  * @since 2.0
- * @see com.basho.riak.client.core.query.RiakObject#getUserMeta() 
  */
 public class RiakUserMetadata
 {
-    private final ConcurrentHashMap<BinaryValue, BinaryValue> meta =
-        new ConcurrentHashMap<BinaryValue, BinaryValue>();
-    
+    private final ConcurrentHashMap<BinaryValue, BinaryValue> meta = new ConcurrentHashMap<>();
+
     /**
      * Determine if usermeta is present.
+     *
      * @return {@code true} if there are no entries, {@code false} otherwise.
      */
     public boolean isEmpty()
     {
         return meta.isEmpty();
     }
-    
+
     /**
      * Determine if a specific usermeta entry is present.
      * <p>
      * This method uses the default {@code Charset} to convert the supplied key.
      * </p>
-     * @param key the metadata key 
+     *
+     * @param key the metadata key
      * @return {@code true} if the entry is present, {@code false} otherwise.
      */
     public boolean containsKey(String key)
     {
         return containsKey(key, DefaultCharset.get());
     }
-    
+
     /**
      * Determine if a specific usermeta entry is present.
      * <p>
      * This method uses the supplied {@code Charset} to convert the supplied key.
      * </p>
-     * @param key the metadata key 
+     *
+     * @param key the metadata key
      * @return {@code true} if the entry is present, {@code false} otherwise.
      */
     public boolean containsKey(String key, Charset charset)
     {
-        return meta.containsKey(BinaryValue.unsafeCreate(key.getBytes()));
+        return meta.containsKey(BinaryValue.unsafeCreate(key.getBytes(charset)));
     }
-    
+
     /**
      * Get a user metadata entry.
      * <p>
      * This method and its {@link RiakUserMetadata#put(java.lang.String, java.lang.String) }
      * counterpart use the default {@code Charset} to convert the {@code String}s.
      * </p>
+     *
      * @param key the key for the user metadata entry as a {@code String} encoded using the default {@code Charset}
      * @return the value for the entry converted to a {@code String} using the default {@code Charset}
      */
@@ -94,14 +97,15 @@ public class RiakUserMetadata
     {
         return get(key, DefaultCharset.get());
     }
-    
+
     /**
      * Get a user metadata entry.
      * <p>
      * This method and its {@link RiakUserMetadata#put(java.lang.String, java.lang.String, java.nio.charset.Charset)  }
      * counterpart use the supplied {@code Charset} to convert the {@code String}s.
      * </p>
-     * @param key the key for the user metadata entry as a {@code String} encoded using the supplied {@code Charset}  
+     *
+     * @param key the key for the user metadata entry as a {@code String} encoded using the supplied {@code Charset}
      * @return the value for the entry converted to a {@code String} using the supplied {@code Charset}
      */
     public String get(String key, Charset charset)
@@ -116,57 +120,61 @@ public class RiakUserMetadata
         {
             return null;
         }
-
     }
-    
+
     /**
      * Get a user metadata entry.
      * <p>
-     * This method and its {@link RiakUserMetadata#put(com.basho.riak.client.core.util.BinaryValue, com.basho.riak.client.core.util.BinaryValue)}
+     * This method and its
+     * {@link RiakUserMetadata#put(com.basho.riak.client.core.util.BinaryValue, com.basho.riak.client.core.util.BinaryValue)}
      * allow access to the raw bytes.
      * </p>
-     * @param key the key for the user metadata entry  
-     * @return the value for the entry 
+     *
+     * @param key the key for the user metadata entry
+     * @return the value for the entry
      */
     public BinaryValue get(BinaryValue key)
     {
         return meta.get(key);
     }
-    
+
     /**
      * Get the user metadata entries
      * <p>
-     * This method allows access to the user metadata entries directly as raw bytes. The 
-     * {@code Set} is an unmodifiable view of all the entries. 
+     * This method allows access to the user metadata entries directly as raw bytes. The
+     * {@code Set} is an unmodifiable view of all the entries.
      * <p>
+     *
      * @return an unmodifiable view of all the entries.
      */
     public Set<Map.Entry<BinaryValue, BinaryValue>> getUserMetadata()
     {
         return Collections.unmodifiableSet(meta.entrySet());
     }
-    
+
     /**
      * Set a user metadata entry.
      * <p>
      * This method and its {@link RiakUserMetadata#get(java.lang.String) }
      * counterpart use the default {@code Charset} to convert the {@code String}s.
      * </p>
-     * @param key the key for the user metadata entry as a {@code String} encoded using the default {@code Charset}
+     *
+     * @param key   the key for the user metadata entry as a {@code String} encoded using the default {@code Charset}
      * @param value the value for the entry as a {@code String} encoded using the default {@code Charset}
      */
     public void put(String key, String value)
     {
         put(key, value, DefaultCharset.get());
     }
-    
+
     /**
      * Set a user metadata entry.
      * <p>
      * This method and its {@link RiakUserMetadata#get(java.lang.String, java.nio.charset.Charset)  }
      * counterpart use the supplied {@code Charset} to convert the {@code String}s.
      * </p>
-     * @param key the key for the user metadata entry as a {@code String} encoded using the supplied {@code Charset}
+     *
+     * @param key   the key for the user metadata entry as a {@code String} encoded using the supplied {@code Charset}
      * @param value the value for the entry as a {@code String} encoded using the supplied {@code Charset}
      */
     public void put(String key, String value, Charset charset)
@@ -175,41 +183,42 @@ public class RiakUserMetadata
         BinaryValue wrappedValue = BinaryValue.unsafeCreate(value.getBytes(charset));
         meta.put(wrappedKey, wrappedValue);
     }
-    
+
     /**
      * Set a user metadata entry using raw bytes.
      * <p>
      * This method and its {@link RiakUserMetadata#get(com.basho.riak.client.core.util.BinaryValue)}
      * counterpart all access to the user metadata raw bytes
      * </p>
-     * @param key the key for the user metadata entry 
-     * @param value the value for the entry 
+     *
+     * @param key   the key for the user metadata entry
+     * @param value the value for the entry
      */
     public void put(BinaryValue key, BinaryValue value)
     {
         meta.put(key, value);
     }
-    
+
     public void remove(BinaryValue key)
     {
         meta.remove(key);
     }
-    
+
     public void remove(String key, Charset charset)
     {
         BinaryValue wrappedKey = BinaryValue.unsafeCreate(key.getBytes(charset));
         remove(wrappedKey);
     }
-    
-    public void remove (String key)
+
+    public void remove(String key)
     {
         remove(key, DefaultCharset.get());
     }
-    
+
     // TODO: deal with charset. Should add to annotation
-    public RiakUserMetadata put(Map<String,String> metaMap)
+    public RiakUserMetadata put(Map<String, String> metaMap)
     {
-        for (Map.Entry<String,String> e : metaMap.entrySet())
+        for (Map.Entry<String, String> e : metaMap.entrySet())
         {
             BinaryValue wrappedKey = BinaryValue.unsafeCreate(e.getKey().getBytes());
             BinaryValue wrappedValue = BinaryValue.unsafeCreate(e.getValue().getBytes());
@@ -217,7 +226,7 @@ public class RiakUserMetadata
         }
         return this;
     }
-    
+
     /**
      * Clear all user metadata entries.
      */
@@ -225,16 +234,48 @@ public class RiakUserMetadata
     {
         meta.clear();
     }
-    
+
     /**
      * Get the number of user metadata entries.
+     *
      * @return the number of entries
      */
     public int size()
     {
         return meta.size();
     }
-    
-    
-    
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        RiakUserMetadata that = (RiakUserMetadata) o;
+
+        if (!meta.equals(that.meta))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return meta.hashCode();
+    }
+
+    @Override
+    public String toString()
+    {
+        return "RiakUserMetadata{" + "meta: " + meta + '}';
+    }
 }

@@ -21,7 +21,7 @@ import com.basho.riak.client.core.query.crdt.ops.FlagOp;
  * An update to a Riak flag datatype.
  * <p>
  * When building an {@link UpdateMap} command
- * this class is used to encapsulate the update to be performed on a 
+ * this class is used to encapsulate the update to be performed on a
  * Riak flag datatype contained in the map. It is used in conjunction with the
  * {@link MapUpdate}.
  * </p>
@@ -30,7 +30,6 @@ import com.basho.riak.client.core.query.crdt.ops.FlagOp;
  */
 public class FlagUpdate implements DatatypeUpdate
 {
-
     private boolean flag = false;
 
     /**

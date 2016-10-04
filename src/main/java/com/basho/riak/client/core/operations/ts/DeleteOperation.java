@@ -66,7 +66,6 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
 
         return String.format("DELETE { %s } FROM TABLE %s",
                 sb.toString(), this.builder.tableName);
-
     }
 
     public static class Builder
@@ -95,13 +94,23 @@ public class DeleteOperation extends PBFutureOperation<Void, RiakTsPB.TsDelResp,
             this.keyValues = keyValues;
         }
 
+        /**
+         * Set the Riak-side timeout value.
+         * <p>
+         * By default, Riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * </p>
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
         public Builder withTimeout(int timeout)
         {
-            if (timeout < 0)
+            if (timeout < 1)
             {
-                throw new IllegalArgumentException("Timeout must be positive, or 0 for no timeout.");
+                throw new IllegalArgumentException("Timeout must be a positive integer");
             }
-            this.reqBuilder.setTimeout(timeout);
+
+            reqBuilder.setTimeout(timeout);
             return this;
         }
 

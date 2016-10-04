@@ -52,7 +52,6 @@ import java.util.List;
  */
 public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
 {
-
     private final Namespace namespace;
     private final int timeout;
 
@@ -65,9 +64,9 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
     @Override
     protected final RiakFuture<ListKeys.Response, Namespace> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<ListKeysOperation.Response, Namespace> coreFuture = 
+        RiakFuture<ListKeysOperation.Response, Namespace> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<ListKeys.Response, Namespace, ListKeysOperation.Response, Namespace> future =
             new CoreFutureAdapter<ListKeys.Response, Namespace, ListKeysOperation.Response, Namespace>(coreFuture)
             {
@@ -86,7 +85,7 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
         coreFuture.addListener(future);
         return future;
     }
-    
+
     private ListKeysOperation buildCoreOperation()
     {
         ListKeysOperation.Builder builder = new ListKeysOperation.Builder(namespace);
@@ -98,10 +97,9 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
 
         return builder.build();
     }
-    
+
     public static class Response implements Iterable<Location>
     {
-
         private final Namespace namespace;
         private final List<BinaryValue> keys;
 
@@ -196,7 +194,8 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         final int prime = 31;
         int result = 1;
         result = prime * result + (namespace != null ? namespace.hashCode() : 0);
@@ -205,29 +204,36 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
             return true;
         }
-        if (obj == null) {
+        if (obj == null)
+        {
             return false;
         }
-        if (!(obj instanceof ListKeys)) {
+        if (!(obj instanceof ListKeys))
+        {
             return false;
         }
 
         final ListKeys other = (ListKeys) obj;
-        if (this.namespace != other.namespace && (this.namespace == null || !this.namespace.equals(other.namespace))) {
+        if (this.namespace != other.namespace && (this.namespace == null || !this.namespace.equals(other.namespace)))
+        {
             return false;
         }
-        if (this.timeout != other.timeout) {
+        if (this.timeout != other.timeout)
+        {
             return false;
         }
         return true;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return String.format("{namespace: %s, timeout: %s}", namespace, timeout);
     }
 }

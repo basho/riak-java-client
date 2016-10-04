@@ -7,14 +7,19 @@ compile:
 
 test: unit-test integration-test
 
+test-ts: unit-test integration-test-timeseries
+
 unit-test:
 	mvn test
 
 integration-test:
-	mvn -Pitest,default -Dcom.basho.riak.2i=true -Dcom.basho.riak.yokozuna=true -Dcom.basho.riak.buckettype=true -Dcom.basho.riak.crdt=true -Dcom.basho.riak.lifecycle=true -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
+	mvn -Pitest,default -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
+
+integration-test-hll:
+	mvn -Pitest,default -Dcom.basho.riak.pbcport=$(RIAK_PORT) -Dcom.basho.riak.hlldt=true verify
 
 integration-test-timeseries:
-	mvn -Pitest,default -Dcom.basho.riak.buckettype=true -Dcom.basho.riak.crdt=true -Dcom.basho.riak.lifecycle=true -Dcom.basho.riak.timeseries=true -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
+	mvn -Pitest,default -Dcom.basho.riak.timeseries=true -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
 
 integration-test-security:
 	mvn -Pitest,default -Dcom.basho.riak.security=true -Dcom.basho.riak.security.clientcert=true -Dcom.basho.riak.pbcport=$(RIAK_PORT) test-compile failsafe:integration-test

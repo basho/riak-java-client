@@ -21,6 +21,7 @@ import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.query.indexes.LongIntIndex;
 import com.basho.riak.client.core.query.indexes.StringBinIndex;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -67,7 +68,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
 
         setupIndexTestData(defaultTypeNamespace);
 
-        if(testBucketType)
+        if (testBucketType)
         {
             setupIndexTestData(typedNamespace);
         }
@@ -174,7 +175,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         Assume.assumeTrue(test2i);
 
         SecondaryIndexQueryOperation.Query query =
-                new SecondaryIndexQueryOperation.Query.Builder(defaultTypeNamespace, BinaryValue.unsafeCreate("$bucket".getBytes()))
+                new SecondaryIndexQueryOperation.Query.Builder(defaultTypeNamespace, BinaryValue.unsafeCreate(IndexNames.BUCKET.getBytes()))
                         .withIndexKey(BinaryValue.create(bucketName))
                         .withReturnKeyAndIndex(true)
                         .build();
@@ -195,7 +196,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         Assume.assumeTrue(test2i);
 
         SecondaryIndexQueryOperation.Query query =
-                new SecondaryIndexQueryOperation.Query.Builder(defaultTypeNamespace, BinaryValue.unsafeCreate("$key".getBytes()))
+                new SecondaryIndexQueryOperation.Query.Builder(defaultTypeNamespace, BinaryValue.unsafeCreate(IndexNames.KEY.getBytes()))
                         .withRangeStart(BinaryValue.create("my_key10"))
                         .withRangeEnd(BinaryValue.create("my_key19"))
                         .withReturnKeyAndIndex(true)
@@ -282,13 +283,13 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     private void testSingleQuerySingleResponse(Namespace namespace) throws InterruptedException, ExecutionException
     {
         SecondaryIndexQueryOperation.Query query =
-            new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
-                .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
-                .build();
+                new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
+                        .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
+                        .build();
 
         SecondaryIndexQueryOperation queryOp =
-            new SecondaryIndexQueryOperation.Builder(query)
-                .build();
+                new SecondaryIndexQueryOperation.Builder(query)
+                        .build();
 
         cluster.execute(queryOp);
         SecondaryIndexQueryOperation.Response response = queryOp.get();
@@ -298,13 +299,13 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(keyBase + "5", response.getEntryList().get(0).getObjectKey().toString());
 
         query =
-            new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
-                .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
-                .withReturnKeyAndIndex(true)
-                .build();
+                new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
+                        .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
+                        .withReturnKeyAndIndex(true)
+                        .build();
         queryOp =
-            new SecondaryIndexQueryOperation.Builder(query)
-                .build();
+                new SecondaryIndexQueryOperation.Builder(query)
+                        .build();
 
         cluster.execute(queryOp);
         response = queryOp.get();
@@ -383,14 +384,14 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     private void testSingleQueryMultipleResponse(Namespace namespace) throws InterruptedException, ExecutionException
     {
         SecondaryIndexQueryOperation.Query query =
-            new SecondaryIndexQueryOperation.Query.Builder(namespace, allFivesIndexName)
-                .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
-                .withPaginationSort(true)
-                .build();
+                new SecondaryIndexQueryOperation.Query.Builder(namespace, allFivesIndexName)
+                        .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
+                        .withPaginationSort(true)
+                        .build();
 
         SecondaryIndexQueryOperation queryOp =
-            new SecondaryIndexQueryOperation.Builder(query)
-                .build();
+                new SecondaryIndexQueryOperation.Builder(query)
+                        .build();
 
         cluster.execute(queryOp);
         SecondaryIndexQueryOperation.Response response = queryOp.get();
@@ -400,15 +401,15 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(keyBase + "0", response.getEntryList().get(0).getObjectKey().toString());
 
         query =
-            new SecondaryIndexQueryOperation.Query.Builder(namespace, allFivesIndexName)
-                .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
-                .withPaginationSort(true)
-                .withReturnKeyAndIndex(true)
-                .build();
+                new SecondaryIndexQueryOperation.Query.Builder(namespace, allFivesIndexName)
+                        .withIndexKey(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
+                        .withPaginationSort(true)
+                        .withReturnKeyAndIndex(true)
+                        .build();
 
         queryOp =
-            new SecondaryIndexQueryOperation.Builder(query)
-                .build();
+                new SecondaryIndexQueryOperation.Builder(query)
+                        .build();
 
         cluster.execute(queryOp);
         response = queryOp.get();
@@ -417,21 +418,20 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertTrue(response.getEntryList().get(0).hasIndexKey());
         assertEquals(BinaryValue.unsafeCreate("5".getBytes()), response.getEntryList().get(0).getIndexKey());
         assertEquals(keyBase + "0", response.getEntryList().get(0).getObjectKey().toString());
-
     }
 
     private void testRangeQuery(Namespace namespace) throws InterruptedException, ExecutionException
     {
         SecondaryIndexQueryOperation.Query query =
-            new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
-                .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
-                .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(20L).getBytes()))
-                .withPaginationSort(true)
-                .build();
+                new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
+                        .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
+                        .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(20L).getBytes()))
+                        .withPaginationSort(true)
+                        .build();
 
         SecondaryIndexQueryOperation queryOp =
-            new SecondaryIndexQueryOperation.Builder(query)
-                    .build();
+                new SecondaryIndexQueryOperation.Builder(query)
+                        .build();
 
         cluster.execute(queryOp);
         SecondaryIndexQueryOperation.Response response = queryOp.get();
@@ -441,16 +441,16 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         assertEquals(keyBase + "5", response.getEntryList().get(0).getObjectKey().toString());
 
         query =
-            new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
-                .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
-                    .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(20L).getBytes()))
-                    .withReturnKeyAndIndex(true)
-                    .withPaginationSort(true)
-                    .build();
+                new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
+                        .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(5L).getBytes()))
+                        .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(20L).getBytes()))
+                        .withReturnKeyAndIndex(true)
+                        .withPaginationSort(true)
+                        .build();
 
         queryOp =
-            new SecondaryIndexQueryOperation.Builder(query)
-                    .build();
+                new SecondaryIndexQueryOperation.Builder(query)
+                        .build();
 
         cluster.execute(queryOp);
         response = queryOp.get();
@@ -464,11 +464,11 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     private void testNoSortWithNoPaging(Namespace namespace) throws InterruptedException, ExecutionException
     {
         SecondaryIndexQueryOperation.Query query =
-            new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
-                .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
-                .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
-                .withPaginationSort(false)
-                .build();
+                new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
+                        .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
+                        .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
+                        .withPaginationSort(false)
+                        .build();
 
         SecondaryIndexQueryOperation queryOp =
                 new SecondaryIndexQueryOperation.Builder(query)
@@ -538,11 +538,11 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     private void testSortWithNoPaging(Namespace namespace) throws InterruptedException, ExecutionException
     {
         SecondaryIndexQueryOperation.Query query =
-            new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
-                .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
-                .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
-                .withPaginationSort(true)
-                .build();
+                new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
+                        .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
+                        .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
+                        .withPaginationSort(true)
+                        .build();
 
         SecondaryIndexQueryOperation queryOp =
                 new SecondaryIndexQueryOperation.Builder(query)
@@ -556,25 +556,23 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         AssertLongObjectsInOrder(response.getEntryList());
     }
 
-
-
     private void testNoSortWithPaging(Namespace namespace) throws InterruptedException, ExecutionException
     {
         try
         {
             SecondaryIndexQueryOperation.Query query =
-                new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
-                    .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
-                    .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
-                    .withPaginationSort(false)
-                    .withMaxResults(20)
-                    .build();
+                    new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
+                            .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
+                            .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
+                            .withPaginationSort(false)
+                            .withMaxResults(20)
+                            .build();
 
             new SecondaryIndexQueryOperation.Builder(query).build();
 
             fail("Didn't throw IllegalArgumentException");
         }
-        catch(IllegalArgumentException ex)
+        catch (IllegalArgumentException ex)
         {
             assertNotNull(ex);
         }
@@ -584,11 +582,11 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     {
         SecondaryIndexQueryOperation.Query query =
                 new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
-                    .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
-                    .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
-                    .withPaginationSort(true)
-                    .withMaxResults(20)
-                    .build();
+                        .withRangeStart(BinaryValue.unsafeCreate(String.valueOf(0L).getBytes()))
+                        .withRangeEnd(BinaryValue.unsafeCreate(String.valueOf(100L).getBytes()))
+                        .withPaginationSort(true)
+                        .withMaxResults(20)
+                        .build();
 
         SecondaryIndexQueryOperation queryOp =
                 new SecondaryIndexQueryOperation.Builder(query)
@@ -675,12 +673,12 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
     {
         SecondaryIndexQueryOperation.Query query =
                 new SecondaryIndexQueryOperation.Query.Builder(namespace, regexIndexName)
-                    .withRangeStart(BinaryValue.unsafeCreate("foo00".getBytes()))
-                    .withRangeEnd(BinaryValue.unsafeCreate("foo19".getBytes()))
-                    .withRegexTermFilter(BinaryValue.unsafeCreate("2".getBytes()))
-                    .withReturnKeyAndIndex(true)
-                    .withPaginationSort(true)
-                    .build();
+                        .withRangeStart(BinaryValue.unsafeCreate("foo00".getBytes()))
+                        .withRangeEnd(BinaryValue.unsafeCreate("foo19".getBytes()))
+                        .withRegexTermFilter(BinaryValue.unsafeCreate("2".getBytes()))
+                        .withReturnKeyAndIndex(true)
+                        .withPaginationSort(true)
+                        .build();
 
         SecondaryIndexQueryOperation queryOp =
                 new SecondaryIndexQueryOperation.Builder(query)
@@ -702,18 +700,18 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         try
         {
             SecondaryIndexQueryOperation.Query query =
-                new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
-                    .withRangeStart(BinaryValue.unsafeCreate("0".getBytes()))
-                    .withRangeEnd(BinaryValue.unsafeCreate("100".getBytes()))
-                    .withRegexTermFilter(BinaryValue.unsafeCreate("2".getBytes()))
-                    .build();
+                    new SecondaryIndexQueryOperation.Query.Builder(namespace, incrementingIndexName)
+                            .withRangeStart(BinaryValue.unsafeCreate("0".getBytes()))
+                            .withRangeEnd(BinaryValue.unsafeCreate("100".getBytes()))
+                            .withRegexTermFilter(BinaryValue.unsafeCreate("2".getBytes()))
+                            .build();
 
             new SecondaryIndexQueryOperation.Builder(query)
                     .build();
 
             fail("Didn't throw IllegalArgumentException");
         }
-        catch(IllegalArgumentException ex)
+        catch (IllegalArgumentException ex)
         {
             assertNotNull(ex);
         }

@@ -21,7 +21,6 @@ package com.basho.riak.client.api.commands;
  */
 public class RiakOption<T>
 {
-
     private final String name;
 
     public RiakOption(String name)

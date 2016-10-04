@@ -37,65 +37,65 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for converting to/from RiakKvPB.RpbContent and RiakObject
- * 
- * 
+ *
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
 public class RiakObjectConverter
 {
     private final static Logger logger = LoggerFactory.getLogger(RiakObjectConverter.class);
-    
+
     private RiakObjectConverter() {}
-    
+
     public static List<RiakObject> convert(List<RpbContent> contentList, ByteString contentVClock)
     {
-        List<RiakObject> roList = new LinkedList<RiakObject>();
+        List<RiakObject> roList = new LinkedList<>();
         BasicVClock vclock = new BasicVClock(contentVClock.toByteArray());
-        
+
         for (RpbContent content : contentList)
         {
             RiakObject ro = new RiakObject();
-            
+
             ro.setVClock(vclock);
-            
+
             if (content.hasDeleted())
             {
                 ro.setDeleted(content.getDeleted());
             }
-            
+
             if (content.hasContentType())
             {
                 ro.setContentType(content.getContentType().toStringUtf8());
             }
-            
+
             if (content.hasCharset())
             {
                 ro.setCharset(content.getCharset().toStringUtf8());
             }
-            
+
             if (content.hasLastMod())
             {
                 int lastMod = content.getLastMod();
                 int lastModUsec = content.getLastModUsecs();
                 ro.setLastModified((lastMod * 1000L) + (lastModUsec / 1000L));
             }
-            
+
             if (content.hasValue() && !content.getValue().isEmpty())
             {
                 ro.setValue(BinaryValue.unsafeCreate(content.getValue().toByteArray()));
             }
-            
+
             if (content.hasVtag())
             {
                 ro.setVTag(content.getVtag().toStringUtf8());
             }
-            
+
             if (content.getLinksCount() > 0)
             {
                 List<RiakKvPB.RpbLink> pbLinkList = content.getLinksList();
                 RiakLinks riakLinks = ro.getLinks();
-                
+
                 for (RiakKvPB.RpbLink pbLink : pbLinkList)
                 {
                     RiakLink link = new RiakLink(pbLink.getBucket().toStringUtf8(),
@@ -104,7 +104,7 @@ public class RiakObjectConverter
                     riakLinks.addLink(link);
                 }
             }
-            
+
             if (content.getIndexesCount() > 0)
             {
                 RiakIndexes indexes = ro.getIndexes();
@@ -123,7 +123,7 @@ public class RiakObjectConverter
                     }
                 }
             }
-            
+
             if (content.getUsermetaCount() > 0)
             {
                 RiakUserMetadata userMeta = ro.getUserMeta();
@@ -134,29 +134,29 @@ public class RiakObjectConverter
                         BinaryValue.unsafeCreate(pair.getValue().toByteArray()));
                 }
             }
-             
+
             roList.add(ro);
         }
-        
+
         return roList;
     }
-    
+
     public static RpbContent convert(RiakObject ro)
     {
         RpbContent.Builder builder = RpbContent.newBuilder();
-        
+
         builder.setContentType(ByteString.copyFromUtf8(ro.getContentType()));
-        
+
         if (ro.hasCharset())
         {
             builder.setCharset(ByteString.copyFromUtf8(ro.getCharset()));
         }
-        
+
         if (ro.hasValue())
         {
             builder.setValue(ByteString.copyFrom(ro.getValue().unsafeGetValue()));
         }
-        
+
         if (ro.hasLinks())
         {
             for (RiakLink link : ro.getLinks())
@@ -168,7 +168,7 @@ public class RiakObjectConverter
                         .setKey(ByteString.copyFrom(link.getKeyAsBytes().unsafeGetValue())));
             }
         }
-         
+
         if (ro.hasIndexes())
         {
             for (RiakIndex<?> index : ro.getIndexes())
@@ -182,10 +182,10 @@ public class RiakObjectConverter
                 }
             }
         }
-        
+
         if (ro.hasUserMeta())
         {
-            for (Map.Entry<BinaryValue,BinaryValue> entry 
+            for (Map.Entry<BinaryValue,BinaryValue> entry
                  : ro.getUserMeta().getUserMetadata())
             {
                 RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder();
@@ -194,7 +194,7 @@ public class RiakObjectConverter
                 builder.addUsermeta(pair);
             }
         }
-        
+
         return builder.build();
     }
 }

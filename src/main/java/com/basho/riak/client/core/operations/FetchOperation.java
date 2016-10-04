@@ -81,8 +81,12 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             logger.error("Received {} responses when only one was expected.", responses.size());
         }
 
-        RiakKvPB.RpbGetResp response = responses.get(0);
+        final RiakKvPB.RpbGetResp response = responses.get(0);
+        return convert(response);
+    }
 
+    static FetchOperation.Response convert(RiakKvPB.RpbGetResp response)
+    {
         FetchOperation.Response.Builder responseBuilder =
                 new FetchOperation.Response.Builder();
 
@@ -112,7 +116,6 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             }
 
             responseBuilder.withUnchanged(response.hasUnchanged() ? response.getUnchanged() : false);
-
         }
 
         return responseBuilder.build();
@@ -153,7 +156,6 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             reqBuilder.setBucket(ByteString.copyFrom(location.getNamespace().getBucketName().unsafeGetValue()));
             reqBuilder.setType(ByteString.copyFrom(location.getNamespace().getBucketType().unsafeGetValue()));
             this.location = location;
-
         }
 
         /**
@@ -163,10 +165,10 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
          * @return a reference to this object.
          */
         public Builder withR(int r)
-		{
-			reqBuilder.setR(r);
-			return this;
-		}
+        {
+            reqBuilder.setR(r);
+            return this;
+        }
 
         /**
          * Set the PR value for this query.
@@ -174,11 +176,11 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
          * @param pr the PR value.
          * @return a reference to this object.
          */
-		public Builder withPr(int pr)
-		{
-			reqBuilder.setPr(pr);
-			return this;
-		}
+        public Builder withPr(int pr)
+        {
+            reqBuilder.setPr(pr);
+            return this;
+        }
 
         /**
         * Set the not_found_ok value.
@@ -192,11 +194,11 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         * @param notFoundOk the not_found_ok value.
         * @return a reference to this object.
         */
-		public Builder withNotFoundOK(boolean notFoundOk)
-		{
-			reqBuilder.setNotfoundOk(notFoundOk);
-			return this;
-		}
+        public Builder withNotFoundOK(boolean notFoundOk)
+        {
+            reqBuilder.setNotfoundOk(notFoundOk);
+            return this;
+        }
 
         /**
         * Set the basic_quorum value.
@@ -209,22 +211,22 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
         * @param useBasicQuorum the basic_quorum value.
         * @return a reference to this object.
         */
-		public Builder withBasicQuorum(boolean useBasicQuorum)
-		{
-			reqBuilder.setBasicQuorum(useBasicQuorum);
-			return this;
-		}
+        public Builder withBasicQuorum(boolean useBasicQuorum)
+        {
+            reqBuilder.setBasicQuorum(useBasicQuorum);
+            return this;
+        }
 
         /**
          * Set whether to return tombstones.
          * @param returnDeletedVClock true to return tombstones, false otherwise.
          * @return a reference to this object.
          */
-		public Builder withReturnDeletedVClock(boolean returnDeletedVClock)
-		{
-			reqBuilder.setDeletedvclock(returnDeletedVClock);
-			return this;
-		}
+        public Builder withReturnDeletedVClock(boolean returnDeletedVClock)
+        {
+            reqBuilder.setDeletedvclock(returnDeletedVClock);
+            return this;
+        }
 
         /**
          * Return only the metadata.
@@ -234,33 +236,33 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
          * @param headOnly true to return only metadata.
          * @return a reference to this object.
          */
-		public Builder withHeadOnly(boolean headOnly)
-		{
+        public Builder withHeadOnly(boolean headOnly)
+        {
             reqBuilder.setHead(headOnly);
             return this;
-		}
+        }
 
         /**
          * Do not return the object if the supplied vclock matches.
          * @param vclock the vclock to match on
          * @return a refrence to this object.
          */
-		public Builder withIfNotModified(byte[] vclock)
-		{
-			reqBuilder.setIfModified(ByteString.copyFrom(vclock));
-			return this;
-		}
+        public Builder withIfNotModified(byte[] vclock)
+        {
+            reqBuilder.setIfModified(ByteString.copyFrom(vclock));
+            return this;
+        }
 
         /**
          * Set a timeout for this operation.
          * @param timeout a timeout in milliseconds.
          * @return a reference to this object.
          */
-		public Builder withTimeout(int timeout)
-		{
+        public Builder withTimeout(int timeout)
+        {
             reqBuilder.setTimeout(timeout);
             return this;
-		}
+        }
 
         /**
          * Set the n_val for this operation.
@@ -270,11 +272,11 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
          * @param nval the n_val value
          * @return a reference to this object.
          */
-		public Builder withNVal(int nval)
-		{
-			reqBuilder.setNVal(nval);
-			return this;
-		}
+        public Builder withNVal(int nval)
+        {
+            reqBuilder.setNVal(nval);
+            return this;
+        }
 
         /**
          * Set whether to use sloppy_quorum.
@@ -284,18 +286,16 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
          * @param sloppyQuorum true to use sloppy_quorum
          * @return a reference to this object.
          */
-		public Builder withSloppyQuorum(boolean sloppyQuorum)
-		{
-			reqBuilder.setSloppyQuorum(sloppyQuorum);
-			return this;
-		}
+        public Builder withSloppyQuorum(boolean sloppyQuorum)
+        {
+            reqBuilder.setSloppyQuorum(sloppyQuorum);
+            return this;
+        }
 
         public FetchOperation build()
         {
             return new FetchOperation(this);
         }
-
-
     }
 
     protected static abstract class KvResponseBase
@@ -314,8 +314,7 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
 
         protected static abstract class Init<T extends Init<T>>
         {
-            private final List<RiakObject> objectList =
-                new LinkedList<RiakObject>();
+            private final List<RiakObject> objectList = new LinkedList<>();
             protected abstract T self();
             protected abstract KvResponseBase build();
 
@@ -332,7 +331,6 @@ public class FetchOperation extends FutureOperation<FetchOperation.Response, Ria
             }
         }
     }
-
 
     public static class Response extends KvResponseBase
     {

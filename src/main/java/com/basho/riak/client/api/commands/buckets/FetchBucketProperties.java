@@ -23,7 +23,6 @@ import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
 
-
 /**
  * Command used to fetch the properties of a bucket in Riak.
  * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
@@ -35,27 +34,26 @@ import com.basho.riak.client.core.query.Namespace;
  * FetchBucketPropsOperation.Response resp = client.execute(fbp);
  * BucketProperties props = resp.getBucketProperties();}</pre>
  * Note that this simply returns the core response {@link com.basho.riak.client.core.operations.FetchBucketPropsOperation.Response}
- * 
+ *
  * </p>
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOperation.Response, Namespace>
 {
+    private final Namespace namespace;
 
-	private final Namespace namespace;
+    public FetchBucketProperties(Builder builder)
+    {
+        this.namespace = builder.namespace;
+    }
 
-	public FetchBucketProperties(Builder builder)
-	{
-		this.namespace = builder.namespace;
-	}
-
-	@Override
+    @Override
     protected final RiakFuture<FetchBucketPropsOperation.Response, Namespace> executeAsync(RiakCluster cluster)
     {
         RiakFuture<FetchBucketPropsOperation.Response, Namespace> coreFuture =
             cluster.execute(buildCoreOperation());
-        
+
         CoreFutureAdapter<FetchBucketPropsOperation.Response, Namespace, FetchBucketPropsOperation.Response, Namespace> future =
             new CoreFutureAdapter<FetchBucketPropsOperation.Response, Namespace, FetchBucketPropsOperation.Response, Namespace>(coreFuture)
             {
@@ -74,7 +72,7 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
         coreFuture.addListener(future);
         return future;
     }
-    
+
     private FetchBucketPropsOperation buildCoreOperation()
     {
         return new FetchBucketPropsOperation.Builder(namespace).build();
@@ -83,31 +81,30 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
     /**
      * Builder used to construct a FetchBucketPoperties command.
      */
-	public static class Builder
-	{
-		private final Namespace namespace;
+    public static class Builder
+    {
+        private final Namespace namespace;
 
         /**
          * Construct a Builder for a FetchBucketProperties command.
-         * @param namespace The namespace for the bucket. 
+         * @param namespace The namespace for the bucket.
          */
-		public Builder(Namespace namespace)
-		{
-			if (namespace == null)
+        public Builder(Namespace namespace)
+        {
+            if (namespace == null)
             {
                 throw new IllegalArgumentException("Namespace cannot be null");
             }
             this.namespace = namespace;
-		}
+        }
 
         /**
          * Construct a new FetchBucketProperties command.
          * @return a new FetchBucketProperties command.
          */
-		public FetchBucketProperties build()
-		{
-			return new FetchBucketProperties(this);
-		}
-	}
-
+        public FetchBucketProperties build()
+        {
+            return new FetchBucketProperties(this);
+        }
+    }
 }

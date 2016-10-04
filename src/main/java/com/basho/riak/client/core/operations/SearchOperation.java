@@ -61,17 +61,17 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
     {
         // This isn't a streaming op, there will only be one protobuf
         RiakSearchPB.RpbSearchQueryResp resp = rawResponse.get(0);
-        List<Map<String, List<String>>> docList = new LinkedList<Map<String, List<String>>>();
+        List<Map<String, List<String>>> docList = new LinkedList<>();
         for (RiakSearchPB.RpbSearchDoc pbDoc : resp.getDocsList())
         {
-            Map<String, List<String>> map = new HashMap<String, List<String>>();
+            Map<String, List<String>> map = new HashMap<>();
             for (RpbPair pair : pbDoc.getFieldsList())
             {
                 String key = pair.getKey().toStringUtf8();
                 List<String> list = map.get(key);
                 if (null == list)
                 {
-                    list = new LinkedList<String>();
+                    list = new LinkedList<>();
                     map.put(key, list);
                 }
                 list.add(pair.getValue().toStringUtf8());
@@ -79,7 +79,6 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
             docList.add(map);
         }
         return new Response(docList, resp.getMaxScore(), resp.getNumFound());
-
     }
 
     @Override
@@ -111,7 +110,6 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
 
     public static class Builder
     {
-
         private final BinaryValue indexName;
         private final String queryString;
         private final RiakSearchPB.RpbSearchQueryReq.Builder reqBuilder =
@@ -314,7 +312,5 @@ public class SearchOperation extends FutureOperation<SearchOperation.Response, R
         {
             return results;
         }
-
     }
-
 }

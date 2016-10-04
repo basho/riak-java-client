@@ -4,8 +4,11 @@ import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.QueryOperation;
+import com.basho.riak.client.core.operations.ts.QueryOperation.Builder;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
+import com.google.protobuf.ByteString;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,14 +34,15 @@ public class Query extends RiakCommand<QueryResult, String>
     }
 
     @Override
-    protected RiakFuture<QueryResult, String> executeAsync(RiakCluster cluster) {
+    protected RiakFuture<QueryResult, String> executeAsync(RiakCluster cluster)
+    {
         return cluster.execute(buildCoreOperation());
     }
 
     private QueryOperation buildCoreOperation()
     {
         return new QueryOperation.Builder(builder.queryText)
-                                           //.setInterpolations(builder.interpolations)
+                                           .withCoverageContext(builder.coverageContext)
                                            .build();
     }
 
@@ -51,8 +55,9 @@ public class Query extends RiakCommand<QueryResult, String>
         private static final Pattern paramPattern = Pattern.compile("(:[a-zA-Z][0-9a-zA-Z_]*)");
 
         private final String queryText;
-        private final Map<String, BinaryValue> interpolations = new HashMap<String, BinaryValue>();
+        private final Map<String, BinaryValue> interpolations = new HashMap<>();
         private final Set<String> knownParams;
+        private byte[] coverageContext = null;
 
         /**
          * Construct a Builder for a Time Series Query command.
@@ -77,17 +82,30 @@ public class Query extends RiakCommand<QueryResult, String>
                 return;
             }
 
-            knownParams = new HashSet<String>(paramMatcher.groupCount());
+            knownParams = new HashSet<>(paramMatcher.groupCount());
 
-            for (int i = 0; i < paramMatcher.groupCount(); i++) {
+            for (int i = 0; i < paramMatcher.groupCount(); i++)
+            {
                 knownParams.add(paramMatcher.group(i));
             }
+        }
+
+        public Builder(String queryText, byte[] coverageContext)
+        {
+            this(queryText);
+            this.coverageContext = coverageContext;
         }
 
         private Builder addParameter(String keyString, String key, BinaryValue value)
         {
             checkParamValidity(keyString);
             interpolations.put(key, value);
+            return this;
+        }
+
+        public Builder withCoverageContext(byte[] coverageContext)
+        {
+            this.coverageContext = coverageContext;
             return this;
         }
 
@@ -109,6 +127,5 @@ public class Query extends RiakCommand<QueryResult, String>
         {
             return new Query(this);
         }
-
     }
 }

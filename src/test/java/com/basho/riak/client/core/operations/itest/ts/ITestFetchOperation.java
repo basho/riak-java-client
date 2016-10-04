@@ -49,7 +49,6 @@ public class ITestFetchOperation extends ITestTsBase
         assertTrue(future.isSuccess());
         QueryResult result = future.get();
 
-
         assertEquals(1, result.getRowsCount());
         assertEquals(7, result.getColumnDescriptionsCopy().size());
 

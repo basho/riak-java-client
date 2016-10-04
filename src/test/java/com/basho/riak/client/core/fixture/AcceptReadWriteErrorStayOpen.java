@@ -32,7 +32,7 @@ public class AcceptReadWriteErrorStayOpen extends Acceptor
     {
         super(server);
     }
-    
+
     @Override
     boolean writePb(SelectionKey key) throws IOException
     {

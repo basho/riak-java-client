@@ -25,25 +25,24 @@ import java.nio.charset.Charset;
  * Encapsulates a key and Namespace.
  * <p>
  * Many client operations locate a piece of information in Riak via a
- * bucket type, bucket name, and  a key. This class encapsulates these 
- * three items by combining a {@link Namespace} with a key and is 
+ * bucket type, bucket name, and  a key. This class encapsulates these
+ * three items by combining a {@link Namespace} with a key and is
  * used with most client operations.
  * </p>
  * <p>
- * Riak itself is character set agnostic; everything is stored as bytes. The 
- * convenience methods in this class rely on either the default Charset or a 
+ * Riak itself is character set agnostic; everything is stored as bytes. The
+ * convenience methods in this class rely on either the default Charset or a
  * supplied one to convert Strings to a byte[].
  * <p>
- * 
+ *
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
 public final class Location
 {
-    
     private final Namespace namespace;
     private final BinaryValue key;
-    
+
     /**
      * Construct a new Location with the provided Namespace and key.
      * @param namespace The namespace for this location.
@@ -62,7 +61,7 @@ public final class Location
         this.namespace = namespace;
         this.key = key;
     }
-    
+
     /**
      * Construct a new Location with the provided Namespace and key.
      * <p>
@@ -89,7 +88,7 @@ public final class Location
         this.namespace = namespace;
         this.key = BinaryValue.create(key, charset);
     }
-    
+
     /**
      * Construct a new Location with the provided namespace and key.
      * <p>
@@ -102,7 +101,7 @@ public final class Location
     {
         this(namespace, key, DefaultCharset.get());
     }
-    
+
     /**
      * Returns the key for this location.
      * @return the Riak Key.
@@ -111,7 +110,7 @@ public final class Location
     {
         return key;
     }
-    
+
     /**
      * Get the key for this location as a String.
      * <p>
@@ -123,7 +122,7 @@ public final class Location
     {
         return key.toString();
     }
-    
+
     /**
      * Get the key for this location as a String.
      * <p>
@@ -136,7 +135,7 @@ public final class Location
     {
         return key.toString(charset);
     }
-    
+
     /**
      * Return the Namespace for this location.
      * @return the namespace.
@@ -183,5 +182,4 @@ public final class Location
     {
         return "{namespace: " + namespace + ", key: " + key + "}";
     }
-    
 }

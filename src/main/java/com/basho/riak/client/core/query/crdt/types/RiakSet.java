@@ -17,20 +17,23 @@ package com.basho.riak.client.core.query.crdt.types;
 
 import com.basho.riak.client.core.util.BinaryValue;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Representation of the Riak set datatype.
  * <p>
  * This is an immutable set returned when querying Riak for a set datatype.
  * </p>
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
 public class RiakSet extends RiakDatatype
 {
-    private final Set<BinaryValue> elements =
-        new HashSet<BinaryValue>();
+    private final Set<BinaryValue> elements = new HashSet<>();
 
     public RiakSet(List<BinaryValue> elements)
     {
@@ -39,8 +42,9 @@ public class RiakSet extends RiakDatatype
 
     /**
      * Check to see if the supplied value exists in this RiakSet.
+     *
      * @param element The value to check.
-     * @return true if this RiakSet contains the value, false otherwise. 
+     * @return true if this RiakSet contains the value, false otherwise.
      */
     public boolean contains(BinaryValue element)
     {
@@ -49,27 +53,52 @@ public class RiakSet extends RiakDatatype
 
     /**
      * Check to see if the supplied value exists in this RiakSet.
+     *
      * @param element The value to check.
-     * @return true if this RiakSet contains the value, false otherwise. 
+     * @return true if this RiakSet contains the value, false otherwise.
      */
     public boolean contains(String element)
     {
         return elements.contains(BinaryValue.create(element));
     }
-    
+
     /**
-     * Get this set as a {@link Set}. The returned Set is unmodifiable. 
+     * Get this set as a {@link Set}. The returned Set is unmodifiable.
+     *
      * @return a read-only view of this RiakSet.
      */
-	@Override
-	public Set<BinaryValue> view()
-	{
-		return Collections.unmodifiableSet(elements);
-	}
-    
+    @Override
+    public Set<BinaryValue> view()
+    {
+        return Collections.unmodifiableSet(elements);
+    }
+
     @Override
     public String toString()
     {
         return elements.toString();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        RiakSet riakSet = (RiakSet) o;
+
+        return elements != null ? elements.equals(riakSet.elements) : riakSet.elements == null;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return elements != null ? elements.hashCode() : 0;
     }
 }

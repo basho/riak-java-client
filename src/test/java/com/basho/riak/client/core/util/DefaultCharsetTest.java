@@ -146,6 +146,5 @@ public class DefaultCharsetTest
         Field currentCharsetField = DefaultCharset.class.getDeclaredField("currentCharset");
         currentCharsetField.setAccessible(true);
         return ((AtomicReference<Charset>) currentCharsetField.get(initializedDefaultCharset)).get();
-
     }
 }

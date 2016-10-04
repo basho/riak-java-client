@@ -32,7 +32,6 @@ public class TableDefinitionTest
         final TableDefinition bar = new TableDefinition("Bar", GetJumbledTable());
 
         assertKeyCollectionsAreCorrect(bar);
-
     }
 
     private void assertKeyCollectionsAreCorrect(TableDefinition foo)

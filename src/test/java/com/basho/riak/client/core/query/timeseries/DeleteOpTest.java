@@ -53,7 +53,6 @@ public class DeleteOpTest
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionIfKeysAreMissing()
     {
-        new DeleteOperation.Builder(tableName, new ArrayList<Cell>(0)).build();
+        new DeleteOperation.Builder(tableName, new ArrayList<>(0)).build();
     }
-
 }

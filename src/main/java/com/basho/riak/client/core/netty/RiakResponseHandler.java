@@ -24,9 +24,12 @@ public class RiakResponseHandler extends ChannelInboundHandlerAdapter
     public void channelRead(ChannelHandlerContext chc, Object message) throws Exception
     {
         RiakMessage riakMessage = (RiakMessage) message;
-        if (riakMessage.isRiakError()) {
+        if (riakMessage.isRiakError())
+        {
             listener.onRiakErrorResponse(chc.channel(), riakMessage.getRiakError());
-        } else {
+        }
+        else
+        {
             listener.onSuccess(chc.channel(), riakMessage);
         }
     }

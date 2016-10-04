@@ -2,8 +2,10 @@ package com.basho.riak.client.core.operations.itest.ts;
 
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.ts.StoreOperation;
+import com.basho.riak.client.core.query.timeseries.ColumnDescription;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertTrue;
@@ -26,4 +28,16 @@ public class ITestStoreOperation extends ITestTsBase
         assertTrue(future.isSuccess());
     }
 
+    @Test
+    public void writesDataWithColumnsOptionWithoutError() throws ExecutionException, InterruptedException
+    {
+        StoreOperation storeOp = new StoreOperation.Builder(tableName)
+                .withColumnDescriptions(GeoCheckinWideTableDefinition.getFullColumnDescriptions())
+                .withRows(rows).build();
+
+        RiakFuture<Void, String> future = cluster.execute(storeOp);
+
+        future.get();
+        assertTrue(future.isSuccess());
+    }
 }

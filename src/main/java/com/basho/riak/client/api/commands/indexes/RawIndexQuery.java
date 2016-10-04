@@ -31,7 +31,7 @@ import java.util.List;
  * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
  * <p>
  * A RawIndexQuery is used when you are using raw bytes for your 2i keys. The
- * parameters are provided as BinaryValue objects. 
+ * parameters are provided as BinaryValue objects.
  * </p>
  * <pre class="prettyprint">
  * {@code
@@ -46,7 +46,7 @@ import java.util.List;
 public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuery.Response, RawIndexQuery>
 {
     private final IndexConverter<BinaryValue> converter;
-    
+
     protected RawIndexQuery(Init<BinaryValue,?> builder)
     {
         super(builder);
@@ -59,7 +59,7 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
             }
         };
     }
-    
+
     @Override
     protected IndexConverter<BinaryValue> getConverter()
     {
@@ -71,19 +71,24 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
     {
         RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
             executeCoreAsync(cluster);
-        
+
         RawQueryFuture future = new RawQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
     }
 
-    protected final class RawQueryFuture extends CoreFutureAdapter<Response, RawIndexQuery, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+    protected final class RawQueryFuture
+            extends CoreFutureAdapter<Response,
+                                      RawIndexQuery,
+                                      SecondaryIndexQueryOperation.Response,
+                                      SecondaryIndexQueryOperation.Query>
     {
-        public RawQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        public RawQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response,
+                              SecondaryIndexQueryOperation.Query> coreFuture)
         {
             super(coreFuture);
         }
-        
+
         @Override
         protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
         {
@@ -95,20 +100,18 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
         {
             return RawIndexQuery.this;
         }
-        
     }
-    
+
     /**
      * Builder used to construct a RawIndexQuery command.
      */
     public static class Builder extends SecondaryIndexQuery.Init<BinaryValue, Builder>
     {
-
         /**
          * Construct a Builder for a RawIndexQuery with a range.
          * <p>
          * Note that your index name should not include the Riak {@literal _int} or
-         * {@literal _bin} extension as these are supplied by the type. 
+         * {@literal _bin} extension as these are supplied by the type.
          * <p>
          * @param namespace The namespace in Riak to query.
          * @param indexName The index name in Riak to query.
@@ -125,13 +128,13 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
          * Construct a Builder for a RawIndexQuery with a single 2i key.
          * <p>
          * Note that your index name should not include the Riak {@literal _int} or
-         * {@literal _bin} extension as these are supplied by the type. 
+         * {@literal _bin} extension as these are supplied by the type.
          * <p>
          * @param namespace The namespace in Riak to query.
          * @param indexName The index name in Riak to query.
          * @param type The Riak index type.
          * @param match The 2i key to query.
-         */ 
+         */
         public Builder(Namespace namespace, String indexName, Type type, BinaryValue match)
         {
             super(namespace, indexName + type, match);
@@ -152,18 +155,20 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
             return new RawIndexQuery(this);
         }
     }
-    
+
     public static class Response extends SecondaryIndexQuery.Response<BinaryValue>
     {
-        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BinaryValue> converter)
+        protected Response(Namespace queryLocation,
+                           SecondaryIndexQueryOperation.Response coreResponse,
+                           IndexConverter<BinaryValue> converter)
         {
             super(queryLocation, coreResponse, converter);
         }
-        
+
         @Override
         public List<Entry> getEntries()
         {
-            List<Entry> convertedList = new ArrayList<Entry>();
+            List<Entry> convertedList = new ArrayList<>();
             for (SecondaryIndexQueryOperation.Response.Entry e : coreResponse.getEntryList())
             {
                 Location loc = getLocationFromCoreEntry(e);
@@ -179,8 +184,6 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
             {
                 super(riakObjectLocation, indexKey, converter);
             }
-
         }
     }
-    
 }

@@ -44,48 +44,47 @@ public class RiakMessageCodecTest
     private byte code = 1;
     private ByteBuf buffer;
     private ChannelHandlerContext mockContext;
-    
+
     @Before
     public void setUp() throws Exception
     {
         code = 1;
         data = new byte[SIZE_DATA];
         Arrays.fill(data, (byte)1);
-        
+
         RiakMessage pbMessage = new RiakMessage(code, data);
         RiakMessageCodec codec = new RiakMessageCodec();
-        
+
         mockContext = mock(ChannelHandlerContext.class);
         buffer = Unpooled.buffer();
         Whitebox.invokeMethod(codec, "encode", mockContext, pbMessage, buffer);
     }
-    
+
     @Test
     public void encode() throws Exception
     {
         assertTrue(buffer.isReadable());
         assertEquals(buffer.readableBytes(), SIZE_DATA + SIZE_LENGTH + SIZE_CODE);
-        
+
         int encodedLength = buffer.readInt();
         byte encodedCode = buffer.readByte();
         byte[] encodedData = new byte[SIZE_DATA];
-        
+
         buffer.readBytes(encodedData);
-        
+
         assertEquals(encodedCode, code);
         assertEquals(encodedLength, SIZE_DATA + SIZE_CODE);
         assertArrayEquals(data, encodedData);
     }
-    
+
     @Test
     public void decode() throws Exception
     {
         RiakMessageCodec codec = new RiakMessageCodec();
-        List<Object> outList = new ArrayList<Object>();
+        List<Object> outList = new ArrayList<>();
         Whitebox.invokeMethod(codec, "decode", mockContext, buffer, outList);
         RiakMessage message = (RiakMessage) outList.get(0);
         assertEquals(code, message.getCode());
         assertArrayEquals(data, message.getData());
-        
     }
 }

@@ -28,7 +28,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  *
  * @author Brian Roach <roach at basho dot com>
@@ -36,13 +35,13 @@ import org.junit.Test;
 public class RiakIndexesTest
 {
     private RiakIndexes indexes;
-    
+
     @Before
     public void setup()
     {
         indexes = new RiakIndexes();
     }
-    
+
     @Test
     public void createIndex()
     {
@@ -52,38 +51,37 @@ public class RiakIndexesTest
         assertEquals(indexes.size(), 1);
         assertTrue(indexes.hasIndex(LongIntIndex.named("foo")));
     }
-    
+
     @Test
     public void addToIndex()
     {
         assertTrue(indexes.isEmpty());
-        
+
         indexes.getIndex(LongIntIndex.named("my_index")).add(4L);
-        
+
         assertTrue(indexes.hasIndex(LongIntIndex.named("my_index")));
-        
+
         LongIntIndex lii = indexes.getIndex(LongIntIndex.named("my_index"));
         assertTrue(lii.hasValue(4L));
-        
+
         RawIndex rri = indexes.getIndex(RawIndex.named("my_index", IndexType.INT));
         assertTrue(rri.hasValue(BinaryValue.unsafeCreate(String.valueOf(4L).getBytes())));
-        
+
         assertEquals(indexes.size(), 1);
-        
     }
-    
+
     @Test
     public void removeIndex()
     {
         assertTrue(indexes.isEmpty());
         StringBinIndex stringIndex = indexes.getIndex(StringBinIndex.named("bar"));
         LongIntIndex longIndex = indexes.getIndex(LongIntIndex.named("foo"));
-        
+
         LongIntIndex removedLongIndex = indexes.removeIndex(LongIntIndex.named("foo"));
         assertEquals(longIndex, removedLongIndex);
         assertEquals(indexes.size(), 1);
     }
-    
+
     @Test
     public void getIndex()
     {
@@ -92,7 +90,7 @@ public class RiakIndexesTest
         assertEquals(index.getName(), "foo");
         assertTrue(index.hasValue(Long.MIN_VALUE));
     }
-    
+
     @Test
     public void size()
     {
@@ -107,7 +105,7 @@ public class RiakIndexesTest
         indexes.removeAllIndexes();
         assertEquals(indexes.size(), 0);
     }
-    
+
     @Test
     public void empty()
     {
@@ -126,7 +124,7 @@ public class RiakIndexesTest
         indexes.removeAllIndexes();
         assertTrue(indexes.isEmpty());
     }
-    
+
     @Test
     public void indexTypesAreDifferent()
     {
@@ -134,32 +132,31 @@ public class RiakIndexesTest
         indexes.getIndex(LongIntIndex.named("foo")).add(Long.MIN_VALUE);
         indexes.getIndex(StringBinIndex.named("foo")).add("value");
         assertEquals(indexes.size(), 2);
-        
+
         StringBinIndex stringIndex = indexes.getIndex(StringBinIndex.named("foo"));
         assertEquals(stringIndex.size(), 1);
         assertTrue(stringIndex.hasValue("value"));
-        
+
         LongIntIndex longIndex = indexes.getIndex(LongIntIndex.named("foo"));
         assertEquals(stringIndex.size(), 1);
         assertTrue(longIndex.hasValue(Long.MIN_VALUE));
     }
-    
+
     @Test
     public void wrapping()
     {
         RawIndex index = indexes.getIndex(RawIndex.named("foo", IndexType.BIN));
         BinaryValue baw = BinaryValue.unsafeCreate("value".getBytes());
         index.add(baw);
-        
+
         StringBinIndex wrapper = indexes.getIndex(StringBinIndex.named("foo"));
         assertNotSame(index, wrapper);
         assertEquals(index, wrapper);
         assertTrue(wrapper.hasValue("value"));
-        
+
         wrapper.remove("value");
-        
+
         index = indexes.getIndex(RawIndex.named("foo", IndexType.BIN));
         assertFalse(index.hasValue(baw));
     }
-    
 }

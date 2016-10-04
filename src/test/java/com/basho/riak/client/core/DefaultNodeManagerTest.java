@@ -31,7 +31,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-
 /**
  *
  * @author Brian Roach <roach at basho dot com>
@@ -41,29 +40,28 @@ import org.powermock.reflect.Whitebox;
 public class DefaultNodeManagerTest
 {
     private List<RiakNode> mockNodes;
-    
+
     @Before
     public void setUp()
     {
-        mockNodes = new LinkedList<RiakNode>();
+        mockNodes = new LinkedList<>();
         for (int i = 0; i < 5; i++)
         {
             RiakNode mock = mock(RiakNode.class);
             mockNodes.add(mock);
         }
     }
-    
-    
+
     @Test
     public void init()
     {
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         nodeManager.init(mockNodes);
-        
+
         List<RiakNode> nodes = Whitebox.getInternalState(nodeManager, "healthy");
         assertEquals(mockNodes.size(), nodes.size());
     }
-    
+
     @Test
     public void executeOnNodeSuccess()
     {
@@ -79,7 +77,7 @@ public class DefaultNodeManagerTest
         verify(mockNodes.get(3), never()).execute(operation);
         verify(mockNodes.get(4), never()).execute(operation);
     }
-    
+
     @Test
     public void executeOnNodeFailure()
     {
@@ -87,13 +85,13 @@ public class DefaultNodeManagerTest
         DefaultNodeManager nodeManager = new DefaultNodeManager();
         nodeManager.init(mockNodes);
         boolean executed = nodeManager.executeOnNode(operation, null);
-        for (int i = 0; i < mockNodes.size(); i++)
+        for (RiakNode mockNode : mockNodes)
         {
-            verify(mockNodes.get(i)).execute(operation);
+            verify(mockNode).execute(operation);
         }
         assertFalse(executed);
     }
-    
+
     @Test
     public void removeUnhealthyNode()
     {
@@ -106,7 +104,7 @@ public class DefaultNodeManagerTest
         assertEquals(1, unhealthy.size());
         assertEquals(mockNodes.get(0), unhealthy.get(0));
     }
-    
+
     @Test
     public void restoreHealthyNode()
     {
@@ -120,7 +118,7 @@ public class DefaultNodeManagerTest
         assertEquals(0, unhealthy.size());
         assertTrue(healthy.contains(mockNodes.get(0)));
     }
-    
+
     @Test
     public void removeShutdownNode()
     {
@@ -133,7 +131,7 @@ public class DefaultNodeManagerTest
         assertEquals(0, unhealthy.size());
         assertTrue(!healthy.contains(mockNodes.get(0)));
     }
-    
+
     @Test
     public void removeNode()
     {
@@ -147,7 +145,7 @@ public class DefaultNodeManagerTest
         verify(mockNodes.get(0)).removeStateListener(nodeManager);
         verify(mockNodes.get(0)).shutdown();
     }
-    
+
     @Test
     public void addNode()
     {
@@ -159,7 +157,7 @@ public class DefaultNodeManagerTest
         List<RiakNode> unhealthy = Whitebox.getInternalState(nodeManager, "unhealthy");
         assertEquals(mockNodes.size() + 1, healthy.size());
     }
-    
+
     private class IsException extends ArgumentMatcher<Exception>
     {
         @Override
@@ -167,7 +165,5 @@ public class DefaultNodeManagerTest
         {
             return argument instanceof Exception;
         }
-        
     }
-    
 }

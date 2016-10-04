@@ -12,7 +12,6 @@ import java.util.List;
  */
 public class BucketKeyMapReduce extends MapReduce
 {
-
     /**
      * Creates a new BucketKeyMapReduce operation from the supplied configuration.
      * @param input the input to use for the BucketKeyMapReduce input phase.
@@ -28,9 +27,7 @@ public class BucketKeyMapReduce extends MapReduce
      */
     public static class Builder extends MapReduce.Builder<Builder>
     {
-
-        private List<BucketKeyInput.IndividualInput> input =
-                new ArrayList<BucketKeyInput.IndividualInput>();
+        private List<BucketKeyInput.IndividualInput> input = new ArrayList<>();
 
         @Override
         protected Builder self()
@@ -75,7 +72,5 @@ public class BucketKeyMapReduce extends MapReduce
 
             return new BucketKeyMapReduce(new BucketKeyInput(input), this);
         }
-
     }
-
 }

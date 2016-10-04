@@ -2,9 +2,9 @@
  * This file is provided to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -52,7 +52,6 @@ import java.util.LinkedList;
  */
 public class AnnotationInfo
 {
-
     private final Field riakKeyField;
     private final Method riakKeySetter;
     private final Method riakKeyGetter;
@@ -169,7 +168,7 @@ public class AnnotationInfo
                 }
             }
         }
-        
+
         return key;
     }
 
@@ -198,14 +197,13 @@ public class AnnotationInfo
                 setFieldValue(riakKeyField, obj, key.unsafeGetValue());
             }
         }
-         
     }
 
     // TODO: charset in annotation
     public <T> BinaryValue getRiakBucketName(T obj)
     {
         BinaryValue bucketName = null;
-        
+
         if (riakBucketNameGetter != null)
         {
             if (riakBucketNameGetter.getReturnType().isArray())
@@ -244,10 +242,10 @@ public class AnnotationInfo
                 }
             }
         }
-         
+
         return bucketName;
     }
-    
+
     // TODO: charset in annotation
     public <T> void setRiakBucketName(T obj, BinaryValue bucketName)
     {
@@ -274,12 +272,12 @@ public class AnnotationInfo
             }
         }
     }
-    
+
     // TODO: charset in annotation
     public <T> BinaryValue getRiakBucketType(T obj)
     {
         BinaryValue bucketType = null;
-        
+
         if (riakBucketTypeGetter != null)
         {
             if (riakBucketTypeGetter.getReturnType().isArray())
@@ -320,7 +318,7 @@ public class AnnotationInfo
         }
         return bucketType;
     }
-    
+
     // TODO: charset in annotation
     public <T> void setRiakBucketType(T obj, BinaryValue bucketType)
     {
@@ -347,15 +345,14 @@ public class AnnotationInfo
             }
         }
     }
-    
+
     public boolean hasRiakVClock()
     {
         return riakVClockField != null || riakVClockSetter != null;
     }
-    
+
     public <T> VClock getRiakVClock(T obj)
     {
-
         VClock vclock = null;
 
         // We allow the annotated field to be either an actual VClock, or
@@ -382,13 +379,12 @@ public class AnnotationInfo
                 vclock = new BasicVClock((byte[]) getFieldValue(riakVClockField, obj));
             }
         }
-        
+
         return vclock;
     }
 
     public <T> void setRiakVClock(T obj, VClock vclock)
     {
-
         // We allow the annotated field to be either an actual VClock, or
         // a byte array. This is enforced in the AnnotationScanner
         if (riakVClockSetter != null)
@@ -405,7 +401,6 @@ public class AnnotationInfo
         }
         else if (riakVClockField != null)
         {
-
             if (riakVClockField.getType().isAssignableFrom(VClock.class))
             {
                 setFieldValue(riakVClockField, obj, vclock);
@@ -428,13 +423,12 @@ public class AnnotationInfo
         {
             tombstone = (Boolean) getFieldValue(riakTombstoneField, obj);
         }
-        
+
         return tombstone;
     }
 
     public <T> void setRiakTombstone(T obj, Boolean isDeleted)
     {
-
         if (riakTombstoneSetter != null)
         {
             setMethodValue(riakTombstoneSetter, obj, isDeleted);
@@ -458,7 +452,7 @@ public class AnnotationInfo
         }
         return contentType;
     }
-    
+
     public <T> void setRiakContentType(T obj, String contentType)
     {
         if (riakContentTypeSetter != null)
@@ -468,9 +462,9 @@ public class AnnotationInfo
         else if (riakContentTypeField != null)
         {
             setFieldValue(riakContentTypeField, obj, contentType);
-        } 
+        }
     }
-    
+
     public <T> void setRiakLastModified(T obj, Long lastModified)
     {
         if (riakLastModifiedSetter != null)
@@ -482,7 +476,7 @@ public class AnnotationInfo
             setFieldValue(riakLastModifiedField, obj, lastModified);
         }
     }
-    
+
     public <T> void setRiakVTag(T obj, String vtag)
     {
         if (riakVTagSetter != null)
@@ -494,12 +488,12 @@ public class AnnotationInfo
             setFieldValue(riakVTagField, obj, vtag);
         }
     }
-    
+
     public <T> RiakUserMetadata getUsermetaData(RiakUserMetadata container, T obj)
     {
         for (UsermetaField uf : usermetaFields)
         {
-            switch(uf.getFieldType())
+            switch (uf.getFieldType())
             {
                 case MAP:
                     @SuppressWarnings("unchecked")
@@ -526,7 +520,7 @@ public class AnnotationInfo
 
         for (UsermetaMethod um : usermetaMethods)
         {
-            switch(um.getMethodType())
+            switch (um.getMethodType())
             {
                 case MAP_GETTER:
                     @SuppressWarnings("unchecked")
@@ -557,14 +551,14 @@ public class AnnotationInfo
      * Populates an @RiakUsermeta annotated domain object with the User metadata.
      * @param <T>
      * @param userMetadata
-     * @param obj 
+     * @param obj
      */
     public <T> void setUsermetaData(RiakUserMetadata userMetadata, T obj)
     {
         Field mapField = null;
         for (UsermetaField uf : usermetaFields)
         {
-            switch(uf.getFieldType())
+            switch (uf.getFieldType())
             {
                 case STRING:
                     if (userMetadata.containsKey(uf.getUsermetaDataKey()))
@@ -584,7 +578,7 @@ public class AnnotationInfo
         Method mapSetter = null;
         for (UsermetaMethod um : usermetaMethods)
         {
-            switch(um.getMethodType())
+            switch (um.getMethodType())
             {
                 case STRING_SETTER:
                     if (userMetadata.containsKey(um.getUsermetaDataKey()))
@@ -601,15 +595,14 @@ public class AnnotationInfo
             }
         }
 
-        
         if (mapSetter != null || mapField != null)
         {
-            Map<String,String> mapCopy = new HashMap<String,String>(userMetadata.size());
+            Map<String,String> mapCopy = new HashMap<>(userMetadata.size());
             for (Map.Entry<BinaryValue,BinaryValue> entry : userMetadata.getUserMetadata())
             {
                 mapCopy.put(entry.getKey().toString(), entry.getValue().toString());
             }
-            
+
             if (mapSetter != null)
             {
                 setMethodValue(mapSetter, obj, mapCopy);
@@ -634,7 +627,7 @@ public class AnnotationInfo
         for (RiakIndexField f : indexFields)
         {
             final Object val = getFieldValue(f.getField(), obj);
-            switch(f.getFieldType())
+            switch (f.getFieldType())
             {
                 case SET_LONG:
                 case LONG:
@@ -707,13 +700,12 @@ public class AnnotationInfo
                 default:
                     break;
             }
-            
         }
 
         for (RiakIndexMethod m : indexMethods)
         {
             Object val;
-            
+
             switch (m.getMethodType())
             {
                 case SET_LONG_GETTER:
@@ -805,7 +797,7 @@ public class AnnotationInfo
         for (RiakIndexField f : indexFields)
         {
             Set<?> val = null;
-            switch(f.getFieldType())
+            switch (f.getFieldType())
             {
                 case SET_LONG:
                 case LONG:
@@ -827,7 +819,7 @@ public class AnnotationInfo
                     IndexType iType = IndexType.typeFromFullname(f.getIndexName());
                     RawIndex rawIndex = indexes.getIndex((RawIndex.named(f.getIndexName(), iType)));
                     // Convert from BinaryValue to bytes
-                    Set<byte[]> byteSet = new HashSet<byte[]>();
+                    Set<byte[]> byteSet = new HashSet<>();
                     for (BinaryValue bv : rawIndex.values())
                     {
                         byteSet.add(bv.unsafeGetValue());
@@ -837,18 +829,18 @@ public class AnnotationInfo
                 default:
                     break;
             }
-            
+
             if (val != null)
             {
-                if (f.getFieldType() == RiakIndexField.FieldType.LONG || 
+                if (f.getFieldType() == RiakIndexField.FieldType.LONG ||
                       f.getFieldType() == RiakIndexField.FieldType.STRING ||
                       f.getFieldType() == RiakIndexField.FieldType.BIG_INT ||
-                      f.getFieldType() == RiakIndexField.FieldType.RAW) 
+                      f.getFieldType() == RiakIndexField.FieldType.RAW)
                 {
                     if (!val.isEmpty())
                     {
                         setFieldValue(f.getField(), obj, val.iterator().next()); // take the first value
-                    } 
+                    }
                 }
                 else
                 {
@@ -860,8 +852,8 @@ public class AnnotationInfo
         for (RiakIndexMethod m : indexMethods)
         {
             Set<?> val = null;
-            
-            switch(m.getMethodType())
+
+            switch (m.getMethodType())
             {
                 case SET_LONG_SETTER:
                 case LONG_SETTER:
@@ -883,7 +875,7 @@ public class AnnotationInfo
                     IndexType iType = IndexType.typeFromFullname(m.getIndexName());
                     RawIndex rawIndex = indexes.getIndex(RawIndex.named(m.getIndexName(), iType));
                     // Convert from BinaryValue to bytes
-                    Set<byte[]> byteSet = new HashSet<byte[]>();
+                    Set<byte[]> byteSet = new HashSet<>();
                     for (BinaryValue bv : rawIndex.values())
                     {
                         byteSet.add(bv.unsafeGetValue());
@@ -893,24 +885,23 @@ public class AnnotationInfo
                 default:
                     break;
             }
-            
+
             if (val != null)
             {
                 if (m.getMethodType() == RiakIndexMethod.MethodType.LONG_SETTER ||
                       m.getMethodType() == RiakIndexMethod.MethodType.STRING_SETTER ||
                       m.getMethodType() == RiakIndexMethod.MethodType.BIG_INT_SETTER ||
-                      m.getMethodType() == RiakIndexMethod.MethodType.RAW_SETTER) 
+                      m.getMethodType() == RiakIndexMethod.MethodType.RAW_SETTER)
                 {
                     if (!val.isEmpty())
                     {
                         setMethodValue(m.getMethod(), obj, val.iterator().next()); // take the first value
-                    } 
+                    }
                 }
                 else
                 {
-                    setMethodValue(m.getMethod(), obj, val); 
+                    setMethodValue(m.getMethod(), obj, val);
                 }
-
             }
         }
     }
@@ -927,7 +918,7 @@ public class AnnotationInfo
         {
             o = getFieldValue(riakLinksField, obj);
         }
-        
+
         if (o != null)
         {
             container.addLinks((Collection<RiakLink>) o);
@@ -946,12 +937,10 @@ public class AnnotationInfo
         {
             setFieldValue(riakLinksField, obj, links.getLinks());
         }
-        
     }
 
     public static class Builder
     {
-
         private Field riakKeyField;
         private Method riakKeySetter;
         private Method riakKeyGetter;
@@ -981,7 +970,6 @@ public class AnnotationInfo
         private final List<UsermetaMethod> usermetaMethods;
         private final List<RiakIndexField> indexFields;
         private final List<RiakIndexMethod> indexMethods;
-        
 
         /**
          * Constructs a builder for a new AnnotationInfo
@@ -990,12 +978,11 @@ public class AnnotationInfo
         {
         }
 
-        
         {
-            usermetaFields = new LinkedList<UsermetaField>();
-            usermetaMethods = new LinkedList<UsermetaMethod>();
-            indexFields = new LinkedList<RiakIndexField>();
-            indexMethods = new LinkedList<RiakIndexMethod>();
+            usermetaFields = new LinkedList<>();
+            usermetaMethods = new LinkedList<>();
+            indexFields = new LinkedList<>();
+            indexMethods = new LinkedList<>();
         }
 
         /**
@@ -1184,7 +1171,7 @@ public class AnnotationInfo
             this.riakTombstoneGetter = ClassUtil.checkAndFixAccess(m);
             return this;
         }
-        
+
         public Builder withRiakContentTypeField(Field f)
         {
             validateContentTypeField(f);
@@ -1198,85 +1185,84 @@ public class AnnotationInfo
             this.riakContentTypeSetter = ClassUtil.checkAndFixAccess(m);
             return this;
         }
-        
+
         public Builder withRiakContentTypeGetter(Method m)
         {
             validateContentTypeMethod(m);
             this.riakContentTypeGetter = ClassUtil.checkAndFixAccess(m);
             return this;
         }
-        
+
         public Builder withRiakLastModifiedField(Field f)
         {
             validateLastModifiedField(f);
             this.riakLastModifiedField = ClassUtil.checkAndFixAccess(f);
             return this;
         }
-        
+
         public Builder withRiakLastModifiedSetter(Method m)
         {
             validateLastModifiedMethod(m);
             this.riakLastModified = ClassUtil.checkAndFixAccess(m);
             return this;
         }
-        
+
         public Builder withRiakVTagField(Field f)
         {
             validateVTagField(f);
             this.riakVTagField = ClassUtil.checkAndFixAccess(f);
             return this;
         }
-        
+
         public Builder withRiakVTagSetter(Method m)
         {
             validateVTagMethod(m);
             this.riakVTagSetter = ClassUtil.checkAndFixAccess(m);
             return this;
         }
-        
+
         public Builder withRiakBucketNameField(Field f)
         {
             validateStringOrByteField(f, "@RiakBucketName");
             this.riakBucketNameField = ClassUtil.checkAndFixAccess(f);
             return this;
         }
-        
+
         public Builder withRiakBucketNameSetter(Method m)
         {
             validateStringOrByteMethod(m, "@RiakBucketName");
             this.riakBucketNameSetter = ClassUtil.checkAndFixAccess(m);
             return this;
         }
-        
+
         public Builder withRiakBucketNameGetter(Method m)
         {
-            validateStringOrByteMethod(m, "@RiakBucketName");            
+            validateStringOrByteMethod(m, "@RiakBucketName");
             this.riakBucketNameGetter = ClassUtil.checkAndFixAccess(m);
             return this;
         }
-        
+
         public Builder withRiakBucketTypeField(Field f)
         {
             validateStringOrByteField(f, "@RiakBucketType");
             this.riakBucketTypeField = ClassUtil.checkAndFixAccess(f);
             return this;
         }
-        
+
         public Builder withRiakBucketTypeSetter(Method m)
         {
             validateStringOrByteMethod(m, "@RiakBucketType");
             this.riakBucketTypeSetter = ClassUtil.checkAndFixAccess(m);
             return this;
         }
-        
+
         public Builder withRiakBucketTypeGetter(Method m)
         {
             validateStringOrByteMethod(m, "@RiakBucketType");
             this.riakBucketTypeGetter = ClassUtil.checkAndFixAccess(m);
             return this;
         }
-        
-        
+
         public AnnotationInfo build()
         {
             return new AnnotationInfo(this);
@@ -1284,7 +1270,6 @@ public class AnnotationInfo
 
         private void validateRiakLinksField(Field riakLinksField)
         {
-
             if (Collection.class.isAssignableFrom(riakLinksField.getType()))
             {
                 Type t = riakLinksField.getGenericType();
@@ -1293,7 +1278,6 @@ public class AnnotationInfo
                     ParameterizedType type = (ParameterizedType) t;
                     if (type.getRawType().equals(Collection.class))
                     {
-
                         Type[] genericParams = type.getActualTypeArguments();
                         if (genericParams.length == 1 && genericParams[0].equals(RiakLink.class))
                         {
@@ -1348,7 +1332,6 @@ public class AnnotationInfo
                     }
                 }
                 throw new IllegalArgumentException("@RiakLinks getter must return Collection<RiakLink>");
-
             }
         }
 
@@ -1382,7 +1365,6 @@ public class AnnotationInfo
                     throw new IllegalArgumentException("@RiakVClock getter must return VClock or byte[]");
                 }
             }
-
         }
 
         private void validateTombstoneField(Field f)
@@ -1412,7 +1394,7 @@ public class AnnotationInfo
                 }
             }
         }
-        
+
         private void validateContentTypeField(Field f)
         {
             if (!f.getType().equals(String.class))
@@ -1420,11 +1402,11 @@ public class AnnotationInfo
                 throw new IllegalArgumentException("@RiakContentType field must be a String.");
             }
         }
-        
+
         private void validateContentTypeMethod(Method m)
         {
             if (m.getParameterTypes().length == 1)
-            { 
+            {
                 if (!String.class.equals(m.getParameterTypes()[0]))
                 {
                     throw new IllegalArgumentException("@RiakContentType setter must take a String.");
@@ -1438,7 +1420,7 @@ public class AnnotationInfo
                 }
             }
         }
-        
+
         private void validateLastModifiedField(Field f)
         {
             if (!f.getType().equals(Long.class) && !f.getType().equals(long.class))
@@ -1446,7 +1428,7 @@ public class AnnotationInfo
                 throw new IllegalArgumentException("@RiakLastModified field must be a Long or long.");
             }
         }
-        
+
         private void validateLastModifiedMethod(Method m)
         {
             if (m.getParameterTypes().length == 0)
@@ -1462,7 +1444,7 @@ public class AnnotationInfo
                 }
             }
         }
-        
+
         private void validateVTagField(Field f)
         {
             if (!f.getType().equals(String.class))
@@ -1470,7 +1452,7 @@ public class AnnotationInfo
                 throw new IllegalArgumentException("@RiakVTag field must be a String.");
             }
         }
-        
+
         private void validateVTagMethod(Method m)
         {
             if (m.getParameterTypes().length == 0)
@@ -1486,7 +1468,7 @@ public class AnnotationInfo
                 }
             }
         }
-        
+
         private void validateStringOrByteField(Field f, String annotation)
         {
             if (!(f.getType().isArray() && f.getType().getComponentType().equals(byte.class))
@@ -1495,7 +1477,7 @@ public class AnnotationInfo
                 throw new IllegalArgumentException(annotation + " field must be a String or byte[].");
             }
         }
-        
+
         private void validateStringOrByteMethod(Method m, String annotation)
         {
             if (m.getParameterTypes().length == 1)

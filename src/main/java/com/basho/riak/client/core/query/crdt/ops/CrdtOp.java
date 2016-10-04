@@ -17,5 +17,4 @@ package com.basho.riak.client.core.query.crdt.ops;
 
 public interface CrdtOp
 {
-    
 }

@@ -52,7 +52,7 @@ public class Store extends RiakCommand<Void,String>
     public static class Builder
     {
         private final String tableName;
-        // TODO: Think about using a flattening iterable here. 
+        // TODO: Think about using a flattening iterable here.
         private final List<Row> rows = new LinkedList<>();
 
         /**
@@ -89,7 +89,8 @@ public class Store extends RiakCommand<Void,String>
             else
             {
                 // A bit weird but have no other ideas
-                for (Row r : rows) {
+                for (Row r : rows)
+                {
                     this.rows.add(r);
                 }
             }
