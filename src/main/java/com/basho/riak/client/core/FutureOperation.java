@@ -215,7 +215,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         processBatchMessage(decodedMessage);
     }
 
-    private void processBatchMessage(U decodedMessage)
+    protected void processBatchMessage(U decodedMessage)
     {
         this.rawResponses.add(decodedMessage);
     }
