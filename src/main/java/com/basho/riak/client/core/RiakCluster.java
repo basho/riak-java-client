@@ -221,6 +221,17 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
 
     public <V,S> RiakFuture<V,S> execute(FutureOperation<V, ?, S> operation)
     {
+        return executeFutureOperation(operation);
+    }
+
+    public <V, S> StreamingRiakFuture<V,S> execute(StreamingFutureOperation<V, ?, S> operation)
+    {
+        executeFutureOperation(operation);
+        return operation;
+    }
+
+    private <V, S> RiakFuture<V, S> executeFutureOperation(FutureOperation<V, ?, S> operation)
+    {
         stateCheck(State.RUNNING, State.QUEUING);
         operation.setRetrier(this, executionAttempts);
         inFlightCount.incrementAndGet();
