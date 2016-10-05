@@ -16,8 +16,9 @@
 package com.basho.riak.client.core.operations.itest;
 
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.RiakFutureListener;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
+import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.operations.StoreOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -26,12 +27,12 @@ import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
@@ -42,136 +43,171 @@ import static org.junit.Assume.assumeTrue;
  */
 public class ITestListBucketsOperation extends ITestAutoCleanupBase
 {
+    private final String defaultBucketType = Namespace.DEFAULT_BUCKET_TYPE;
+    private final String namedBucketType = ITestBase.bucketType.toStringUtf8();
+
     @Test
     public void testListBucketsDefaultType() throws InterruptedException, ExecutionException
     {
-        testListBuckets(Namespace.DEFAULT_BUCKET_TYPE);
+        testBucketList(defaultBucketType, 1);
+    }
+
+    @Test
+    public void testListBucketsDefaultTypeStreaming() throws ExecutionException, InterruptedException
+    {
+        testBucketListStreaming(namedBucketType, 1);
     }
 
     @Test
     public void testListBucketsTestType() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
-        testListBuckets(bucketType.toString());
+        testBucketList(namedBucketType, 1);
     }
 
-    private void testListBuckets(String bucketType) throws InterruptedException, ExecutionException
+    @Test
+    public void testListBucketsTestTypeStreaming() throws InterruptedException, ExecutionException
     {
-        // Empty buckets do not show up
-        final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
-        final String value = "{\"value\":\"value\"}";
-
-        RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-        Location location = new Location(new Namespace(bucketType, bucketName.toString()), key);
-        StoreOperation storeOp =
-            new StoreOperation.Builder(location)
-                .withContent(rObj)
-                .build();
-
-        cluster.execute(storeOp);
-        storeOp.get();
-
-        ListBucketsOperation listOp = new ListBucketsOperation.Builder()
-                                        .withBucketType(BinaryValue.createFromUtf8(bucketType))
-                                        .build();
-        cluster.execute(listOp);
-        List<BinaryValue> bucketList = listOp.get().getBuckets();
-        assertTrue(bucketList.size() > 0);
-
-        boolean found = false;
-        for (BinaryValue baw : bucketList)
-        {
-            if (baw.toString().equals(bucketName.toString()))
-            {
-                found = true;
-            }
-        }
-
-        assertTrue(found);
+        assumeTrue(testBucketType);
+        testBucketListStreaming(namedBucketType, 1);
     }
 
     @Test
     public void testLargeBucketListDefaultType() throws InterruptedException, ExecutionException
     {
-        testLargeBucketList(Namespace.DEFAULT_BUCKET_TYPE);
+        testBucketList(defaultBucketType, 10);
+    }
+
+    @Test
+    public void testLargeBucketListDefaultTypeStreaming() throws InterruptedException, ExecutionException
+    {
+        assumeTrue(testBucketType);
+        testBucketListStreaming(defaultBucketType, 10);
     }
 
     @Test
     public void testLargeBucketListTestType() throws InterruptedException, ExecutionException
     {
         assumeTrue(testBucketType);
-        testLargeBucketList(bucketType.toString());
+        testBucketList(namedBucketType, 10);
     }
 
-    private void testLargeBucketList(String bucketType) throws InterruptedException, ExecutionException
+    @Test
+    public void testLargeBucketListTestTypeStreaming() throws InterruptedException, ExecutionException
     {
-        final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
-        final String value = "{\"value\":\"value\"}";
-        final Semaphore semaphore = new Semaphore(10);
-        final CountDownLatch latch = new CountDownLatch(1);
-        final int bucketCount = 10;
-        final List<BinaryValue> bucketNames = new ArrayList<>();
+        assumeTrue(testBucketType);
+        testBucketListStreaming(namedBucketType, 10);
+    }
 
-        RiakFutureListener<StoreOperation.Response, Location> listener =
-            new RiakFutureListener<StoreOperation.Response, Location>()
+
+    private void testBucketList(String bucketType, int bucketCount) throws InterruptedException, ExecutionException
+    {
+        final List<BinaryValue> expectedBuckets = storeObjects(bucketType, bucketCount);
+
+        List<BinaryValue> actualBucketNames = getAllBucketListResults(bucketType);
+
+        assertContainsAll(expectedBuckets, actualBucketNames);
+
+        resetAndEmptyBuckets(bucketType, expectedBuckets);
+    }
+
+    private void testBucketListStreaming(String bucketType, int bucketCount) throws InterruptedException, ExecutionException
+    {
+        final List<BinaryValue> expectedBuckets = storeObjects(bucketType, bucketCount);
+        final ListBucketsOperation listOp = new ListBucketsOperation.Builder()
+                .withBucketType(BinaryValue.createFromUtf8(bucketType))
+                .streamResults(true)
+                .build();
+
+        final StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> execute = cluster.execute(listOp);
+        final BlockingQueue<ListBucketsOperation.Response> resultsQueue = execute.getResultsQueue();
+
+        List<BinaryValue> actualBuckets = new LinkedList<>();
+        int timeouts = 0;
+
+        while(!execute.isDone())
+        {
+            final ListBucketsOperation.Response response = resultsQueue.poll(5, TimeUnit.MILLISECONDS);
+
+            if(response != null)
             {
-                private final AtomicInteger received = new AtomicInteger();
+                actualBuckets.addAll(response.getBuckets());
+                continue;
+            }
 
-                @Override
-                public void handle(RiakFuture<StoreOperation.Response, Location> f)
-                {
-                    try
-                    {
-                        f.get();
-                    }
-                    catch (InterruptedException | ExecutionException ex)
-                    {
-                        throw new RuntimeException(ex);
-                    }
-
-                    semaphore.release();
-                    received.incrementAndGet();
-                    if (received.intValue() == bucketCount)
-                    {
-                        latch.countDown();
-                    }
-                }
-            };
-
-        for (int i = 0; i < bucketCount; i++)
-        {
-            String testBucketName = bucketName.toString() + i;
-            bucketNames.add(BinaryValue.create(testBucketName));
-
-            Namespace ns = new Namespace(bucketType, testBucketName);
-            RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
-            Location location = new Location(ns, key);
-            StoreOperation storeOp =
-                new StoreOperation.Builder(location)
-                    .withContent(rObj)
-                    .build();
-            storeOp.addListener(listener);
-            semaphore.acquire();
-            cluster.execute(storeOp);
+            timeouts++;
+            if(timeouts == 10)
+            {
+                break;
+            }
         }
 
-        latch.await(2, TimeUnit.MINUTES);
+        execute.await();
 
-        ListBucketsOperation listOp = new ListBucketsOperation.Builder()
-                                        .withBucketType(BinaryValue.createFromUtf8(bucketType))
-                                        .build();
-        cluster.execute(listOp);
-        List<BinaryValue> bucketList = listOp.get().getBuckets();
+        // Grab any last buckets that came in on the last message
+        actualBuckets.addAll(resultsQueue.stream()
+                                         .map(ListBucketsOperation.Response::getBuckets)
+                                         .flatMap(List::stream)
+                                         .collect(Collectors.toList()));
+        resultsQueue.clear();
 
-        for (BinaryValue name : bucketNames)
+        assertTrue(resultsQueue.isEmpty());
+
+        assertContainsAll(expectedBuckets, actualBuckets);
+
+        resetAndEmptyBuckets(bucketType, expectedBuckets);
+    }
+
+    private void assertContainsAll(List<BinaryValue> expectedSet, List<BinaryValue> actualSet)
+    {
+        for (BinaryValue name : expectedSet)
         {
-            assertTrue(bucketList.contains(name));
+            assertTrue(actualSet.contains(name));
         }
+    }
 
-        for (BinaryValue name : bucketNames)
+    private void resetAndEmptyBuckets(String bucketType, List<BinaryValue> expectedBucketNames)
+            throws InterruptedException, ExecutionException
+    {
+        for (BinaryValue name : expectedBucketNames)
         {
             Namespace ns = new Namespace(bucketType, name.toString());
             resetAndEmptyBucket(ns);
         }
     }
+
+    private List<BinaryValue> getAllBucketListResults(String bucketType) throws InterruptedException, ExecutionException
+    {
+        final ListBucketsOperation listOp = new ListBucketsOperation.Builder()
+                .withBucketType(BinaryValue.createFromUtf8(bucketType))
+                .build();
+        cluster.execute(listOp);
+        return listOp.get().getBuckets();
+    }
+
+    private List<BinaryValue> storeObjects(String bucketType, int bucketCount) throws InterruptedException
+    {
+        final List<BinaryValue> bucketNames = new ArrayList<>();
+        final BinaryValue key = BinaryValue.unsafeCreate("my_key".getBytes());
+        final String value = "{\"value\":\"value\"}";
+        final RiakObject rObj = new RiakObject().setValue(BinaryValue.create(value));
+
+        for (int i = 0; i < bucketCount; i++)
+        {
+            final String testBucketName = testName.getMethodName() + "_" + i;
+            bucketNames.add(BinaryValue.create(testBucketName));
+
+            final Location location = new Location(new Namespace(bucketType, testBucketName), key);
+            final StoreOperation storeOp = new StoreOperation.Builder(location)
+                                                       .withContent(rObj)
+                                                       .build();
+
+            final RiakFuture<StoreOperation.Response, Location> execute = cluster.execute(storeOp);
+            execute.await();
+            assertTrue(execute.isSuccess());
+        }
+
+        return bucketNames;
+    }
+
 }

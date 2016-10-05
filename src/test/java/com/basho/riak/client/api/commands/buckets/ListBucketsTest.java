@@ -1,9 +1,7 @@
 package com.basho.riak.client.api.commands.buckets;
 
 import com.basho.riak.client.api.RiakClient;
-import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.*;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -33,7 +31,7 @@ import static org.mockito.Mockito.when;
 public class ListBucketsTest
 {
     @Mock RiakCluster mockCluster;
-    @Mock RiakFuture mockFuture;
+    @Mock StreamingRiakFuture mockFuture;
     @Mock ListBucketsOperation.Response mockResponse;
     RiakClient client;
 
@@ -49,7 +47,7 @@ public class ListBucketsTest
         when(mockFuture.isCancelled()).thenReturn(false);
         when(mockFuture.isDone()).thenReturn(true);
         when(mockFuture.isSuccess()).thenReturn(true);
-        when(mockCluster.<ListBucketsOperation, Location>execute(any(FutureOperation.class))).thenReturn(mockFuture);
+        when(mockCluster.<ListBucketsOperation, Location>execute(any(StreamingFutureOperation.class))).thenReturn(mockFuture);
         client = new RiakClient(mockCluster);
     }
 

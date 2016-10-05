@@ -15,27 +15,34 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.StreamingFutureOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.Response, RiakKvPB.RpbListBucketsResp, BinaryValue>
+public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOperation.Response,
+                                                                   RiakKvPB.RpbListBucketsResp,
+                                                                   BinaryValue>
 {
     private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
     private final BinaryValue bucketType;
+    private final BlockingQueue<Response> responseQueue;
 
     private ListBucketsOperation(Builder builder)
     {
+        super(builder.streamResults);
         this.reqBuilder = builder.reqBuilder;
         this.bucketType = builder.bucketType;
+        this.responseQueue = new LinkedBlockingQueue<>();
     }
 
     @Override
@@ -50,12 +57,28 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
         List<BinaryValue> buckets = new ArrayList<>(rawResponse.size());
         for (RiakKvPB.RpbListBucketsResp resp : rawResponse)
         {
-            for (ByteString bucket : resp.getBucketsList())
-            {
-                buckets.add(BinaryValue.unsafeCreate(bucket.toByteArray()));
-            }
+            buckets.addAll(convertSingleResponse(resp));
         }
+
         return new Response(bucketType, buckets);
+    }
+
+    private List<BinaryValue> convertSingleResponse(RiakKvPB.RpbListBucketsResp resp)
+    {
+        List<BinaryValue> buckets = new ArrayList<>(resp.getBucketsCount());
+
+        for (ByteString bucket : resp.getBucketsList())
+        {
+            buckets.add(BinaryValue.unsafeCreate(bucket.toByteArray()));
+        }
+        return buckets;
+    }
+
+    @Override
+    protected void processStreamingChunk(RiakKvPB.RpbListBucketsResp rawResponseChunk)
+    {
+        final List<BinaryValue> buckets = convertSingleResponse(rawResponseChunk);
+        this.responseQueue.add(new Response(bucketType, buckets));
     }
 
     @Override
@@ -84,10 +107,17 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
         return bucketType;
     }
 
+    @Override
+    public BlockingQueue<Response> getResultsQueue()
+    {
+        return this.responseQueue;
+    }
+
     public static class Builder
     {
         private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder =
             RiakKvPB.RpbListBucketsReq.newBuilder().setStream(true);
+        private boolean streamResults = false;
         private BinaryValue bucketType = BinaryValue.create(Namespace.DEFAULT_BUCKET_TYPE);
 
         /**
@@ -98,6 +128,7 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
 
         /**
          * Provide a timeout for this operation.
+         *
          * @param timeout value in milliseconds
          * @return a reference to this object
          */
@@ -112,11 +143,12 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
         }
 
         /**
-        * Set the bucket type.
-        * If unset {@link Namespace#DEFAULT_BUCKET_TYPE} is used.
-        * @param bucketType the bucket type to use
-        * @return A reference to this object.
-        */
+         * Set the bucket type.
+         * If unset {@link Namespace#DEFAULT_BUCKET_TYPE} is used.
+         *
+         * @param bucketType the bucket type to use
+         * @return A reference to this object.
+         */
         public Builder withBucketType(BinaryValue bucketType)
         {
             if (null == bucketType || bucketType.length() == 0)
@@ -125,6 +157,24 @@ public class ListBucketsOperation extends FutureOperation<ListBucketsOperation.R
             }
             reqBuilder.setType(ByteString.copyFrom(bucketType.unsafeGetValue()));
             this.bucketType = bucketType;
+            return this;
+        }
+
+        /**
+         * Set the streamResults flag.
+         *
+         * If unset or false, the entire result set will be available through the {@link ListBucketsOperation#get()}
+         * method once the operation is complete.
+         *
+         * If set to true, results will be pushed to the queue available through the {@link ListBucketsOperation#getResultsQueue()}
+         * method as soon as they are available.
+         *
+         * @param streamResults whether to stream results to {@link ListBucketsOperation#get()}(false), or {@link ListBucketsOperation#getResultsQueue()}(true)
+         * @return A reference to this object.
+         */
+        public Builder streamResults(boolean streamResults)
+        {
+            this.streamResults = streamResults;
             return this;
         }
 
