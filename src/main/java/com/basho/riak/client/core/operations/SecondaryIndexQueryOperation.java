@@ -29,8 +29,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.TransferQueue;
 
 /**
  *
@@ -44,8 +44,7 @@ public class SecondaryIndexQueryOperation
 {
     private final RiakKvPB.RpbIndexReq pbReq;
     private final Query query;
-    private final BlockingQueue<Response> responseQueue;
-
+    private final TransferQueue<Response> responseQueue;
 
     private SecondaryIndexQueryOperation(Builder builder)
     {
@@ -57,7 +56,7 @@ public class SecondaryIndexQueryOperation
         builder.pbReqBuilder.setStream(true);
         this.query = builder.query;
         this.pbReq = builder.pbReqBuilder.build();
-        this.responseQueue = new LinkedBlockingQueue<>();
+        this.responseQueue = new LinkedTransferQueue<>();
     }
 
     @Override
@@ -258,7 +257,7 @@ public class SecondaryIndexQueryOperation
     }
 
     @Override
-    public BlockingQueue<Response> getResultsQueue()
+    public TransferQueue<Response> getResultsQueue()
     {
         return this.responseQueue;
     }

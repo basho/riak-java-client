@@ -16,6 +16,7 @@
 package com.basho.riak.client.core;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TransferQueue;
 
 /**
  * The result of an asynchronous streaming (chunked) Riak operation.
@@ -33,5 +34,5 @@ public interface StreamingRiakFuture<ResultType, QueryInfoType>
      * An Queue that provides the stream of results as they return from Riak.
      * @return An Queue.
      */
-    BlockingQueue<ResultType> getResultsQueue();
+    TransferQueue<ResultType> getResultsQueue();
 }

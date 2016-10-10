@@ -26,8 +26,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.TransferQueue;
 
 public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOperation.Response,
                                                                    RiakKvPB.RpbListBucketsResp,
@@ -35,14 +35,14 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
 {
     private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
     private final BinaryValue bucketType;
-    private final BlockingQueue<Response> responseQueue;
+    private final TransferQueue<Response> responseQueue;
 
     private ListBucketsOperation(Builder builder)
     {
         super(builder.streamResults);
         this.reqBuilder = builder.reqBuilder;
         this.bucketType = builder.bucketType;
-        this.responseQueue = new LinkedBlockingQueue<>();
+        this.responseQueue = new LinkedTransferQueue<>();
     }
 
     @Override
@@ -108,7 +108,7 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
     }
 
     @Override
-    public BlockingQueue<Response> getResultsQueue()
+    public TransferQueue<Response> getResultsQueue()
     {
         return this.responseQueue;
     }
