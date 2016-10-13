@@ -1,7 +1,7 @@
 Riak Java Client
 ==================
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.basho.riak/riak-client/badge.png)](https://maven-badges.herokuapp.com/com.basho.riak/riak-client)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.basho.riak/riak-client/badge.png)](https://mvnrepository.com/artifact/com.basho.riak/riak-client)
 
 
 The **Riak Java Client** enables communication with [Riak](http://basho.com/riak/), an open source, distributed database that focuses on high availability, horizontal scalability, and *predictable*
