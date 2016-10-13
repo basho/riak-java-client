@@ -403,6 +403,28 @@ public class RiakClient
     }
 
     /**
+     * Execute a StreamableRiakCommand asynchronously, and stream the results back before the command is complete.
+     * <p>
+     * Calling this method  causes the client to execute the provided StreamableRiakCommand
+     * asynchronously. It will immediately return a RiakFuture that contains an immediately available result that data
+     * will be streamed to. The RiakFuture will also keep track of the overall operation's progress with the
+     * {@see RiakFuture#isDone}, etc methods.
+     *
+     * @param <I> StreamableRiakCommand's immediate return type, available before the command/operation is complete.
+     * @param <S> The RiakCommand's query info type.
+     * @param command The RiakCommand to execute.
+     * @param timeoutMS The loading timeout in milliseconds for each result chunk.
+     *                  If the timeout is reached a {@see null} will be returned from the result's iterator,
+     *                  instead of blocking indefinitely.
+     * @return a RiakFuture for the operation
+     * @see RiakFuture
+     */
+    public <I,S> RiakFuture<I,S> executeAsyncStreaming(StreamableRiakCommand<I, ?, S> command, int timeoutMS)
+    {
+        return command.executeAsyncStreaming(cluster, timeoutMS);
+    }
+
+    /**
      * Shut down the client and the underlying RiakCluster.
      * <p>
      * The underlying client core (RiakCluster) uses a number of threads as

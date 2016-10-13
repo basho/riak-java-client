@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
@@ -169,7 +170,7 @@ public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperatio
         }
     }
 
-    public static class Response
+    public static class Response implements Iterable<BinaryValue>
     {
         private final List<BinaryValue> keys;
         private Response(Builder builder)
@@ -180,6 +181,12 @@ public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperatio
         public List<BinaryValue> getKeys()
         {
             return keys;
+        }
+
+        @Override
+        public Iterator<BinaryValue> iterator()
+        {
+            return keys.iterator();
         }
 
         static class Builder

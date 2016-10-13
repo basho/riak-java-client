@@ -15,10 +15,13 @@
  */
 package com.basho.riak.client.api.commands.buckets;
 
-import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.commands.ChunkedQueueIterator;
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
+import com.basho.riak.client.api.StreamableRiakCommand;
+import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -42,7 +45,7 @@ import java.util.List;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryValue>
+public final class ListBuckets extends StreamableRiakCommand<ListBuckets.StreamingResponse, ListBuckets.Response, BinaryValue>
 {
     private final int timeout;
     private final BinaryValue type;
@@ -57,7 +60,7 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
     protected RiakFuture<Response, BinaryValue> executeAsync(RiakCluster cluster)
     {
         RiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture =
-            cluster.execute(buildCoreOperation());
+            cluster.execute(buildCoreOperation(false));
 
         CoreFutureAdapter<ListBuckets.Response, BinaryValue, ListBucketsOperation.Response, BinaryValue> future =
             new CoreFutureAdapter<ListBuckets.Response, BinaryValue, ListBucketsOperation.Response, BinaryValue>(coreFuture)
@@ -78,7 +81,22 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         return future;
     }
 
-    private ListBucketsOperation buildCoreOperation()
+    protected RiakFuture<StreamingResponse, BinaryValue> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    {
+        StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture =
+                cluster.execute(buildCoreOperation(true));
+
+        final StreamingResponse streamingResponse = new StreamingResponse(type, timeout, coreFuture);
+
+        ImmediateCoreFutureAdapter<StreamingResponse, BinaryValue, ListBucketsOperation.Response> future =
+                new ImmediateCoreFutureAdapter<StreamingResponse, BinaryValue, ListBucketsOperation.Response>
+                        (coreFuture, streamingResponse) {};
+
+        coreFuture.addListener(future);
+        return future;
+    }
+
+    private ListBucketsOperation buildCoreOperation(boolean streamResults)
     {
         ListBucketsOperation.Builder builder = new ListBucketsOperation.Builder();
         if (timeout > 0)
@@ -90,6 +108,8 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         {
             builder.withBucketType(type);
         }
+
+        builder.streamResults(streamResults);
 
         return builder.build();
     }
@@ -123,6 +143,28 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         public Iterator<Namespace> iterator()
         {
             return new Itr(buckets.iterator(), type);
+        }
+    }
+
+    public static class StreamingResponse extends Response
+    {
+        private final ChunkedQueueIterator<Namespace, ListBucketsOperation.Response, BinaryValue> chunkedQueueIterator;
+
+        StreamingResponse(BinaryValue type,
+                          int pollTimeout,
+                          StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture)
+        {
+            super(type, null);
+            chunkedQueueIterator = new ChunkedQueueIterator<>(coreFuture,
+                                                              pollTimeout,
+                                                              (bucketName) -> new Namespace(super.type, bucketName),
+                                                              (response) -> response.getBuckets().iterator());
+        }
+
+        @Override
+        public Iterator<Namespace> iterator()
+        {
+            return chunkedQueueIterator;
         }
     }
 
@@ -207,4 +249,5 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
             return new ListBuckets(this);
         }
     }
+
 }

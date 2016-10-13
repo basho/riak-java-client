@@ -25,6 +25,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
@@ -184,7 +185,7 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
         }
     }
 
-    public static class Response
+    public static class Response implements Iterable<BinaryValue>
     {
         private final BinaryValue bucketType;
         private final List<BinaryValue> buckets;
@@ -203,6 +204,12 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
         public List<BinaryValue> getBuckets()
         {
             return buckets;
+        }
+
+        @Override
+        public Iterator<BinaryValue> iterator()
+        {
+            return getBuckets().iterator();
         }
     }
 }

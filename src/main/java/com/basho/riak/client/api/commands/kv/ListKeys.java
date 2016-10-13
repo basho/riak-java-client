@@ -15,9 +15,12 @@
  */
 package com.basho.riak.client.api.commands.kv;
 
-import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.StreamableRiakCommand;
+import com.basho.riak.client.api.commands.ChunkedQueueIterator;
+import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.query.Location;
@@ -50,7 +53,7 @@ import java.util.List;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
+public final class ListKeys extends StreamableRiakCommand<ListKeys.StreamingResponse, ListKeys.Response, Namespace>
 {
     private final Namespace namespace;
     private final int timeout;
@@ -65,7 +68,7 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
     protected final RiakFuture<ListKeys.Response, Namespace> executeAsync(RiakCluster cluster)
     {
         RiakFuture<ListKeysOperation.Response, Namespace> coreFuture =
-            cluster.execute(buildCoreOperation());
+            cluster.execute(buildCoreOperation(false));
 
         CoreFutureAdapter<ListKeys.Response, Namespace, ListKeysOperation.Response, Namespace> future =
             new CoreFutureAdapter<ListKeys.Response, Namespace, ListKeysOperation.Response, Namespace>(coreFuture)
@@ -86,7 +89,23 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
         return future;
     }
 
-    private ListKeysOperation buildCoreOperation()
+    @Override
+    protected RiakFuture<StreamingResponse, Namespace> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    {
+        StreamingRiakFuture<ListKeysOperation.Response, Namespace> coreFuture =
+                cluster.execute(buildCoreOperation(true));
+
+        final ListKeys.StreamingResponse streamingResponse = new ListKeys.StreamingResponse(namespace, timeout, coreFuture);
+
+        ImmediateCoreFutureAdapter<StreamingResponse, Namespace, ListKeysOperation.Response> future =
+                new ImmediateCoreFutureAdapter<StreamingResponse, Namespace, ListKeysOperation.Response>(
+                        coreFuture, streamingResponse) {};
+
+        coreFuture.addListener(future);
+        return future;
+    }
+
+    private ListKeysOperation buildCoreOperation(boolean streamResults)
     {
         ListKeysOperation.Builder builder = new ListKeysOperation.Builder(namespace);
 
@@ -94,6 +113,8 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
         {
             builder.withTimeout(timeout);
         }
+
+        builder.streamResults(streamResults);
 
         return builder.build();
     }
@@ -145,6 +166,29 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
         {
             iterator.remove();
         }
+    }
+
+    public static class StreamingResponse extends Response
+    {
+        private final ChunkedQueueIterator<Location, ListKeysOperation.Response, BinaryValue> chunkedQueueIterator;
+
+        StreamingResponse(Namespace namespace,
+                          int pollTimeout,
+                          StreamingRiakFuture<ListKeysOperation.Response, Namespace> coreFuture)
+        {
+            super(namespace, null);
+            chunkedQueueIterator = new ChunkedQueueIterator<>(coreFuture,
+                                                              pollTimeout,
+                                                              (key) -> new Location(super.namespace, key),
+                                                              (nextChunk) -> nextChunk.getKeys().iterator());
+        }
+
+        @Override
+        public Iterator<Location> iterator()
+        {
+            return chunkedQueueIterator;
+        }
+
     }
 
     /**
