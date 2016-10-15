@@ -30,7 +30,7 @@ import java.util.concurrent.TimeoutException;
  * @param <S> The core query and converted query info type.
  * @param <T2> The converted response type.
  */
-public abstract class ImmediateCoreFutureAdapter<T2,S,T> extends CoreFutureAdapter<T2,S,T,S>
+public abstract class ImmediateCoreFutureAdapter<T2,S2,T,S> extends CoreFutureAdapter<T2,S2,T,S>
 {
     private final T2 immediateResponse;
 
@@ -62,8 +62,19 @@ public abstract class ImmediateCoreFutureAdapter<T2,S,T> extends CoreFutureAdapt
     protected T2 convertResponse(T unused) { return null; }
 
     @Override
-    protected S convertQueryInfo(S coreQueryInfo)
+    protected abstract S2 convertQueryInfo(S coreQueryInfo);
+
+    public static abstract class SameQueryInfo<T2,S,T> extends ImmediateCoreFutureAdapter<T2,S,T,S>
     {
-        return coreQueryInfo;
+        protected SameQueryInfo(RiakFuture<T, S> coreFuture, T2 immediateResponse)
+        {
+            super(coreFuture, immediateResponse);
+        }
+
+        @Override
+        protected S convertQueryInfo(S coreQueryInfo)
+        {
+            return coreQueryInfo;
+        }
     }
 }

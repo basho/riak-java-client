@@ -16,7 +16,7 @@
 package com.basho.riak.client.api.commands.kv;
 
 import com.basho.riak.client.api.StreamableRiakCommand;
-import com.basho.riak.client.api.commands.ChunkedQueueIterator;
+import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
@@ -97,8 +97,8 @@ public final class ListKeys extends StreamableRiakCommand<ListKeys.StreamingResp
 
         final ListKeys.StreamingResponse streamingResponse = new ListKeys.StreamingResponse(namespace, timeout, coreFuture);
 
-        ImmediateCoreFutureAdapter<StreamingResponse, Namespace, ListKeysOperation.Response> future =
-                new ImmediateCoreFutureAdapter<StreamingResponse, Namespace, ListKeysOperation.Response>(
+        ImmediateCoreFutureAdapter.SameQueryInfo<StreamingResponse, Namespace, ListKeysOperation.Response> future =
+                new ImmediateCoreFutureAdapter.SameQueryInfo<StreamingResponse, Namespace, ListKeysOperation.Response>(
                         coreFuture, streamingResponse) {};
 
         coreFuture.addListener(future);
@@ -170,23 +170,24 @@ public final class ListKeys extends StreamableRiakCommand<ListKeys.StreamingResp
 
     public static class StreamingResponse extends Response
     {
-        private final ChunkedQueueIterator<Location, ListKeysOperation.Response, BinaryValue> chunkedQueueIterator;
+        private final ChunkedResponseIterator<Location, ListKeysOperation.Response, BinaryValue>
+                chunkedResponseIterator;
 
         StreamingResponse(Namespace namespace,
                           int pollTimeout,
                           StreamingRiakFuture<ListKeysOperation.Response, Namespace> coreFuture)
         {
             super(namespace, null);
-            chunkedQueueIterator = new ChunkedQueueIterator<>(coreFuture,
-                                                              pollTimeout,
-                                                              (key) -> new Location(super.namespace, key),
-                                                              (nextChunk) -> nextChunk.getKeys().iterator());
+            chunkedResponseIterator = new ChunkedResponseIterator<>(coreFuture,
+                                                                    pollTimeout,
+                                                                    (key) -> new Location(namespace, key),
+                                                                    (nextChunk) -> nextChunk.getKeys().iterator());
         }
 
         @Override
         public Iterator<Location> iterator()
         {
-            return chunkedQueueIterator;
+            return chunkedResponseIterator;
         }
 
     }

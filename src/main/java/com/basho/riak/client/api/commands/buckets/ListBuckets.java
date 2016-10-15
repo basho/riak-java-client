@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.api.commands.buckets;
 
-import com.basho.riak.client.api.commands.ChunkedQueueIterator;
+import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
@@ -88,8 +88,8 @@ public final class ListBuckets extends StreamableRiakCommand<ListBuckets.Streami
 
         final StreamingResponse streamingResponse = new StreamingResponse(type, timeout, coreFuture);
 
-        ImmediateCoreFutureAdapter<StreamingResponse, BinaryValue, ListBucketsOperation.Response> future =
-                new ImmediateCoreFutureAdapter<StreamingResponse, BinaryValue, ListBucketsOperation.Response>
+        ImmediateCoreFutureAdapter.SameQueryInfo<StreamingResponse, BinaryValue, ListBucketsOperation.Response> future =
+                new ImmediateCoreFutureAdapter.SameQueryInfo<StreamingResponse, BinaryValue, ListBucketsOperation.Response>
                         (coreFuture, streamingResponse) {};
 
         coreFuture.addListener(future);
@@ -148,23 +148,24 @@ public final class ListBuckets extends StreamableRiakCommand<ListBuckets.Streami
 
     public static class StreamingResponse extends Response
     {
-        private final ChunkedQueueIterator<Namespace, ListBucketsOperation.Response, BinaryValue> chunkedQueueIterator;
+        private final ChunkedResponseIterator<Namespace, ListBucketsOperation.Response, BinaryValue>
+                chunkedResponseIterator;
 
         StreamingResponse(BinaryValue type,
                           int pollTimeout,
                           StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture)
         {
             super(type, null);
-            chunkedQueueIterator = new ChunkedQueueIterator<>(coreFuture,
-                                                              pollTimeout,
-                                                              (bucketName) -> new Namespace(super.type, bucketName),
-                                                              (response) -> response.getBuckets().iterator());
+            chunkedResponseIterator = new ChunkedResponseIterator<>(coreFuture,
+                                                                    pollTimeout,
+                                                                    (bucketName) -> new Namespace(type, bucketName),
+                                                                    (response) -> response.getBuckets().iterator());
         }
 
         @Override
         public Iterator<Namespace> iterator()
         {
-            return chunkedQueueIterator;
+            return chunkedResponseIterator;
         }
     }
 
