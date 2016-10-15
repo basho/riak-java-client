@@ -2,12 +2,11 @@ package com.basho.riak.client.core.query.timeseries;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Created by alex on 1/8/16.
@@ -34,6 +33,39 @@ public class TableDefinitionTest
         assertKeyCollectionsAreCorrect(bar);
     }
 
+    @Test
+    public void returnNullIfHasNoQuantumInfo()
+    {
+        final TableDefinition foo = new TableDefinition("Foo", GetIdealTable());
+        assertNull(foo.getQuantumDescription());
+    }
+
+    @Test
+    public void returnQuantumInfoAsExpected()
+    {
+        final FullColumnDescription quantumFld = new FullColumnDescription("quantum",
+                ColumnDescription.ColumnType.TIMESTAMP, false, 4,
+                new Quantum(15, TimeUnit.SECONDS));
+
+        final TableDefinition foo = new TableDefinition("Foo", GetIdealTableWith(quantumFld));
+        assertEquals(quantumFld, foo.getQuantumDescription());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void twoQuantumsThrowsAnError()
+    {
+        final FullColumnDescription quantumFld = new FullColumnDescription("quantum",
+                                                                           ColumnDescription.ColumnType.TIMESTAMP, false, 4,
+                                                                           new Quantum(15, TimeUnit.SECONDS));
+
+        final FullColumnDescription quantumFld2 = new FullColumnDescription("quantum2",
+                                                                           ColumnDescription.ColumnType.TIMESTAMP, false, 5,
+                                                                           new Quantum(15, TimeUnit.MINUTES));
+
+        final TableDefinition foo = new TableDefinition("Foo", GetIdealTableWith(quantumFld, quantumFld2));
+        assertEquals(quantumFld, foo.getQuantumDescription());
+    }
+
     private void assertKeyCollectionsAreCorrect(TableDefinition foo)
     {
         assertFullColumnDefinitionsMatch(GetProperKeyList(), new ArrayList<>(foo.getLocalKeyColumnDescriptions()));
@@ -50,6 +82,13 @@ public class TableDefinitionTest
             new FullColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE, true),
             new FullColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64, true),
             new FullColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN, false));
+    }
+
+    private static List<FullColumnDescription> GetIdealTableWith(FullColumnDescription... descriptions)
+    {
+        final List<FullColumnDescription> fds = new LinkedList<>(GetIdealTable());
+        fds.addAll( Arrays.asList(descriptions));
+        return fds;
     }
 
     private static List<FullColumnDescription> GetReverseTable()
