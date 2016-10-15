@@ -42,7 +42,7 @@ import java.util.List;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Response, IntIndexQuery>
+public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Response, IntIndexQuery, IntIndexQuery.Response>
 {
     private final IndexConverter<Long> converter;
 
@@ -86,6 +86,13 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
         IntQueryFuture future = new IntQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
+    }
+
+    @Override
+    protected RiakFuture<Response, IntIndexQuery> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    {
+        // TODO
+        return null;
     }
 
     protected final class IntQueryFuture

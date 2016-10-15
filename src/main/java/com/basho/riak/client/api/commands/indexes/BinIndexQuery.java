@@ -47,7 +47,7 @@ import java.util.List;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Response, BinIndexQuery>
+public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Response, BinIndexQuery, BinIndexQuery.Response>
 {
     private final Charset charset;
     private final IndexConverter<String> converter;
@@ -74,6 +74,13 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
         BinQueryFuture future = new BinQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
+    }
+
+    @Override
+    protected RiakFuture<Response, BinIndexQuery> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    {
+        // TODO
+        return null;
     }
 
     @Override

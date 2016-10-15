@@ -28,6 +28,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
@@ -731,7 +732,7 @@ public class SecondaryIndexQueryOperation
         }
     }
 
-    public static class Response
+    public static class Response implements Iterable<Response.Entry>
     {
         private final BinaryValue continuation;
         private final List<Response.Entry> entryList;
@@ -755,6 +756,12 @@ public class SecondaryIndexQueryOperation
         public List<Response.Entry> getEntryList()
         {
             return entryList;
+        }
+
+        @Override
+        public Iterator<Entry> iterator()
+        {
+            return getEntryList().iterator();
         }
 
         public static class Entry

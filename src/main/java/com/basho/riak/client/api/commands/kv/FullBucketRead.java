@@ -49,7 +49,7 @@ import java.util.List;
  * @author Sergey Galkin <sgalkin at basho dot com>
  * @see CoveragePlan
  */
-public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketRead.Response, FullBucketRead>
+public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketRead.Response, FullBucketRead, FullBucketRead.Response>
 {
     private final IndexConverter<BinaryValue> converter;
 
@@ -81,6 +81,13 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
         RawQueryFuture future = new RawQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
+    }
+
+    @Override
+    protected RiakFuture<Response, FullBucketRead> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    {
+        // TODO
+        return null;
     }
 
     protected final class RawQueryFuture

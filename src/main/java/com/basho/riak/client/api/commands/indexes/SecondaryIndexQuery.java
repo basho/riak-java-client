@@ -17,13 +17,17 @@
 package com.basho.riak.client.api.commands.indexes;
 
 import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.StreamableRiakCommand;
+import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -36,7 +40,7 @@ import java.util.List;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
+public abstract class SecondaryIndexQuery<T, S, U, W> extends StreamableRiakCommand<W, S, U>
 {
     protected final Namespace namespace;
     protected final String indexName;
@@ -232,6 +236,15 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
         return cluster.execute(builder.build());
     }
 
+    protected StreamingRiakFuture<SecondaryIndexQueryOperation.Response,
+                                  SecondaryIndexQueryOperation.Query> executeCoreAsyncStreaming(RiakCluster cluster)
+    {
+        SecondaryIndexQueryOperation.Builder builder =
+                new SecondaryIndexQueryOperation.Builder(this.createCoreQuery()).streamResults(true);
+
+        return cluster.execute(builder.build());
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -244,7 +257,7 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
             return false;
         }
 
-        SecondaryIndexQuery<?, ?, ?> that = (SecondaryIndexQuery<?, ?, ?>) o;
+        SecondaryIndexQuery<?, ?, ?, ?> that = (SecondaryIndexQuery<?, ?, ?, ?>) o;
 
         if (returnTerms != that.returnTerms)
         {
@@ -592,7 +605,12 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
 
         protected final Location getLocationFromCoreEntry(SecondaryIndexQueryOperation.Response.Entry e)
         {
-            Location loc = new Location(queryLocation, e.getObjectKey());
+            return Response.getLocationFromCoreEntry(this.queryLocation, e);
+        }
+
+        protected static Location getLocationFromCoreEntry(Namespace queryLocation, SecondaryIndexQueryOperation.Response.Entry e)
+        {
+            final Location loc = new Location(queryLocation, e.getObjectKey());
             return loc;
         }
 
@@ -632,6 +650,42 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
             {
                 return converter.convert(indexKey);
             }
+        }
+    }
+
+    public abstract static class StreamingResponse<S> implements Iterable<S>
+    {
+        final protected IndexConverter<?> converter;
+        final protected Namespace queryLocation;
+
+        private final ChunkedResponseIterator<S,?,?> chunkedResponseIterator;
+
+        StreamingResponse(Namespace queryLocation, IndexConverter<?> converter,
+                          ChunkedResponseIterator<S,?,?> chunkedResponseIterator)
+        {
+            this.converter = converter;
+            this.queryLocation = queryLocation;
+            this.chunkedResponseIterator = chunkedResponseIterator;
+        }
+
+        public Iterator<S> iterator()
+        {
+            return chunkedResponseIterator;
+        }
+
+        public boolean hasContinuation()
+        {
+            return chunkedResponseIterator.hasContinuation();
+        }
+
+        public BinaryValue getContinuation()
+        {
+            return chunkedResponseIterator.getContinuation();
+        }
+
+        public boolean hasEntries()
+        {
+            return chunkedResponseIterator.hasNext();
         }
     }
 }

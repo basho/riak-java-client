@@ -43,7 +43,7 @@ import java.util.List;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuery.Response, RawIndexQuery>
+public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuery.Response, RawIndexQuery, RawIndexQuery.Response>
 {
     private final IndexConverter<BinaryValue> converter;
 
@@ -75,6 +75,13 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
         RawQueryFuture future = new RawQueryFuture(coreFuture);
         coreFuture.addListener(future);
         return future;
+    }
+
+    @Override
+    protected RiakFuture<Response, RawIndexQuery> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    {
+        // TODO
+        return null;
     }
 
     protected final class RawQueryFuture
