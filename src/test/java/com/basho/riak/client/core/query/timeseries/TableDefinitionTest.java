@@ -51,6 +51,21 @@ public class TableDefinitionTest
         assertEquals(quantumFld, foo.getQuantumDescription());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void twoQuantumsThrowsAnError()
+    {
+        final FullColumnDescription quantumFld = new FullColumnDescription("quantum",
+                                                                           ColumnDescription.ColumnType.TIMESTAMP, false, 4,
+                                                                           new Quantum(15, TimeUnit.SECONDS));
+
+        final FullColumnDescription quantumFld2 = new FullColumnDescription("quantum2",
+                                                                           ColumnDescription.ColumnType.TIMESTAMP, false, 5,
+                                                                           new Quantum(15, TimeUnit.MINUTES));
+
+        final TableDefinition foo = new TableDefinition("Foo", GetIdealTableWith(quantumFld, quantumFld2));
+        assertEquals(quantumFld, foo.getQuantumDescription());
+    }
+
     private void assertKeyCollectionsAreCorrect(TableDefinition foo)
     {
         assertFullColumnDefinitionsMatch(GetProperKeyList(), new ArrayList<>(foo.getLocalKeyColumnDescriptions()));
