@@ -16,8 +16,10 @@
 
 package com.basho.riak.client.api.commands.indexes;
 
+import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.query.Location;
@@ -43,7 +45,7 @@ import java.util.List;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuery.Response, RawIndexQuery, RawIndexQuery.Response>
+public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuery.Response, RawIndexQuery, RawIndexQuery.StreamingResponse>
 {
     private final IndexConverter<BinaryValue> converter;
 
@@ -78,10 +80,19 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
     }
 
     @Override
-    protected RiakFuture<Response, RawIndexQuery> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    protected RiakFuture<StreamingResponse, RawIndexQuery> executeAsyncStreaming(RiakCluster cluster, int timeout)
     {
-        // TODO
-        return null;
+        StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
+                executeCoreAsyncStreaming(cluster);
+
+        StreamingResponse response = new StreamingResponse(namespace, converter, coreFuture, timeout);
+
+        StreamingQueryFuture<StreamingResponse, RawIndexQuery> future =
+                new StreamingQueryFuture<>(coreFuture, response, this);
+
+        coreFuture.addListener(future);
+
+        return future;
     }
 
     protected final class RawQueryFuture
@@ -185,12 +196,46 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
             return convertedList;
         }
 
-        public class Entry extends SecondaryIndexQuery.Response.Entry<BinaryValue>
+        public static class Entry extends SecondaryIndexQuery.Response.Entry<BinaryValue>
         {
             protected Entry(Location riakObjectLocation, BinaryValue indexKey, IndexConverter<BinaryValue> converter)
             {
                 super(riakObjectLocation, indexKey, converter);
             }
+        }
+    }
+
+    public static class StreamingResponse extends SecondaryIndexQuery.StreamingResponse<Response.Entry>
+    {
+        StreamingResponse(Namespace namespace, IndexConverter<BinaryValue> converter,
+                          StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture,
+                          int pollTimeout)
+        {
+            super(namespace, converter, createResponseIterator(namespace, converter, coreFuture, pollTimeout));
+        }
+
+        private static ChunkedResponseIterator<Response.Entry, SecondaryIndexQueryOperation.Response,
+                SecondaryIndexQueryOperation.Response.Entry> createResponseIterator(
+                Namespace namespace,
+                IndexConverter<BinaryValue> converter,
+                StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture,
+                int pollTimeout)
+        {
+            return new ChunkedResponseIterator<>(
+                    coreFuture,
+                    pollTimeout,
+                    (e) -> createExternalResponseEntry(namespace, e, converter),
+                    SecondaryIndexQueryOperation.Response::iterator,
+                    SecondaryIndexQueryOperation.Response::getContinuation);
+        }
+
+        private static Response.Entry createExternalResponseEntry(Namespace namespace,
+                                                                  SecondaryIndexQueryOperation.Response.Entry baseEntry,
+                                                                  IndexConverter<BinaryValue> converter)
+        {
+            return new Response.Entry(SecondaryIndexQuery.Response.getLocationFromCoreEntry(namespace, baseEntry),
+                                      baseEntry.getIndexKey(),
+                                      converter);
         }
     }
 }

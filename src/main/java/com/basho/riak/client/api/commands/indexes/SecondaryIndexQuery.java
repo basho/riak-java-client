@@ -608,7 +608,8 @@ public abstract class SecondaryIndexQuery<T, S, U, W> extends StreamableRiakComm
             return Response.getLocationFromCoreEntry(this.queryLocation, e);
         }
 
-        protected static Location getLocationFromCoreEntry(Namespace queryLocation, SecondaryIndexQueryOperation.Response.Entry e)
+        public static Location getLocationFromCoreEntry(Namespace queryLocation,
+                                                        SecondaryIndexQueryOperation.Response.Entry e)
         {
             final Location loc = new Location(queryLocation, e.getObjectKey());
             return loc;
@@ -660,8 +661,9 @@ public abstract class SecondaryIndexQuery<T, S, U, W> extends StreamableRiakComm
 
         private final ChunkedResponseIterator<S,?,?> chunkedResponseIterator;
 
-        StreamingResponse(Namespace queryLocation, IndexConverter<?> converter,
-                          ChunkedResponseIterator<S,?,?> chunkedResponseIterator)
+        protected StreamingResponse(Namespace queryLocation,
+                                    IndexConverter<?> converter,
+                                    ChunkedResponseIterator<S, ?, ?> chunkedResponseIterator)
         {
             this.converter = converter;
             this.queryLocation = queryLocation;

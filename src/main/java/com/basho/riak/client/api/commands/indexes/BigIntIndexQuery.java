@@ -99,7 +99,7 @@ public class BigIntIndexQuery
     }
 
     @Override
-    protected RiakFuture<BigIntIndexQuery.StreamingResponse, BigIntIndexQuery> executeAsyncStreaming(RiakCluster cluster,
+    protected RiakFuture<StreamingResponse, BigIntIndexQuery> executeAsyncStreaming(RiakCluster cluster,
                                                                                                      int timeout)
     {
         StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
