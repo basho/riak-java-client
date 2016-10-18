@@ -26,6 +26,7 @@ import org.junit.Test;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  */
 public class SecondaryIndexQueryTest
 {
@@ -128,6 +129,7 @@ public class SecondaryIndexQueryTest
         assertEquals(true, query.isReturnKeyAndIndex());
     }
 
+    @Test
     public void rawIndexQueryBuildsCorrectly()
     {
         Namespace ns = new Namespace("bucket_type", "bucket_name");

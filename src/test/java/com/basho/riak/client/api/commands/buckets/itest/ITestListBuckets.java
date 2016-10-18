@@ -22,6 +22,7 @@ import static org.junit.Assume.assumeTrue;
 
 /**
  * @author empovit
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
 public class ITestListBuckets extends ITestBase
@@ -103,10 +104,6 @@ public class ITestListBuckets extends ITestBase
         while(!found && iterator.hasNext())
         {
             final Namespace next = iterator.next();
-            if(next == null)
-            {
-                continue;
-            }
             found = next.getBucketName().toString().equals(bucketName);
         }
 

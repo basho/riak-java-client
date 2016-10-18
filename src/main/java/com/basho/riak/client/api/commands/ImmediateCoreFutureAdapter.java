@@ -24,12 +24,14 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * Used when the converted response is available before the core future is complete.
- * @author Alex Moore <amoore at basho dot com>
- * @since 2.1
+ *
  * @param <T> The core response type.
  * @param <S> The core query info type.
  * @param <T2> The converted response type.
- * @param <S> The converted query info type.
+ * @param <S2> The converted query info type.
+ *
+ * @author Alex Moore <amoore at basho dot com>
+ * @since 2.1
  */
 public abstract class ImmediateCoreFutureAdapter<T2,S2,T,S> extends CoreFutureAdapter<T2,S2,T,S>
 {

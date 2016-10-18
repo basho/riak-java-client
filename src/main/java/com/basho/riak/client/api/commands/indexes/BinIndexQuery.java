@@ -47,6 +47,7 @@ import java.util.List;
  * BinIndexQuery.Response resp = client.execute(q);}</pre>
  *
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
 public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Response, BinIndexQuery, BinIndexQuery.StreamingResponse>
@@ -86,8 +87,8 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
 
         StreamingResponse response = new StreamingResponse(namespace, converter, coreFuture, timeout);
 
-        StreamingQueryFuture<StreamingResponse, BinIndexQuery> future =
-                new StreamingQueryFuture<>(coreFuture, response, this);
+        Streaming2iQueryFuture<StreamingResponse, BinIndexQuery> future =
+                new Streaming2iQueryFuture<>(coreFuture, response, this);
 
         coreFuture.addListener(future);
 

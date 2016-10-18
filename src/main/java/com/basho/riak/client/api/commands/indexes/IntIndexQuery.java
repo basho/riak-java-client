@@ -42,6 +42,7 @@ import java.util.List;
  * IntIndexQuery q = new IntIndexQuery.Builder(ns, "my_index", key).build();
  * IntIndexQuery.Response resp = client.execute(q);}</pre>
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
 public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Response, IntIndexQuery,
@@ -99,8 +100,8 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
 
         StreamingResponse response = new StreamingResponse(namespace, converter, coreFuture, timeout);
 
-        StreamingQueryFuture<StreamingResponse, IntIndexQuery> future =
-                new StreamingQueryFuture<>(coreFuture, response, this);
+        Streaming2iQueryFuture<StreamingResponse, IntIndexQuery> future =
+                new Streaming2iQueryFuture<>(coreFuture, response, this);
 
         coreFuture.addListener(future);
 

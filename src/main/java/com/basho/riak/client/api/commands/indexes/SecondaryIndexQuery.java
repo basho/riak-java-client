@@ -38,6 +38,7 @@ import java.util.List;
  *
  * @param <S> the type being used for the query.
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
 public abstract class SecondaryIndexQuery<T, S, U, W> extends StreamableRiakCommand<W, S, U>

@@ -13,8 +13,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Iterator;
-import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
@@ -22,7 +20,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
-
+/**
+ *
+ * @author Alex Moore <amoore at basho dot com>
+ */
 public class ITestListKeys extends ITestBase
 {
     private static final RiakClient client = new RiakClient(cluster);
@@ -64,11 +65,6 @@ public class ITestListKeys extends ITestBase
 
         for (Location location : streamingResponse)
         {
-            if(location == null)
-            {
-                continue;
-            }
-
             count++;
 
             if(!foundLastKey)

@@ -47,6 +47,7 @@ import java.util.List;
  * BigIntIndexQuery q = new BigIntIndexQuery.Builder(ns, "my_index", key).build();
  * BigIntIndexQuery.Response resp = client.execute(q);}</pre>
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
 public class BigIntIndexQuery

@@ -18,7 +18,7 @@ package com.basho.riak.client.api.commands.kv;
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery;
-import com.basho.riak.client.api.commands.indexes.StreamingQueryFuture;
+import com.basho.riak.client.api.commands.indexes.Streaming2iQueryFuture;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
@@ -94,8 +94,8 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
 
         StreamingResponse response = new StreamingResponse(namespace, converter, coreFuture, timeout);
 
-        StreamingQueryFuture<StreamingResponse, FullBucketRead> future =
-                new StreamingQueryFuture<>(coreFuture, response, this);
+        Streaming2iQueryFuture<StreamingResponse, FullBucketRead> future =
+                new Streaming2iQueryFuture<>(coreFuture, response, this);
 
         coreFuture.addListener(future);
 

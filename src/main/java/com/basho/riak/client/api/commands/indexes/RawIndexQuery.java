@@ -43,6 +43,7 @@ import java.util.List;
  * RawIndexQuery q = new RawIndexQuery.Builder(ns, "my_index", Type._BIN, key).build();
  * RawIndexquery.Response resp = client.execute(q);}</pre>
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
 public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuery.Response, RawIndexQuery, RawIndexQuery.StreamingResponse>
@@ -87,8 +88,8 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
 
         StreamingResponse response = new StreamingResponse(namespace, converter, coreFuture, timeout);
 
-        StreamingQueryFuture<StreamingResponse, RawIndexQuery> future =
-                new StreamingQueryFuture<>(coreFuture, response, this);
+        Streaming2iQueryFuture<StreamingResponse, RawIndexQuery> future =
+                new Streaming2iQueryFuture<>(coreFuture, response, this);
 
         coreFuture.addListener(future);
 

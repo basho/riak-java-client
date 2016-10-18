@@ -46,7 +46,14 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
     @Override
     public boolean hasNext()
     {
-        return currentIteratorHasNext() || possibleChunksRemaining();
+        if(currentIteratorHasNext())
+        {
+            return true;
+        }
+
+        loadNextChunkIterator();
+
+        return currentIteratorHasNext();
     }
 
     private boolean currentIteratorHasNext()
@@ -74,21 +81,6 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
     @Override
     public synchronized FinalT next()
     {
-        if(!hasNext())
-        {
-            return null;
-        }
-
-        if(!currentIteratorHasNext())
-        {
-            loadNextChunkIterator();
-
-            if(!hasNext())
-            {
-                return null;
-            }
-        }
-
         return createNext.apply(currentIterator.next());
     }
 
