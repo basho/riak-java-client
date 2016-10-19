@@ -13,13 +13,16 @@
  */
 package com.basho.riak.client.api.commands.mapreduce;
 
-import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.api.RiakException;
+import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
+import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
 import com.basho.riak.client.api.convert.ConversionException;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.MapReduceOperation;
+import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.functions.Function;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.fasterxml.jackson.core.JsonEncoding;
@@ -33,10 +36,9 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TransferQueue;
 
 /**
  * Base abstract class for all MapReduce commands.
@@ -46,7 +48,7 @@ import java.util.Map;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryValue>
+public abstract class MapReduce extends StreamableRiakCommand<MapReduce.StreamingResponse, MapReduce.Response, BinaryValue>
 {
     private final MapReduceSpec spec;
 
@@ -89,6 +91,35 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
                         return coreQueryInfo;
                     }
                 };
+
+        coreFuture.addListener(future);
+
+        return future;
+    }
+
+    @Override
+    protected RiakFuture<StreamingResponse, BinaryValue> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    {
+        BinaryValue jobSpec;
+        try
+        {
+            String spec = writeSpec();
+            jobSpec = BinaryValue.create(spec);
+        }
+        catch (RiakException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        MapReduceOperation operation = new MapReduceOperation.Builder(jobSpec).streamResults(true).build();
+
+        final StreamingRiakFuture<MapReduceOperation.Response, BinaryValue> coreFuture = cluster.execute(operation);
+
+        final StreamingResponse streamingResponse = new StreamingResponse(coreFuture, timeout);
+
+        ImmediateCoreFutureAdapter.SameQueryInfo<StreamingResponse, BinaryValue, MapReduceOperation.Response> future =
+                new ImmediateCoreFutureAdapter.SameQueryInfo<StreamingResponse, BinaryValue, MapReduceOperation.Response>(
+                        coreFuture, streamingResponse) {};
 
         coreFuture.addListener(future);
 
@@ -393,6 +424,81 @@ public abstract class MapReduce extends RiakCommand<MapReduce.Response, BinaryVa
                 flatArray.addAll(entry.getValue());
             }
             return flatArray;
+        }
+    }
+
+    public static class StreamingResponse implements Iterable<Response>
+    {
+        final MapReduceResponseIterator responseIterator;
+
+        StreamingResponse(StreamingRiakFuture<MapReduceOperation.Response, BinaryValue> coreFuture,
+                          int pollTimeout)
+        {
+            responseIterator = new MapReduceResponseIterator(coreFuture, pollTimeout);
+        }
+
+        @Override
+        public Iterator<Response> iterator()
+        {
+            return responseIterator;
+        }
+
+        private class MapReduceResponseIterator implements Iterator<Response>
+        {
+            final StreamingRiakFuture<MapReduceOperation.Response, BinaryValue> coreFuture;
+            final TransferQueue<MapReduceOperation.Response> resultsQueue;
+            private final int pollTimeout;
+
+            MapReduceResponseIterator(StreamingRiakFuture<MapReduceOperation.Response, BinaryValue> coreFuture,
+                                      int pollTimeout)
+            {
+                this.coreFuture = coreFuture;
+                this.resultsQueue = coreFuture.getResultsQueue();
+                this.pollTimeout = pollTimeout;
+            }
+
+            @Override
+            public boolean hasNext()
+            {
+                if(resultsQueueHasAny())
+                {
+                    return true;
+                }
+
+                try
+                {
+                    return peekWaitForNextQueueEntry();
+                }
+                catch (InterruptedException e)
+                {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
+                }
+            }
+
+            private boolean peekWaitForNextQueueEntry() throws InterruptedException
+            {
+                while (!resultsQueueHasAny() && !coreFuture.isDone())
+                {
+                    if(!resultsQueueHasAny())
+                    {
+                        Thread.sleep(pollTimeout);
+                    }
+                }
+                return resultsQueueHasAny();
+            }
+
+            private boolean resultsQueueHasAny()
+            {
+                return resultsQueue.peek() != null;
+            }
+
+            @Override
+            public Response next()
+            {
+                final MapReduceOperation.Response responseChunk = resultsQueue.remove();
+                return new Response(responseChunk.getResults());
+            }
         }
     }
 }
