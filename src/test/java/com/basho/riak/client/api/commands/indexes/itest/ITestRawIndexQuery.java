@@ -20,33 +20,40 @@ import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.annotations.RiakBucketName;
 import com.basho.riak.client.api.annotations.RiakIndex;
 import com.basho.riak.client.api.annotations.RiakKey;
-import com.basho.riak.client.api.annotations.RiakVClock;
-import com.basho.riak.client.api.cap.VClock;
-import com.basho.riak.client.api.commands.indexes.*;
+import com.basho.riak.client.api.commands.indexes.BinIndexQuery;
+import com.basho.riak.client.api.commands.indexes.BucketIndexQuery;
+import com.basho.riak.client.api.commands.indexes.KeyIndexQuery;
+import com.basho.riak.client.api.commands.indexes.RawIndexQuery;
 import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery.Type;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
+import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assume;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
+import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.*;
 
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  */
-public class ITestRawIndexQuery extends ITestAutoCleanupBase
+public class ITestRawIndexQuery extends ITestBase
 {
     private static String sharedBucket = "ITestRawIndexQuery";
     private static Namespace sharedNamespace = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, sharedBucket);
+    private static RiakClient client = new RiakClient(cluster);
 
     @BeforeClass
     public static void Setup() throws ExecutionException, InterruptedException
@@ -79,8 +86,6 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
 
         setBucketNameToTestName();
 
-        RiakClient client = new RiakClient(cluster);
-
         BinaryValue indexKey = BinaryValue.create("index_test_index_key");
 
         IndexedPojo ip = new IndexedPojo();
@@ -112,8 +117,6 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
     {
         Assume.assumeTrue(test2i);
 
-        RiakClient client = new RiakClient(cluster);
-
         RawIndexQuery biq  =
             new RawIndexQuery.Builder(sharedNamespace,
                                       IndexNames.KEY,
@@ -132,8 +135,6 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
     {
         Assume.assumeTrue(test2i);
 
-        RiakClient client = new RiakClient(cluster);
-
         KeyIndexQuery kq = new KeyIndexQuery.Builder(sharedNamespace, "my_key10", "my_key19").build();
 
         final RawIndexQuery.Response kqResp = client.execute(kq);
@@ -145,8 +146,6 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
     public void testBucketIndexHack() throws InterruptedException, ExecutionException
     {
         Assume.assumeTrue(test2i);
-
-        RiakClient client = new RiakClient(cluster);
 
         RawIndexQuery biq  =
             new RawIndexQuery.Builder(sharedNamespace,
@@ -163,8 +162,6 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
     {
         Assume.assumeTrue(test2i);
 
-        RiakClient client = new RiakClient(cluster);
-
         BucketIndexQuery bq = new BucketIndexQuery.Builder(sharedNamespace).build();
 
         final BinIndexQuery.Response bqResp = client.execute(bq);
@@ -172,7 +169,26 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
         assertEquals(100, bqResp.getEntries().size());
     }
 
-    public static class IndexedPojo
+    @Test
+    public void testBucketIndexQueryStreaming() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+
+        BucketIndexQuery bq = new BucketIndexQuery.Builder(sharedNamespace).build();
+
+        final RiakFuture<BinIndexQuery.StreamingResponse, BinIndexQuery> indexResult =
+                client.executeAsyncStreaming(bq, 100);
+
+        final BinIndexQuery.StreamingResponse streamingResponse = indexResult.get();
+
+        assertTrue(streamingResponse.hasEntries());
+        assertEquals(100, StreamSupport.stream(streamingResponse.spliterator(), false).count());
+
+        // Assert everything was consumed
+        assertFalse(streamingResponse.hasEntries());
+    }
+
+    private static class IndexedPojo
     {
         @RiakKey
         public String key;
@@ -182,9 +198,6 @@ public class ITestRawIndexQuery extends ITestAutoCleanupBase
 
         @RiakIndex(name="test_index_bin")
         byte[] indexKey;
-
-        @RiakVClock
-        VClock vclock;
 
         public String value;
     }
