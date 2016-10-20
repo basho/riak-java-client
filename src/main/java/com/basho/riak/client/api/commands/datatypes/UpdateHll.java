@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Basho Technologies Inc
+ * Copyright 2016 Basho Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,9 @@ import com.basho.riak.client.core.util.BinaryValue;
  * </p>
  *
  * @author Alex Moore <amoore at basho dot com>
- * @since 2.1
+ * @since 2.1.0
  */
+ 
 public class UpdateHll extends UpdateDatatype<RiakHll, UpdateHll.Response, Location>
 {
     private final HllUpdate update;

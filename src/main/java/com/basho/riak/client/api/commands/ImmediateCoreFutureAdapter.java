@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Brian Roach <roach at basho dot com>.
+ * Copyright 2016 Basho Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeoutException;
  * @param <S2> The converted query info type.
  *
  * @author Alex Moore <amoore at basho dot com>
- * @since 2.1
+ * @since 2.1.0
  */
 public abstract class ImmediateCoreFutureAdapter<T2,S2,T,S> extends CoreFutureAdapter<T2,S2,T,S>
 {

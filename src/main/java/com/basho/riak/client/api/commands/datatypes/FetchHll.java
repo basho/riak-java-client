@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Basho Technologies Inc
+ * Copyright 2016 Basho Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,9 @@ import com.basho.riak.client.core.query.crdt.types.RiakHll;
  * }
  * </pre>
  * @author Alex Moore <amoore at basho dot com>
- * @since 2.1
+ * @since 2.1.0
  */
+ 
 public final class FetchHll extends FetchDatatype<RiakHll, RiakHll, Location>
 {
     private FetchHll(Builder builder)
