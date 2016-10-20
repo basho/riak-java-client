@@ -460,7 +460,7 @@ public abstract class MapReduce extends StreamableRiakCommand<MapReduce.Streamin
             @Override
             public boolean hasNext()
             {
-                if(resultsQueueHasAny())
+                if (resultsQueueHasAny())
                 {
                     return true;
                 }
@@ -480,7 +480,7 @@ public abstract class MapReduce extends StreamableRiakCommand<MapReduce.Streamin
             {
                 while (!resultsQueueHasAny() && !coreFuture.isDone())
                 {
-                    if(!resultsQueueHasAny())
+                    if (!resultsQueueHasAny())
                     {
                         Thread.sleep(pollTimeout);
                     }

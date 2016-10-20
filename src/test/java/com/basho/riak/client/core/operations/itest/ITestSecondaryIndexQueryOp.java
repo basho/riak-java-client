@@ -709,11 +709,11 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
             continuation = null;
             int timeouts = 0;
 
-            while(!future.isDone())
+            while (!future.isDone())
             {
                 final SecondaryIndexQueryOperation.Response response = resultsQueue.poll(5, TimeUnit.MILLISECONDS);
 
-                if(response == null)
+                if (response == null)
                 {
                     if (++timeouts == 10)
                     {
@@ -741,7 +741,7 @@ public class ITestSecondaryIndexQueryOp extends ITestBase
         {
             resultsList.addAll(response.getEntryList());
 
-            if(response.hasContinuation() && continuation == null)
+            if (response.hasContinuation() && continuation == null)
             {
                 continuation = response.getContinuation();
             }

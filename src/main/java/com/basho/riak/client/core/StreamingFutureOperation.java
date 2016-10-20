@@ -21,7 +21,7 @@ public abstract class StreamingFutureOperation<ReturnType, ResponseType, QueryIn
     @Override
     protected void processMessage(ResponseType decodedMessage)
     {
-        if(!streamResults)
+        if (!streamResults)
         {
             super.processMessage(decodedMessage);
             return;

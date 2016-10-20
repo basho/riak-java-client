@@ -51,7 +51,7 @@ public class ITestMapReduceOperation extends ITestBase
     {
         insertData(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString()));
 
-        if(testBucketType)
+        if (testBucketType)
         {
             insertData(new Namespace(bucketType, bucketName));
         }
@@ -63,7 +63,7 @@ public class ITestMapReduceOperation extends ITestBase
     {
         resetAndEmptyBucket(new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString()));
 
-        if(testBucketType)
+        if (testBucketType)
         {
             resetAndEmptyBucket(new Namespace(bucketType, bucketName));
         }
@@ -138,10 +138,10 @@ public class ITestMapReduceOperation extends ITestBase
 
         Map<Integer, Map<String, Integer>> resultMap = new LinkedHashMap<>();
 
-        while(!streamFuture.isDone())
+        while (!streamFuture.isDone())
         {
             final MapReduceOperation.Response response = resultsQueue.poll(10, TimeUnit.MILLISECONDS);
-            if(response == null)
+            if (response == null)
             {
                 continue;
             }
@@ -171,9 +171,9 @@ public class ITestMapReduceOperation extends ITestBase
             @SuppressWarnings("unchecked")
             Map<String, Integer> wordCountMap = objectMapper.readValue(wordCountMapJsonString, Map.class);
 
-            for(String wordCountKey: wordCountMap.keySet())
+            for (String wordCountKey: wordCountMap.keySet())
             {
-                if(currentPhaseMap.containsKey(wordCountKey))
+                if (currentPhaseMap.containsKey(wordCountKey))
                 {
                     final int newWordCountSum = currentPhaseMap.get(wordCountKey) + wordCountMap.get(wordCountKey);
                     currentPhaseMap.put(wordCountKey, newWordCountSum);

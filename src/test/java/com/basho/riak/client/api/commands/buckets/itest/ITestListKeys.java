@@ -33,7 +33,7 @@ public class ITestListKeys extends ITestBase
     @BeforeClass
     public static void setup() throws ExecutionException, InterruptedException
     {
-        if(testBucketType)
+        if (testBucketType)
         {
             storeTestObjects(typedNamespace);
         }
@@ -42,7 +42,7 @@ public class ITestListKeys extends ITestBase
     @AfterClass
     public static void cleanup() throws ExecutionException, InterruptedException
     {
-        if(testBucketType)
+        if (testBucketType)
         {
             resetAndEmptyBucket(typedNamespace);
         }
@@ -67,7 +67,7 @@ public class ITestListKeys extends ITestBase
         {
             count++;
 
-            if(!foundLastKey)
+            if (!foundLastKey)
             {
                 foundLastKey = location.getKeyAsString().equals("9999");
             }

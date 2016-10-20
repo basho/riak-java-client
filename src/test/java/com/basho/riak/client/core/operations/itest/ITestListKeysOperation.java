@@ -169,18 +169,18 @@ public class ITestListKeysOperation extends ITestBase
         List<BinaryValue> actualKeys = new LinkedList<>();
         int timeouts = 0;
 
-        while(!execute.isDone())
+        while (!execute.isDone())
         {
             final ListKeysOperation.Response response = resultsQueue.poll(5, TimeUnit.MILLISECONDS);
 
-            if(response != null)
+            if (response != null)
             {
                 actualKeys.addAll(response.getKeys());
                 continue;
             }
 
             timeouts++;
-            if(timeouts == 10)
+            if (timeouts == 10)
             {
                 break;
             }

@@ -36,7 +36,7 @@ public class ITestListBuckets extends ITestBase
     public static void setup() throws ExecutionException, InterruptedException
     {
         storeTestObject(defaultNamespace);
-        if(testBucketType)
+        if (testBucketType)
         {
             storeTestObject(typedNamespace);
         }
@@ -46,7 +46,7 @@ public class ITestListBuckets extends ITestBase
     public static void cleanup() throws ExecutionException, InterruptedException
     {
         resetAndEmptyBucket(defaultNamespace);
-        if(testBucketType)
+        if (testBucketType)
         {
             resetAndEmptyBucket(typedNamespace);
         }
@@ -101,7 +101,7 @@ public class ITestListBuckets extends ITestBase
         assumeTrue(iterator.hasNext());
         boolean found = false;
 
-        while(!found && iterator.hasNext())
+        while (!found && iterator.hasNext())
         {
             final Namespace next = iterator.next();
             found = next.getBucketName().toString().equals(bucketName);

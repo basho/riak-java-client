@@ -186,7 +186,7 @@ public class ITestBucketMapReduce extends ITestBase
         {
             int phaseSize = response.getResultsFromAllPhases().size();
 
-            if(phaseSize == 0)
+            if (phaseSize == 0)
             {
                 continue;
             }
@@ -194,18 +194,18 @@ public class ITestBucketMapReduce extends ITestBase
             count += phaseSize;
 
             final ArrayNode result = response.getResultForPhase(2);
-            if(result == null)
+            if (result == null)
             {
                 continue;
             }
 
             final String valuesString = result.toString();
 
-            if(!found42)
+            if (!found42)
             {
                 found42 = valuesString.contains("42");
             }
-            if(!found199)
+            if (!found199)
             {
                 found199 = valuesString.contains("199");
             }

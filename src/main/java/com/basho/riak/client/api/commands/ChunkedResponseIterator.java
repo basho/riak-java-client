@@ -46,7 +46,7 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
     @Override
     public boolean hasNext()
     {
-        if(currentIteratorHasNext())
+        if (currentIteratorHasNext())
         {
             return true;
         }
@@ -114,7 +114,7 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
     private void loadContinuation(ChunkT nextChunk)
     {
         final BinaryValue fetchedContinuation = getContinuationFn.apply(nextChunk);
-        if(this.continuation == null && fetchedContinuation != null)
+        if (this.continuation == null && fetchedContinuation != null)
         {
             this.continuation = fetchedContinuation;
         }

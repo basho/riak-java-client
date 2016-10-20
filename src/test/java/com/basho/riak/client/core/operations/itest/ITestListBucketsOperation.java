@@ -125,18 +125,18 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
         List<BinaryValue> actualBuckets = new LinkedList<>();
         int timeouts = 0;
 
-        while(!execute.isDone())
+        while (!execute.isDone())
         {
             final ListBucketsOperation.Response response = resultsQueue.poll(5, TimeUnit.MILLISECONDS);
 
-            if(response != null)
+            if (response != null)
             {
                 actualBuckets.addAll(response.getBuckets());
                 continue;
             }
 
             timeouts++;
-            if(timeouts == 10)
+            if (timeouts == 10)
             {
                 break;
             }
