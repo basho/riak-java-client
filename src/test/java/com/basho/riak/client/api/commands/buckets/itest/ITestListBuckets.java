@@ -20,7 +20,6 @@ import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.buckets.ListBuckets;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.core.operations.itest.ITestBase;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;

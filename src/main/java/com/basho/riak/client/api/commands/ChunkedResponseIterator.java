@@ -95,7 +95,7 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
     }
 
     @Override
-    public synchronized FinalT next()
+    public FinalT next()
     {
         return createNext.apply(currentIterator.next());
     }
