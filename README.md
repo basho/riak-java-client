@@ -66,24 +66,26 @@ Also see [the Javadoc site](http://basho.github.io/riak-java-client/) for more i
 We've included Basho's [riak-client-tools](https://github.com/basho/riak-client-tools/) as a git submodule to help with Riak test setup and teardown.
 You can find these tools in the `/tools` subdirectory. 
 
-To configure your single riak instance, you may use the [riak-cluster-config](https://github.com/basho/riak-client-tools/blob/master/devrel/riak-cluster-config) script to setup the node with the appropriate bucket types.
-You can use it by running `tools/devrel/riak-cluster-config $PATH_TO_RIAK_ADMIN $RIAK_HTTP_PORT false false` with the appropriate paths and values filled in.
+To configure your single riak instance, you may use the [`setup-riak`](https://github.com/basho/riak-client-tools/blob/master/setup-riak) script to setup the node with the appropriate bucket types. You can use it by running `./tools/setup-riak`.
 
-To configure a devrel for multiple node testing, please see the instructions located at [basho/riak-client-tools](https://github.com/basho/riak-client-tools/blob/master/devrel/README.md) on how to use the `devrel/setup-dev-cluster` command.
+To configure a devrel for multiple node testing, please see the instructions located at [basho/riak-client-tools](https://github.com/basho/riak-client-tools/blob/master/README.md) on how to use the `./tools/setup-riak` command with your devrel.
 
 #### Running Integration Tests
 
 To run the Riak KV integration test suite, execute: 
+
 ```
 make RIAK_PORT=8087 integration-test
 ```
 
 To run the Riak TimeSeries test suite, execute:
+
 ```
 make RIAK_PORT=8087 integration-test-timeseries
 ```
 
 When running tests directly from Maven, you may also turn feature sets on and off with system properties:
+
 ```
 mvn -Pitest,default -Dcom.basho.riak.timeseries=true -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
 ```
