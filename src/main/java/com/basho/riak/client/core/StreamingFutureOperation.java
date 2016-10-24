@@ -16,6 +16,9 @@
 
 package com.basho.riak.client.core;
 
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.TransferQueue;
+
 /**
  * @author Alex Moore <amoore at basho dot com>
  * @param <ReturnType> The type returned by the streaming and non-streaming operation versions
@@ -27,11 +30,13 @@ public abstract class StreamingFutureOperation<ReturnType, ResponseType, QueryIn
         extends FutureOperation<ReturnType, ResponseType, QueryInfoType>
         implements StreamingRiakFuture<ReturnType, QueryInfoType>
 {
+    private final TransferQueue<ReturnType> responseQueue;
     private boolean streamResults;
 
     protected StreamingFutureOperation(boolean streamResults)
     {
         this.streamResults = streamResults;
+        this.responseQueue = new LinkedTransferQueue<>();
     }
 
     @Override
@@ -43,8 +48,14 @@ public abstract class StreamingFutureOperation<ReturnType, ResponseType, QueryIn
             return;
         }
 
-        processStreamingChunk(decodedMessage);
+        final ReturnType r = processStreamingChunk(decodedMessage);
+        responseQueue.offer(r);
     }
 
-    abstract protected void processStreamingChunk(ResponseType rawResponseChunk);
+    abstract protected ReturnType processStreamingChunk(ResponseType rawResponseChunk);
+
+    public final TransferQueue<ReturnType> getResultsQueue()
+    {
+        return this.responseQueue;
+    }
 }

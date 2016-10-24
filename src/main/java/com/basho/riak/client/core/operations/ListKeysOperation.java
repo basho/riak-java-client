@@ -23,20 +23,15 @@ import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.LinkedTransferQueue;
-import java.util.concurrent.TransferQueue;
 
 public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Namespace>
 {
     private final Namespace namespace;
     private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
-    private final LinkedTransferQueue<Response> responseQueue;
 
 
     private ListKeysOperation(Builder builder)
@@ -44,7 +39,6 @@ public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperatio
         super(builder.streamResults);
         this.reqBuilder = builder.reqBuilder;
         this.namespace = builder.namespace;
-        this.responseQueue = new LinkedTransferQueue<>();
     }
 
     @Override
@@ -103,15 +97,9 @@ public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperatio
     }
 
     @Override
-    protected void processStreamingChunk(RiakKvPB.RpbListKeysResp rawResponseChunk)
+    protected Response processStreamingChunk(RiakKvPB.RpbListKeysResp rawResponseChunk)
     {
-        this.responseQueue.add(new Response.Builder().addKeys(convertSingleResponse(rawResponseChunk)).build());
-    }
-
-    @Override
-    public TransferQueue<Response> getResultsQueue()
-    {
-        return this.responseQueue;
+        return new Response.Builder().addKeys(convertSingleResponse(rawResponseChunk)).build();
     }
 
     public static class Builder

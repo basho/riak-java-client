@@ -27,8 +27,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.LinkedTransferQueue;
-import java.util.concurrent.TransferQueue;
 
 public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOperation.Response,
                                                                    RiakKvPB.RpbListBucketsResp,
@@ -36,14 +34,12 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
 {
     private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
     private final BinaryValue bucketType;
-    private final TransferQueue<Response> responseQueue;
 
     private ListBucketsOperation(Builder builder)
     {
         super(builder.streamResults);
         this.reqBuilder = builder.reqBuilder;
         this.bucketType = builder.bucketType;
-        this.responseQueue = new LinkedTransferQueue<>();
     }
 
     @Override
@@ -76,10 +72,10 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
     }
 
     @Override
-    protected void processStreamingChunk(RiakKvPB.RpbListBucketsResp rawResponseChunk)
+    protected Response processStreamingChunk(RiakKvPB.RpbListBucketsResp rawResponseChunk)
     {
         final List<BinaryValue> buckets = convertSingleResponse(rawResponseChunk);
-        this.responseQueue.add(new Response(bucketType, buckets));
+        return new Response(bucketType, buckets);
     }
 
     @Override
@@ -106,12 +102,6 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
     public BinaryValue getQueryInfo()
     {
         return bucketType;
-    }
-
-    @Override
-    public TransferQueue<Response> getResultsQueue()
-    {
-        return this.responseQueue;
     }
 
     public static class Builder

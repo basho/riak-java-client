@@ -31,8 +31,6 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.LinkedTransferQueue;
-import java.util.concurrent.TransferQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +44,6 @@ public class MapReduceOperation extends StreamingFutureOperation<MapReduceOperat
     private final RiakKvPB.RpbMapRedReq.Builder reqBuilder;
     private final BinaryValue mapReduce;
     private final Logger logger = LoggerFactory.getLogger(MapReduceOperation.class);
-    private final TransferQueue<MapReduceOperation.Response> responseQueue;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final JsonNodeFactory jsonNodeFactory = JsonNodeFactory.instance;
 
@@ -56,7 +53,6 @@ public class MapReduceOperation extends StreamingFutureOperation<MapReduceOperat
         super(builder.streamResults);
         this.reqBuilder = builder.reqBuilder;
         this.mapReduce = builder.mapReduce;
-        this.responseQueue = new LinkedTransferQueue<>();
     }
 
     @Override
@@ -152,20 +148,12 @@ public class MapReduceOperation extends StreamingFutureOperation<MapReduceOperat
     }
 
     @Override
-    protected void processStreamingChunk(RiakKvPB.RpbMapRedResp rawResponseChunk)
+    protected Response processStreamingChunk(RiakKvPB.RpbMapRedResp rawResponseChunk)
     {
         final Map<Integer, ArrayNode> resultMap = new LinkedHashMap<>();
 
         convertSingleResponse(resultMap, rawResponseChunk);
-
-        final Response chunkResponse = new Response(resultMap);
-        this.responseQueue.offer(chunkResponse);
-    }
-
-    @Override
-    public TransferQueue<Response> getResultsQueue()
-    {
-        return this.responseQueue;
+        return new Response(resultMap);
     }
 
     public static class Builder

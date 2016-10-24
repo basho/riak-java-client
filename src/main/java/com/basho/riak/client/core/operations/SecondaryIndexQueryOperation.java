@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.LinkedTransferQueue;
-import java.util.concurrent.TransferQueue;
 
 /**
  *
@@ -45,7 +43,6 @@ public class SecondaryIndexQueryOperation
 {
     private final RiakKvPB.RpbIndexReq pbReq;
     private final Query query;
-    private final TransferQueue<Response> responseQueue;
 
     private SecondaryIndexQueryOperation(Builder builder)
     {
@@ -57,7 +54,6 @@ public class SecondaryIndexQueryOperation
         builder.pbReqBuilder.setStream(true);
         this.query = builder.query;
         this.pbReq = builder.pbReqBuilder.build();
-        this.responseQueue = new LinkedTransferQueue<>();
     }
 
     @Override
@@ -232,7 +228,7 @@ public class SecondaryIndexQueryOperation
     }
 
     @Override
-    protected void processStreamingChunk(Object rawResponseChunk)
+    protected Response processStreamingChunk(Object rawResponseChunk)
     {
         SecondaryIndexQueryOperation.Response.Builder responseBuilder =
                 new SecondaryIndexQueryOperation.Response.Builder();
@@ -254,13 +250,7 @@ public class SecondaryIndexQueryOperation
             processBatchMessage(continuationOnlyResponse);
         }
 
-        this.responseQueue.add(response);
-    }
-
-    @Override
-    public TransferQueue<Response> getResultsQueue()
-    {
-        return this.responseQueue;
+        return response;
     }
 
     /**
