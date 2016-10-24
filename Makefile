@@ -22,10 +22,10 @@ test: unit-test integration-test
 
 test-ts: unit-test integration-test-timeseries
 
-unit-test: compile
+unit-test:
 	mvn test
 
-integration-test: compile
+integration-test:
 	mvn -Pitest,default -Dcom.basho.riak.yokozuna=$(RUN_YOKOZUNA) -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
 
 integration-test-hll:
