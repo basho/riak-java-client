@@ -66,8 +66,6 @@ help:
 	@echo ' Targets:'
 	@echo '-----------------------------------------------------------------'
 	@echo ' all                          - Run everything                   '
-	@echo ' lint                         - Run jshint                       '
-	@echo ' install-deps                 - Install required dependencies    '
 	@echo ' test                         - Run unit & integration tests     '
 	@echo ' unit-test                    - Run unit tests                   '
 	@echo ' integration-test-hll         - Run HLL integration tests        '
