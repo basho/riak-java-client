@@ -17,18 +17,17 @@
 package com.basho.riak.client.api.commands.indexes;
 
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
-import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
+import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -46,6 +45,33 @@ import java.util.List;
  * BigInteger key = new BigInteger(someReallyLongNumber);
  * BigIntIndexQuery q = new BigIntIndexQuery.Builder(ns, "my_index", key).build();
  * BigIntIndexQuery.Response resp = client.execute(q);}</pre>
+ *
+ * <p>
+ * You can also stream the results back before the operation is fully complete.
+ * This reduces the time between executing the operation and seeing a result,
+ * and reduces overall memory usage if the iterator is consumed quickly enough.
+ * The result iterable can only be iterated once though.
+ * If the thread is interrupted while the iterator is polling for more results,
+ * a {@link RuntimeException} will be thrown.
+ * <pre class="prettyprint">
+ * {@code
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * BigInteger key = new BigInteger(someReallyLongNumber);
+ * BigIntIndexQuery q = new BigIntIndexQuery.Builder(ns, "my_index", key).build();
+ * RiakFuture<BigIntIndexQuery.StreamingResponse, BigIntIndexQuery> streamingFuture =
+ *     client.executeAsyncStreaming(q, 200);
+ * BigIntIndexQuery.StreamingResponse streamingResponse = streamingFuture.get();
+ *
+ * for (BigIntIndexQuery.Response.Entry e : streamingResponse)
+ * {
+ *     System.out.println(e.getRiakObjectLocation().getKey().toString());
+ * }
+ * // Wait for the command to fully finish.
+ * streamingFuture.await();
+ * // The StreamingResponse will also contain the continuation, if the operation returned one.
+ * streamingResponse.getContinuation(); }</pre>
+ * </p>
+ *
  * @author Brian Roach <roach at basho dot com>
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0

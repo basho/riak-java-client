@@ -50,6 +50,7 @@ import java.util.List;
  * for querying buckets that contain a big amount of data.
  *
  * @author Sergey Galkin <sgalkin at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @see CoveragePlan
  */
 public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketRead.Response, FullBucketRead, FullBucketRead.StreamingResponse>

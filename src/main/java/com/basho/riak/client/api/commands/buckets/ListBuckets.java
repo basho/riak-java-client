@@ -42,7 +42,26 @@ import java.util.List;
  *     System.out.println(ns.getBucketName());
  * }}</pre>
  * </p>
+ * <p>
+ * You can also stream the results back before the operation is fully complete.
+ * This reduces the time between executing the operation and seeing a result,
+ * and reduces overall memory usage if the iterator is consumed quickly enough.
+ * The result iterable can only be iterated once though.
+ * If the thread is interrupted while the iterator is polling for more results,
+ * a {@link RuntimeException} will be thrown.
+ * <pre class="prettyprint">
+ * {@code
+ * ListBuckets lb = new ListBuckets.Builder("my_type").build();
+ * final RiakFuture<ListBuckets.StreamingResponse, BinaryValue> streamFuture =
+ *     client.executeAsyncStreaming(lb, 200);
+ * final ListBuckets.StreamingResponse streamingResponse = streamFuture.get();
+ * for (Namespace ns : streamingResponse)
+ * {
+ *     System.out.println(ns.getBucketName());
+ * }}</pre>
+ * </p>
  * @author Dave Rusek <drusek at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
 public final class ListBuckets extends StreamableRiakCommand<ListBuckets.StreamingResponse, ListBuckets.Response, BinaryValue>

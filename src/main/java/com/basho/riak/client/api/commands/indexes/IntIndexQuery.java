@@ -41,6 +41,33 @@ import java.util.List;
  * long key = 1234L;
  * IntIndexQuery q = new IntIndexQuery.Builder(ns, "my_index", key).build();
  * IntIndexQuery.Response resp = client.execute(q);}</pre>
+ *
+ * <p>
+ * You can also stream the results back before the operation is fully complete.
+ * This reduces the time between executing the operation and seeing a result,
+ * and reduces overall memory usage if the iterator is consumed quickly enough.
+ * The result iterable can only be iterated once though.
+ * If the thread is interrupted while the iterator is polling for more results,
+ * a {@link RuntimeException} will be thrown.
+ * <pre class="prettyprint">
+ * {@code
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * long key = 1234L;
+ * IntIndexQuery q = new IntIndexQuery.Builder(ns, "my_index", key).build();
+ * RiakFuture<IntIndexQuery.StreamingResponse, IntIndexQuery> streamingFuture =
+ *     client.executeAsyncStreaming(q, 200);
+ * IntIndexQuery.StreamingResponse streamingResponse = streamingFuture.get();
+ *
+ * for (IntIndexQuery.Response.Entry e : streamingResponse)
+ * {
+ *     System.out.println(e.getRiakObjectLocation().getKey().toString());
+ * }
+ * // Wait for the command to fully finish.
+ * streamingFuture.await();
+ * // The StreamingResponse will also contain the continuation, if the operation returned one.
+ * streamingResponse.getContinuation(); }</pre>
+ * </p>
+ *
  * @author Brian Roach <roach at basho dot com>
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
