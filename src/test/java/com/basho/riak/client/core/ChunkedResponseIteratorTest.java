@@ -17,6 +17,12 @@ import static org.powermock.api.mockito.PowerMockito.when;
  */
 public class ChunkedResponseIteratorTest
 {
+    /*
+      NB: Disable this test if you want to use code coverage tools.
+      The Thread interrupt it generates triggers a shutdown hook race bug in Java,
+      which then doesn't allow EMMA to cleanly shutdown.
+      https://bugs.openjdk.java.net/browse/JDK-8154017
+     */
     @Test
     public void testInterruptedExceptionDealtWith()
     {
