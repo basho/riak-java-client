@@ -32,6 +32,8 @@ import org.junit.Test;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -124,6 +126,9 @@ public class ITestListBuckets extends ITestBase
 
         streamingFuture.await(); // Wait for command to finish, even if we've found our data
         assumeTrue(streamingFuture.isDone());
+
+        assertFalse(streamingFuture.get().iterator().hasNext());
+        assertEquals(namespace.getBucketType(), streamingFuture.getQueryInfo());
 
         assertTrue(found);
     }

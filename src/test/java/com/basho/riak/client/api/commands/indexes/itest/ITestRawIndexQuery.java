@@ -188,6 +188,30 @@ public class ITestRawIndexQuery extends ITestBase
         assertFalse(streamingResponse.hasEntries());
     }
 
+    @Test
+    public void testIndexQueryStreamingContinuations() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(test2i);
+
+        BucketIndexQuery bq = new BucketIndexQuery.Builder(sharedNamespace).withMaxResults(50).withPaginationSort(true).build();
+
+        final RiakFuture<BinIndexQuery.StreamingResponse, BinIndexQuery> indexResult =
+                client.executeAsyncStreaming(bq, 100);
+
+        final BinIndexQuery.StreamingResponse streamingResponse = indexResult.get();
+
+        assertTrue(streamingResponse.hasEntries());
+        assertEquals(50, StreamSupport.stream(streamingResponse.spliterator(), false).count());
+        assertTrue(streamingResponse.hasContinuation());
+        assertNotNull(streamingResponse.getContinuation());
+
+        final BinIndexQuery queryInfo = indexResult.getQueryInfo();
+        assertEquals(bq, queryInfo);
+
+        // Assert everything was consumed
+        assertFalse(streamingResponse.hasEntries());
+    }
+
     private static class IndexedPojo
     {
         @RiakKey

@@ -413,9 +413,8 @@ public class RiakClient
      * @param <I> StreamableRiakCommand's immediate return type, available before the command/operation is complete.
      * @param <S> The RiakCommand's query info type.
      * @param command The RiakCommand to execute.
-     * @param timeoutMS The loading timeout in milliseconds for each result chunk.
-     *                  If the timeout is reached a {@see null} will be returned from the result's iterator,
-     *                  instead of blocking indefinitely.
+     * @param timeoutMS The polling timeout in milliseconds for each result chunk.
+     *                  If the timeout is reached it will try again, instead of blocking indefinitely.
      * @return a RiakFuture for the operation
      * @see RiakFuture
      */

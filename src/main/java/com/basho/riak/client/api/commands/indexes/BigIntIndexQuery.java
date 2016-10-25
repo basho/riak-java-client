@@ -108,7 +108,9 @@ public class BigIntIndexQuery
 
         StreamingResponse response = new StreamingResponse(namespace, converter, coreFuture, timeout);
 
-        BigIntStreamingQueryFuture future = new BigIntStreamingQueryFuture(coreFuture, response);
+        Streaming2iQueryFuture<StreamingResponse, BigIntIndexQuery> future =
+                new Streaming2iQueryFuture<>(coreFuture, response, this);
+
         coreFuture.addListener(future);
 
         return future;
@@ -130,27 +132,6 @@ public class BigIntIndexQuery
         protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
         {
             return new Response(namespace, coreResponse, converter);
-        }
-
-        @Override
-        protected BigIntIndexQuery convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo)
-        {
-            return BigIntIndexQuery.this;
-        }
-    }
-
-    protected final class BigIntStreamingQueryFuture
-            extends ImmediateCoreFutureAdapter<StreamingResponse,
-                                               BigIntIndexQuery,
-                                               SecondaryIndexQueryOperation.Response,
-                                               SecondaryIndexQueryOperation.Query>
-    {
-
-        protected BigIntStreamingQueryFuture(StreamingRiakFuture<SecondaryIndexQueryOperation.Response,
-                SecondaryIndexQueryOperation.Query> coreFuture,
-                                             StreamingResponse immediateResponse)
-        {
-            super(coreFuture, immediateResponse);
         }
 
         @Override
