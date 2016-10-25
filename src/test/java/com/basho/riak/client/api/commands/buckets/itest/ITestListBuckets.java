@@ -114,20 +114,24 @@ public class ITestListBuckets extends ITestBase
         final RiakFuture<ListBuckets.StreamingResponse, BinaryValue> streamingFuture =
                 client.executeAsyncStreaming(listBucketsCommand, 500);
 
-        Iterator<Namespace> iterator = streamingFuture.get().iterator();
+        final ListBuckets.StreamingResponse streamResponse = streamingFuture.get();
+        final Iterator<Namespace> iterator = streamResponse.iterator();
+
         assumeTrue(iterator.hasNext());
         boolean found = false;
 
-        while (iterator.hasNext())
+        for (Namespace ns : streamResponse)
         {
-            final Namespace next = iterator.next();
-            found = next.getBucketName().toString().equals(bucketName);
+            if(!found)
+            {
+                found = ns.getBucketName().toString().equals(bucketName);
+            }
         }
 
         streamingFuture.await(); // Wait for command to finish, even if we've found our data
         assumeTrue(streamingFuture.isDone());
 
-        assertFalse(streamingFuture.get().iterator().hasNext());
+        assertFalse(iterator.hasNext());
         assertEquals(namespace.getBucketType(), streamingFuture.getQueryInfo());
 
         assertTrue(found);
