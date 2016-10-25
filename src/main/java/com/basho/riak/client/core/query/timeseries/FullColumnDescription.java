@@ -55,7 +55,7 @@ public class FullColumnDescription extends ColumnDescription
      * @param quantum The {@link Quantum} setting if this column
      *                is used in partition key time quantization.
      *                <b>Use
-     *                {@link FullColumnDescription#FullColumnDescription(String, ColumnType, boolean, Integer)}
+     *                {@link #FullColumnDescription(String, ColumnDescription.ColumnType, boolean, Integer)}
      *                if the quantum is not needed. </b>
      * @throws IllegalArgumentException if the Column Name or Column Type are null or empty,
      *                                  or if the quantum is set on a non-Timestamp column,
@@ -108,7 +108,7 @@ public class FullColumnDescription extends ColumnDescription
      * @param quantum The {@link Quantum} setting if this column
      *                is used in partition key time quantization.
      *                <b>Use
-     *                {@link FullColumnDescription#FullColumnDescription(String, ColumnType, boolean, Integer, Integer)}
+     *                {@link #FullColumnDescription(String, ColumnDescription.ColumnType, boolean, Integer, Integer)}
      *                if the quantum is not needed. </b>
      * @throws IllegalArgumentException if the Column Name or Column Type are null or empty,
      *                                  or if the quantum is set on a non-Timestamp column,

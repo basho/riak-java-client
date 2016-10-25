@@ -277,8 +277,9 @@ public class RiakClient
      * @return a new RiakClient instance.
      * @throws java.net.UnknownHostException if a supplied hostname cannot be resolved.
      * @since 2.0.3
-     * @see com.basho.riak.client.core.RiakCluster.Builder#Builder(RiakNode.Builder, List)
+     * @see com.basho.riak.client.core.RiakCluster.Builder#RiakCluster.Builder(RiakNode.Builder, List)
      */
+    // NB: IntelliJ will see the above @see statement as invalid, but it's correct: https://bugs.openjdk.java.net/browse/JDK-8031625
     public static RiakClient newClient(RiakNode.Builder nodeBuilder,  List<String> addresses) throws UnknownHostException
     {
         final RiakCluster cluster = new RiakCluster.Builder(nodeBuilder, addresses).build();
@@ -408,7 +409,7 @@ public class RiakClient
      * Calling this method  causes the client to execute the provided StreamableRiakCommand
      * asynchronously. It will immediately return a RiakFuture that contains an immediately available result that data
      * will be streamed to. The RiakFuture will also keep track of the overall operation's progress with the
-     * {@see RiakFuture#isDone}, etc methods.
+     * {@link RiakFuture#isDone}, etc methods.
      *
      * @param <I> StreamableRiakCommand's immediate return type, available before the command/operation is complete.
      * @param <S> The RiakCommand's query info type.

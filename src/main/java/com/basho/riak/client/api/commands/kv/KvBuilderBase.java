@@ -27,7 +27,6 @@ public abstract class KvBuilderBase<ConstructedType>
      *
      * @param option the option
      * @param value the value for the option
-     * @return a reference to this object.
      */
     protected void addOption(RiakOption<?> option, Object value)
     {

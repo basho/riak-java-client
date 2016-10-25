@@ -1603,7 +1603,7 @@ public class RiakNode implements RiakResponseListener
          * @param builder         a configured builder, used for common properties among the nodes
          *
          * @return a list of constructed RiakNodes
-         * @@since 2.0.6
+         * @since 2.0.6
          */
         public static List<RiakNode> buildNodes(Collection<HostAndPort> remoteHosts, Builder builder)
         {
@@ -1630,8 +1630,8 @@ public class RiakNode implements RiakResponseListener
          * Build a set of RiakNodes.
          * The provided builder will be used to construct a set of RiakNodes using the supplied addresses.
          *
-         * @see #buildNodes(Builder, List)
          * @since 2.0.3
+         * @see #buildNodes(RiakNode.Builder, List)
          */
         public static List<RiakNode> buildNodes(Builder builder, String... remoteAddresses)
                 throws UnknownHostException

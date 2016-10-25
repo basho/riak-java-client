@@ -545,7 +545,7 @@ public abstract class SecondaryIndexQuery<T, S, U, W> extends StreamableRiakComm
          *
          * It has protected access since, due to performance reasons, it might be used only for the Full Bucket Read
          * @param returnBody
-         * @return
+         * @return a reference to this object.
          */
         protected T withReturnBody(boolean returnBody)
         {
