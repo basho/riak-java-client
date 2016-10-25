@@ -118,7 +118,7 @@ public class ITestListBuckets extends ITestBase
         assumeTrue(iterator.hasNext());
         boolean found = false;
 
-        while (!found && iterator.hasNext())
+        while (iterator.hasNext())
         {
             final Namespace next = iterator.next();
             found = next.getBucketName().toString().equals(bucketName);
