@@ -47,7 +47,7 @@ public class ListBucketsTest
         when(mockFuture.isCancelled()).thenReturn(false);
         when(mockFuture.isDone()).thenReturn(true);
         when(mockFuture.isSuccess()).thenReturn(true);
-        when(mockCluster.<ListBucketsOperation, Location>execute(any(StreamingFutureOperation.class))).thenReturn(mockFuture);
+        when(mockCluster.<ListBucketsOperation, Location>execute(any(PBStreamingFutureOperation.class))).thenReturn(mockFuture);
         client = new RiakClient(mockCluster);
     }
 

@@ -40,9 +40,9 @@ public class ChunkedResponseIteratorTest
                                     TimeUnit.MILLISECONDS)).thenThrow(new InterruptedException(
                         "foo"));
 
-                @SuppressWarnings("unchecked") StreamingFutureOperation<FakeResponse, Void, Void>
-                        coreFuture = (StreamingFutureOperation<FakeResponse, Void, Void>) mock(
-                        StreamingFutureOperation.class);
+                @SuppressWarnings("unchecked") PBStreamingFutureOperation<FakeResponse, Void, Void>
+                        coreFuture = (PBStreamingFutureOperation<FakeResponse, Void, Void>) mock(
+                        PBStreamingFutureOperation.class);
 
                 when(coreFuture.getResultsQueue()).thenReturn(fakeQueue);
 

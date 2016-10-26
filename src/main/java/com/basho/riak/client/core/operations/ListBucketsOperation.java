@@ -15,30 +15,31 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.core.StreamingFutureOperation;
+import com.basho.riak.client.core.PBStreamingFutureOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOperation.Response,
+public class ListBucketsOperation extends PBStreamingFutureOperation<ListBucketsOperation.Response,
                                                                    RiakKvPB.RpbListBucketsResp,
                                                                    BinaryValue>
 {
-    private final RiakKvPB.RpbListBucketsReq.Builder reqBuilder;
     private final BinaryValue bucketType;
 
     private ListBucketsOperation(Builder builder)
     {
-        super(builder.streamResults);
-        this.reqBuilder = builder.reqBuilder;
+        super(RiakMessageCodes.MSG_ListBucketsReq,
+                RiakMessageCodes.MSG_ListBucketsResp,
+                builder.reqBuilder,
+                RiakKvPB.RpbListBucketsResp.PARSER,
+                builder.streamResults);
+
         this.bucketType = builder.bucketType;
     }
 
@@ -76,26 +77,6 @@ public class ListBucketsOperation extends StreamingFutureOperation<ListBucketsOp
     {
         final List<BinaryValue> buckets = convertSingleResponse(rawResponseChunk);
         return new Response(bucketType, buckets);
-    }
-
-    @Override
-    protected RiakMessage createChannelMessage()
-    {
-        return new RiakMessage(RiakMessageCodes.MSG_ListBucketsReq, reqBuilder.build().toByteArray());
-    }
-
-    @Override
-    protected RiakKvPB.RpbListBucketsResp decode(RiakMessage rawMessage)
-    {
-        try
-        {
-            Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_ListBucketsResp);
-            return RiakKvPB.RpbListBucketsResp.parseFrom(rawMessage.getData());
-        }
-        catch (InvalidProtocolBufferException e)
-        {
-            throw new IllegalArgumentException("Invalid message received", e);
-        }
     }
 
     @Override

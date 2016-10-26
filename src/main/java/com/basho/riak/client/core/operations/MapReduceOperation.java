@@ -15,8 +15,7 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.core.StreamingFutureOperation;
+import com.basho.riak.client.core.PBStreamingFutureOperation;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
@@ -25,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 
 import java.util.LinkedHashMap;
@@ -39,9 +37,8 @@ import org.slf4j.LoggerFactory;
  * A Map/Reduce Operation on Riak. No error checking is done on the content type of the content itself
  * with the exception to making sure they are provided.
  */
-public class MapReduceOperation extends StreamingFutureOperation<MapReduceOperation.Response, RiakKvPB.RpbMapRedResp, BinaryValue>
+public class MapReduceOperation extends PBStreamingFutureOperation<MapReduceOperation.Response, RiakKvPB.RpbMapRedResp, BinaryValue>
 {
-    private final RiakKvPB.RpbMapRedReq.Builder reqBuilder;
     private final BinaryValue mapReduce;
     private final Logger logger = LoggerFactory.getLogger(MapReduceOperation.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -50,8 +47,11 @@ public class MapReduceOperation extends StreamingFutureOperation<MapReduceOperat
 
     private MapReduceOperation(Builder builder)
     {
-        super(builder.streamResults);
-        this.reqBuilder = builder.reqBuilder;
+        super(RiakMessageCodes.MSG_MapRedReq,
+                RiakMessageCodes.MSG_MapRedResp,
+                builder.reqBuilder,
+                RiakKvPB.RpbMapRedResp.PARSER,
+                builder.streamResults);
         this.mapReduce = builder.mapReduce;
     }
 
@@ -111,27 +111,6 @@ public class MapReduceOperation extends StreamingFutureOperation<MapReduceOperat
             {
                 logger.error("Mapreduce job returned JSON that wasn't an array; {}", response.getResponse().toStringUtf8());
             }
-        }
-    }
-
-    @Override
-    protected RiakMessage createChannelMessage()
-    {
-        RiakKvPB.RpbMapRedReq request = reqBuilder.build();
-        return new RiakMessage(RiakMessageCodes.MSG_MapRedReq, request.toByteArray());
-    }
-
-    @Override
-    protected RiakKvPB.RpbMapRedResp decode(RiakMessage rawMessage)
-    {
-        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_MapRedResp);
-        try
-        {
-            return RiakKvPB.RpbMapRedResp.parseFrom(rawMessage.getData());
-        }
-        catch (InvalidProtocolBufferException e)
-        {
-            throw new IllegalArgumentException(e);
         }
     }
 

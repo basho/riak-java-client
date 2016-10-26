@@ -16,6 +16,10 @@
 
 package com.basho.riak.client.core;
 
+import com.basho.riak.client.core.operations.PBFutureOperation;
+import com.basho.riak.protobuf.RiakKvPB;
+import com.google.protobuf.GeneratedMessage;
+
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 
@@ -26,15 +30,20 @@ import java.util.concurrent.TransferQueue;
  * @param <QueryInfoType> Query info type
  * @since 2.1.0
  */
-public abstract class StreamingFutureOperation<ReturnType, ResponseType, QueryInfoType>
-        extends FutureOperation<ReturnType, ResponseType, QueryInfoType>
+public abstract class PBStreamingFutureOperation<ReturnType, ResponseType, QueryInfoType>
+        extends PBFutureOperation<ReturnType, ResponseType, QueryInfoType>
         implements StreamingRiakFuture<ReturnType, QueryInfoType>
 {
     private final TransferQueue<ReturnType> responseQueue;
     private boolean streamResults;
 
-    protected StreamingFutureOperation(boolean streamResults)
+    protected PBStreamingFutureOperation(final byte reqMessageCode,
+                                         final byte respMessageCode,
+                                         final GeneratedMessage.Builder<?> reqBuilder,
+                                         com.google.protobuf.Parser<ResponseType> respParser,
+                                         boolean streamResults)
     {
+        super(reqMessageCode, respMessageCode, reqBuilder, respParser);
         this.streamResults = streamResults;
         this.responseQueue = new LinkedTransferQueue<>();
     }

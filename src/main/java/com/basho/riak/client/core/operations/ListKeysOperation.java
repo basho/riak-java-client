@@ -15,29 +15,30 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.core.StreamingFutureOperation;
+import com.basho.riak.client.core.PBStreamingFutureOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
 import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Namespace>
+public class ListKeysOperation extends PBStreamingFutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Namespace>
 {
     private final Namespace namespace;
-    private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
 
 
     private ListKeysOperation(Builder builder)
     {
-        super(builder.streamResults);
-        this.reqBuilder = builder.reqBuilder;
+        super(RiakMessageCodes.MSG_ListKeysReq,
+                RiakMessageCodes.MSG_ListKeysResp,
+                builder.reqBuilder,
+                RiakKvPB.RpbListKeysResp.PARSER,
+                builder.streamResults);
+
         this.namespace = builder.namespace;
     }
 
@@ -62,26 +63,6 @@ public class ListKeysOperation extends StreamingFutureOperation<ListKeysOperatio
         }
 
         return keys;
-    }
-
-    @Override
-    protected RiakMessage createChannelMessage()
-    {
-        return new RiakMessage(RiakMessageCodes.MSG_ListKeysReq, reqBuilder.build().toByteArray());
-    }
-
-    @Override
-    protected RiakKvPB.RpbListKeysResp decode(RiakMessage rawMessage)
-    {
-        try
-        {
-            Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_ListKeysResp);
-            return RiakKvPB.RpbListKeysResp.parseFrom(rawMessage.getData());
-        }
-        catch (InvalidProtocolBufferException e)
-        {
-            throw new IllegalArgumentException("Invalid message received", e);
-        }
     }
 
     @Override

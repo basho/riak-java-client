@@ -19,6 +19,7 @@ package com.basho.riak.client.api.commands.indexes;
 import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
+import com.basho.riak.client.core.PBStreamingFutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;

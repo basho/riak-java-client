@@ -224,7 +224,7 @@ public class  RiakCluster implements OperationRetrier, NodeStateListener
         return executeFutureOperation(operation);
     }
 
-    public <V, S> StreamingRiakFuture<V,S> execute(StreamingFutureOperation<V, ?, S> operation)
+    public <V, S> StreamingRiakFuture<V,S> execute(PBStreamingFutureOperation<V, ?, S> operation)
     {
         executeFutureOperation(operation);
         return operation;

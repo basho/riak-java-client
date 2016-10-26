@@ -15,8 +15,8 @@
  */
 package com.basho.riak.client.core.operations;
 
+import com.basho.riak.client.core.PBStreamingFutureOperation;
 import com.basho.riak.client.core.RiakMessage;
-import com.basho.riak.client.core.StreamingFutureOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -38,8 +38,8 @@ import java.util.List;
  * @since 2.0
  */
 public class SecondaryIndexQueryOperation
-        extends StreamingFutureOperation<SecondaryIndexQueryOperation.Response,
-        Object, SecondaryIndexQueryOperation.Query>
+        extends PBStreamingFutureOperation<SecondaryIndexQueryOperation.Response,
+                        Object, SecondaryIndexQueryOperation.Query>
 {
     private final RiakKvPB.RpbIndexReq pbReq;
     private final Query query;
@@ -48,11 +48,17 @@ public class SecondaryIndexQueryOperation
     {
         // Decide if we should release results as they come in (stream), or gather them all until the operation is
         // done (not stream).
-        super(builder.streamResults);
+        super(RiakMessageCodes.MSG_IndexReq,
+                RiakMessageCodes.MSG_IndexResp,
+                builder.pbReqBuilder,
+                null,
+                builder.streamResults);
 
         // Yo dawg, we don't ever not want to use streaming.
         builder.pbReqBuilder.setStream(true);
         this.query = builder.query;
+
+        // TODO: get rid of pbReq usage by switching to use query insted
         this.pbReq = builder.pbReqBuilder.build();
     }
 
@@ -175,12 +181,6 @@ public class SecondaryIndexQueryOperation
                         BinaryValue.unsafeCreate(objKey.toByteArray())));
             }
         }
-    }
-
-    @Override
-    protected RiakMessage createChannelMessage()
-    {
-        return new RiakMessage(RiakMessageCodes.MSG_IndexReq, pbReq.toByteArray());
     }
 
     @Override
