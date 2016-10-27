@@ -45,7 +45,7 @@ public abstract class PBStreamingFutureOperation<ReturnType, ResponseType, Query
     {
         super(reqMessageCode, respMessageCode, reqBuilder, respParser);
         this.streamResults = streamResults;
-        this.responseQueue = new LinkedTransferQueue<>();
+        this.responseQueue = streamResults ? new LinkedTransferQueue<>() : null;
     }
 
     @Override
@@ -58,6 +58,7 @@ public abstract class PBStreamingFutureOperation<ReturnType, ResponseType, Query
         }
 
         final ReturnType r = processStreamingChunk(decodedMessage);
+        assert this.responseQueue != null;
         responseQueue.offer(r);
     }
 
@@ -65,6 +66,7 @@ public abstract class PBStreamingFutureOperation<ReturnType, ResponseType, Query
 
     public final TransferQueue<ReturnType> getResultsQueue()
     {
+        assert this.responseQueue != null;
         return this.responseQueue;
     }
 }
