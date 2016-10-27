@@ -56,20 +56,63 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
         this.createNext = createNextFn;
         this.getNextIterator = getNextIteratorFn;
         this.getContinuationFn = getContinuationFn;
-        loadNextChunkIterator();
+
+
+        boolean interrupted = false;
+        try
+        {
+            boolean lastLoadInterrupted;
+            do
+            {
+                lastLoadInterrupted = false;
+                try
+                {
+                    tryLoadNextChunkIterator();
+                }
+                catch (InterruptedException ex)
+                {
+                    interrupted = true;
+                    lastLoadInterrupted = true;
+                }
+            } while (lastLoadInterrupted);
+        }
+        finally
+        {
+            if (interrupted)
+            {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     @Override
     public boolean hasNext()
     {
-        if (currentIteratorHasNext())
+        boolean interrupted = false;
+        Boolean dataLoaded = null;
+
+        try
         {
-            return true;
+            while (!currentIteratorHasNext() && dataLoaded == null)
+            {
+                try
+                {
+                    dataLoaded = tryLoadNextChunkIterator();
+                }
+                catch (InterruptedException ex)
+                {
+                    interrupted = true;
+                }
+            }
+            return currentIteratorHasNext();
         }
-
-        loadNextChunkIterator();
-
-        return currentIteratorHasNext();
+        finally
+        {
+            if (interrupted)
+            {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private boolean currentIteratorHasNext()
@@ -100,31 +143,25 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
         return createNext.apply(currentIterator.next());
     }
 
-    private void loadNextChunkIterator()
+    private boolean tryLoadNextChunkIterator() throws InterruptedException
     {
         this.currentIterator = null;
         boolean populatedChunkLoaded = false;
 
-        try
+        while (!populatedChunkLoaded && possibleChunksRemaining())
         {
-            while (!populatedChunkLoaded && possibleChunksRemaining())
+            final ChunkT nextChunk = chunkQueue.poll(timeout, TimeUnit.MILLISECONDS);
+
+            if (nextChunk != null)
             {
-                final ChunkT nextChunk = chunkQueue.poll(timeout, TimeUnit.MILLISECONDS);
+                this.currentIterator = getNextIterator.apply(nextChunk);
+                populatedChunkLoaded = currentIteratorHasNext();
 
-                if (nextChunk != null)
-                {
-                    this.currentIterator = getNextIterator.apply(nextChunk);
-                    populatedChunkLoaded = currentIteratorHasNext();
-
-                    loadContinuation(nextChunk);
-                }
+                loadContinuation(nextChunk);
             }
         }
-        catch (InterruptedException e)
-        {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        }
+
+        return populatedChunkLoaded;
     }
 
     private void loadContinuation(ChunkT nextChunk)
