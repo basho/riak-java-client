@@ -58,7 +58,10 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
         this.getContinuationFn = getContinuationFn;
 
 
-        boolean interrupted = false;
+        // Check & clear interrupted flag so we don't get an
+        // InterruptedException every time if the user
+        // doesn't clear it / deal with it.
+        boolean interrupted = Thread.interrupted();
         try
         {
             boolean lastLoadInterrupted;
@@ -80,6 +83,8 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
         {
             if (interrupted)
             {
+                // Reset interrupted flag if we came in with it
+                // or we were interrupted while waiting.
                 Thread.currentThread().interrupt();
             }
         }
@@ -88,7 +93,10 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
     @Override
     public boolean hasNext()
     {
-        boolean interrupted = false;
+        // Check & clear interrupted flag so we don't get an
+        // InterruptedException every time if the user
+        // doesn't clear it / deal with it.
+        boolean interrupted = Thread.interrupted();
         Boolean dataLoaded = null;
 
         try
@@ -110,6 +118,8 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
         {
             if (interrupted)
             {
+                // Reset interrupted flag if we came in with it
+                // or we were interrupted while waiting.
                 Thread.currentThread().interrupt();
             }
         }

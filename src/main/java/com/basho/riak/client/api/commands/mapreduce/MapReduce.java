@@ -460,37 +460,53 @@ public abstract class MapReduce extends StreamableRiakCommand<MapReduce.Streamin
             @Override
             public boolean hasNext()
             {
-                if (resultsQueueHasAny())
-                {
-                    return true;
-                }
-
+                // Check & clear interrupted flag so we don't get an
+                // InterruptedException every time if the user
+                // doesn't clear it / deal with it.
+                boolean interrupted = Thread.interrupted();
                 try
                 {
-                    return peekWaitForNextQueueEntry();
+                    boolean foundEntry = false;
+                    boolean interruptedLastLoop;
+
+                    do
+                    {
+                        interruptedLastLoop = false;
+
+                        try
+                        {
+                            foundEntry = peekWaitForNextQueueEntry();
+                        }
+                        catch (InterruptedException e)
+                        {
+                            interrupted = true;
+                            interruptedLastLoop = true;
+                        }
+                    } while (interruptedLastLoop);
+
+                    return foundEntry;
                 }
-                catch (InterruptedException e)
+                finally
                 {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(e);
+                    if(interrupted)
+                    {
+                        // Reset interrupted flag if we came in with it
+                        // or we were interrupted while waiting.
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
 
             private boolean peekWaitForNextQueueEntry() throws InterruptedException
             {
-                while (!resultsQueueHasAny() && !coreFuture.isDone())
+                while (resultsQueue.isEmpty() && !coreFuture.isDone())
                 {
-                    if (!resultsQueueHasAny())
+                    if (resultsQueue.isEmpty())
                     {
                         Thread.sleep(pollTimeout);
                     }
                 }
-                return resultsQueueHasAny();
-            }
-
-            private boolean resultsQueueHasAny()
-            {
-                return resultsQueue.peek() != null;
+                return !resultsQueue.isEmpty();
             }
 
             @Override

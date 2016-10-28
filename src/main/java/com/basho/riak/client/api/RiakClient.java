@@ -18,6 +18,7 @@ package com.basho.riak.client.api;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.util.HostAndPort;
 
 import java.net.InetSocketAddress;
@@ -404,18 +405,34 @@ public class RiakClient
     }
 
     /**
-     * Execute a StreamableRiakCommand asynchronously, and stream the results back before the command is complete.
+     * Execute a StreamableRiakCommand asynchronously, and stream the results back before
+     * the command {@link RiakFuture#isDone() is done}.
      * <p>
-     * Calling this method  causes the client to execute the provided StreamableRiakCommand
-     * asynchronously. It will immediately return a RiakFuture that contains an immediately available result that data
-     * will be streamed to. The RiakFuture will also keep track of the overall operation's progress with the
-     * {@link RiakFuture#isDone}, etc methods.
-     *
+     *     Calling this method  causes the client to execute the provided
+     *     StreamableRiakCommand asynchronously.
+     *     It will immediately return a RiakFuture that contains an
+     *     <b>immediately</b> available result (via {@link RiakFuture#get()}) that
+     *     data will be streamed to.
+     *     The RiakFuture will also keep track of the overall operation's progress
+     *     with the {@link RiakFuture#isDone}, etc methods.
+     * </p>
+     * <p>
+     *     Because the consumer thread will poll for new results, it is advisable to check the
+     *     consumer thread's interrupted status via
+     *     {@link Thread#isInterrupted() Thread.currentThread().isInterrupted() }, as the result
+     *     iterator will not propagate an InterruptedException, but it will set the Thread's
+     *     interrupted flag.
+     * </p>
      * @param <I> StreamableRiakCommand's immediate return type, available before the command/operation is complete.
      * @param <S> The RiakCommand's query info type.
      * @param command The RiakCommand to execute.
      * @param timeoutMS The polling timeout in milliseconds for each result chunk.
      *                  If the timeout is reached it will try again, instead of blocking indefinitely.
+     *                  If the value is too small (less than the average chunk arrival time), the
+     *                  result iterator will essentially busy wait.
+     *                  If the timeout is too large (much greater than the average chunk arrival time),
+     *                  the result iterator can block the consuming thread from seeing the done()
+     *                  status until the timeout is reached.
      * @return a RiakFuture for the operation
      * @see RiakFuture
      */
