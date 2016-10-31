@@ -425,8 +425,8 @@ public class RiakClient implements AutoCloseable
      * </p>
      */
     @Override
-    public void close(){
-        this.shutdown();
+    public void close() throws ExecutionException, InterruptedException {
+        this.shutdown().get();
     }
 
     /**
