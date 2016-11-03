@@ -101,10 +101,10 @@ public class ITestBigIntIndexQuery extends ITestIndexBase
                                                                    INDEX_ENTRY,
                                                                    INDEX_ENTRY2).withKeyAndIndex(true).build();
 
-        final RiakFuture<BigIntIndexQuery.StreamingResponse, BigIntIndexQuery> streamingFuture =
+        final RiakFuture<BigIntIndexQuery.Response, BigIntIndexQuery> streamingFuture =
                 client.executeAsyncStreaming(indexQuery, 200);
 
-        final BigIntIndexQuery.StreamingResponse streamingResponse = streamingFuture.get();
+        final BigIntIndexQuery.Response streamingResponse = streamingFuture.get();
 
         assertTrue(streamingResponse.hasEntries());
 

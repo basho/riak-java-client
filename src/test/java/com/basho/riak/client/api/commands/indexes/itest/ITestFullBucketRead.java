@@ -110,7 +110,7 @@ public class ITestFullBucketRead extends ITestBase
         {
             assertFalse(e.hasFetchedValue());
             assertNull(e.getFetchedValue());
-            returnedKeys.add(e.getLocation().getKeyAsString());
+            returnedKeys.add(e.getRiakObjectLocation().getKeyAsString());
         }
 
         assertEquals(NUMBER_OF_TEST_VALUES, returnedKeys.size());
@@ -134,7 +134,7 @@ public class ITestFullBucketRead extends ITestBase
             assertTrue(e.hasFetchedValue());
             final RiakObject ro = e.getFetchedValue().getValue(RiakObject.class);
 
-            final int expectedValue = Integer.parseInt(e.getLocation().getKeyAsString().substring(1));
+            final int expectedValue = Integer.parseInt(e.getRiakObjectLocation().getKeyAsString().substring(1));
             assertEquals("v" + expectedValue, ro.getValue().toString());
 
             assertEquals("plain/text", ro.getContentType());
@@ -354,7 +354,7 @@ public class ITestFullBucketRead extends ITestBase
                 for (FullBucketRead.Response.Entry re : e.getValue())
                 {
                     final RiakObject ro = re.hasFetchedValue() ? re.getFetchedValue().getValue(RiakObject.class) : null;
-                    results.put(re.getLocation().getKeyAsString(), ro);
+                    results.put(re.getRiakObjectLocation().getKeyAsString(), ro);
                 }
 
                 logger.debug("{} keys were returned for {}:\n\t{}",

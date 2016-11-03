@@ -17,20 +17,13 @@
 package com.basho.riak.client.api.commands.indexes;
 
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
-import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.DefaultCharset;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Performs a 2i query where the 2i index keys are strings.
@@ -74,16 +67,17 @@ import java.util.List;
  *
  * @author Brian Roach <roach at basho dot com>
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
-public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Response, BinIndexQuery, BinIndexQuery.StreamingResponse>
+public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Response, BinIndexQuery>
 {
     private final Charset charset;
     private final IndexConverter<String> converter;
 
     protected BinIndexQuery(Init<String, ?> builder)
     {
-        super(builder);
+        super(builder, Response::new, Response::new);
         this.charset = builder.charset;
         this.converter = new StringIndexConverter();
     }
@@ -92,33 +86,6 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
     protected IndexConverter<String> getConverter()
     {
         return converter;
-    }
-
-    @Override
-    protected RiakFuture<Response, BinIndexQuery> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
-                executeCoreAsync(cluster);
-
-        BinQueryFuture future = new BinQueryFuture(coreFuture);
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    @Override
-    protected RiakFuture<StreamingResponse, BinIndexQuery> executeAsyncStreaming(RiakCluster cluster, int timeout)
-    {
-        StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
-                executeCoreAsyncStreaming(cluster);
-
-        StreamingResponse response = new StreamingResponse(namespace, converter, coreFuture, timeout);
-
-        Streaming2iQueryFuture<StreamingResponse, BinIndexQuery> future =
-                new Streaming2iQueryFuture<>(coreFuture, response, this);
-
-        coreFuture.addListener(future);
-
-        return future;
     }
 
     @Override
@@ -267,91 +234,15 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
         }
     }
 
-    public static class Response extends SecondaryIndexQuery.Response<String>
+    public static class Response extends SecondaryIndexQuery.Response<String, SecondaryIndexQuery.Response.Entry<String>>
     {
-        protected Response(Namespace queryLocation,
-                           SecondaryIndexQueryOperation.Response coreResponse,
-                           IndexConverter<String> converter)
-        {
+
+        protected Response(Namespace queryLocation, IndexConverter converter, ChunkedResponseIterator chunkedResponseIterator) {
+            super(queryLocation, converter, chunkedResponseIterator);
+        }
+
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter converter) {
             super(queryLocation, coreResponse, converter);
-        }
-
-        @Override
-        public List<Entry> getEntries()
-        {
-            List<Entry> convertedList = new ArrayList<>();
-            for (SecondaryIndexQueryOperation.Response.Entry e : coreResponse.getEntryList())
-            {
-                Location loc = getLocationFromCoreEntry(e);
-                Entry ce = new Entry(loc, e.getIndexKey(), converter);
-                convertedList.add(ce);
-            }
-            return convertedList;
-        }
-
-        public static class Entry extends SecondaryIndexQuery.Response.Entry<String>
-        {
-            protected Entry(Location riakObjectLocation, BinaryValue indexKey, IndexConverter<String> converter)
-            {
-                super(riakObjectLocation, indexKey, converter);
-            }
-        }
-    }
-
-    public static class StreamingResponse extends SecondaryIndexQuery.StreamingResponse<Response.Entry>
-    {
-        StreamingResponse(Namespace namespace, IndexConverter<String> converter,
-                          StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture,
-                          int pollTimeout)
-        {
-            super(namespace, converter, createResponseIterator(namespace, converter, coreFuture, pollTimeout));
-        }
-
-        private static ChunkedResponseIterator<Response.Entry, SecondaryIndexQueryOperation.Response,
-                        SecondaryIndexQueryOperation.Response.Entry> createResponseIterator(
-                Namespace namespace,
-                IndexConverter<String> converter,
-                StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture,
-                int pollTimeout)
-        {
-            return new ChunkedResponseIterator<>(
-                    coreFuture,
-                    pollTimeout,
-                    (e) -> createExternalResponseEntry(namespace, e, converter),
-                    SecondaryIndexQueryOperation.Response::iterator,
-                    SecondaryIndexQueryOperation.Response::getContinuation);
-        }
-
-        private static Response.Entry createExternalResponseEntry(Namespace namespace,
-                                                                  SecondaryIndexQueryOperation.Response.Entry baseEntry,
-                                                                  IndexConverter<String> converter)
-        {
-            return new Response.Entry(SecondaryIndexQuery.Response.getLocationFromCoreEntry(namespace, baseEntry),
-                                      baseEntry.getIndexKey(),
-                                      converter);
-        }
-    }
-
-    protected final class BinQueryFuture
-            extends CoreFutureAdapter<Response, BinIndexQuery, SecondaryIndexQueryOperation.Response,
-            SecondaryIndexQueryOperation.Query>
-    {
-        public BinQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
-                                      coreFuture)
-        {
-            super(coreFuture);
-        }
-
-        @Override
-        protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
-        {
-            return new Response(namespace, coreResponse, converter);
-        }
-
-        @Override
-        protected BinIndexQuery convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo)
-        {
-            return BinIndexQuery.this;
         }
     }
 

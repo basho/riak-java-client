@@ -34,7 +34,7 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
     private final Function<ChunkT, Iterator<CoreT>> getNextIterator;
     private final Function<ChunkT, BinaryValue> getContinuationFn;
 
-    private Iterator<CoreT> currentIterator = null;
+    protected Iterator<CoreT> currentIterator = null;
 
     public ChunkedResponseIterator(StreamingRiakFuture<ChunkT, ?> coreFuture,
                                    int pollTimeout,

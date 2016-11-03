@@ -132,7 +132,7 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
             logger.info(sbld.toString());
         }
 
-        final Map<CoverageEntry, List<BinIndexQuery.Response.Entry>> chunkedKeys
+        final Map<CoverageEntry, List<BinIndexQuery.Response.Entry<String>>> chunkedKeys
                 = new HashMap<>();
 
         for (HostAndPort host: response.hosts())
@@ -170,7 +170,7 @@ public class ITestCoveragePlan extends ITestAutoCleanupBase
         }
 
         final Set<String> keys = new HashSet<>(NUMBER_OF_TEST_VALUES);
-        for (Map.Entry<CoverageEntry, List<BinIndexQuery.Response.Entry>> e: chunkedKeys.entrySet())
+        for (Map.Entry<CoverageEntry, List<BinIndexQuery.Response.Entry<String>>> e: chunkedKeys.entrySet())
         {
             final CoverageEntry ce = e.getKey();
             if (e.getValue().isEmpty())
