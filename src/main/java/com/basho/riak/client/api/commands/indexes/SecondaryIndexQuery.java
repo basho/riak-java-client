@@ -697,6 +697,7 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
             return chunkedResponseIterator != null;
         }
 
+        @SuppressWarnings("unchecked")
         public Iterator<E> iterator()
         {
             if (isStreamable()) {
@@ -785,6 +786,7 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
          * @param converter
          * @return
          */
+        @SuppressWarnings("unchecked")
         protected E createEntry(Location location, SecondaryIndexQueryOperation.Response.Entry coreEntry, IndexConverter<T> converter)
         {
             return (E)new Entry(location, coreEntry.getIndexKey(), converter);
