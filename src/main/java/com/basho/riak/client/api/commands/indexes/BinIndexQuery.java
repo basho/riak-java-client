@@ -237,11 +237,11 @@ public class BinIndexQuery extends SecondaryIndexQuery<String, BinIndexQuery.Res
     public static class Response extends SecondaryIndexQuery.Response<String, SecondaryIndexQuery.Response.Entry<String>>
     {
 
-        protected Response(Namespace queryLocation, IndexConverter converter, ChunkedResponseIterator chunkedResponseIterator) {
+        protected Response(Namespace queryLocation, IndexConverter<String> converter, ChunkedResponseIterator<Entry, ?, ?> chunkedResponseIterator) {
             super(queryLocation, converter, chunkedResponseIterator);
         }
 
-        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter converter) {
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<String> converter) {
             super(queryLocation, coreResponse, converter);
         }
     }

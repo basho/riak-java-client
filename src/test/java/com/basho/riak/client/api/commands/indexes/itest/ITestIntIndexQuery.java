@@ -108,7 +108,7 @@ public class ITestIntIndexQuery extends ITestIndexBase
                                                              Long.MAX_VALUE).withKeyAndIndex(true).build();
 
         final RiakFuture<IntIndexQuery.Response, IntIndexQuery> streamingFuture =
-                client.executeAsyncStreaming((StreamableRiakCommand) indexQuery, 200);
+                client.executeAsyncStreaming(indexQuery, 200);
 
         final IntIndexQuery.Response streamingResponse = streamingFuture.get();
 
