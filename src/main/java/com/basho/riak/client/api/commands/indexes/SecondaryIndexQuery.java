@@ -753,18 +753,6 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
             return !coreResponse.getEntryList().isEmpty();
         }
 
-        protected final Location getLocationFromCoreEntry(SecondaryIndexQueryOperation.Response.Entry e)
-        {
-            return Response.getLocationFromCoreEntry(this.queryLocation, e);
-        }
-
-        public static Location getLocationFromCoreEntry(Namespace queryLocation,
-                                                        SecondaryIndexQueryOperation.Response.Entry e)
-        {
-            final Location loc = new Location(queryLocation, e.getObjectKey());
-            return loc;
-        }
-
         public final List<E> getEntries()
         {
             final List<SecondaryIndexQueryOperation.Response.Entry> coreEntries = coreResponse.getEntryList();
@@ -772,8 +760,7 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
 
             for (SecondaryIndexQueryOperation.Response.Entry e : coreEntries)
             {
-                final Location loc = getLocationFromCoreEntry(e);
-                final E ce = createEntry(loc, e, converter);
+                final E ce = createEntry(queryLocation, e, converter);
                 convertedList.add(ce);
             }
             return convertedList;
@@ -794,7 +781,8 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
 
         protected final E createEntry(Namespace namespace, SecondaryIndexQueryOperation.Response.Entry coreEntry, IndexConverter<T> converter)
         {
-            return createEntry(Response.getLocationFromCoreEntry(namespace, coreEntry), coreEntry, converter);
+            final Location loc = new Location(queryLocation, coreEntry.getObjectKey());
+            return createEntry(loc, coreEntry, converter);
         }
 
         public static class Entry<T>
