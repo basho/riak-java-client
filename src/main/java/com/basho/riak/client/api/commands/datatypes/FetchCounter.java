@@ -16,9 +16,6 @@
 
 package com.basho.riak.client.api.commands.datatypes;
 
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.crdt.types.RiakCounter;
@@ -48,38 +45,18 @@ public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.
     }
 
     @Override
-    protected final RiakFuture<FetchCounter.Response, Location> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<DtFetchOperation.Response, Location> coreFuture =
-            cluster.execute(buildCoreOperation());
+    protected Response convertResponse(DtFetchOperation.Response coreResponse) {
+        RiakDatatype element = coreResponse.getCrdtElement();
 
-        CoreFutureAdapter<FetchCounter.Response, Location, DtFetchOperation.Response, Location> future =
-            new CoreFutureAdapter<FetchCounter.Response, Location, DtFetchOperation.Response, Location>(coreFuture)
-            {
-                @Override
-                protected FetchCounter.Response convertResponse(DtFetchOperation.Response coreResponse)
-                {
-                    RiakDatatype element = coreResponse.getCrdtElement();
+        Context context = null;
+        if (coreResponse.hasContext())
+        {
+            context = new Context(coreResponse.getContext());
+        }
 
-                    Context context = null;
-                    if (coreResponse.hasContext())
-                    {
-                        context = new Context(coreResponse.getContext());
-                    }
+        RiakCounter datatype = extractDatatype(element);
 
-                    RiakCounter datatype = extractDatatype(element);
-
-                    return new Response(datatype, context);
-                }
-
-                @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+        return new Response(datatype, context);
     }
 
     @Override

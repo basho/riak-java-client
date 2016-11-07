@@ -16,7 +16,6 @@
 package com.basho.riak.client.api.commands.buckets;
 
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
@@ -64,7 +63,8 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public final class ListBuckets extends StreamableRiakCommand<ListBuckets.StreamingResponse, ListBuckets.Response, BinaryValue>
+public final class ListBuckets extends StreamableRiakCommand<ListBuckets.StreamingResponse, ListBuckets.Response, BinaryValue,
+        ListBucketsOperation.Response, BinaryValue>
 {
     private final int timeout;
     private final BinaryValue type;
@@ -76,30 +76,11 @@ public final class ListBuckets extends StreamableRiakCommand<ListBuckets.Streami
     }
 
     @Override
-    protected RiakFuture<Response, BinaryValue> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture =
-            cluster.execute(buildCoreOperation(false));
-
-        CoreFutureAdapter<ListBuckets.Response, BinaryValue, ListBucketsOperation.Response, BinaryValue> future =
-            new CoreFutureAdapter<ListBuckets.Response, BinaryValue, ListBucketsOperation.Response, BinaryValue>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(ListBucketsOperation.Response coreResponse)
-                {
-                    return new Response(type, coreResponse.getBuckets());
-                }
-
-                @Override
-                protected BinaryValue convertQueryInfo(BinaryValue coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+    protected Response convertResponse(ListBucketsOperation.Response coreResponse) {
+        return new Response(type, coreResponse.getBuckets());
     }
 
+    @Override
     protected RiakFuture<StreamingResponse, BinaryValue> executeAsyncStreaming(RiakCluster cluster, int timeout)
     {
         StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture =
@@ -115,7 +96,8 @@ public final class ListBuckets extends StreamableRiakCommand<ListBuckets.Streami
         return future;
     }
 
-    private ListBucketsOperation buildCoreOperation(boolean streamResults)
+    @Override
+    protected ListBucketsOperation buildCoreOperation(boolean streamResults)
     {
         ListBucketsOperation.Builder builder = new ListBucketsOperation.Builder();
         if (timeout > 0)

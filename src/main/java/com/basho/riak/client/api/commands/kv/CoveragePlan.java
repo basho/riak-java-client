@@ -15,10 +15,7 @@
  */
 package com.basho.riak.client.api.commands.kv;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.GenericRiakCommand;
 import com.basho.riak.client.core.operations.CoveragePlanOperation;
 import com.basho.riak.client.core.query.Namespace;
 
@@ -27,7 +24,7 @@ import com.basho.riak.client.core.query.Namespace;
  *
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
-public class CoveragePlan  extends RiakCommand<CoveragePlan.Response, Namespace>
+public class CoveragePlan  extends GenericRiakCommand<CoveragePlan.Response, Namespace,CoveragePlanOperation.Response, Namespace>
 {
     private final CoveragePlanOperation operation;
 
@@ -37,27 +34,13 @@ public class CoveragePlan  extends RiakCommand<CoveragePlan.Response, Namespace>
     }
 
     @Override
-    protected RiakFuture<Response, Namespace> executeAsync(RiakCluster cluster)
-    {
-        final RiakFuture<CoveragePlanOperation.Response, Namespace> coreFuture = cluster.execute(operation);
+    protected CoveragePlanOperation buildCoreOperation() {
+        return operation;
+    }
 
-        CoreFutureAdapter<CoveragePlan.Response, Namespace, CoveragePlanOperation.Response, Namespace> future =
-            new CoreFutureAdapter<CoveragePlan.Response, Namespace, CoveragePlanOperation.Response, Namespace>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(CoveragePlanOperation.Response coreResponse)
-                {
-                    return new Response(coreResponse);
-                }
-
-                @Override
-                protected Namespace convertQueryInfo(Namespace coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+    @Override
+    protected Response convertResponse(CoveragePlanOperation.Response coreResponse) {
+        return new Response(coreResponse);
     }
 
     /**

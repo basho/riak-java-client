@@ -16,9 +16,6 @@
 
 package com.basho.riak.client.api.commands.datatypes;
 
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -51,53 +48,30 @@ import com.basho.riak.client.core.util.BinaryValue;
  */
 public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Response, Location>
 {
-    private final CounterUpdate update;
-
     private UpdateCounter(Builder builder)
     {
         super(builder);
-        this.update = builder.update;
     }
 
     @Override
-    protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<DtUpdateOperation.Response, Location> coreFuture =
-            cluster.execute(buildCoreOperation(update));
+    protected Response convertResponse(DtUpdateOperation.Response coreResponse) {
+        RiakCounter counter = null;
+        if (coreResponse.hasCrdtElement())
+        {
+            RiakDatatype element = coreResponse.getCrdtElement();
+            counter = element.getAsCounter();
+        }
+        BinaryValue returnedKey = coreResponse.hasGeneratedKey()
+            ? coreResponse.getGeneratedKey()
+            : null;
 
-        CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location> future =
-            new CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(DtUpdateOperation.Response coreResponse)
-                {
-                    RiakCounter counter = null;
-                    if (coreResponse.hasCrdtElement())
-                    {
-                        RiakDatatype element = coreResponse.getCrdtElement();
-                        counter = element.getAsCounter();
-                    }
-                    BinaryValue returnedKey = coreResponse.hasGeneratedKey()
-                        ? coreResponse.getGeneratedKey()
-                        : null;
+        Context returnedCtx = null;
+        if (coreResponse.hasContext())
+        {
+            returnedCtx = new Context(coreResponse.getContext());
+        }
 
-                    Context returnedCtx = null;
-                    if (coreResponse.hasContext())
-                    {
-                        returnedCtx = new Context(coreResponse.getContext());
-                    }
-
-                    return new Response(returnedCtx, counter, returnedKey);
-                }
-
-                @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+        return new Response(returnedCtx, counter, returnedKey);
     }
 
     /**
@@ -116,8 +90,6 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
      */
     public static final class Builder extends UpdateDatatype.Builder<Builder>
     {
-        private final CounterUpdate update;
-
         /**
          * Construct a Builder for an UpdateCounter command.
          * @param location the location of the counter in Riak.
@@ -125,12 +97,11 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
          */
         public Builder(Location location, CounterUpdate update)
         {
-            super(location);
+            super(location, update);
             if (update == null)
             {
                 throw new IllegalArgumentException("Update cannot be null");
             }
-            this.update = update;
         }
 
         /**
@@ -146,12 +117,11 @@ public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Res
          */
         public Builder(Namespace namespace, CounterUpdate update)
         {
-            super(namespace);
+            super(namespace, update);
             if (update == null)
             {
                 throw new IllegalArgumentException("Update cannot be null");
             }
-            this.update = update;
         }
 
         /**

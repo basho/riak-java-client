@@ -15,13 +15,12 @@
  */
 package com.basho.riak.client.api.commands.kv;
 
-import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.GenericRiakCommand;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.DeleteOperation;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.api.commands.RiakOption;
 import com.basho.riak.client.core.query.Location;
 
@@ -64,7 +63,7 @@ import java.util.Map;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class DeleteValue extends RiakCommand<Void, Location>
+public final class DeleteValue extends GenericRiakCommand<Void, Location, Void, Location>
 {
     private final Location location;
     private final Map<Option<?>, Object> options = new HashMap<>();
@@ -77,32 +76,18 @@ public final class DeleteValue extends RiakCommand<Void, Location>
         this.vClock = builder.vClock;
     }
 
+    /**
+     * To ensure that this method is accessible by {@link MultiDelete#executeBaseCommandAsync(DeleteValue, RiakCluster)}
+     * it MUST be overrode.
+     */
     @Override
     protected RiakFuture<Void, Location> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<Void, Location> coreFuture =
-            cluster.execute(buildCoreOperation());
-
-        CoreFutureAdapter<Void, Location, Void, Location> future =
-            new CoreFutureAdapter<Void, Location, Void, Location>(coreFuture)
-            {
-                @Override
-                protected Void convertResponse(Void coreResponse)
-                {
-                    return coreResponse;
-                }
-
-                @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+        return super.executeAsync(cluster);
     }
 
-    private DeleteOperation buildCoreOperation()
+    @Override
+    protected DeleteOperation buildCoreOperation()
     {
         DeleteOperation.Builder builder = new DeleteOperation.Builder(location);
 

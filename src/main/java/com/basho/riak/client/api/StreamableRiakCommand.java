@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api;
 
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 
@@ -27,12 +28,26 @@ import com.basho.riak.client.core.RiakFuture;
  * that data will flow into.
  * @param <S> The response type returned by "streaming mode" {@link executeAsyncStreaming}
  * @param <R> The response type returned by the "batch mode" @{link executeAsync}
- * @param <Q> The query info type
+ * @param <I> The query info type
  * @author Dave Rusek
  * @author Brian Roach <roach at basho.com>
  * @since 2.0
  */
-public abstract class StreamableRiakCommand<S, R, Q> extends RiakCommand<R, Q>
+public abstract class StreamableRiakCommand<S, R, I, CoreR, CoreI> extends GenericRiakCommand<R, I, CoreR, CoreI>
 {
-    protected abstract RiakFuture<S, Q> executeAsyncStreaming(RiakCluster cluster, int timeout);
+    public StreamableRiakCommand() {
+    }
+
+    public StreamableRiakCommand(Converter<R, CoreR> responseConverter, Converter<I, CoreI> infoConverter) {
+        super(responseConverter, infoConverter);
+    }
+
+    protected abstract RiakFuture<S, I> executeAsyncStreaming(RiakCluster cluster, int timeout);
+
+    @Override
+    protected final FutureOperation<CoreR, ?, CoreI> buildCoreOperation() {
+        return buildCoreOperation(false);
+    }
+
+    protected abstract  FutureOperation<CoreR, ?, CoreI> buildCoreOperation(boolean streamResults);
 }

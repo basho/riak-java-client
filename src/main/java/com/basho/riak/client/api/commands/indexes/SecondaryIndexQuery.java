@@ -18,7 +18,6 @@ package com.basho.riak.client.api.commands.indexes;
 
 import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
@@ -44,7 +43,8 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
-public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Response<T, ?>, U> extends StreamableRiakCommand<S, S, U>
+public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Response<T, ?>, U> extends StreamableRiakCommand<S, S, U,
+        SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
 {
     @FunctionalInterface
     public interface StreamableResponseCreator<T, R extends Response<T, ?>>
@@ -210,7 +210,8 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
         return timeout;
     }
 
-    protected final SecondaryIndexQueryOperation.Query createCoreQuery()
+    @Override
+    protected SecondaryIndexQueryOperation buildCoreOperation(boolean streamResults)
     {
         IndexConverter<T> converter = getConverter();
 
@@ -250,29 +251,25 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
         {
             coreQueryBuilder.withCoverageContext(coverageContext);
         }
-        return coreQueryBuilder.build();
+
+        return new SecondaryIndexQueryOperation.Builder(coreQueryBuilder.build()).streamResults(streamResults).build();
     }
 
-    protected RiakFuture<SecondaryIndexQueryOperation.Response,
-            SecondaryIndexQueryOperation.Query> executeCoreAsync(RiakCluster cluster)
+    @Override
+    protected S convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
     {
-        SecondaryIndexQueryOperation.Builder builder =
-                new SecondaryIndexQueryOperation.Builder(this.createCoreQuery());
-
-        return cluster.execute(builder.build());
+        return convertResponse(coreResponse, null);
     }
 
-    protected StreamingRiakFuture<SecondaryIndexQueryOperation.Response,
-            SecondaryIndexQueryOperation.Query> executeCoreAsyncStreaming(RiakCluster cluster)
+    @Override
+    @SuppressWarnings("unchecked")
+    protected U convertInfo(SecondaryIndexQueryOperation.Query coreInfo)
     {
-        SecondaryIndexQueryOperation.Builder builder =
-                new SecondaryIndexQueryOperation.Builder(this.createCoreQuery()).streamResults(true);
-
-        return cluster.execute(builder.build());
+        return (U)SecondaryIndexQuery.this;
     }
 
     private S convertResponse(final SecondaryIndexQueryOperation.Response coreResponse,
-                                final ChunkedResponseIterator<Response.Entry, ?, ?> iterator)
+                              final ChunkedResponseIterator<Response.Entry, ?, ?> iterator)
     {
         final S response;
 
@@ -289,32 +286,12 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
     }
 
     @Override
-    protected final RiakFuture<S, U> executeAsync(RiakCluster cluster)
-    {
-        final RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture = executeCoreAsync(cluster);
-        final CoreFutureAdapter<S, U, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> future =
-                new CoreFutureAdapter<S, U, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>(coreFuture) {
-                    @Override
-                    protected S convertResponse(SecondaryIndexQueryOperation.Response coreResponse) {
-                        return SecondaryIndexQuery.this.convertResponse(coreResponse, null);
-                    }
-
-                    @SuppressWarnings("unchecked")
-                    @Override
-                    protected U convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo) {
-                        return (U)SecondaryIndexQuery.this;
-                    }
-                };
-
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    @Override
     protected final RiakFuture<S, U> executeAsyncStreaming(RiakCluster cluster, int timeout)
     {
+        final SecondaryIndexQueryOperation coreOperation = buildCoreOperation(true);
+
         final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
-                executeCoreAsyncStreaming(cluster);
+                cluster.execute(coreOperation);
 
         final Response[] responses = {null};
 

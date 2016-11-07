@@ -1,9 +1,6 @@
 package com.basho.riak.client.api.commands.search;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.GenericRiakCommand;
 import com.basho.riak.client.core.operations.YzPutSchemaOperation;
 import com.basho.riak.client.core.query.search.YokozunaSchema;
 
@@ -16,7 +13,8 @@ import com.basho.riak.client.core.query.search.YokozunaSchema;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class StoreSchema extends RiakCommand<Void, YokozunaSchema>
+public final class StoreSchema extends GenericRiakCommand<Void, YokozunaSchema,
+        Void, YokozunaSchema>
 {
     private final YokozunaSchema schema;
 
@@ -26,31 +24,7 @@ public final class StoreSchema extends RiakCommand<Void, YokozunaSchema>
     }
 
     @Override
-    protected RiakFuture<Void, YokozunaSchema> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<Void, YokozunaSchema> coreFuture =
-            cluster.execute(buildCoreOperation());
-
-        CoreFutureAdapter<Void, YokozunaSchema,Void, YokozunaSchema> future =
-            new CoreFutureAdapter<Void, YokozunaSchema,Void, YokozunaSchema>(coreFuture)
-            {
-                @Override
-                protected Void convertResponse(Void coreResponse)
-                {
-                    return coreResponse;
-                }
-
-                @Override
-                protected YokozunaSchema convertQueryInfo(YokozunaSchema coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    private YzPutSchemaOperation buildCoreOperation()
+    protected YzPutSchemaOperation buildCoreOperation()
     {
         return new YzPutSchemaOperation.Builder(schema).build();
     }

@@ -18,7 +18,6 @@ package com.basho.riak.client.api;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.RiakNode;
-import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.util.HostAndPort;
 
 import java.net.InetSocketAddress;
@@ -436,7 +435,7 @@ public class RiakClient
      * @return a RiakFuture for the operation
      * @see RiakFuture
      */
-    public <I,S> RiakFuture<I,S> executeAsyncStreaming(StreamableRiakCommand<I, ?, S> command, int timeoutMS)
+    public <I,S> RiakFuture<I,S> executeAsyncStreaming(StreamableRiakCommand<I, ?, S, ?, ?> command, int timeoutMS)
     {
         return command.executeAsyncStreaming(cluster, timeoutMS);
     }

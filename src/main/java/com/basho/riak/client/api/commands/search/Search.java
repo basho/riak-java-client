@@ -15,11 +15,8 @@
  */
 package com.basho.riak.client.api.commands.search;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
+import com.basho.riak.client.api.GenericRiakCommand;
 import com.basho.riak.client.api.commands.RiakOption;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.operations.SearchOperation;
 import com.basho.riak.client.core.util.BinaryValue;
 
@@ -61,7 +58,8 @@ import java.util.*;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class Search extends RiakCommand<SearchOperation.Response, BinaryValue>
+public final class Search extends GenericRiakCommand<SearchOperation.Response, BinaryValue,
+        SearchOperation.Response, BinaryValue>
 {
     /**
      * Enum that encapsulates the possible settings for a search command's presort setting.
@@ -103,31 +101,7 @@ public final class Search extends RiakCommand<SearchOperation.Response, BinaryVa
     }
 
     @Override
-    protected RiakFuture<SearchOperation.Response, BinaryValue> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<SearchOperation.Response, BinaryValue> coreFuture =
-            cluster.execute(buildCoreOperation());
-
-        CoreFutureAdapter<SearchOperation.Response, BinaryValue, SearchOperation.Response, BinaryValue> future =
-            new CoreFutureAdapter<SearchOperation.Response, BinaryValue, SearchOperation.Response, BinaryValue>(coreFuture)
-            {
-                @Override
-                protected SearchOperation.Response convertResponse(SearchOperation.Response coreResponse)
-                {
-                    return coreResponse;
-                }
-
-                @Override
-                protected BinaryValue convertQueryInfo(BinaryValue coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    private SearchOperation buildCoreOperation()
+    protected SearchOperation buildCoreOperation()
     {
         SearchOperation.Builder builder = new SearchOperation.Builder(BinaryValue.create(index), query);
 

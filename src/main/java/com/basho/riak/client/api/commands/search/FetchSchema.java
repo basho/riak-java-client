@@ -16,10 +16,7 @@
 
 package com.basho.riak.client.api.commands.search;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.GenericRiakCommand;
 import com.basho.riak.client.core.operations.YzGetSchemaOperation;
 
 /**
@@ -27,7 +24,8 @@ import com.basho.riak.client.core.operations.YzGetSchemaOperation;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response, String>
+public final class FetchSchema extends GenericRiakCommand<YzGetSchemaOperation.Response, String,
+        YzGetSchemaOperation.Response, String>
 {
     private final String schema;
 
@@ -36,32 +34,32 @@ public final class FetchSchema extends RiakCommand<YzGetSchemaOperation.Response
         this.schema = builder.schema;
     }
 
-    @Override
-    protected RiakFuture<YzGetSchemaOperation.Response, String> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<YzGetSchemaOperation.Response, String> coreFuture =
-            cluster.execute(buildCoreOperation());
+//    @Override
+//    protected RiakFuture<YzGetSchemaOperation.Response, String> executeAsync(RiakCluster cluster)
+//    {
+//        RiakFuture<YzGetSchemaOperation.Response, String> coreFuture =
+//            cluster.execute(buildCoreOperation());
+//
+//        CoreFutureAdapter<YzGetSchemaOperation.Response, String, YzGetSchemaOperation.Response, String> future =
+//            new CoreFutureAdapter<YzGetSchemaOperation.Response, String, YzGetSchemaOperation.Response, String>(coreFuture)
+//            {
+//                @Override
+//                protected YzGetSchemaOperation.Response convertResponse(YzGetSchemaOperation.Response coreResponse)
+//                {
+//                    return coreResponse;
+//                }
+//
+//                @Override
+//                protected String convertQueryInfo(String coreQueryInfo)
+//                {
+//                    return coreQueryInfo;
+//                }
+//            };
+//        coreFuture.addListener(future);
+//        return future;
+//    }
 
-        CoreFutureAdapter<YzGetSchemaOperation.Response, String, YzGetSchemaOperation.Response, String> future =
-            new CoreFutureAdapter<YzGetSchemaOperation.Response, String, YzGetSchemaOperation.Response, String>(coreFuture)
-            {
-                @Override
-                protected YzGetSchemaOperation.Response convertResponse(YzGetSchemaOperation.Response coreResponse)
-                {
-                    return coreResponse;
-                }
-
-                @Override
-                protected String convertQueryInfo(String coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    private YzGetSchemaOperation buildCoreOperation()
+    protected YzGetSchemaOperation buildCoreOperation()
     {
         return new YzGetSchemaOperation.Builder(schema).build();
     }

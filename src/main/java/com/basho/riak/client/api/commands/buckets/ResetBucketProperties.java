@@ -1,9 +1,6 @@
 package com.basho.riak.client.api.commands.buckets;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.GenericRiakCommand;
 import com.basho.riak.client.core.operations.ResetBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
 
@@ -21,7 +18,7 @@ import com.basho.riak.client.core.query.Namespace;
  * @author Chris Mancini <cmancini at basho dot com>
  * @since 2.0
  */
-public class ResetBucketProperties extends RiakCommand<Void, Namespace>
+public class ResetBucketProperties extends GenericRiakCommand<Void, Namespace, Void, Namespace>
 {
     private final Namespace namespace;
 
@@ -31,32 +28,7 @@ public class ResetBucketProperties extends RiakCommand<Void, Namespace>
     }
 
     @Override
-    protected final RiakFuture<Void, Namespace> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<Void, Namespace> coreFuture =
-                cluster.execute(buildCoreOperation());
-
-        CoreFutureAdapter<Void, Namespace, Void, Namespace> future =
-                new CoreFutureAdapter<Void, Namespace, Void, Namespace>(coreFuture)
-                {
-                    @Override
-                    protected Void convertResponse(Void coreResponse)
-                    {
-                        return coreResponse;
-                    }
-
-                    @Override
-                    protected Namespace convertQueryInfo(Namespace coreQueryInfo)
-                    {
-                        return coreQueryInfo;
-                    }
-                };
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    private ResetBucketPropsOperation buildCoreOperation()
-    {
+    protected ResetBucketPropsOperation buildCoreOperation() {
         ResetBucketPropsOperation.Builder builder =
                 new ResetBucketPropsOperation.Builder(namespace);
 

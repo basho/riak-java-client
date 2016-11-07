@@ -22,7 +22,6 @@ import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -74,7 +73,8 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public final class ListKeys extends StreamableRiakCommand<ListKeys.StreamingResponse, ListKeys.Response, Namespace>
+public final class ListKeys extends StreamableRiakCommand<ListKeys.StreamingResponse, ListKeys.Response,
+        Namespace, ListKeysOperation.Response, Namespace>
 {
     private final Namespace namespace;
     private final int timeout;
@@ -86,28 +86,8 @@ public final class ListKeys extends StreamableRiakCommand<ListKeys.StreamingResp
     }
 
     @Override
-    protected final RiakFuture<ListKeys.Response, Namespace> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<ListKeysOperation.Response, Namespace> coreFuture =
-            cluster.execute(buildCoreOperation(false));
-
-        CoreFutureAdapter<ListKeys.Response, Namespace, ListKeysOperation.Response, Namespace> future =
-            new CoreFutureAdapter<ListKeys.Response, Namespace, ListKeysOperation.Response, Namespace>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(ListKeysOperation.Response coreResponse)
-                {
-                    return new Response(namespace, coreResponse.getKeys());
-                }
-
-                @Override
-                protected Namespace convertQueryInfo(Namespace coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+    protected Response convertResponse(ListKeysOperation.Response coreResponse) {
+        return new Response(namespace, coreResponse.getKeys());
     }
 
     @Override
@@ -126,7 +106,8 @@ public final class ListKeys extends StreamableRiakCommand<ListKeys.StreamingResp
         return future;
     }
 
-    private ListKeysOperation buildCoreOperation(boolean streamResults)
+    @Override
+    protected ListKeysOperation buildCoreOperation(boolean streamResults)
     {
         ListKeysOperation.Builder builder = new ListKeysOperation.Builder(namespace);
 
