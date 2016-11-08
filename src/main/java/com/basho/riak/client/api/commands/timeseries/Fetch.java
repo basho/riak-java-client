@@ -1,8 +1,6 @@
 package com.basho.riak.client.api.commands.timeseries;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.ts.FetchOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
@@ -15,7 +13,7 @@ import com.basho.riak.client.core.query.timeseries.QueryResult;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class Fetch extends RiakCommand<QueryResult, String>
+public class Fetch extends AsIsRiakCommand<QueryResult, String>
 {
     private final Builder builder;
 
@@ -25,15 +23,7 @@ public class Fetch extends RiakCommand<QueryResult, String>
     }
 
     @Override
-    protected RiakFuture<QueryResult, String> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<QueryResult, String> future =
-                cluster.execute(buildCoreOperation());
-
-        return future;
-    }
-
-    private FetchOperation buildCoreOperation()
+    protected FetchOperation buildCoreOperation()
     {
         final FetchOperation.Builder opBuilder =
                 new FetchOperation.Builder(this.builder.tableName, builder.keyValues);

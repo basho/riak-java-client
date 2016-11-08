@@ -1,13 +1,9 @@
 package com.basho.riak.client.api.commands.timeseries;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.ts.QueryOperation;
-import com.basho.riak.client.core.operations.ts.QueryOperation.Builder;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.google.protobuf.ByteString;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +20,7 @@ import java.util.regex.Pattern;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class Query extends RiakCommand<QueryResult, String>
+public class Query extends AsIsRiakCommand<QueryResult, String>
 {
     private final Builder builder;
 
@@ -34,12 +30,7 @@ public class Query extends RiakCommand<QueryResult, String>
     }
 
     @Override
-    protected RiakFuture<QueryResult, String> executeAsync(RiakCluster cluster)
-    {
-        return cluster.execute(buildCoreOperation());
-    }
-
-    private QueryOperation buildCoreOperation()
+    protected QueryOperation buildCoreOperation()
     {
         return new QueryOperation.Builder(builder.queryText)
                                            .withCoverageContext(builder.coverageContext)

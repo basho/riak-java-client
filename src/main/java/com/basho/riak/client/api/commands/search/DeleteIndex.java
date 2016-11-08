@@ -1,7 +1,6 @@
 package com.basho.riak.client.api.commands.search;
 
-import com.basho.riak.client.api.GenericRiakCommand;
-import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
 
 /**
@@ -9,7 +8,7 @@ import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class DeleteIndex extends GenericRiakCommand<Void, String, Void, String>
+public final class DeleteIndex extends AsIsRiakCommand<Void, String>
 {
     private final String index;
 
@@ -19,7 +18,7 @@ public final class DeleteIndex extends GenericRiakCommand<Void, String, Void, St
     }
 
     @Override
-    protected FutureOperation<Void, ?, String> buildCoreOperation() {
+    protected YzDeleteIndexOperation buildCoreOperation() {
         return new YzDeleteIndexOperation.Builder(index).build();
     }
 

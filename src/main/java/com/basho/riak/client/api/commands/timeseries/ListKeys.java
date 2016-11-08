@@ -1,6 +1,6 @@
 package com.basho.riak.client.api.commands.timeseries;
 
-import com.basho.riak.client.api.GenericRiakCommand;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.ts.ListKeysOperation;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 
@@ -12,8 +12,7 @@ import com.basho.riak.client.core.query.timeseries.QueryResult;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class ListKeys extends GenericRiakCommand<QueryResult, String,
-        QueryResult, String>
+public class ListKeys extends AsIsRiakCommand<QueryResult, String>
 {
     private final String tableName;
     private final int timeout;

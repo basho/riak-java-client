@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.api.commands.kv;
 
-import com.basho.riak.client.api.GenericRiakCommand;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.RiakCluster;
@@ -63,7 +63,7 @@ import java.util.Map;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class DeleteValue extends GenericRiakCommand<Void, Location, Void, Location>
+public final class DeleteValue extends AsIsRiakCommand<Void, Location>
 {
     private final Location location;
     private final Map<Option<?>, Object> options = new HashMap<>();

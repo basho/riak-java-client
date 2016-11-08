@@ -16,11 +16,7 @@
 
 package com.basho.riak.client.api.commands.search;
 
-import com.basho.riak.client.api.GenericRiakCommand;
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.YzFetchIndexOperation;
 
 /**
@@ -28,8 +24,7 @@ import com.basho.riak.client.core.operations.YzFetchIndexOperation;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public class FetchIndex extends GenericRiakCommand<YzFetchIndexOperation.Response, String,
-        YzFetchIndexOperation.Response, String>
+public class FetchIndex extends AsIsRiakCommand<YzFetchIndexOperation.Response, String>
 {
     private final String index;
 

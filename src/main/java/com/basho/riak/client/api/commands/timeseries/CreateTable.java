@@ -15,9 +15,8 @@
  */
 package com.basho.riak.client.api.commands.timeseries;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.AsIsRiakCommand;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.ts.CreateTableOperation;
 import com.basho.riak.client.core.query.timeseries.TableDefinition;
 
@@ -28,7 +27,7 @@ import com.basho.riak.client.core.query.timeseries.TableDefinition;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.6
  */
-public class CreateTable extends RiakCommand<Void, String>
+public class CreateTable extends AsIsRiakCommand<Void, String>
 {
     private final Builder builder;
 
@@ -38,12 +37,8 @@ public class CreateTable extends RiakCommand<Void, String>
     }
 
     @Override
-    protected RiakFuture<Void, String> executeAsync(RiakCluster cluster)
-    {
-        final RiakFuture<Void, String> future =
-                cluster.execute(builder.buildOperation());
-
-        return future;
+    protected FutureOperation<Void, ?, String> buildCoreOperation() {
+        return builder.buildOperation();
     }
 
     public static class Builder extends CreateTableOperation.AbstractBuilder<CreateTable, Builder>

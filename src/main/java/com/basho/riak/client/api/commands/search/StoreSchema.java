@@ -1,6 +1,6 @@
 package com.basho.riak.client.api.commands.search;
 
-import com.basho.riak.client.api.GenericRiakCommand;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.YzPutSchemaOperation;
 import com.basho.riak.client.core.query.search.YokozunaSchema;
 
@@ -13,8 +13,7 @@ import com.basho.riak.client.core.query.search.YokozunaSchema;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class StoreSchema extends GenericRiakCommand<Void, YokozunaSchema,
-        Void, YokozunaSchema>
+public final class StoreSchema extends AsIsRiakCommand<Void, YokozunaSchema>
 {
     private final YokozunaSchema schema;
 

@@ -16,7 +16,7 @@
 
 package com.basho.riak.client.api.commands.buckets;
 
-import com.basho.riak.client.api.GenericRiakCommand;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
 
@@ -36,8 +36,7 @@ import com.basho.riak.client.core.query.Namespace;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class FetchBucketProperties extends GenericRiakCommand<FetchBucketPropsOperation.Response, Namespace,
-        FetchBucketPropsOperation.Response, Namespace>
+public final class FetchBucketProperties extends AsIsRiakCommand<FetchBucketPropsOperation.Response, Namespace>
 {
     private final Namespace namespace;
 

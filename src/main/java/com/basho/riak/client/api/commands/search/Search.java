@@ -15,7 +15,7 @@
  */
 package com.basho.riak.client.api.commands.search;
 
-import com.basho.riak.client.api.GenericRiakCommand;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.api.commands.RiakOption;
 import com.basho.riak.client.core.operations.SearchOperation;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -58,8 +58,7 @@ import java.util.*;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class Search extends GenericRiakCommand<SearchOperation.Response, BinaryValue,
-        SearchOperation.Response, BinaryValue>
+public final class Search extends AsIsRiakCommand<SearchOperation.Response, BinaryValue>
 {
     /**
      * Enum that encapsulates the possible settings for a search command's presort setting.
