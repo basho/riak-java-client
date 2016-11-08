@@ -47,7 +47,7 @@ import com.basho.riak.client.core.util.BinaryValue;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Location>
+public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response>
 {
     private UpdateMap(Builder builder)
     {

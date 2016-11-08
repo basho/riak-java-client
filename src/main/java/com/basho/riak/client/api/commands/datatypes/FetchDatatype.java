@@ -31,7 +31,8 @@ import java.util.Map;
   * @author Dave Rusek <drusek at basho dot com>
   * @since 2.0
   */
-public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends GenericRiakCommand<S,U, DtFetchOperation.Response, Location>
+public abstract class FetchDatatype<T extends RiakDatatype,S> extends
+         GenericRiakCommand.GenericRiakCommandWithSameInfo<S,Location, DtFetchOperation.Response>
 {
     private final Location location;
     private final Map<Option<?>, Object> options = new HashMap<>();
@@ -48,7 +49,7 @@ public abstract class FetchDatatype<T extends RiakDatatype,S,U> extends GenericR
         this.options.putAll(builder.options);
     }
 
-    public <V> FetchDatatype<T,S,U> withOption(Option<V> option, V value)
+    public <V> FetchDatatype<T,S> withOption(Option<V> option, V value)
     {
         options.put(option, value);
         return this;

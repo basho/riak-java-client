@@ -37,7 +37,7 @@ import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.Response, Location>
+public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.Response>
 {
     private FetchCounter(Builder builder)
     {

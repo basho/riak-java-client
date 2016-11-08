@@ -69,8 +69,8 @@ import java.util.Map;
  * @since 2.0
  * @see Response
  */
-public final class FetchValue extends GenericRiakCommand<FetchValue.Response, Location,
-        FetchOperation.Response, Location>
+public final class FetchValue extends GenericRiakCommand.GenericRiakCommandWithSameInfo<FetchValue.Response, Location,
+        FetchOperation.Response>
 {
     private final Location location;
     private final Map<RiakOption<?>, Object> options = new HashMap<>();

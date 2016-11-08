@@ -28,6 +28,14 @@ import com.basho.riak.client.core.RiakFuture;
  */
 public abstract class GenericRiakCommand<R, I, CoreR, CoreI> extends RiakCommand<R, I>
 {
+    public static abstract class GenericRiakCommandWithSameInfo<R, I, CoreR> extends GenericRiakCommand<R,I, CoreR, I>
+    {
+        @Override
+        protected I convertInfo(I coreInfo) {
+            return coreInfo;
+        }
+    }
+
     @FunctionalInterface
     protected interface Converter<T, O>
     {
@@ -88,15 +96,7 @@ public abstract class GenericRiakCommand<R, I, CoreR, CoreI> extends RiakCommand
         return future;
     }
 
-    @SuppressWarnings("unchecked")
-    protected R convertResponse(CoreR coreResponse)
-    {
-        return (R)coreResponse;
-    }
+    protected abstract R convertResponse(CoreR coreResponse);
 
-    @SuppressWarnings("unchecked")
-    protected I convertInfo(CoreI coreInfo)
-    {
-        return (I)coreInfo;
-    }
+    protected abstract I convertInfo(CoreI coreInfo);
 }

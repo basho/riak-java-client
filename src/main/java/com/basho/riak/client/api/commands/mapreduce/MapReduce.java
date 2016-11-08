@@ -45,8 +45,8 @@ import java.util.concurrent.TransferQueue;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public abstract class MapReduce extends StreamableRiakCommand<MapReduce.Response, BinaryValue,
-        MapReduceOperation.Response, BinaryValue>
+public abstract class MapReduce extends StreamableRiakCommand.StreamableRiakCommandWithSameInfo<MapReduce.Response, BinaryValue,
+        MapReduceOperation.Response>
 {
     private final MapReduceSpec spec;
 

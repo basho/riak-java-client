@@ -46,7 +46,7 @@ import com.basho.riak.client.core.util.BinaryValue;
  * @since 2.1.0
  */
  
-public class UpdateHll extends UpdateDatatype<RiakHll, UpdateHll.Response, Location>
+public class UpdateHll extends UpdateDatatype<RiakHll, UpdateHll.Response>
 {
     private UpdateHll(Builder builder)
     {

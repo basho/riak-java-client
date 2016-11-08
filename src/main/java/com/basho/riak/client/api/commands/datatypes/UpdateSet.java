@@ -46,7 +46,7 @@ import com.basho.riak.client.core.util.BinaryValue;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Location>
+public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response>
 {
     private UpdateSet(Builder builder)
     {

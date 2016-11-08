@@ -38,7 +38,7 @@ import com.basho.riak.client.core.query.crdt.types.RiakHll;
  * @since 2.1.0
  */
  
-public final class FetchHll extends FetchDatatype<RiakHll, RiakHll, Location>
+public final class FetchHll extends FetchDatatype<RiakHll, RiakHll>
 {
     private FetchHll(Builder builder)
     {

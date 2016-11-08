@@ -73,8 +73,8 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public final class ListKeys extends StreamableRiakCommand<ListKeys.Response,
-        Namespace, ListKeysOperation.Response, Namespace>
+public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandWithSameInfo<ListKeys.Response,
+        Namespace, ListKeysOperation.Response>
 {
     private final Namespace namespace;
     private final int timeout;

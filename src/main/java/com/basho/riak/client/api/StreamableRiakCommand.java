@@ -35,6 +35,14 @@ import com.basho.riak.client.core.RiakFuture;
  */
 public abstract class StreamableRiakCommand<R, I, CoreR, CoreI> extends GenericRiakCommand<R, I, CoreR, CoreI>
 {
+    public static abstract class StreamableRiakCommandWithSameInfo<R, I, CoreR> extends StreamableRiakCommand<R,I, CoreR, I>
+    {
+        @Override
+        protected I convertInfo(I coreInfo) {
+            return coreInfo;
+        }
+    }
+
     public StreamableRiakCommand() {
     }
 

@@ -63,8 +63,8 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public final class ListBuckets extends StreamableRiakCommand<ListBuckets.Response, BinaryValue,
-        ListBucketsOperation.Response, BinaryValue>
+public final class ListBuckets extends StreamableRiakCommand.StreamableRiakCommandWithSameInfo<ListBuckets.Response, BinaryValue,
+        ListBucketsOperation.Response>
 {
     private final int timeout;
     private final BinaryValue type;

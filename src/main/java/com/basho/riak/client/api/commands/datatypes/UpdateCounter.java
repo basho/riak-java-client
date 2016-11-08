@@ -46,7 +46,7 @@ import com.basho.riak.client.core.util.BinaryValue;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Response, Location>
+public class UpdateCounter extends UpdateDatatype<RiakCounter, UpdateCounter.Response>
 {
     private UpdateCounter(Builder builder)
     {

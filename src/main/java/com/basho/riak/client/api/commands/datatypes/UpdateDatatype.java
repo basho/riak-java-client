@@ -35,7 +35,8 @@ import java.util.Map;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends GenericRiakCommand<S,U, DtUpdateOperation.Response, Location>
+public abstract class UpdateDatatype<T extends RiakDatatype,S>
+        extends GenericRiakCommand.GenericRiakCommandWithSameInfo<S,Location, DtUpdateOperation.Response>
 {
     protected final Namespace namespace;
     protected final BinaryValue key;

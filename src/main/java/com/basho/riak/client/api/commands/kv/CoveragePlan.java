@@ -24,7 +24,8 @@ import com.basho.riak.client.core.query.Namespace;
  *
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
-public class CoveragePlan  extends GenericRiakCommand<CoveragePlan.Response, Namespace,CoveragePlanOperation.Response, Namespace>
+public class CoveragePlan  extends GenericRiakCommand.GenericRiakCommandWithSameInfo<CoveragePlan.Response,
+        Namespace,CoveragePlanOperation.Response>
 {
     private final CoveragePlanOperation operation;
 

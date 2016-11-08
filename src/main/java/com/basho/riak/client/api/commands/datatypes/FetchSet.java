@@ -38,7 +38,7 @@ import com.basho.riak.client.core.query.crdt.types.RiakSet;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class FetchSet extends FetchDatatype<RiakSet, FetchSet.Response, Location>
+public final class FetchSet extends FetchDatatype<RiakSet, FetchSet.Response>
 {
     private FetchSet(Builder builder)
     {
