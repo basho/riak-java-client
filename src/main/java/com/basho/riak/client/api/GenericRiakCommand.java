@@ -43,16 +43,7 @@ public abstract class GenericRiakCommand<R, I, CoreR, CoreI> extends RiakCommand
         final FutureOperation<CoreR, ?, CoreI> coreOperation = buildCoreOperation();
         assert coreOperation != null;
 
-        // TODO: WE NEED TO GET RID SUCH A WEIRD IF-FORK
-        final RiakFuture<CoreR, CoreI> coreFuture;
-        if (coreOperation instanceof PBStreamingFutureOperation)
-        {
-            coreFuture = cluster.execute((PBStreamingFutureOperation<CoreR, ?, CoreI>) coreOperation);
-        }
-        else
-        {
-            coreFuture = cluster.execute(coreOperation);
-        }
+        final RiakFuture<CoreR, CoreI> coreFuture = cluster.execute(coreOperation);
 
         assert coreFuture != null;
 

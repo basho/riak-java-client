@@ -32,18 +32,7 @@ public abstract class AsIsRiakCommand<R, I> extends RiakCommand<R, I>
     {
         final FutureOperation<R, ?, I> coreOperation = buildCoreOperation();
 
-        // TODO: WE NEED TO GET RID SUCH A WEIRD IF-FORK
-        final RiakFuture<R, I> coreFuture;
-        if (coreOperation instanceof PBStreamingFutureOperation)
-        {
-            coreFuture = cluster.execute((PBStreamingFutureOperation<R, ?, I>) coreOperation);
-        }
-        else
-        {
-            coreFuture = cluster.execute(coreOperation);
-        }
-
-        return coreFuture;
+        return cluster.execute(coreOperation);
     }
 
 }
