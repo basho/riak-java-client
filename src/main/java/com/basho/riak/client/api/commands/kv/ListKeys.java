@@ -73,7 +73,7 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public final class ListKeys extends StreamableRiakCommand<ListKeys.StreamingResponse, ListKeys.Response,
+public final class ListKeys extends StreamableRiakCommand<ListKeys.Response,
         Namespace, ListKeysOperation.Response, Namespace>
 {
     private final Namespace namespace;
@@ -91,15 +91,15 @@ public final class ListKeys extends StreamableRiakCommand<ListKeys.StreamingResp
     }
 
     @Override
-    protected RiakFuture<StreamingResponse, Namespace> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    protected RiakFuture<Response, Namespace> executeAsyncStreaming(RiakCluster cluster, int timeout)
     {
         StreamingRiakFuture<ListKeysOperation.Response, Namespace> coreFuture =
                 cluster.execute(buildCoreOperation(true));
 
-        final ListKeys.StreamingResponse streamingResponse = new ListKeys.StreamingResponse(namespace, timeout, coreFuture);
+        final Response streamingResponse = new Response(namespace, timeout, coreFuture);
 
-        ImmediateCoreFutureAdapter.SameQueryInfo<StreamingResponse, Namespace, ListKeysOperation.Response> future =
-                new ImmediateCoreFutureAdapter.SameQueryInfo<StreamingResponse, Namespace, ListKeysOperation.Response>(
+        ImmediateCoreFutureAdapter.SameQueryInfo<Response, Namespace, ListKeysOperation.Response> future =
+                new ImmediateCoreFutureAdapter.SameQueryInfo<Response, Namespace, ListKeysOperation.Response>(
                         coreFuture, streamingResponse) {};
 
         coreFuture.addListener(future);
@@ -123,6 +123,8 @@ public final class ListKeys extends StreamableRiakCommand<ListKeys.StreamingResp
 
     public static class Response implements Iterable<Location>
     {
+        private final ChunkedResponseIterator<Location, ListKeysOperation.Response, BinaryValue>
+                chunkedResponseIterator;
         private final Namespace namespace;
         private final List<BinaryValue> keys;
 
@@ -130,11 +132,37 @@ public final class ListKeys extends StreamableRiakCommand<ListKeys.StreamingResp
         {
             this.namespace = namespace;
             this.keys = keys;
+            this.chunkedResponseIterator = null;
+        }
+
+        Response(Namespace namespace,
+                          int pollTimeout,
+                          StreamingRiakFuture<ListKeysOperation.Response, Namespace> coreFuture)
+        {
+            chunkedResponseIterator = new ChunkedResponseIterator<>(coreFuture,
+                    pollTimeout,
+                    (key) -> new Location(namespace, key),
+                    (nextChunk) -> nextChunk.getKeys().iterator());
+
+            this.namespace = namespace;
+            this.keys = null;
+        }
+
+        public boolean isStreamable()
+        {
+            return chunkedResponseIterator != null;
         }
 
         @Override
         public Iterator<Location> iterator()
         {
+            if (isStreamable())
+            {
+                assert chunkedResponseIterator != null;
+                return chunkedResponseIterator;
+            }
+
+            assert keys != null;
             return new Itr(namespace, keys.iterator());
         }
     }
@@ -168,30 +196,6 @@ public final class ListKeys extends StreamableRiakCommand<ListKeys.StreamingResp
         {
             iterator.remove();
         }
-    }
-
-    public static class StreamingResponse extends Response
-    {
-        private final ChunkedResponseIterator<Location, ListKeysOperation.Response, BinaryValue>
-                chunkedResponseIterator;
-
-        StreamingResponse(Namespace namespace,
-                          int pollTimeout,
-                          StreamingRiakFuture<ListKeysOperation.Response, Namespace> coreFuture)
-        {
-            super(namespace, null);
-            chunkedResponseIterator = new ChunkedResponseIterator<>(coreFuture,
-                                                                    pollTimeout,
-                                                                    (key) -> new Location(namespace, key),
-                                                                    (nextChunk) -> nextChunk.getKeys().iterator());
-        }
-
-        @Override
-        public Iterator<Location> iterator()
-        {
-            return chunkedResponseIterator;
-        }
-
     }
 
     /**

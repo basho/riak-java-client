@@ -63,7 +63,7 @@ import java.util.List;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public final class ListBuckets extends StreamableRiakCommand<ListBuckets.StreamingResponse, ListBuckets.Response, BinaryValue,
+public final class ListBuckets extends StreamableRiakCommand<ListBuckets.Response, BinaryValue,
         ListBucketsOperation.Response, BinaryValue>
 {
     private final int timeout;
@@ -81,15 +81,15 @@ public final class ListBuckets extends StreamableRiakCommand<ListBuckets.Streami
     }
 
     @Override
-    protected RiakFuture<StreamingResponse, BinaryValue> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    protected RiakFuture<Response, BinaryValue> executeAsyncStreaming(RiakCluster cluster, int timeout)
     {
         StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture =
                 cluster.execute(buildCoreOperation(true));
 
-        final StreamingResponse streamingResponse = new StreamingResponse(type, timeout, coreFuture);
+        final Response streamingResponse = new Response(type, timeout, coreFuture);
 
-        ImmediateCoreFutureAdapter.SameQueryInfo<StreamingResponse, BinaryValue, ListBucketsOperation.Response> future =
-                new ImmediateCoreFutureAdapter.SameQueryInfo<StreamingResponse, BinaryValue, ListBucketsOperation.Response>
+        ImmediateCoreFutureAdapter.SameQueryInfo<Response, BinaryValue, ListBucketsOperation.Response> future =
+                new ImmediateCoreFutureAdapter.SameQueryInfo<Response, BinaryValue, ListBucketsOperation.Response>
                         (coreFuture, streamingResponse) {};
 
         coreFuture.addListener(future);
@@ -131,42 +131,47 @@ public final class ListBuckets extends StreamableRiakCommand<ListBuckets.Streami
      */
     public static class Response implements Iterable<Namespace>
     {
+        private final ChunkedResponseIterator<Namespace, ListBucketsOperation.Response, BinaryValue>
+                chunkedResponseIterator;
         private final BinaryValue type;
         private final List<BinaryValue> buckets;
 
+        Response(BinaryValue type,
+                          int pollTimeout,
+                          StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture)
+        {
+            this.chunkedResponseIterator = new ChunkedResponseIterator<>(coreFuture,
+                    pollTimeout,
+                    (bucketName) -> new Namespace(type, bucketName),
+                    (response) -> response.getBuckets().iterator());
+
+            this.type = type;
+            this.buckets = null;
+        }
+
         public Response(BinaryValue type, List<BinaryValue> buckets)
         {
+            this.chunkedResponseIterator = null;
             this.type = type;
             this.buckets = buckets;
         }
 
+        public boolean isStreamable()
+        {
+            return chunkedResponseIterator != null;
+        }
+
         @Override
         public Iterator<Namespace> iterator()
         {
+            if (isStreamable())
+            {
+                assert  chunkedResponseIterator != null;
+                return chunkedResponseIterator;
+            }
+
+            assert  buckets != null;
             return new Itr(buckets.iterator(), type);
-        }
-    }
-
-    public static class StreamingResponse extends Response
-    {
-        private final ChunkedResponseIterator<Namespace, ListBucketsOperation.Response, BinaryValue>
-                chunkedResponseIterator;
-
-        StreamingResponse(BinaryValue type,
-                          int pollTimeout,
-                          StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture)
-        {
-            super(type, null);
-            chunkedResponseIterator = new ChunkedResponseIterator<>(coreFuture,
-                                                                    pollTimeout,
-                                                                    (bucketName) -> new Namespace(type, bucketName),
-                                                                    (response) -> response.getBuckets().iterator());
-        }
-
-        @Override
-        public Iterator<Namespace> iterator()
-        {
-            return chunkedResponseIterator;
         }
     }
 

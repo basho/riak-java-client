@@ -43,7 +43,7 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
-public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Response<T, ?>, U> extends StreamableRiakCommand<S, S, U,
+public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Response<T, ?>, U> extends StreamableRiakCommand<S, U,
         SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
 {
     @FunctionalInterface
@@ -55,6 +55,7 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
                          ChunkedResponseIterator<SecondaryIndexQuery.Response.Entry, ?, ?> chunkedResponseIterator);
     }
 
+    @FunctionalInterface
     public interface GatherableResponseCreator<T, R extends Response<T, ?>>
     {
         R createResponse(Namespace queryLocation,
@@ -678,6 +679,7 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
         public Iterator<E> iterator()
         {
             if (isStreamable()) {
+                assert chunkedResponseIterator != null;
                 return (Iterator)chunkedResponseIterator;
             }
 

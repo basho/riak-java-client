@@ -33,7 +33,7 @@ import com.basho.riak.client.core.RiakFuture;
  * @author Brian Roach <roach at basho.com>
  * @since 2.0
  */
-public abstract class StreamableRiakCommand<S, R, I, CoreR, CoreI> extends GenericRiakCommand<R, I, CoreR, CoreI>
+public abstract class StreamableRiakCommand<R, I, CoreR, CoreI> extends GenericRiakCommand<R, I, CoreR, CoreI>
 {
     public StreamableRiakCommand() {
     }
@@ -42,7 +42,7 @@ public abstract class StreamableRiakCommand<S, R, I, CoreR, CoreI> extends Gener
         super(responseConverter, infoConverter);
     }
 
-    protected abstract RiakFuture<S, I> executeAsyncStreaming(RiakCluster cluster, int timeout);
+    protected abstract RiakFuture<R, I> executeAsyncStreaming(RiakCluster cluster, int timeout);
 
     @Override
     protected final FutureOperation<CoreR, ?, CoreI> buildCoreOperation() {
