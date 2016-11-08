@@ -19,6 +19,7 @@ package com.basho.riak.client.api.commands.indexes;
 import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
@@ -257,7 +258,8 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
     }
 
     @Override
-    protected S convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
+    protected S convertResponse(FutureOperation<SecondaryIndexQueryOperation.Response, ?,
+            SecondaryIndexQueryOperation.Query> request, SecondaryIndexQueryOperation.Response coreResponse)
     {
         return convertResponse(coreResponse, null);
     }

@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.datatypes;
 
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -54,7 +55,9 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response>
     }
 
     @Override
-    protected Response convertResponse(DtUpdateOperation.Response coreResponse) {
+    protected Response convertResponse(FutureOperation<DtUpdateOperation.Response, ?, Location> request,
+                                       DtUpdateOperation.Response coreResponse)
+    {
         RiakSet set = null;
         if (coreResponse.hasCrdtElement())
         {

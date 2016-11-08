@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.datatypes;
 
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.crdt.types.RiakCounter;
@@ -45,7 +46,9 @@ public final class FetchCounter extends FetchDatatype<RiakCounter, FetchCounter.
     }
 
     @Override
-    protected Response convertResponse(DtFetchOperation.Response coreResponse) {
+    protected Response convertResponse(FutureOperation<DtFetchOperation.Response, ?, Location> request,
+                                       DtFetchOperation.Response coreResponse)
+    {
         RiakDatatype element = coreResponse.getCrdtElement();
 
         Context context = null;

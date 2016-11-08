@@ -18,6 +18,7 @@ package com.basho.riak.client.api.commands.kv;
 import com.basho.riak.client.api.GenericRiakCommand;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.cap.VClock;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.RiakFuture;
@@ -88,7 +89,8 @@ public final class FetchValue extends GenericRiakCommand.GenericRiakCommandWithS
     }
 
     @Override
-    protected Response convertResponse(FetchOperation.Response coreResponse)
+    protected Response convertResponse(FutureOperation<FetchOperation.Response, ?, Location> request,
+                                       FetchOperation.Response coreResponse)
     {
         return new Response.Builder().withNotFound(coreResponse.isNotFound())
                             .withUnchanged(coreResponse.isUnchanged())

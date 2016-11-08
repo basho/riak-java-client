@@ -16,6 +16,7 @@
 package com.basho.riak.client.api.commands.kv;
 
 import com.basho.riak.client.api.GenericRiakCommand;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.CoveragePlanOperation;
 import com.basho.riak.client.core.query.Namespace;
 
@@ -40,7 +41,9 @@ public class CoveragePlan  extends GenericRiakCommand.GenericRiakCommandWithSame
     }
 
     @Override
-    protected Response convertResponse(CoveragePlanOperation.Response coreResponse) {
+    protected Response convertResponse(FutureOperation<CoveragePlanOperation.Response, ?, Namespace> request,
+                                       CoveragePlanOperation.Response coreResponse)
+    {
         return new Response(coreResponse);
     }
 

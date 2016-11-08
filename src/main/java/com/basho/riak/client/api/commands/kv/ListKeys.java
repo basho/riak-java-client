@@ -18,6 +18,7 @@ package com.basho.riak.client.api.commands.kv;
 import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
@@ -86,7 +87,9 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
     }
 
     @Override
-    protected Response convertResponse(ListKeysOperation.Response coreResponse) {
+    protected Response convertResponse(FutureOperation<ListKeysOperation.Response, ?, Namespace> request,
+                                       ListKeysOperation.Response coreResponse)
+    {
         return new Response(namespace, coreResponse.getKeys());
     }
 

@@ -17,6 +17,7 @@ import com.basho.riak.client.api.RiakException;
 import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
 import com.basho.riak.client.api.convert.ConversionException;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
@@ -76,7 +77,8 @@ public abstract class MapReduce extends StreamableRiakCommand.StreamableRiakComm
     }
 
     @Override
-    protected Response convertResponse(MapReduceOperation.Response coreResponse)
+    protected Response convertResponse(FutureOperation<MapReduceOperation.Response, ?, BinaryValue> request,
+                                       MapReduceOperation.Response coreResponse)
     {
         return new Response(coreResponse.getResults());
     }

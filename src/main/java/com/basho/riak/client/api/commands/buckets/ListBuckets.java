@@ -18,6 +18,7 @@ package com.basho.riak.client.api.commands.buckets;
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
@@ -76,7 +77,9 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
     }
 
     @Override
-    protected Response convertResponse(ListBucketsOperation.Response coreResponse) {
+    protected Response convertResponse(FutureOperation<ListBucketsOperation.Response, ?, BinaryValue> request,
+                                       ListBucketsOperation.Response coreResponse)
+    {
         return new Response(type, coreResponse.getBuckets());
     }
 

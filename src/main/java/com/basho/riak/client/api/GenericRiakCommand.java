@@ -62,7 +62,7 @@ public abstract class GenericRiakCommand<R, I, CoreR, CoreI> extends RiakCommand
                     @Override
                     protected R convertResponse(CoreR coreResponse)
                     {
-                        return GenericRiakCommand.this.convertResponse(coreResponse);
+                        return GenericRiakCommand.this.convertResponse(coreOperation, coreResponse);
                     }
 
                     @Override
@@ -75,7 +75,7 @@ public abstract class GenericRiakCommand<R, I, CoreR, CoreI> extends RiakCommand
         return future;
     }
 
-    protected abstract R convertResponse(CoreR coreResponse);
+    protected abstract R convertResponse(FutureOperation<CoreR, ?, CoreI> request, CoreR coreResponse);
 
     protected abstract I convertInfo(CoreI coreInfo);
 }

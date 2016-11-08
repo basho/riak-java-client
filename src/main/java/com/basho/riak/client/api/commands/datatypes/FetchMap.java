@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.datatypes;
 
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
@@ -53,7 +54,9 @@ public final class FetchMap extends FetchDatatype<RiakMap, FetchMap.Response>
     }
 
     @Override
-    protected Response convertResponse(DtFetchOperation.Response coreResponse) {
+    protected Response convertResponse(FutureOperation<DtFetchOperation.Response, ?, Location> request,
+                                       DtFetchOperation.Response coreResponse)
+    {
         RiakDatatype element = coreResponse.getCrdtElement();
 
         Context context = null;

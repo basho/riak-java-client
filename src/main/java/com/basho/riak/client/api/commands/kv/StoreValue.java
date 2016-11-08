@@ -15,16 +15,16 @@
  */
 package com.basho.riak.client.api.commands.kv;
 
+import com.basho.riak.client.api.GenericRiakCommand;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.api.convert.Converter;
 import com.basho.riak.client.api.convert.Converter.OrmExtracted;
 import com.basho.riak.client.api.convert.ConverterFactory;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.StoreOperation;
-import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.api.commands.RiakOption;
 import com.basho.riak.client.core.util.BinaryValue;
 
@@ -69,7 +69,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
+public final class StoreValue extends GenericRiakCommand.GenericRiakCommandWithSameInfo<StoreValue.Response,
+        Location, StoreOperation.Response>
 {
     private final Namespace namespace;
     private final BinaryValue key;
@@ -88,9 +89,32 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
         this.vclock = builder.vclock;
     }
 
-    @SuppressWarnings("unchecked")
+    @Override
+    protected Response convertResponse(FutureOperation<StoreOperation.Response, ?, Location> request,
+                                       StoreOperation.Response coreResponse)
+    {
+        Location loc = request.getQueryInfo();
+        if (coreResponse.hasGeneratedKey())
+        {
+            loc = new Location(loc.getNamespace(), coreResponse.getGeneratedKey());
+        }
+
+        return new Response.Builder()
+                .withValues(coreResponse.getObjectList())
+                .withGeneratedKey(loc.getKey())
+                .withLocation(loc) // for ORM
+                .build();
+    }
+
     @Override
     protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
+    {
+        return super.executeAsync(cluster);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected StoreOperation buildCoreOperation()
     {
         Converter converter;
 
@@ -112,43 +136,6 @@ public final class StoreValue extends RiakCommand<StoreValue.Response, Location>
             orm.getRiakObject().setVClock(vclock);
         }
 
-        RiakFuture<StoreOperation.Response, Location> coreFuture =
-            cluster.execute(buildCoreOperation(orm));
-
-        CoreFutureAdapter<Response, Location, StoreOperation.Response, Location> future =
-            new CoreFutureAdapter<Response, Location, StoreOperation.Response, Location>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(StoreOperation.Response coreResponse)
-                {
-                    Namespace ns = orm.getNamespace();
-                    BinaryValue key = orm.getKey();
-                    if (coreResponse.hasGeneratedKey())
-                    {
-                        key = coreResponse.getGeneratedKey();
-                    }
-
-                    Location loc = new Location(ns, key);
-
-                    return new Response.Builder()
-                        .withValues(coreResponse.getObjectList())
-                        .withGeneratedKey(coreResponse.getGeneratedKey())
-                        .withLocation(loc) // for ORM
-                        .build();
-                }
-
-                @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    private StoreOperation buildCoreOperation(OrmExtracted orm)
-    {
         StoreOperation.Builder builder;
 
         if (orm.hasKey())
