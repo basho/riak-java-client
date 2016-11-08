@@ -43,13 +43,6 @@ public abstract class StreamableRiakCommand<R, I, CoreR, CoreI> extends GenericR
         }
     }
 
-    public StreamableRiakCommand() {
-    }
-
-    public StreamableRiakCommand(Converter<R, CoreR> responseConverter, Converter<I, CoreI> infoConverter) {
-        super(responseConverter, infoConverter);
-    }
-
     protected abstract RiakFuture<R, I> executeAsyncStreaming(RiakCluster cluster, int timeout);
 
     @Override

@@ -36,27 +36,6 @@ public abstract class GenericRiakCommand<R, I, CoreR, CoreI> extends RiakCommand
         }
     }
 
-    @FunctionalInterface
-    protected interface Converter<T, O>
-    {
-        T convert(O source);
-    }
-
-    private Converter<R, CoreR> responseConverter;
-    private Converter<I, CoreI> infoConverter;
-
-    public GenericRiakCommand()
-    {
-        this.responseConverter = this::convertResponse;
-        this.infoConverter = this::convertInfo;
-    }
-
-    public GenericRiakCommand(final Converter<R, CoreR> responseConverter, final Converter<I, CoreI> infoConverter)
-    {
-        this.responseConverter = responseConverter;
-        this.infoConverter = infoConverter;
-    }
-
     protected abstract FutureOperation<CoreR, ?, CoreI> buildCoreOperation();
 
     protected RiakFuture<R,I> executeAsync(RiakCluster cluster)
@@ -83,13 +62,13 @@ public abstract class GenericRiakCommand<R, I, CoreR, CoreI> extends RiakCommand
                     @Override
                     protected R convertResponse(CoreR coreResponse)
                     {
-                        return responseConverter.convert(coreResponse);
+                        return GenericRiakCommand.this.convertResponse(coreResponse);
                     }
 
                     @Override
                     protected I convertQueryInfo(CoreI coreQueryInfo)
                     {
-                        return infoConverter.convert(coreQueryInfo);
+                        return GenericRiakCommand.this.convertInfo(coreQueryInfo);
                     }
                 };
         coreFuture.addListener(future);
