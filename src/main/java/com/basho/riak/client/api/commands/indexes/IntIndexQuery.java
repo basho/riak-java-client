@@ -16,7 +16,7 @@
 
 package com.basho.riak.client.api.commands.indexes;
 
-import com.basho.riak.client.api.commands.ChunkedResponseIterator;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -195,11 +195,13 @@ public class IntIndexQuery extends SecondaryIndexQuery<Long, IntIndexQuery.Respo
 
     public static class Response extends SecondaryIndexQuery.Response<Long, SecondaryIndexQuery.Response.Entry<Long>>
     {
-        protected Response(Namespace queryLocation, IndexConverter<Long> converter, ChunkedResponseIterator<Entry, ?, ?> chunkedResponseIterator) {
-            super(queryLocation, converter, chunkedResponseIterator);
+        Response(Namespace queryLocation, IndexConverter<Long> converter, int timeout, StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        {
+            super(queryLocation, converter, timeout, coreFuture);
         }
 
-        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<Long> converter) {
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<Long> converter)
+        {
             super(queryLocation, coreResponse, converter);
         }
     }

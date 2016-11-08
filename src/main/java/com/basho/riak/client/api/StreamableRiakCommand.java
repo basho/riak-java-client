@@ -16,9 +16,8 @@
 
 package com.basho.riak.client.api;
 
-import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
+import com.basho.riak.client.core.*;
 
 /*
  * The base class for all Streamable Riak Commands.
@@ -31,6 +30,7 @@ import com.basho.riak.client.core.RiakFuture;
  * @param <I> The query info type
  * @author Dave Rusek
  * @author Brian Roach <roach at basho.com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
 public abstract class StreamableRiakCommand<R, I, CoreR, CoreI> extends GenericRiakCommand<R, I, CoreR, CoreI>
@@ -43,12 +43,38 @@ public abstract class StreamableRiakCommand<R, I, CoreR, CoreI> extends GenericR
         }
     }
 
-    protected abstract RiakFuture<R, I> executeAsyncStreaming(RiakCluster cluster, int timeout);
+    protected abstract R createResponse(int timeout, StreamingRiakFuture<CoreR, CoreI> coreFuture);
+
+    protected abstract  FutureOperation<CoreR, ?, CoreI> buildCoreOperation(boolean streamResults);
 
     @Override
     protected final FutureOperation<CoreR, ?, CoreI> buildCoreOperation() {
         return buildCoreOperation(false);
     }
 
-    protected abstract  FutureOperation<CoreR, ?, CoreI> buildCoreOperation(boolean streamResults);
+    protected final RiakFuture<R, I> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    {
+        final PBStreamingFutureOperation<CoreR, ?, CoreI> coreOperation = (PBStreamingFutureOperation<CoreR, ?, CoreI>)buildCoreOperation(true);
+        final StreamingRiakFuture<CoreR, CoreI> coreFuture = cluster.execute(coreOperation);
+
+        final R r = createResponse(timeout, coreFuture);
+
+        final ImmediateCoreFutureAdapter<R,I, CoreR, CoreI> future = new ImmediateCoreFutureAdapter<R,I,CoreR,CoreI>(coreFuture, r)
+        {
+            @Override
+            protected R convertResponse(CoreR response)
+            {
+                return StreamableRiakCommand.this.convertResponse(coreOperation, response);
+            }
+
+            @Override
+            protected I convertQueryInfo(CoreI coreQueryInfo)
+            {
+                return StreamableRiakCommand.this.convertInfo(coreQueryInfo);
+            }
+        };
+
+        coreFuture.addListener(future);
+        return future;
+    }
 }

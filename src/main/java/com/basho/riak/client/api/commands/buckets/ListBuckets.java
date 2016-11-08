@@ -17,10 +17,7 @@ package com.basho.riak.client.api.commands.buckets;
 
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.api.StreamableRiakCommand;
-import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
 import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
 import com.basho.riak.client.core.query.Namespace;
@@ -84,19 +81,9 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
     }
 
     @Override
-    protected RiakFuture<Response, BinaryValue> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    protected Response createResponse(int timeout, StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture)
     {
-        StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture =
-                cluster.execute(buildCoreOperation(true));
-
-        final Response streamingResponse = new Response(type, timeout, coreFuture);
-
-        ImmediateCoreFutureAdapter.SameQueryInfo<Response, BinaryValue, ListBucketsOperation.Response> future =
-                new ImmediateCoreFutureAdapter.SameQueryInfo<Response, BinaryValue, ListBucketsOperation.Response>
-                        (coreFuture, streamingResponse) {};
-
-        coreFuture.addListener(future);
-        return future;
+        return new Response(type, timeout, coreFuture);
     }
 
     @Override

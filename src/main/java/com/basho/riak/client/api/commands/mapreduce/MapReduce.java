@@ -15,11 +15,8 @@ package com.basho.riak.client.api.commands.mapreduce;
 
 import com.basho.riak.client.api.RiakException;
 import com.basho.riak.client.api.StreamableRiakCommand;
-import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
 import com.basho.riak.client.api.convert.ConversionException;
 import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.MapReduceOperation;
 import com.basho.riak.client.core.query.functions.Function;
@@ -84,20 +81,9 @@ public abstract class MapReduce extends StreamableRiakCommand.StreamableRiakComm
     }
 
     @Override
-    protected RiakFuture<Response, BinaryValue> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    protected Response createResponse(int timeout, StreamingRiakFuture<MapReduceOperation.Response, BinaryValue> coreFuture)
     {
-        final MapReduceOperation operation = buildCoreOperation(true);
-        final StreamingRiakFuture<MapReduceOperation.Response, BinaryValue> coreFuture = cluster.execute(operation);
-
-        final Response response = new Response(coreFuture, timeout);
-
-        ImmediateCoreFutureAdapter.SameQueryInfo<Response, BinaryValue, MapReduceOperation.Response> future =
-                new ImmediateCoreFutureAdapter.SameQueryInfo<Response, BinaryValue, MapReduceOperation.Response>(
-                        coreFuture, response) {};
-
-        coreFuture.addListener(future);
-
-        return future;
+        return new Response(coreFuture, timeout);
     }
 
     /**

@@ -17,10 +17,7 @@ package com.basho.riak.client.api.commands.kv;
 
 import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
-import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
 import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
 import com.basho.riak.client.core.query.Location;
@@ -94,19 +91,9 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
     }
 
     @Override
-    protected RiakFuture<Response, Namespace> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    protected Response createResponse(int timeout, StreamingRiakFuture<ListKeysOperation.Response, Namespace> coreFuture)
     {
-        StreamingRiakFuture<ListKeysOperation.Response, Namespace> coreFuture =
-                cluster.execute(buildCoreOperation(true));
-
-        final Response streamingResponse = new Response(namespace, timeout, coreFuture);
-
-        ImmediateCoreFutureAdapter.SameQueryInfo<Response, Namespace, ListKeysOperation.Response> future =
-                new ImmediateCoreFutureAdapter.SameQueryInfo<Response, Namespace, ListKeysOperation.Response>(
-                        coreFuture, streamingResponse) {};
-
-        coreFuture.addListener(future);
-        return future;
+        return new Response(namespace, timeout, coreFuture);
     }
 
     @Override

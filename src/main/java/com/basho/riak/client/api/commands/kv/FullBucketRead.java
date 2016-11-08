@@ -15,8 +15,8 @@
  */
 package com.basho.riak.client.api.commands.kv;
 
-import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.query.Location;
@@ -201,11 +201,13 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
     {
         private transient List<Entry> convertedList = null;
 
-        protected Response(Namespace queryLocation, IndexConverter<BinaryValue> converter, ChunkedResponseIterator<SecondaryIndexQuery.Response.Entry, ?, ?> chunkedResponseIterator) {
-            super(queryLocation, converter, chunkedResponseIterator);
+        protected Response(Namespace queryLocation, IndexConverter<BinaryValue> converter, final int timeout, StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        {
+            super(queryLocation, converter, timeout, coreFuture);
         }
 
-        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BinaryValue> converter) {
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BinaryValue> converter)
+        {
             super(queryLocation, coreResponse, converter);
         }
 

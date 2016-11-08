@@ -18,10 +18,7 @@ package com.basho.riak.client.api.commands.indexes;
 
 import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
-import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
 import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.query.Location;
@@ -44,16 +41,16 @@ import java.util.List;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
-public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Response<T, ?>, U> extends StreamableRiakCommand<S, U,
-        SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
+public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Response<T, ?>, U extends SecondaryIndexQuery>
+        extends StreamableRiakCommand<S, U, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
 {
     @FunctionalInterface
     public interface StreamableResponseCreator<T, R extends Response<T, ?>>
     {
-
         R createResponse(Namespace queryLocation,
                          IndexConverter<T> converter,
-                         ChunkedResponseIterator<SecondaryIndexQuery.Response.Entry, ?, ?> chunkedResponseIterator);
+                         int timeout,
+                         StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture);
     }
 
     @FunctionalInterface
@@ -261,7 +258,7 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
     protected S convertResponse(FutureOperation<SecondaryIndexQueryOperation.Response, ?,
             SecondaryIndexQueryOperation.Query> request, SecondaryIndexQueryOperation.Response coreResponse)
     {
-        return convertResponse(coreResponse, null);
+        return gatherableResponseCreator.createResponse(namespace, coreResponse, getConverter());
     }
 
     @Override
@@ -271,60 +268,10 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
         return (U)SecondaryIndexQuery.this;
     }
 
-    private S convertResponse(final SecondaryIndexQueryOperation.Response coreResponse,
-                              final ChunkedResponseIterator<Response.Entry, ?, ?> iterator)
-    {
-        final S response;
-
-        if (iterator != null)
-        {
-            response = streamableResponseCreator.createResponse(namespace, getConverter(), iterator);
-        }
-        else
-        {
-            response = gatherableResponseCreator.createResponse(namespace, coreResponse, getConverter());
-        }
-
-        return response;
-    }
-
     @Override
-    protected final RiakFuture<S, U> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    protected S createResponse(int timeout, StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
     {
-        final SecondaryIndexQueryOperation coreOperation = buildCoreOperation(true);
-
-        final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
-                cluster.execute(coreOperation);
-
-        final Response[] responses = {null};
-
-        final ChunkedResponseIterator<Response.Entry, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response.Entry> iterator = new ChunkedResponseIterator<Response.Entry, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response.Entry>(
-            coreFuture, timeout, null,
-            SecondaryIndexQueryOperation.Response::iterator,
-            SecondaryIndexQueryOperation.Response::getContinuation)
-        {
-            @SuppressWarnings("unchecked")
-            @Override
-            public Response.Entry next() {
-                final SecondaryIndexQueryOperation.Response.Entry coreEntity = currentIterator.next();
-                return responses[0].createEntry(namespace, coreEntity, getConverter());
-            }
-        };
-
-
-        final S response = convertResponse(null, iterator);
-        responses[0] = response;
-
-        final ImmediateCoreFutureAdapter<S,U,SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> future = new ImmediateCoreFutureAdapter<S,U,SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>(coreFuture, response) {
-            @SuppressWarnings("unchecked")
-            @Override
-            protected U convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo) {
-                return (U)SecondaryIndexQuery.this;
-            }
-        };
-
-        coreFuture.addListener(future);
-        return future;
+        return streamableResponseCreator.createResponse(namespace, getConverter(), timeout, coreFuture);
     }
 
     @Override
@@ -647,29 +594,35 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
         final protected Namespace queryLocation;
         private final ChunkedResponseIterator<Entry,?,?> chunkedResponseIterator;
 
-        private Response(Namespace queryLocation,
-                         IndexConverter<T> converter,
-                         ChunkedResponseIterator<Entry, ?, ?> chunkedResponseIterator,
-                         SecondaryIndexQueryOperation.Response coreResponse)
+        protected Response(final Namespace queryLocation, IndexConverter<T> converter, final int timeout,
+                 final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
         {
-            this.converter = converter;
             this.queryLocation = queryLocation;
-            this.chunkedResponseIterator = chunkedResponseIterator;
-            this.coreResponse = coreResponse;
-        }
-
-        protected Response(Namespace queryLocation,
-                           IndexConverter<T> converter,
-                           ChunkedResponseIterator<Entry, ?, ?> chunkedResponseIterator)
-        {
-            this(queryLocation, converter, chunkedResponseIterator, null);
+            this.converter = converter;
+            this.coreResponse = null;
+            chunkedResponseIterator = new ChunkedResponseIterator<Response.Entry, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response.Entry>(
+                    coreFuture, timeout, null,
+                    SecondaryIndexQueryOperation.Response::iterator,
+                    SecondaryIndexQueryOperation.Response::getContinuation)
+            {
+                @SuppressWarnings("unchecked")
+                @Override
+                public Response.Entry next()
+                {
+                    final SecondaryIndexQueryOperation.Response.Entry coreEntity = currentIterator.next();
+                    return Response.this.createEntry(Response.this.queryLocation, coreEntity, converter);
+                }
+            };
         }
 
         protected Response(Namespace queryLocation,
                            SecondaryIndexQueryOperation.Response coreResponse,
                            IndexConverter<T> converter)
         {
-            this(queryLocation, converter, null, coreResponse);
+            this.queryLocation = queryLocation;
+            this.converter = converter;
+            this.coreResponse = coreResponse;
+            chunkedResponseIterator = null;
         }
 
         public boolean isStreamable()
