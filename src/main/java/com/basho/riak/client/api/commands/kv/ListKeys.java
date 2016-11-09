@@ -20,6 +20,7 @@ import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
+import com.basho.riak.client.core.query.ConvertibleIterator;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -153,38 +154,14 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
             }
 
             assert keys != null;
-            return new Itr(namespace, keys.iterator());
-        }
-    }
-
-    private static class Itr implements Iterator<Location>
-    {
-        private final Iterator<BinaryValue> iterator;
-        private final Namespace namespace;
-
-        private Itr(Namespace namespace, Iterator<BinaryValue> iterator)
-        {
-            this.iterator = iterator;
-            this.namespace = namespace;
-        }
-
-        @Override
-        public boolean hasNext()
-        {
-            return iterator.hasNext();
-        }
-
-        @Override
-        public Location next()
-        {
-            BinaryValue key = iterator.next();
-            return new Location(namespace, key);
-        }
-
-        @Override
-        public void remove()
-        {
-            iterator.remove();
+            return new ConvertibleIterator<BinaryValue, Location>(keys.iterator())
+            {
+                @Override
+                protected Location convert(BinaryValue key)
+                {
+                    return new Location(namespace, key);
+                }
+            };
         }
     }
 

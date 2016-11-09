@@ -21,6 +21,7 @@ import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
+import com.basho.riak.client.core.query.ConvertibleIterator;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -638,8 +639,14 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
                 return (Iterator)chunkedResponseIterator;
             }
 
-            // TODO: add support for not streamable responses
-            throw new UnsupportedOperationException("Iterating is only supported for streamable response.");
+            return new ConvertibleIterator<SecondaryIndexQueryOperation.Response.Entry, E>(coreResponse.getEntryList().iterator())
+            {
+                @Override
+                protected E convert(SecondaryIndexQueryOperation.Response.Entry e)
+                {
+                    return createEntry(queryLocation, e, converter);
+                }
+            };
         }
 
         /**

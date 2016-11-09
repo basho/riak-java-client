@@ -20,6 +20,7 @@ import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
+import com.basho.riak.client.core.query.ConvertibleIterator;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 
@@ -161,38 +162,14 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
             }
 
             assert  buckets != null;
-            return new Itr(buckets.iterator(), type);
-        }
-    }
-
-    private static class Itr implements Iterator<Namespace>
-    {
-        private final Iterator<BinaryValue> iterator;
-        private final BinaryValue type;
-
-        private Itr(Iterator<BinaryValue> iterator, BinaryValue type)
-        {
-            this.iterator = iterator;
-            this.type = type;
-        }
-
-        @Override
-        public boolean hasNext()
-        {
-            return iterator.hasNext();
-        }
-
-        @Override
-        public Namespace next()
-        {
-            BinaryValue bucket = iterator.next();
-            return new Namespace(type, bucket);
-        }
-
-        @Override
-        public void remove()
-        {
-            iterator.remove();
+            return new ConvertibleIterator<BinaryValue, Namespace>(buckets.iterator())
+            {
+                @Override
+                protected Namespace convert(BinaryValue bucket)
+                {
+                    return new Namespace(type, bucket);
+                }
+            };
         }
     }
 

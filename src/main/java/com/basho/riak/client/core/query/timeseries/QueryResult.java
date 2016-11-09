@@ -4,7 +4,6 @@ import com.basho.riak.protobuf.RiakTsPB;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -82,7 +81,7 @@ public class QueryResult implements Iterable<Row>
         }
         else
         {
-            return ConvertibleIterator.iterateAsRow(this.pbRows.iterator());
+            return ConvertibleIteratorUtils.iterateAsRow(this.pbRows.iterator());
         }
     }
 
