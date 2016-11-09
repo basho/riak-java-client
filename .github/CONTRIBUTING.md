@@ -14,7 +14,7 @@ This repo's maintainers are engineers at Basho and welcome your contribution to 
 
 Here’s how to get started:
 
-* Fork the appropriate sub-projects that are affected by your change. 
+* Fork the appropriate sub-projects that are affected by your change.
 * Create a topic branch for your change and checkout that branch.
      `git checkout -b some-topic-branch`
 * Make your changes and run the test suite.
