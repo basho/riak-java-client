@@ -45,7 +45,7 @@ public abstract class StreamableRiakCommand<R, I, CoreR, CoreI> extends GenericR
 
     protected abstract R createResponse(int timeout, StreamingRiakFuture<CoreR, CoreI> coreFuture);
 
-    protected abstract  FutureOperation<CoreR, ?, CoreI> buildCoreOperation(boolean streamResults);
+    protected abstract  PBStreamingFutureOperation<CoreR, ?, CoreI> buildCoreOperation(boolean streamResults);
 
     @Override
     protected final FutureOperation<CoreR, ?, CoreI> buildCoreOperation() {
@@ -54,7 +54,7 @@ public abstract class StreamableRiakCommand<R, I, CoreR, CoreI> extends GenericR
 
     protected final RiakFuture<R, I> executeAsyncStreaming(RiakCluster cluster, int timeout)
     {
-        final PBStreamingFutureOperation<CoreR, ?, CoreI> coreOperation = (PBStreamingFutureOperation<CoreR, ?, CoreI>)buildCoreOperation(true);
+        final PBStreamingFutureOperation<CoreR, ?, CoreI> coreOperation = buildCoreOperation(true);
         final StreamingRiakFuture<CoreR, CoreI> coreFuture = cluster.execute(coreOperation);
 
         final R r = createResponse(timeout, coreFuture);
