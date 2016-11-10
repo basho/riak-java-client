@@ -588,12 +588,12 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
      *
      * @param <T> The type contained in the resposne.
      */
-    public static class Response<T, E extends Response.Entry<T>> implements Iterable<E>
+    public static class Response<T, E extends Response.Entry<T>>
+            extends StreamableResponse<E, SecondaryIndexQueryOperation.Response.Entry>
     {
         final protected IndexConverter<T> converter;
         final protected SecondaryIndexQueryOperation.Response coreResponse;
         final protected Namespace queryLocation;
-        private final ChunkedResponseIterator<Entry,?,?> chunkedResponseIterator;
 
         protected Response(final Namespace queryLocation, IndexConverter<T> converter, final int timeout,
                  final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
@@ -601,14 +601,14 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
             this.queryLocation = queryLocation;
             this.converter = converter;
             this.coreResponse = null;
-            chunkedResponseIterator = new ChunkedResponseIterator<Response.Entry, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response.Entry>(
+            chunkedResponseIterator = new ChunkedResponseIterator<E, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response.Entry>(
                     coreFuture, timeout, null,
                     SecondaryIndexQueryOperation.Response::iterator,
                     SecondaryIndexQueryOperation.Response::getContinuation)
             {
                 @SuppressWarnings("unchecked")
                 @Override
-                public Response.Entry next()
+                public E next()
                 {
                     final SecondaryIndexQueryOperation.Response.Entry coreEntity = currentIterator.next();
                     return Response.this.createEntry(Response.this.queryLocation, coreEntity, converter);
@@ -623,20 +623,12 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
             this.queryLocation = queryLocation;
             this.converter = converter;
             this.coreResponse = coreResponse;
-            chunkedResponseIterator = null;
         }
 
-        public boolean isStreamable()
-        {
-            return chunkedResponseIterator != null;
-        }
-
-        @SuppressWarnings("unchecked")
         public Iterator<E> iterator()
         {
             if (isStreamable()) {
-                assert chunkedResponseIterator != null;
-                return (Iterator)chunkedResponseIterator;
+                return super.iterator();
             }
 
             return new ConvertibleIterator<SecondaryIndexQueryOperation.Response.Entry, E>(coreResponse.getEntryList().iterator())

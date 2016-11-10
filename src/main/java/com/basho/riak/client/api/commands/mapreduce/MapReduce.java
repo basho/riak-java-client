@@ -336,7 +336,7 @@ public abstract class MapReduce extends StreamableRiakCommand.StreamableRiakComm
     /**
      * Response from a MapReduce command.
      */
-    public static class Response implements Iterable<Response>
+    public static class Response extends StreamableRiakCommand.StreamableResponse<Response, BinaryValue>
     {
         private final Map<Integer, ArrayNode> results;
         private final MapReduceResponseIterator responseIterator;
@@ -354,6 +354,7 @@ public abstract class MapReduce extends StreamableRiakCommand.StreamableRiakComm
             responseIterator = null;
         }
 
+        @Override
         public boolean isStreamable()
         {
             return responseIterator != null;

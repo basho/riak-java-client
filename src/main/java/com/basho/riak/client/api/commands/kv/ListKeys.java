@@ -112,10 +112,8 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
         return builder.build();
     }
 
-    public static class Response implements Iterable<Location>
+    public static class Response extends StreamableRiakCommand.StreamableResponse<Location, BinaryValue>
     {
-        private final ChunkedResponseIterator<Location, ListKeysOperation.Response, BinaryValue>
-                chunkedResponseIterator;
         private final Namespace namespace;
         private final List<BinaryValue> keys;
 
@@ -123,34 +121,26 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
         {
             this.namespace = namespace;
             this.keys = keys;
-            this.chunkedResponseIterator = null;
         }
 
         Response(Namespace namespace,
                           int pollTimeout,
                           StreamingRiakFuture<ListKeysOperation.Response, Namespace> coreFuture)
         {
-            chunkedResponseIterator = new ChunkedResponseIterator<>(coreFuture,
+            super(new ChunkedResponseIterator<>(coreFuture,
                     pollTimeout,
                     (key) -> new Location(namespace, key),
-                    (nextChunk) -> nextChunk.getKeys().iterator());
+                    (nextChunk) -> nextChunk.getKeys().iterator()));
 
             this.namespace = namespace;
             this.keys = null;
         }
 
-        public boolean isStreamable()
-        {
-            return chunkedResponseIterator != null;
-        }
-
         @Override
         public Iterator<Location> iterator()
         {
-            if (isStreamable())
-            {
-                assert chunkedResponseIterator != null;
-                return chunkedResponseIterator;
+            if (isStreamable()) {
+                return super.iterator();
             }
 
             assert keys != null;

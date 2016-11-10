@@ -120,10 +120,8 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
      * </pre>
      * </p>
      */
-    public static class Response implements Iterable<Namespace>
+    public static class Response extends StreamableRiakCommand.StreamableResponse<Namespace, BinaryValue>
     {
-        private final ChunkedResponseIterator<Namespace, ListBucketsOperation.Response, BinaryValue>
-                chunkedResponseIterator;
         private final BinaryValue type;
         private final List<BinaryValue> buckets;
 
@@ -131,10 +129,10 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
                           int pollTimeout,
                           StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture)
         {
-            this.chunkedResponseIterator = new ChunkedResponseIterator<>(coreFuture,
+            super(new ChunkedResponseIterator<>(coreFuture,
                     pollTimeout,
                     (bucketName) -> new Namespace(type, bucketName),
-                    (response) -> response.getBuckets().iterator());
+                    (response) -> response.getBuckets().iterator()));
 
             this.type = type;
             this.buckets = null;
@@ -142,23 +140,15 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
 
         public Response(BinaryValue type, List<BinaryValue> buckets)
         {
-            this.chunkedResponseIterator = null;
             this.type = type;
             this.buckets = buckets;
-        }
-
-        public boolean isStreamable()
-        {
-            return chunkedResponseIterator != null;
         }
 
         @Override
         public Iterator<Namespace> iterator()
         {
-            if (isStreamable())
-            {
-                assert  chunkedResponseIterator != null;
-                return chunkedResponseIterator;
+            if (isStreamable()) {
+                return super.iterator();
             }
 
             assert  buckets != null;

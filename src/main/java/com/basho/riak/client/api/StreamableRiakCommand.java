@@ -16,8 +16,11 @@
 
 package com.basho.riak.client.api;
 
+import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
 import com.basho.riak.client.core.*;
+
+import java.util.Iterator;
 
 /*
  * The base class for all Streamable Riak Commands.
@@ -33,13 +36,48 @@ import com.basho.riak.client.core.*;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
-public abstract class StreamableRiakCommand<R, I, CoreR, CoreI> extends GenericRiakCommand<R, I, CoreR, CoreI>
+public abstract class StreamableRiakCommand<R extends StreamableRiakCommand.StreamableResponse, I, CoreR, CoreI> extends GenericRiakCommand<R, I, CoreR, CoreI>
 {
-    public static abstract class StreamableRiakCommandWithSameInfo<R, I, CoreR> extends StreamableRiakCommand<R,I, CoreR, I>
+    public static abstract class StreamableRiakCommandWithSameInfo<R extends StreamableResponse, I, CoreR> extends StreamableRiakCommand<R,I, CoreR, I>
     {
         @Override
         protected I convertInfo(I coreInfo) {
             return coreInfo;
+        }
+    }
+
+    public static abstract class StreamableResponse<T, S> implements Iterable<T>
+    {
+        protected ChunkedResponseIterator<T, ?, S> chunkedResponseIterator;
+
+        /**
+         * Constructor for streamable response
+         * @param chunkedResponseIterator
+         */
+        protected StreamableResponse(ChunkedResponseIterator<T, ?, S> chunkedResponseIterator) {
+            this.chunkedResponseIterator = chunkedResponseIterator;
+        }
+
+        /**
+         * Constructor for not streamable response.
+         */
+        protected StreamableResponse()
+        {
+        }
+
+        public boolean isStreamable()
+        {
+            return chunkedResponseIterator != null;
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+            if (isStreamable()) {
+                assert chunkedResponseIterator != null;
+                return chunkedResponseIterator;
+            }
+
+            throw new UnsupportedOperationException("Iterating is only supported for streamable response");
         }
     }
 

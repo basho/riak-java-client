@@ -435,7 +435,7 @@ public class RiakClient
      * @return a RiakFuture for the operation
      * @see RiakFuture
      */
-    public <I,S> RiakFuture<I,S> executeAsyncStreaming(StreamableRiakCommand<I, S, ?, ?> command, int timeoutMS)
+    public <I extends StreamableRiakCommand.StreamableResponse,S> RiakFuture<I,S> executeAsyncStreaming(StreamableRiakCommand<I, S, ?, ?> command, int timeoutMS)
     {
         return command.executeAsyncStreaming(cluster, timeoutMS);
     }
