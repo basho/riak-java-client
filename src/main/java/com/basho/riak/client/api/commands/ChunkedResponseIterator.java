@@ -57,37 +57,8 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
         this.getNextIterator = getNextIteratorFn;
         this.getContinuationFn = getContinuationFn;
 
-
-        // Check & clear interrupted flag so we don't get an
-        // InterruptedException every time if the user
-        // doesn't clear it / deal with it.
-        boolean interrupted = Thread.interrupted();
-        try
-        {
-            boolean lastLoadInterrupted;
-            do
-            {
-                lastLoadInterrupted = false;
-                try
-                {
-                    tryLoadNextChunkIterator();
-                }
-                catch (InterruptedException ex)
-                {
-                    interrupted = true;
-                    lastLoadInterrupted = true;
-                }
-            } while (lastLoadInterrupted);
-        }
-        finally
-        {
-            if (interrupted)
-            {
-                // Reset interrupted flag if we came in with it
-                // or we were interrupted while waiting.
-                Thread.currentThread().interrupt();
-            }
-        }
+        // to kick of initial loading
+        hasNext();
     }
 
     @Override
