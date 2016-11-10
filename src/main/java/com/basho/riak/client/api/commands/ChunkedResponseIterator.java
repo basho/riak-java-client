@@ -20,6 +20,7 @@ import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.util.BinaryValue;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TransferQueue;
 import java.util.function.Function;
@@ -121,7 +122,12 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
     @Override
     public FinalT next()
     {
-        return createNext.apply(currentIterator.next());
+        if (hasNext())
+        {
+            return createNext.apply(currentIterator.next());
+        }
+
+        throw new NoSuchElementException();
     }
 
     private boolean tryLoadNextChunkIterator() throws InterruptedException
