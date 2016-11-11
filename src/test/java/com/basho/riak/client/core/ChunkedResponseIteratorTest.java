@@ -2,22 +2,24 @@ package com.basho.riak.client.core;
 
 
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
+import org.mockito.Matchers;
+import org.mockito.Mock;
 import org.mockito.stubbing.Answer;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TransferQueue;
 
 import static org.junit.Assert.*;
-import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Matchers.any;
 
 /**
  * @author Alex Moore <amoore at basho dot com>
@@ -26,6 +28,23 @@ import static org.powermock.api.mockito.PowerMockito.when;
 @PrepareForTest(PBStreamingFutureOperation.class)
 public class ChunkedResponseIteratorTest
 {
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
+    @Mock
+    private TransferQueue<FakeResponse> fakeQueue;
+
+    @Mock
+    private PBStreamingFutureOperation<FakeResponse, Void, Void> coreFuture;
+
+    private final int timeout = 1000;
+
+    @Before
+    public void initializeMOcks()
+    {
+        when(coreFuture.getResultsQueue()).thenReturn(fakeQueue);
+    }
+
     /*
       NB: Disable this test if you want to use code coverage tools.
       The Thread interrupt it generates triggers a shutdown hook race bug in Java,
@@ -35,17 +54,11 @@ public class ChunkedResponseIteratorTest
     @Test
     public void testInterruptedExceptionUponInitialisation() throws InterruptedException
     {
-        int timeout = 1000;
-
         Thread testThread = new Thread(() ->
         {
             try
             {
-                @SuppressWarnings("unchecked")
-                TransferQueue<FakeResponse> fakeQueue =
-                        (TransferQueue<FakeResponse>) mock(TransferQueue.class);
-
-                when(fakeQueue.poll(timeout, TimeUnit.MILLISECONDS))
+                when(fakeQueue.poll(any(Long.class), any(TimeUnit.class)))
                         .thenThrow(new InterruptedException())
                         .thenReturn(
                             new FakeResponse() {
@@ -55,12 +68,6 @@ public class ChunkedResponseIteratorTest
                                     return Arrays.asList(1,2,3,4,5).iterator();
                                 }
                             });
-
-                @SuppressWarnings("unchecked")
-                PBStreamingFutureOperation<FakeResponse, Void, Void> coreFuture =
-                        (PBStreamingFutureOperation<FakeResponse, Void, Void>) mock(PBStreamingFutureOperation.class);
-
-                when(coreFuture.getResultsQueue()).thenReturn(fakeQueue);
 
                 // ChunkedResponseIterator polls the response queue when created,
                 // so we'll use that to simulate a Thread interrupt.
@@ -87,17 +94,11 @@ public class ChunkedResponseIteratorTest
     @Test
     public void testInterruptedExceptionUponNextChunkLoad() throws InterruptedException
     {
-        int timeout = 1000;
-
         Thread testThread = new Thread(() ->
         {
             try
             {
-                @SuppressWarnings("unchecked")
-                TransferQueue<FakeResponse> fakeQueue =
-                        (TransferQueue<FakeResponse>) mock(TransferQueue.class);
-
-                when(fakeQueue.poll(timeout, TimeUnit.MILLISECONDS))
+                when(fakeQueue.poll(any(Long.class), any(TimeUnit.class)))
                         .thenReturn(
                                 new FakeResponse() {
                                     @Override
@@ -115,12 +116,6 @@ public class ChunkedResponseIteratorTest
                                         return Collections.singletonList(2).iterator();
                                     }
                                 });
-
-                @SuppressWarnings("unchecked")
-                PBStreamingFutureOperation<FakeResponse, Void, Void> coreFuture =
-                        (PBStreamingFutureOperation<FakeResponse, Void, Void>) mock(PBStreamingFutureOperation.class);
-
-                when(coreFuture.getResultsQueue()).thenReturn(fakeQueue);
 
                 ChunkedResponseIterator<Long, FakeResponse, Integer> chunkedResponseIterator =
                         new ChunkedResponseIterator<>(coreFuture, timeout, Long::new, FakeResponse::iterator);
@@ -149,22 +144,13 @@ public class ChunkedResponseIteratorTest
     @Test
     public void testConcurrentDoneAndInterruptedException() throws InterruptedException
     {
-        int timeout = 1000;
-
         Thread testThread = new Thread(() ->
         {
             try
             {
-                @SuppressWarnings("unchecked")
-                PBStreamingFutureOperation<FakeResponse, Void, Void> coreFuture =
-                        (PBStreamingFutureOperation<FakeResponse, Void, Void>) mock(PBStreamingFutureOperation.class);
                 when(coreFuture.isDone()).thenReturn(false);
 
-                @SuppressWarnings("unchecked")
-                TransferQueue<FakeResponse> fakeQueue =
-                        (TransferQueue<FakeResponse>) mock(TransferQueue.class);
-
-                when(fakeQueue.poll(timeout, TimeUnit.MILLISECONDS))
+                when(fakeQueue.poll(any(Long.class), any(TimeUnit.class)))
                         .thenReturn(
                                 new FakeResponse() {
                                     @Override
@@ -179,8 +165,6 @@ public class ChunkedResponseIteratorTest
                                         when(fakeQueue.isEmpty()).thenReturn(true);
                                         throw new InterruptedException();
                                     });
-
-                when(coreFuture.getResultsQueue()).thenReturn(fakeQueue);
 
                 ChunkedResponseIterator<Long, FakeResponse, Integer> chunkedResponseIterator =
                         new ChunkedResponseIterator<>(coreFuture, timeout, Long::new, FakeResponse::iterator);
@@ -205,6 +189,49 @@ public class ChunkedResponseIteratorTest
         testThread.start();
         testThread.join();
         assertFalse(Thread.currentThread().isInterrupted());
+    }
+
+    @Test(timeout = 5000)
+    public void checkProperIterationThroughChunkedResponse() throws InterruptedException {
+        when(fakeQueue.poll(any(Long.class), any(TimeUnit.class)))
+                // Simulate first chunk
+                .thenReturn(
+                        new FakeResponse() {
+                            @Override
+                            public Iterator<Integer> iterator()
+                            {
+                                return Arrays.asList(1,2).iterator();
+                            }
+                        })
+                // Simulate next chunk
+                .thenReturn(
+                        new FakeResponse() {
+                            @Override
+                            public Iterator<Integer> iterator()
+                            {
+                                return Arrays.asList(3,4).iterator();
+                            }
+                        })
+                // Simulate completion
+                .thenAnswer(invocationOnMock ->
+                {
+                    when(coreFuture.isDone()).thenReturn(true);
+                    when(fakeQueue.isEmpty()).thenReturn(true);
+                    return null;
+                });
+
+        final ChunkedResponseIterator<Long, FakeResponse, Integer> iterator =
+                new ChunkedResponseIterator<>(coreFuture, 50, Long::new, FakeResponse::iterator);
+
+        assertEquals(1l, iterator.next().longValue());
+        assertEquals(2l, iterator.next().longValue());
+        assertEquals(3l, iterator.next().longValue());
+        assertEquals(4l, iterator.next().longValue());
+
+        assertFalse(iterator.hasNext());
+
+        exception.expect(NoSuchElementException.class);
+        iterator.next();
     }
 
     static abstract class FakeResponse implements Iterable<Integer> {}

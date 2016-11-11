@@ -16,9 +16,7 @@
 
 package com.basho.riak.client.api.commands.datatypes;
 
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.DtFetchOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
@@ -41,7 +39,7 @@ import com.basho.riak.client.core.query.crdt.types.RiakHll;
  * @since 2.1.0
  */
  
-public final class FetchHll extends FetchDatatype<RiakHll, RiakHll, Location>
+public final class FetchHll extends FetchDatatype<RiakHll, RiakHll>
 {
     private FetchHll(Builder builder)
     {
@@ -49,32 +47,14 @@ public final class FetchHll extends FetchDatatype<RiakHll, RiakHll, Location>
     }
 
     @Override
-    protected final RiakFuture<RiakHll, Location> executeAsync(RiakCluster cluster)
+    protected RiakHll convertResponse(FutureOperation<DtFetchOperation.Response, ?, Location> request,
+                                      DtFetchOperation.Response coreResponse)
     {
-        RiakFuture<DtFetchOperation.Response, Location> coreFuture =
-            cluster.execute(buildCoreOperation());
+        RiakDatatype element = coreResponse.getCrdtElement();
 
-        CoreFutureAdapter<RiakHll, Location, DtFetchOperation.Response, Location> future =
-            new CoreFutureAdapter<RiakHll, Location, DtFetchOperation.Response, Location>(coreFuture)
-            {
-                @Override
-                protected RiakHll convertResponse(DtFetchOperation.Response coreResponse)
-                {
-                    RiakDatatype element = coreResponse.getCrdtElement();
+        RiakHll datatype = extractDatatype(element);
 
-                    RiakHll datatype = extractDatatype(element);
-
-                    return datatype;
-                }
-
-                @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+        return datatype;
     }
 
     @Override

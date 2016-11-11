@@ -28,7 +28,7 @@ public abstract class ConvertibleIterable<S,D> implements Iterable<D>
         @Override
         public Iterator<RiakTsPB.TsCell> iterator()
         {
-            return ConvertibleIterator.iterateAsPbCell(this.source.iterator());
+            return ConvertibleIteratorUtils.iterateAsPbCell(this.source.iterator());
         }
     }
 
@@ -42,7 +42,7 @@ public abstract class ConvertibleIterable<S,D> implements Iterable<D>
         @Override
         public Iterator<RiakTsPB.TsRow> iterator()
         {
-            return ConvertibleIterator.iterateAsPbRow(this.source.iterator());
+            return ConvertibleIteratorUtils.iterateAsPbRow(this.source.iterator());
         }
     }
 
@@ -56,7 +56,7 @@ public abstract class ConvertibleIterable<S,D> implements Iterable<D>
         @Override
         public Iterator<Row> iterator()
         {
-            return ConvertibleIterator.iterateAsRow(this.source.iterator());
+            return ConvertibleIteratorUtils.iterateAsRow(this.source.iterator());
         }
     }
 
@@ -70,7 +70,7 @@ public abstract class ConvertibleIterable<S,D> implements Iterable<D>
         @Override
         public Iterator<Cell> iterator()
         {
-            return ConvertibleIterator.iterateAsCell(this.source.iterator());
+            return ConvertibleIteratorUtils.iterateAsCell(this.source.iterator());
         }
     }
 

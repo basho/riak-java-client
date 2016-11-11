@@ -1,5 +1,6 @@
 package com.basho.riak.client.core.query.timeseries;
 
+import com.basho.riak.client.core.query.ConvertibleIterator;
 import com.basho.riak.protobuf.RiakTsPB;
 
 import java.util.Iterator;
@@ -9,35 +10,11 @@ import java.util.Iterator;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public abstract class ConvertibleIterator<S,D> implements Iterator<D>
+class ConvertibleIteratorUtils
 {
+    private ConvertibleIteratorUtils(){}
+
     private static final RiakTsPB.TsCell NullTSCell = RiakTsPB.TsCell.newBuilder().build();
-    private final Iterator<S> iterator;
-
-    public ConvertibleIterator(Iterator<S> iterator)
-    {
-        this.iterator = iterator;
-    }
-
-    abstract protected D convert(S source);
-
-    @Override
-    public final boolean hasNext()
-    {
-        return iterator.hasNext();
-    }
-
-    @Override
-    public final D next()
-    {
-        return convert(iterator.next());
-    }
-
-    @Override
-    public final void remove()
-    {
-        throw new UnsupportedOperationException();
-    }
 
     private static class ImmutablePBCellIterator extends ConvertibleIterator<Cell, RiakTsPB.TsCell>
     {

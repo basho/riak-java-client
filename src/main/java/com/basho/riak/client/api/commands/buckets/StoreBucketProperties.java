@@ -16,10 +16,7 @@
 
 package com.basho.riak.client.api.commands.buckets;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.functions.Function;
@@ -39,7 +36,7 @@ import com.basho.riak.client.core.query.functions.Function;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
+public final class StoreBucketProperties extends AsIsRiakCommand<Void, Namespace>
 {
     private final Namespace namespace;
     private final Boolean allowMulti;
@@ -95,31 +92,7 @@ public final class StoreBucketProperties extends RiakCommand<Void, Namespace>
     }
 
     @Override
-    protected final RiakFuture<Void, Namespace> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<Void, Namespace> coreFuture =
-            cluster.execute(buildCoreOperation());
-
-        CoreFutureAdapter<Void, Namespace, Void, Namespace> future =
-            new CoreFutureAdapter<Void, Namespace, Void, Namespace>(coreFuture)
-            {
-                @Override
-                protected Void convertResponse(Void coreResponse)
-                {
-                    return coreResponse;
-                }
-
-                @Override
-                protected Namespace convertQueryInfo(Namespace coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    private StoreBucketPropsOperation buildCoreOperation()
+    protected StoreBucketPropsOperation buildCoreOperation()
     {
         StoreBucketPropsOperation.Builder builder =
             new StoreBucketPropsOperation.Builder(namespace);

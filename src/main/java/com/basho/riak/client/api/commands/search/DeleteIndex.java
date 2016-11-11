@@ -1,9 +1,6 @@
 package com.basho.riak.client.api.commands.search;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
 
 /**
@@ -11,7 +8,7 @@ import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class DeleteIndex extends RiakCommand<Void, String>
+public final class DeleteIndex extends AsIsRiakCommand<Void, String>
 {
     private final String index;
 
@@ -21,32 +18,7 @@ public final class DeleteIndex extends RiakCommand<Void, String>
     }
 
     @Override
-    protected final RiakFuture<Void, String> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<Void, String> coreFuture =
-            cluster.execute(buildCoreOperation());
-
-        CoreFutureAdapter<Void, String, Void, String> future =
-            new CoreFutureAdapter<Void, String, Void, String>(coreFuture)
-    {
-        @Override
-        protected Void convertResponse(Void coreResponse)
-        {
-            return coreResponse;
-        }
-
-        @Override
-        protected String convertQueryInfo(String coreQueryInfo)
-        {
-            return coreQueryInfo;
-        }
-            };
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    private YzDeleteIndexOperation buildCoreOperation()
-    {
+    protected YzDeleteIndexOperation buildCoreOperation() {
         return new YzDeleteIndexOperation.Builder(index).build();
     }
 

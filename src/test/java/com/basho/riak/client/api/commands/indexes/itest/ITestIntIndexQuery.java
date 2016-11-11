@@ -17,6 +17,7 @@
 package com.basho.riak.client.api.commands.indexes.itest;
 
 import com.basho.riak.client.api.RiakClient;
+import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.annotations.RiakBucketName;
 import com.basho.riak.client.api.annotations.RiakIndex;
 import com.basho.riak.client.api.annotations.RiakKey;
@@ -106,10 +107,10 @@ public class ITestIntIndexQuery extends ITestIndexBase
                                                              Long.MIN_VALUE,
                                                              Long.MAX_VALUE).withKeyAndIndex(true).build();
 
-        final RiakFuture<IntIndexQuery.StreamingResponse, IntIndexQuery> streamingFuture =
+        final RiakFuture<IntIndexQuery.Response, IntIndexQuery> streamingFuture =
                 client.executeAsyncStreaming(indexQuery, 200);
 
-        final IntIndexQuery.StreamingResponse streamingResponse = streamingFuture.get();
+        final IntIndexQuery.Response streamingResponse = streamingFuture.get();
 
         assertTrue(streamingResponse.hasEntries());
 

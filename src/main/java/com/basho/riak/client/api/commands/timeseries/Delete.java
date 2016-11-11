@@ -1,8 +1,7 @@
 package com.basho.riak.client.api.commands.timeseries;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.AsIsRiakCommand;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.ts.DeleteOperation;
 import com.basho.riak.client.core.query.timeseries.Cell;
 
@@ -14,7 +13,7 @@ import com.basho.riak.client.core.query.timeseries.Cell;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class Delete extends RiakCommand<Void, String>
+public class Delete extends AsIsRiakCommand<Void, String>
 {
     private final Builder builder;
 
@@ -24,16 +23,7 @@ public class Delete extends RiakCommand<Void, String>
     }
 
     @Override
-    protected RiakFuture<Void, String> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<Void, String> future =
-                cluster.execute(buildCoreOperation());
-
-        return future;
-    }
-
-    private DeleteOperation buildCoreOperation()
-    {
+    protected FutureOperation<Void, ?, String> buildCoreOperation() {
         final DeleteOperation.Builder opBuilder =
                 new DeleteOperation.Builder(this.builder.tableName, builder.keyValues);
 

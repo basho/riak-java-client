@@ -16,9 +16,10 @@
 
 package com.basho.riak.client.api.commands.datatypes;
 
-import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.GenericRiakCommand;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.commands.RiakOption;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -34,23 +35,27 @@ import java.util.Map;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCommand<S,U>
+public abstract class UpdateDatatype<T extends RiakDatatype,S>
+        extends GenericRiakCommand.GenericRiakCommandWithSameInfo<S,Location, DtUpdateOperation.Response>
 {
     protected final Namespace namespace;
     protected final BinaryValue key;
     private final Context ctx;
     private final Map<Option<?>, Object> options = new HashMap<>();
+    private final DatatypeUpdate update;
 
     @SuppressWarnings("unchecked")
     UpdateDatatype(Builder builder)
     {
         this.namespace = builder.namespace;
+        this.update = builder.update;
         this.key = builder.key;
         this.ctx = builder.ctx;
         this.options.putAll(builder.options);
     }
 
-    protected final DtUpdateOperation buildCoreOperation(DatatypeUpdate update)
+    @Override
+    protected FutureOperation<DtUpdateOperation.Response, ?, Location> buildCoreOperation()
     {
         DtUpdateOperation.Builder builder;
 
@@ -152,6 +157,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
     */
     public static abstract class Builder<T extends Builder<T>>
     {
+        private final DatatypeUpdate update;
         private final Namespace namespace;
         private BinaryValue key;
         private Context ctx;
@@ -161,7 +167,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
          * Constructs a builder for a datatype update.
          * @param location the location of the datatype object in Riak.
          */
-        Builder(Location location)
+        Builder(Location location, DatatypeUpdate update)
         {
             if (location == null)
             {
@@ -169,6 +175,12 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
             }
             this.namespace = location.getNamespace();
             this.key = location.getKey();
+
+            if (update == null)
+            {
+                throw new IllegalArgumentException("Update cannot be null.");
+            }
+            this.update = update;
         }
 
         /**
@@ -181,13 +193,19 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S,U> extends RiakCom
          * @param namespace the namespace to create the datatype.
          * @see Response#getGeneratedKey()
          */
-        Builder(Namespace namespace)
+        Builder(Namespace namespace, DatatypeUpdate update)
         {
             if (namespace == null)
             {
                 throw new IllegalArgumentException("Namespace cannot be null.");
             }
             this.namespace = namespace;
+
+            if (update == null)
+            {
+                throw new IllegalArgumentException("Update cannot be null.");
+            }
+            this.update = update;
         }
 
         /**

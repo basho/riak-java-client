@@ -16,10 +16,7 @@
 
 package com.basho.riak.client.api.commands.search;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.YzFetchIndexOperation;
 
 /**
@@ -27,7 +24,7 @@ import com.basho.riak.client.core.operations.YzFetchIndexOperation;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public class FetchIndex extends RiakCommand<YzFetchIndexOperation.Response, String>
+public class FetchIndex extends AsIsRiakCommand<YzFetchIndexOperation.Response, String>
 {
     private final String index;
 
@@ -37,31 +34,7 @@ public class FetchIndex extends RiakCommand<YzFetchIndexOperation.Response, Stri
     }
 
     @Override
-    protected final RiakFuture<YzFetchIndexOperation.Response, String> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<YzFetchIndexOperation.Response, String> coreFuture =
-            cluster.execute(buildCoreOperation());
-
-        CoreFutureAdapter<YzFetchIndexOperation.Response, String, YzFetchIndexOperation.Response, String> future =
-            new CoreFutureAdapter<YzFetchIndexOperation.Response, String, YzFetchIndexOperation.Response, String>(coreFuture)
-            {
-                @Override
-                protected YzFetchIndexOperation.Response convertResponse(YzFetchIndexOperation.Response coreResponse)
-                {
-                    return coreResponse;
-                }
-
-                @Override
-                protected String convertQueryInfo(String coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    private YzFetchIndexOperation buildCoreOperation()
+    protected YzFetchIndexOperation buildCoreOperation()
     {
         return new YzFetchIndexOperation.Builder().withIndexName(index).build();
     }

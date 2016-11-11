@@ -16,17 +16,10 @@
 
 package com.basho.riak.client.api.commands.indexes;
 
-import com.basho.riak.client.api.commands.ChunkedResponseIterator;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Performs a 2i query where the 2i index keys are raw bytes.
@@ -72,15 +65,16 @@ import java.util.List;
  *
  * @author Brian Roach <roach at basho dot com>
  * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
-public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuery.Response, RawIndexQuery, RawIndexQuery.StreamingResponse>
+public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuery.Response, RawIndexQuery>
 {
     private final IndexConverter<BinaryValue> converter;
 
     protected RawIndexQuery(Init<BinaryValue,?> builder)
     {
-        super(builder);
+        super(builder, Response::new, Response::new);
         this.converter = new IndexConverter<BinaryValue>()
         {
             @Override
@@ -95,58 +89,6 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
     protected IndexConverter<BinaryValue> getConverter()
     {
         return converter;
-    }
-
-    @Override
-    protected RiakFuture<Response, RawIndexQuery> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
-            executeCoreAsync(cluster);
-
-        RawQueryFuture future = new RawQueryFuture(coreFuture);
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    @Override
-    protected RiakFuture<StreamingResponse, RawIndexQuery> executeAsyncStreaming(RiakCluster cluster, int timeout)
-    {
-        StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
-                executeCoreAsyncStreaming(cluster);
-
-        StreamingResponse response = new StreamingResponse(namespace, converter, coreFuture, timeout);
-
-        Streaming2iQueryFuture<StreamingResponse, RawIndexQuery> future =
-                new Streaming2iQueryFuture<>(coreFuture, response, this);
-
-        coreFuture.addListener(future);
-
-        return future;
-    }
-
-    protected final class RawQueryFuture
-            extends CoreFutureAdapter<Response,
-                                      RawIndexQuery,
-                                      SecondaryIndexQueryOperation.Response,
-                                      SecondaryIndexQueryOperation.Query>
-    {
-        public RawQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response,
-                              SecondaryIndexQueryOperation.Query> coreFuture)
-        {
-            super(coreFuture);
-        }
-
-        @Override
-        protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
-        {
-            return new Response(namespace, coreResponse, converter);
-        }
-
-        @Override
-        protected RawIndexQuery convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo)
-        {
-            return RawIndexQuery.this;
-        }
     }
 
     /**
@@ -203,68 +145,16 @@ public class RawIndexQuery extends SecondaryIndexQuery<BinaryValue, RawIndexQuer
         }
     }
 
-    public static class Response extends SecondaryIndexQuery.Response<BinaryValue>
+    public static class Response extends SecondaryIndexQuery.Response<BinaryValue, SecondaryIndexQuery.Response.Entry<BinaryValue>>
     {
-        protected Response(Namespace queryLocation,
-                           SecondaryIndexQueryOperation.Response coreResponse,
-                           IndexConverter<BinaryValue> converter)
+        Response(Namespace queryLocation, IndexConverter<BinaryValue> converter, int timeout, StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        {
+            super(queryLocation, converter, timeout, coreFuture);
+        }
+
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BinaryValue> converter)
         {
             super(queryLocation, coreResponse, converter);
-        }
-
-        @Override
-        public List<Entry> getEntries()
-        {
-            List<Entry> convertedList = new ArrayList<>();
-            for (SecondaryIndexQueryOperation.Response.Entry e : coreResponse.getEntryList())
-            {
-                Location loc = getLocationFromCoreEntry(e);
-                Entry ce = new Entry(loc, e.getIndexKey(), converter);
-                convertedList.add(ce);
-            }
-            return convertedList;
-        }
-
-        public static class Entry extends SecondaryIndexQuery.Response.Entry<BinaryValue>
-        {
-            protected Entry(Location riakObjectLocation, BinaryValue indexKey, IndexConverter<BinaryValue> converter)
-            {
-                super(riakObjectLocation, indexKey, converter);
-            }
-        }
-    }
-
-    public static class StreamingResponse extends SecondaryIndexQuery.StreamingResponse<Response.Entry>
-    {
-        StreamingResponse(Namespace namespace, IndexConverter<BinaryValue> converter,
-                          StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture,
-                          int pollTimeout)
-        {
-            super(namespace, converter, createResponseIterator(namespace, converter, coreFuture, pollTimeout));
-        }
-
-        private static ChunkedResponseIterator<Response.Entry, SecondaryIndexQueryOperation.Response,
-                SecondaryIndexQueryOperation.Response.Entry> createResponseIterator(
-                Namespace namespace,
-                IndexConverter<BinaryValue> converter,
-                StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture,
-                int pollTimeout)
-        {
-            return new ChunkedResponseIterator<>(
-                    coreFuture,
-                    pollTimeout,
-                    (e) -> createExternalResponseEntry(namespace, e, converter),
-                    SecondaryIndexQueryOperation.Response::iterator,
-                    SecondaryIndexQueryOperation.Response::getContinuation);
-        }
-
-        private static Response.Entry createExternalResponseEntry(Namespace namespace,
-                                                                  SecondaryIndexQueryOperation.Response.Entry baseEntry,
-                                                                  IndexConverter<BinaryValue> converter)
-        {
-            return new Response.Entry(SecondaryIndexQuery.Response.getLocationFromCoreEntry(namespace, baseEntry),
-                                      baseEntry.getIndexKey(),
-                                      converter);
         }
     }
 }

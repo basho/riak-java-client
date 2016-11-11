@@ -1,9 +1,6 @@
 package com.basho.riak.client.api.commands.timeseries;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.ts.ListKeysOperation;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
 
@@ -15,7 +12,7 @@ import com.basho.riak.client.core.query.timeseries.QueryResult;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0.3
  */
-public class ListKeys extends RiakCommand<QueryResult, String>
+public class ListKeys extends AsIsRiakCommand<QueryResult, String>
 {
     private final String tableName;
     private final int timeout;
@@ -27,31 +24,7 @@ public class ListKeys extends RiakCommand<QueryResult, String>
     }
 
     @Override
-    protected RiakFuture<QueryResult, String> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<QueryResult, String> coreFuture =
-                cluster.execute(buildCoreOperation());
-
-        CoreFutureAdapter<QueryResult, String, QueryResult, String> future =
-                new CoreFutureAdapter<QueryResult, String, QueryResult, String>(coreFuture)
-                {
-                    @Override
-                    protected QueryResult convertResponse(QueryResult coreResponse)
-                    {
-                        return coreResponse;
-                    }
-
-                    @Override
-                    protected String convertQueryInfo(String coreQueryInfo)
-                    {
-                        return coreQueryInfo;
-                    }
-                };
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    private ListKeysOperation buildCoreOperation()
+    protected ListKeysOperation buildCoreOperation()
     {
         ListKeysOperation.Builder builder = new ListKeysOperation.Builder(tableName);
 

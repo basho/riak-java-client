@@ -107,7 +107,7 @@ public class ITestRawIndexQuery extends ITestBase
         RawIndexQuery.Response iResp = client.execute(biq);
 
         assertTrue(iResp.hasEntries());
-        RawIndexQuery.Response.Entry first = iResp.getEntries().iterator().next();
+        RawIndexQuery.Response.Entry<BinaryValue> first = iResp.getEntries().iterator().next();
         assertEquals(ip.key, first.getRiakObjectLocation().getKey().toString());
         assertArrayEquals(ip.indexKey, first.getIndexKey().getValue());
     }
@@ -176,10 +176,10 @@ public class ITestRawIndexQuery extends ITestBase
 
         BucketIndexQuery bq = new BucketIndexQuery.Builder(sharedNamespace).build();
 
-        final RiakFuture<BinIndexQuery.StreamingResponse, BinIndexQuery> indexResult =
+        final RiakFuture<BinIndexQuery.Response, BinIndexQuery> indexResult =
                 client.executeAsyncStreaming(bq, 100);
 
-        final BinIndexQuery.StreamingResponse streamingResponse = indexResult.get();
+        final BinIndexQuery.Response streamingResponse = indexResult.get();
 
         assertTrue(streamingResponse.hasEntries());
         assertEquals(100, StreamSupport.stream(streamingResponse.spliterator(), false).count());
@@ -195,10 +195,10 @@ public class ITestRawIndexQuery extends ITestBase
 
         BucketIndexQuery bq = new BucketIndexQuery.Builder(sharedNamespace).withMaxResults(50).withPaginationSort(true).build();
 
-        final RiakFuture<BinIndexQuery.StreamingResponse, BinIndexQuery> indexResult =
+        final RiakFuture<BinIndexQuery.Response, BinIndexQuery> indexResult =
                 client.executeAsyncStreaming(bq, 100);
 
-        final BinIndexQuery.StreamingResponse streamingResponse = indexResult.get();
+        final BinIndexQuery.Response streamingResponse = indexResult.get();
 
         assertTrue(streamingResponse.hasEntries());
         assertEquals(50, StreamSupport.stream(streamingResponse.spliterator(), false).count());

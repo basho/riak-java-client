@@ -71,10 +71,10 @@ public class ITestListKeys extends ITestBase
 
         ListKeys lk = new ListKeys.Builder(typedNamespace).build();
 
-        final RiakFuture<ListKeys.StreamingResponse, Namespace> streamFuture =
+        final RiakFuture<ListKeys.Response, Namespace> streamFuture =
                 client.executeAsyncStreaming(lk, 200);
 
-        final ListKeys.StreamingResponse streamingResponse = streamFuture.get();
+        final ListKeys.Response streamingResponse = streamFuture.get();
 
         int count = 0;
         boolean foundLastKey = false;

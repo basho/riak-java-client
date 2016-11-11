@@ -20,6 +20,7 @@ import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.util.BinaryValue;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TransferQueue;
 import java.util.function.Function;
@@ -34,7 +35,7 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
     private final Function<ChunkT, Iterator<CoreT>> getNextIterator;
     private final Function<ChunkT, BinaryValue> getContinuationFn;
 
-    private Iterator<CoreT> currentIterator = null;
+    protected Iterator<CoreT> currentIterator = null;
 
     public ChunkedResponseIterator(StreamingRiakFuture<ChunkT, ?> coreFuture,
                                    int pollTimeout,
@@ -57,37 +58,8 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
         this.getNextIterator = getNextIteratorFn;
         this.getContinuationFn = getContinuationFn;
 
-
-        // Check & clear interrupted flag so we don't get an
-        // InterruptedException every time if the user
-        // doesn't clear it / deal with it.
-        boolean interrupted = Thread.interrupted();
-        try
-        {
-            boolean lastLoadInterrupted;
-            do
-            {
-                lastLoadInterrupted = false;
-                try
-                {
-                    tryLoadNextChunkIterator();
-                }
-                catch (InterruptedException ex)
-                {
-                    interrupted = true;
-                    lastLoadInterrupted = true;
-                }
-            } while (lastLoadInterrupted);
-        }
-        finally
-        {
-            if (interrupted)
-            {
-                // Reset interrupted flag if we came in with it
-                // or we were interrupted while waiting.
-                Thread.currentThread().interrupt();
-            }
-        }
+        // to kick of initial loading
+        hasNext();
     }
 
     @Override
@@ -150,7 +122,12 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
     @Override
     public FinalT next()
     {
-        return createNext.apply(currentIterator.next());
+        if (hasNext())
+        {
+            return createNext.apply(currentIterator.next());
+        }
+
+        throw new NoSuchElementException();
     }
 
     private boolean tryLoadNextChunkIterator() throws InterruptedException

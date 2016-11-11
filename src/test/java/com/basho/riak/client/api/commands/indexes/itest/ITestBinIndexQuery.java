@@ -99,10 +99,10 @@ public class ITestBinIndexQuery extends ITestIndexBase
                                                              indexKey(0),
                                                              indexKey(9)).withKeyAndIndex(true).build();
 
-        final RiakFuture<BinIndexQuery.StreamingResponse, BinIndexQuery> streamingFuture =
+        final RiakFuture<BinIndexQuery.Response, BinIndexQuery> streamingFuture =
                 client.executeAsyncStreaming(indexQuery, 200);
 
-        final BinIndexQuery.StreamingResponse streamingResponse = streamingFuture.get();
+        final BinIndexQuery.Response streamingResponse = streamingFuture.get();
 
         assertTrue(streamingResponse.hasEntries());
 
@@ -125,7 +125,7 @@ public class ITestBinIndexQuery extends ITestIndexBase
         assertEquals(3, size);
     }
 
-    private boolean assertFirstObjectFound(Iterable<BinIndexQuery.Response.Entry> entries)
+    private boolean assertFirstObjectFound(Iterable<BinIndexQuery.Response.Entry<String>> entries)
     {
         final String expectedObjectKey = objectKey(1);
         final String expectedIndexKey = indexKey(1);

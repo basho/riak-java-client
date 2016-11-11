@@ -16,8 +16,11 @@
 
 package com.basho.riak.client.api;
 
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.commands.ChunkedResponseIterator;
+import com.basho.riak.client.api.commands.ImmediateCoreFutureAdapter;
+import com.basho.riak.client.core.*;
+
+import java.util.Iterator;
 
 /*
  * The base class for all Streamable Riak Commands.
@@ -27,12 +30,89 @@ import com.basho.riak.client.core.RiakFuture;
  * that data will flow into.
  * @param <S> The response type returned by "streaming mode" {@link executeAsyncStreaming}
  * @param <R> The response type returned by the "batch mode" @{link executeAsync}
- * @param <Q> The query info type
+ * @param <I> The query info type
  * @author Dave Rusek
  * @author Brian Roach <roach at basho.com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
-public abstract class StreamableRiakCommand<S, R, Q> extends RiakCommand<R, Q>
+public abstract class StreamableRiakCommand<R extends StreamableRiakCommand.StreamableResponse, I, CoreR, CoreI> extends GenericRiakCommand<R, I, CoreR, CoreI>
 {
-    protected abstract RiakFuture<S, Q> executeAsyncStreaming(RiakCluster cluster, int timeout);
+    public static abstract class StreamableRiakCommandWithSameInfo<R extends StreamableResponse, I, CoreR> extends StreamableRiakCommand<R,I, CoreR, I>
+    {
+        @Override
+        protected I convertInfo(I coreInfo) {
+            return coreInfo;
+        }
+    }
+
+    public static abstract class StreamableResponse<T, S> implements Iterable<T>
+    {
+        protected ChunkedResponseIterator<T, ?, S> chunkedResponseIterator;
+
+        /**
+         * Constructor for streamable response
+         * @param chunkedResponseIterator
+         */
+        protected StreamableResponse(ChunkedResponseIterator<T, ?, S> chunkedResponseIterator) {
+            this.chunkedResponseIterator = chunkedResponseIterator;
+        }
+
+        /**
+         * Constructor for not streamable response.
+         */
+        protected StreamableResponse()
+        {
+        }
+
+        public boolean isStreamable()
+        {
+            return chunkedResponseIterator != null;
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+            if (isStreamable()) {
+                assert chunkedResponseIterator != null;
+                return chunkedResponseIterator;
+            }
+
+            throw new UnsupportedOperationException("Iterating is only supported for streamable response");
+        }
+    }
+
+    protected abstract R createResponse(int timeout, StreamingRiakFuture<CoreR, CoreI> coreFuture);
+
+    protected abstract  PBStreamingFutureOperation<CoreR, ?, CoreI> buildCoreOperation(boolean streamResults);
+
+    @Override
+    protected final FutureOperation<CoreR, ?, CoreI> buildCoreOperation() {
+        return buildCoreOperation(false);
+    }
+
+    protected final RiakFuture<R, I> executeAsyncStreaming(RiakCluster cluster, int timeout)
+    {
+        final PBStreamingFutureOperation<CoreR, ?, CoreI> coreOperation = buildCoreOperation(true);
+        final StreamingRiakFuture<CoreR, CoreI> coreFuture = cluster.execute(coreOperation);
+
+        final R r = createResponse(timeout, coreFuture);
+
+        final ImmediateCoreFutureAdapter<R,I, CoreR, CoreI> future = new ImmediateCoreFutureAdapter<R,I,CoreR,CoreI>(coreFuture, r)
+        {
+            @Override
+            protected R convertResponse(CoreR response)
+            {
+                return StreamableRiakCommand.this.convertResponse(coreOperation, response);
+            }
+
+            @Override
+            protected I convertQueryInfo(CoreI coreQueryInfo)
+            {
+                return StreamableRiakCommand.this.convertInfo(coreQueryInfo);
+            }
+        };
+
+        coreFuture.addListener(future);
+        return future;
+    }
 }

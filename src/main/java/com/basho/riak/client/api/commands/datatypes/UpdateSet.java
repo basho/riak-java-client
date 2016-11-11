@@ -16,9 +16,7 @@
 
 package com.basho.riak.client.api.commands.datatypes;
 
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -49,53 +47,32 @@ import com.basho.riak.client.core.util.BinaryValue;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Location>
+public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response>
 {
-    private final SetUpdate update;
-
     private UpdateSet(Builder builder)
     {
         super(builder);
-        this.update = builder.update;
     }
 
     @Override
-    protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
+    protected Response convertResponse(FutureOperation<DtUpdateOperation.Response, ?, Location> request,
+                                       DtUpdateOperation.Response coreResponse)
     {
-        RiakFuture<DtUpdateOperation.Response, Location> coreFuture =
-            cluster.execute(buildCoreOperation(update));
-
-        CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location> future =
-            new CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(DtUpdateOperation.Response coreResponse)
-                {
-                    RiakSet set = null;
-                    if (coreResponse.hasCrdtElement())
-                    {
-                        RiakDatatype element = coreResponse.getCrdtElement();
-                        set = element.getAsSet();
-                    }
-                    BinaryValue returnedKey = coreResponse.hasGeneratedKey()
-                        ? coreResponse.getGeneratedKey()
-                        : null;
-                    Context returnedCtx = null;
-                    if (coreResponse.hasContext())
-                    {
-                        returnedCtx = new Context(coreResponse.getContext());
-                    }
-                    return new Response(returnedCtx, set, returnedKey);
-                }
-
-                @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+        RiakSet set = null;
+        if (coreResponse.hasCrdtElement())
+        {
+            RiakDatatype element = coreResponse.getCrdtElement();
+            set = element.getAsSet();
+        }
+        BinaryValue returnedKey = coreResponse.hasGeneratedKey()
+            ? coreResponse.getGeneratedKey()
+            : null;
+        Context returnedCtx = null;
+        if (coreResponse.hasContext())
+        {
+            returnedCtx = new Context(coreResponse.getContext());
+        }
+        return new Response(returnedCtx, set, returnedKey);
     }
 
     /**
@@ -103,8 +80,6 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
      */
     public static class Builder extends UpdateDatatype.Builder<Builder>
     {
-        private final SetUpdate update;
-
         /**
          * Construct a Builder for an UpdateSet command.
          * @param location the location of the set in Riak.
@@ -112,12 +87,11 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
          */
         public Builder(Location location, SetUpdate update)
         {
-            super(location);
+            super(location, update);
             if (update == null)
             {
                 throw new IllegalArgumentException("Update cannot be null");
             }
-            this.update = update;
         }
 
         /**
@@ -133,12 +107,11 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response, Locat
          */
         public Builder(Namespace namespace, SetUpdate update)
         {
-            super(namespace);
+            super(namespace, update);
             if (update == null)
             {
                 throw new IllegalArgumentException("Update cannot be null");
             }
-            this.update = update;
         }
 
         /**

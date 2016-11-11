@@ -111,10 +111,10 @@ public class ITestListBuckets extends ITestBase
     {
         ListBuckets listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType()).build();
 
-        final RiakFuture<ListBuckets.StreamingResponse, BinaryValue> streamingFuture =
+        final RiakFuture<ListBuckets.Response, BinaryValue> streamingFuture =
                 client.executeAsyncStreaming(listBucketsCommand, 500);
 
-        final ListBuckets.StreamingResponse streamResponse = streamingFuture.get();
+        final ListBuckets.Response streamResponse = streamingFuture.get();
         final Iterator<Namespace> iterator = streamResponse.iterator();
 
         assumeTrue(iterator.hasNext());

@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,21 +48,22 @@ public class ListBucketsTest
         when(mockFuture.isCancelled()).thenReturn(false);
         when(mockFuture.isDone()).thenReturn(true);
         when(mockFuture.isSuccess()).thenReturn(true);
-        when(mockCluster.<ListBucketsOperation, Location>execute(any(PBStreamingFutureOperation.class))).thenReturn(mockFuture);
+        doReturn(mockFuture).when(mockCluster).<ListBucketsOperation,Location>execute(any(FutureOperation.class));
         client = new RiakClient(mockCluster);
     }
 
+    @SuppressWarnings("unchecked")
     private void testListBuckets(String bucketType) throws Exception
     {
         final BinaryValue type = BinaryValue.createFromUtf8(bucketType);
         ListBuckets.Builder list = new ListBuckets.Builder(type);
         client.execute(list.build());
 
-        ArgumentCaptor<ListBucketsOperation> captor =
-                ArgumentCaptor.forClass(ListBucketsOperation.class);
+        ArgumentCaptor<FutureOperation> captor =
+                ArgumentCaptor.forClass(FutureOperation.class);
         verify(mockCluster).execute(captor.capture());
 
-        ListBucketsOperation operation = captor.getValue();
+        ListBucketsOperation operation = (ListBucketsOperation)captor.getValue();
         RiakKvPB.RpbListBucketsReq.Builder builder =
                 (RiakKvPB.RpbListBucketsReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
 

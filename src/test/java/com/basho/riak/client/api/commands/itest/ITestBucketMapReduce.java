@@ -170,14 +170,15 @@ public class ITestBucketMapReduce extends ITestBase
                         .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_sort"), true)
                         .build();
 
-        final RiakFuture<MapReduce.StreamingResponse, BinaryValue> streamingFuture =
+        final RiakFuture<MapReduce.Response, BinaryValue> streamingFuture =
                 client.executeAsyncStreaming(bmr, 10);
 
         boolean found42 = false;
         boolean found199 = false;
         int count = 0;
 
-        final MapReduce.StreamingResponse streamingResponse = streamingFuture.get();
+        final MapReduce.Response streamingResponse = streamingFuture.get();
+        assertTrue(streamingResponse.isStreamable());
         // The streaming query should return many results which are JSON arrays, each
         // containing a piece of the array [0-199].
         // Streaming result would look like: [[0], [1,2,3], ... [..., 199]], with the outer

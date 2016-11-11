@@ -15,10 +15,8 @@
  */
 package com.basho.riak.client.api.commands.kv;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.GenericRiakCommand;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.CoveragePlanOperation;
 import com.basho.riak.client.core.query.Namespace;
 
@@ -27,7 +25,8 @@ import com.basho.riak.client.core.query.Namespace;
  *
  * @author Sergey Galkin <sgalkin at basho dot com>
  */
-public class CoveragePlan  extends RiakCommand<CoveragePlan.Response, Namespace>
+public class CoveragePlan  extends GenericRiakCommand.GenericRiakCommandWithSameInfo<CoveragePlan.Response,
+        Namespace,CoveragePlanOperation.Response>
 {
     private final CoveragePlanOperation operation;
 
@@ -37,27 +36,15 @@ public class CoveragePlan  extends RiakCommand<CoveragePlan.Response, Namespace>
     }
 
     @Override
-    protected RiakFuture<Response, Namespace> executeAsync(RiakCluster cluster)
+    protected CoveragePlanOperation buildCoreOperation() {
+        return operation;
+    }
+
+    @Override
+    protected Response convertResponse(FutureOperation<CoveragePlanOperation.Response, ?, Namespace> request,
+                                       CoveragePlanOperation.Response coreResponse)
     {
-        final RiakFuture<CoveragePlanOperation.Response, Namespace> coreFuture = cluster.execute(operation);
-
-        CoreFutureAdapter<CoveragePlan.Response, Namespace, CoveragePlanOperation.Response, Namespace> future =
-            new CoreFutureAdapter<CoveragePlan.Response, Namespace, CoveragePlanOperation.Response, Namespace>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(CoveragePlanOperation.Response coreResponse)
-                {
-                    return new Response(coreResponse);
-                }
-
-                @Override
-                protected Namespace convertQueryInfo(Namespace coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+        return new Response(coreResponse);
     }
 
     /**
