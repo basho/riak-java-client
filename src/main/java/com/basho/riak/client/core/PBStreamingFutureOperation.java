@@ -59,7 +59,8 @@ public abstract class PBStreamingFutureOperation<ReturnType, ResponseType, Query
 
         final ReturnType r = processStreamingChunk(decodedMessage);
         assert this.responseQueue != null;
-        responseQueue.offer(r);
+        final boolean chunkAdded = responseQueue.offer(r);
+        assert chunkAdded;
     }
 
     abstract protected ReturnType processStreamingChunk(ResponseType rawResponseChunk);
