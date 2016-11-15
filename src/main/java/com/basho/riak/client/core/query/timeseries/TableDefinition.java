@@ -12,8 +12,9 @@ public class TableDefinition
 {
     private final String tableName;
     private final LinkedHashMap<String, FullColumnDescription> fullColumnDescriptions = new LinkedHashMap<>();
-    private final ArrayList<FullColumnDescription> partitionKeys = new ArrayList<>();
-    private final ArrayList<FullColumnDescription> localKeys = new ArrayList<>();
+    private transient List<FullColumnDescription> partitionKeys;
+    private transient List<FullColumnDescription> localKeys;
+    private transient FullColumnDescription quantumField;
 
     /**
      * Create a new Table Definition
@@ -29,20 +30,7 @@ public class TableDefinition
         for (FullColumnDescription col : fullColumnDescriptions)
         {
             this.fullColumnDescriptions.put(col.getName(), col);
-
-            if (col.isPartitionKeyMember())
-            {
-                this.partitionKeys.add(col);
-            }
-
-            if (col.isLocalKeyMember())
-            {
-                this.localKeys.add(col);
-            }
         }
-
-        Collections.sort(this.localKeys, LocalKeyComparator.INSTANCE);
-        Collections.sort(this.partitionKeys, PartitionKeyComparator.INSTANCE);
     }
 
     /**
@@ -79,7 +67,49 @@ public class TableDefinition
      */
     public Collection<FullColumnDescription> getPartitionKeyColumnDescriptions()
     {
+        if (partitionKeys == null)
+        {
+            partitionKeys = new LinkedList<>();
+
+            for (FullColumnDescription col : fullColumnDescriptions.values())
+            {
+                if (col.isPartitionKeyMember())
+                {
+                    this.partitionKeys.add(col);
+                }
+            }
+
+            Collections.sort(this.partitionKeys, PartitionKeyComparator.INSTANCE);
+        }
+
         return this.partitionKeys;
+    }
+
+    /**
+     * Get the FullColumnDescription for a quantum field, if any.
+     * @return null if there is no quantum information
+     */
+    public FullColumnDescription getQuantumDescription()
+    {
+        if (quantumField == null)
+        {
+            for (FullColumnDescription fd: getPartitionKeyColumnDescriptions())
+            {
+                if (fd.hasQuantum())
+                {
+                    if (quantumField != null)
+                    {
+                        throw new IllegalStateException("Table definition has more than one quantum.");
+                    }
+                    else
+                    {
+                        quantumField = fd;
+                    }
+                }
+            }
+        }
+
+        return quantumField;
     }
 
     /**
@@ -88,6 +118,21 @@ public class TableDefinition
      */
     public Collection<FullColumnDescription> getLocalKeyColumnDescriptions()
     {
+        if (localKeys == null)
+        {
+            localKeys = new LinkedList<>();
+
+            for (FullColumnDescription col : fullColumnDescriptions.values())
+            {
+                if (col.isLocalKeyMember())
+                {
+                    this.localKeys.add(col);
+                }
+            }
+
+            Collections.sort(this.localKeys, LocalKeyComparator.INSTANCE);
+        }
+
         return this.localKeys;
     }
 
