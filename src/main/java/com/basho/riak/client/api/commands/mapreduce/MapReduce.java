@@ -426,6 +426,19 @@ public abstract class MapReduce extends StreamableRiakCommand.StreamableRiakComm
                 this.pollTimeout = pollTimeout;
             }
 
+            /**
+             * Returns {@code true} if the iteration has more elements.
+             * (In other words, returns {@code true} if {@link #next} would
+             * return an element rather than throwing an exception.)
+             *
+             * This method will block and wait for more data if none is immediately available.
+             *
+             * <b>Riak Java Client Note:</b> Since this class polls for
+             * new "streaming" data, it is advisable to check {@link Thread#isInterrupted()}
+             * in environments where thread interrupts must be obeyed.
+             *
+             * @return {@code true} if the iteration has more elements
+             */
             @Override
             public boolean hasNext()
             {
@@ -478,6 +491,17 @@ public abstract class MapReduce extends StreamableRiakCommand.StreamableRiakComm
                 return !resultsQueue.isEmpty();
             }
 
+            /**
+             * Returns the next element in the iteration.
+             * This method will block and wait for more data if none is immediately available.
+             *
+             * <b>Riak Java Client Note:</b> Since this class polls for
+             * new "streaming" data, it is advisable to check {@link Thread#isInterrupted()}
+             * in environments where thread interrupts must be obeyed.
+             *
+             * @return the next element in the iteration
+             * @throws NoSuchElementException if the iteration has no more elements
+             */
             @Override
             public Response next()
             {

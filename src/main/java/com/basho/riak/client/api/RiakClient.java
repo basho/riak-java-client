@@ -155,6 +155,7 @@ import java.util.concurrent.TimeoutException;
  * </ul>
  * @author Dave Rusek <drusek at basho dot com>
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho.com>
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
@@ -433,6 +434,7 @@ public class RiakClient
      *                  the result iterator can block the consuming thread from seeing the done()
      *                  status until the timeout is reached.
      * @return a RiakFuture for the operation
+     * @since 2.1.0
      * @see RiakFuture
      */
     public <I extends StreamableRiakCommand.StreamableResponse,S> RiakFuture<I,S> executeAsyncStreaming(StreamableRiakCommand<I, S, ?, ?> command, int timeoutMS)

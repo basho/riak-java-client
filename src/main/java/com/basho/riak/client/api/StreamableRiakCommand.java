@@ -31,8 +31,7 @@ import java.util.Iterator;
  * @param <S> The response type returned by "streaming mode" {@link executeAsyncStreaming}
  * @param <R> The response type returned by the "batch mode" @{link executeAsync}
  * @param <I> The query info type
- * @author Dave Rusek
- * @author Brian Roach <roach at basho.com>
+ * @author Alex Moore <amoore at basho.com>
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
@@ -65,11 +64,27 @@ public abstract class StreamableRiakCommand<R extends StreamableRiakCommand.Stre
         {
         }
 
+        /**
+         * Whether the results are to be streamed back.
+         * If true, results will appear in this class's iterator.
+         * If false, they will appear in the original result collection.
+         * @return true if the results are to be streamed.
+         */
         public boolean isStreamable()
         {
             return chunkedResponseIterator != null;
         }
 
+        /**
+         * Get an iterator over the result data.
+         *
+         * If using the streaming API, this method will block
+         * and wait for more data if none is immediately available.
+         * It is also advisable to check {@link Thread#isInterrupted()}
+         * in environments where thread interrupts must be obeyed.
+         *
+         * @return an iterator over the result data.
+         */
         @Override
         public Iterator<T> iterator() {
             if (isStreamable()) {

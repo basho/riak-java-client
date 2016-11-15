@@ -25,6 +25,24 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TransferQueue;
 import java.util.function.Function;
 
+/**
+ * Transforms a stream of response chunks to a Iterable of response items.
+ *
+ * When iterating over this class's {@link Iterator} this class will lazily walk
+ * through the response chunks's iterators and convert the items.
+ * It will also wait for more response chunks if none are available.
+ *
+ * Since this class polls for new "streaming" data, it is advisable
+ * to check {@link Thread#isInterrupted()} while using this class's
+ * {@link Iterator} in environments where thread interrupts must be obeyed.
+ *
+ * @param <FinalT> The final converted type that this class exposes as part of its iterator.
+ * @param <ChunkT> The type of the response chunks, contains an Iterable&lt;{@link CoreT}&gt;
+ * @param <CoreT> The raw response type, will get converted to {@link FinalT}.
+ * @author Alex Moore <amoore at basho.com>
+ * @author Sergey Galkin <srggal at gmail dot com>
+ * @since 2.1.0
+ */
 public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, CoreT> implements Iterator<FinalT>
 {
     private final int timeout;
@@ -62,6 +80,19 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
         hasNext();
     }
 
+    /**
+     * Returns {@code true} if the iteration has more elements.
+     * (In other words, returns {@code true} if {@link #next} would
+     * return an element rather than throwing an exception.)
+     *
+     * This method will block and wait for more data if none is immediately available.
+     *
+     * <b>Riak Java Client Note:</b> Since this class polls for
+     * new "streaming" data, it is advisable to check {@link Thread#isInterrupted()}
+     * in environments where thread interrupts must be obeyed.
+     *
+     * @return {@code true} if the iteration has more elements
+     */
     @Override
     public boolean hasNext()
     {
@@ -109,16 +140,37 @@ public class ChunkedResponseIterator<FinalT, ChunkT extends Iterable<CoreT>, Cor
         return !coreFuture.isDone() || !chunkQueue.isEmpty();
     }
 
+    /**
+     * Returns whether this response contains a continuation.
+     * Only run this once the operation is complete, otherwise it will return true as it's
+     * @return Whether this response has a continuation.
+     */
     public boolean hasContinuation()
     {
         return continuation != null || possibleChunksRemaining();
     }
 
+    /**
+     * Returns the current value of the continuation.
+     * Only run this once the operation is complete, or else you will get a null value.
+     * @return The continuation value (if any).
+     */
     public BinaryValue getContinuation()
     {
         return continuation;
     }
 
+    /**
+     * Returns the next element in the iteration.
+     * This method will block and wait for more data if none is immediately available.
+     *
+     * <b>Riak Java Client Note:</b> Since this class polls for
+     * new "streaming" data, it is advisable to check {@link Thread#isInterrupted()}
+     * in environments where thread interrupts must be obeyed.
+     *
+     * @return the next element in the iteration
+     * @throws NoSuchElementException if the iteration has no more elements
+     */
     @Override
     public FinalT next()
     {
