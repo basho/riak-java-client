@@ -27,7 +27,6 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -638,7 +637,7 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
          */
         public Iterator<E> iterator()
         {
-            if (isStreamable()) {
+            if (isStreaming()) {
                 return super.iterator();
             }
 
@@ -663,7 +662,7 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
          */
         public boolean hasContinuation()
         {
-            if (isStreamable())
+            if (isStreaming())
             {
                 return chunkedResponseIterator.hasContinuation();
             }
@@ -682,7 +681,7 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
          */
         public BinaryValue getContinuation()
         {
-            if (isStreamable())
+            if (isStreaming())
             {
                 return chunkedResponseIterator.getContinuation();
             }
@@ -702,7 +701,7 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
          */
         public boolean hasEntries()
         {
-            if (isStreamable())
+            if (isStreaming())
             {
                 return chunkedResponseIterator.hasNext();
             }
@@ -718,7 +717,7 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
          */
         public final List<E> getEntries()
         {
-            if(isStreamable())
+            if(isStreaming())
             {
                 throw new IllegalStateException("Use the iterator() while using the streaming API");
             }

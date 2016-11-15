@@ -70,7 +70,7 @@ public abstract class StreamableRiakCommand<R extends StreamableRiakCommand.Stre
          * If false, they will appear in the original result collection.
          * @return true if the results are to be streamed.
          */
-        public boolean isStreamable()
+        public boolean isStreaming()
         {
             return chunkedResponseIterator != null;
         }
@@ -87,7 +87,7 @@ public abstract class StreamableRiakCommand<R extends StreamableRiakCommand.Stre
          */
         @Override
         public Iterator<T> iterator() {
-            if (isStreamable()) {
+            if (isStreaming()) {
                 assert chunkedResponseIterator != null;
                 return chunkedResponseIterator;
             }

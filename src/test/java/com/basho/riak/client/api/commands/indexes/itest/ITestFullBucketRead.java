@@ -335,7 +335,7 @@ public class ITestFullBucketRead extends ITestBase
                 readResponse = rc.executeAsyncStreaming(cmd2, pollTimeout).get();
             }
 
-            assertEquals(useStreaming, readResponse.isStreamable());
+            assertEquals(useStreaming, readResponse.isStreaming());
             final List<Entry> list = new LinkedList<>();
             readResponse.forEach( e -> list.add(e));
 
@@ -366,7 +366,7 @@ public class ITestFullBucketRead extends ITestBase
                     r = rc.executeAsyncStreaming(cmd2, pollTimeout).get();
                 }
 
-                assertEquals(useStreaming, r.isStreamable());
+                assertEquals(useStreaming, r.isStreaming());
 
                 final List<Entry> entries = new LinkedList<>();
 

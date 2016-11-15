@@ -355,7 +355,7 @@ public abstract class MapReduce extends StreamableRiakCommand.StreamableRiakComm
         }
 
         @Override
-        public boolean isStreamable()
+        public boolean isStreaming()
         {
             return responseIterator != null;
         }
@@ -404,7 +404,7 @@ public abstract class MapReduce extends StreamableRiakCommand.StreamableRiakComm
         @Override
         public Iterator<Response> iterator()
         {
-            if (isStreamable()) {
+            if (isStreaming()) {
                 return responseIterator;
             }
 

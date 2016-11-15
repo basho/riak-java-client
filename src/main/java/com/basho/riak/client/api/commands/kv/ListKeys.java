@@ -139,7 +139,7 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
         @Override
         public Iterator<Location> iterator()
         {
-            if (isStreamable())
+            if (isStreaming())
             {
                 return super.iterator();
             }

@@ -18,7 +18,6 @@ package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.api.commands.mapreduce.BucketMapReduce;
@@ -34,13 +33,9 @@ import com.basho.riak.client.api.commands.mapreduce.filters.StringToIntFilter;
 import com.basho.riak.client.api.commands.mapreduce.filters.TokenizeFilter;
 import com.basho.riak.client.core.query.functions.Function;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.junit.*;
 
@@ -178,7 +173,7 @@ public class ITestBucketMapReduce extends ITestBase
         int count = 0;
 
         final MapReduce.Response streamingResponse = streamingFuture.get();
-        assertTrue(streamingResponse.isStreamable());
+        assertTrue(streamingResponse.isStreaming());
         // The streaming query should return many results which are JSON arrays, each
         // containing a piece of the array [0-199].
         // Streaming result would look like: [[0], [1,2,3], ... [..., 199]], with the outer

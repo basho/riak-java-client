@@ -147,7 +147,7 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
         @Override
         public Iterator<Namespace> iterator()
         {
-            if (isStreamable()) {
+            if (isStreaming()) {
                 return super.iterator();
             }
 
