@@ -44,7 +44,6 @@ public class MapReduceOperation extends PBStreamingFutureOperation<MapReduceOper
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final JsonNodeFactory jsonNodeFactory = JsonNodeFactory.instance;
 
-
     private MapReduceOperation(Builder builder)
     {
         super(RiakMessageCodes.MSG_MapRedReq,

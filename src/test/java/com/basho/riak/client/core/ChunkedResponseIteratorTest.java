@@ -1,6 +1,5 @@
 package com.basho.riak.client.core;
 
-
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import org.junit.Before;
 import org.junit.Rule;

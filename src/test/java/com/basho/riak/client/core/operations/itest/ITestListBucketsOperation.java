@@ -100,7 +100,6 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
         testBucketListStreaming(namedBucketType, 10);
     }
 
-
     private void testBucketList(String bucketType, int bucketCount) throws InterruptedException, ExecutionException
     {
         final List<BinaryValue> expectedBuckets = storeObjects(bucketType, bucketCount);
@@ -210,5 +209,4 @@ public class ITestListBucketsOperation extends ITestAutoCleanupBase
 
         return bucketNames;
     }
-
 }

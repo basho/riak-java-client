@@ -135,7 +135,6 @@ public class ITestMapReduceOperation extends ITestBase
 
         final TransferQueue<MapReduceOperation.Response> resultsQueue = streamFuture.getResultsQueue();
 
-
         Map<Integer, Map<String, Integer>> resultMap = new LinkedHashMap<>();
 
         while (!streamFuture.isDone())

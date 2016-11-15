@@ -21,7 +21,6 @@ import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 
-
 /**
  * Performs a 2i query where the 2i index keys are numeric.
  * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>

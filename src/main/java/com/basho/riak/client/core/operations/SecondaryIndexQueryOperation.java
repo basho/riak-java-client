@@ -110,7 +110,6 @@ public class SecondaryIndexQueryOperation
         }
     }
 
-
     private void convertIndexResp(Response.Builder responseBuilder, Object o)
     {
         final RiakKvPB.RpbIndexResp pbEntry = (RiakKvPB.RpbIndexResp) o;

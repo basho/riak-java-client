@@ -213,5 +213,4 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
             return new ListBuckets(this);
         }
     }
-
 }

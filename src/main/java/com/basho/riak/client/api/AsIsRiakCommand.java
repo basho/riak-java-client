@@ -34,5 +34,4 @@ public abstract class AsIsRiakCommand<R, I> extends RiakCommand<R, I>
 
         return cluster.execute(coreOperation);
     }
-
 }

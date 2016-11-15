@@ -457,7 +457,7 @@ public abstract class MapReduce extends StreamableRiakCommand.StreamableRiakComm
                 }
                 finally
                 {
-                    if(interrupted)
+                    if (interrupted)
                     {
                         // Reset interrupted flag if we came in with it
                         // or we were interrupted while waiting.

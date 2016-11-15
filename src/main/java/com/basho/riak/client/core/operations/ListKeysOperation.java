@@ -30,7 +30,6 @@ public class ListKeysOperation extends PBStreamingFutureOperation<ListKeysOperat
 {
     private final Namespace namespace;
 
-
     private ListKeysOperation(Builder builder)
     {
         super(RiakMessageCodes.MSG_ListKeysReq,

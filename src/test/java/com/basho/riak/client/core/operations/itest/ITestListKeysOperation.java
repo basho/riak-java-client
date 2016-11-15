@@ -91,7 +91,6 @@ public class ITestListKeysOperation extends ITestBase
         testListSingleKey(namedBucketType);
     }
 
-
     @Test
     public void testListKeyTestTypeStreaming() throws InterruptedException, ExecutionException
     {
@@ -124,8 +123,6 @@ public class ITestListKeysOperation extends ITestBase
         assumeTrue(testBucketType);
         testListKeysStreaming(namedBucketType, 1000);
     }
-
-
 
     private void testListNoKeys(String bucketType) throws InterruptedException, ExecutionException
     {

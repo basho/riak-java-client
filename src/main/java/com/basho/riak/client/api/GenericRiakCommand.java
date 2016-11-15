@@ -17,10 +17,8 @@ package com.basho.riak.client.api;
 
 import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.PBStreamingFutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
-
 
 /**
  * @author Sergey Galkin <srggal at gmail dot com>

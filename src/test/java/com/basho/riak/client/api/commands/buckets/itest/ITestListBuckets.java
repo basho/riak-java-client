@@ -122,7 +122,7 @@ public class ITestListBuckets extends ITestBase
 
         for (Namespace ns : streamResponse)
         {
-            if(!found)
+            if (!found)
             {
                 found = ns.getBucketName().toString().equals(bucketName);
             }
