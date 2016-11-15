@@ -107,7 +107,17 @@ public class ITestBinIndexQuery extends ITestIndexBase
         final BinIndexQuery.Response streamingResponse = streamingFuture.get();
 
         assertTrue(streamingResponse.hasEntries());
-        assertTrue(streamingResponse.getEntries().isEmpty());
+
+        boolean caught = false;
+        try
+        {
+            streamingResponse.getEntries();
+        }
+        catch (IllegalStateException unused)
+        {
+            caught = true;
+        }
+        assertTrue(caught);
 
         final String expectedObjectKey = objectKey(1);
         final String expectedIndexKey = indexKey(1);

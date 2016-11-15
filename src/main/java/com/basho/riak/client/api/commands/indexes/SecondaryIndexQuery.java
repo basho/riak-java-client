@@ -27,6 +27,7 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -711,15 +712,15 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
 
         /**
          * Get a list of the result entries for this response.
-         * If using the streaming API this method will return an empty list.
          *
          * @return A list of result entries.
+         * @throws IllegalStateException when called while using the streaming API.
          */
         public final List<E> getEntries()
         {
             if(isStreamable())
             {
-                return new ArrayList<>(0);
+                throw new IllegalStateException("Use the iterator() while using the streaming API");
             }
 
             final List<SecondaryIndexQueryOperation.Response.Entry> coreEntries = coreResponse.getEntryList();
