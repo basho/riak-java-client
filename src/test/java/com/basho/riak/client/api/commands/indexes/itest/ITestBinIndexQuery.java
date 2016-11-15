@@ -21,6 +21,7 @@ import com.basho.riak.client.api.annotations.RiakBucketName;
 import com.basho.riak.client.api.annotations.RiakIndex;
 import com.basho.riak.client.api.annotations.RiakKey;
 import com.basho.riak.client.api.commands.indexes.BinIndexQuery;
+import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.query.Location;
@@ -28,6 +29,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -105,6 +107,7 @@ public class ITestBinIndexQuery extends ITestIndexBase
         final BinIndexQuery.Response streamingResponse = streamingFuture.get();
 
         assertTrue(streamingResponse.hasEntries());
+        assertTrue(streamingResponse.getEntries().isEmpty());
 
         final String expectedObjectKey = objectKey(1);
         final String expectedIndexKey = indexKey(1);

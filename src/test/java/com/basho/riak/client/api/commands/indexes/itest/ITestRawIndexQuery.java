@@ -182,6 +182,7 @@ public class ITestRawIndexQuery extends ITestBase
         final BinIndexQuery.Response streamingResponse = indexResult.get();
 
         assertTrue(streamingResponse.hasEntries());
+        assertTrue(streamingResponse.getEntries().isEmpty());
         assertEquals(100, StreamSupport.stream(streamingResponse.spliterator(), false).count());
 
         // Assert everything was consumed

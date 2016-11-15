@@ -107,6 +107,7 @@ public class ITestBigIntIndexQuery extends ITestIndexBase
         final BigIntIndexQuery.Response streamingResponse = streamingFuture.get();
 
         assertTrue(streamingResponse.hasEntries());
+        assertTrue(streamingResponse.getEntries().isEmpty());
 
         final String expectedObjectKey = objectKey(1);
         boolean found = false;

@@ -113,6 +113,7 @@ public class ITestIntIndexQuery extends ITestIndexBase
         final IntIndexQuery.Response streamingResponse = streamingFuture.get();
 
         assertTrue(streamingResponse.hasEntries());
+        assertTrue(streamingResponse.getEntries().isEmpty());
 
         final String expectedObjectKey = objectKey(1);
         boolean found = false;

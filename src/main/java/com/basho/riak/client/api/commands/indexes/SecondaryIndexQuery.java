@@ -625,6 +625,16 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
             this.coreResponse = coreResponse;
         }
 
+        /**
+         * Get an iterator over the result data.
+         *
+         * If using the streaming API, this method will block
+         * and wait for more data if none is immediately available.
+         * It is also advisable to check {@link Thread#isInterrupted()}
+         * in environments where thread interrupts must be obeyed.
+         *
+         * @return an iterator over the result data.
+         */
         public Iterator<E> iterator()
         {
             if (isStreamable()) {
@@ -644,6 +654,10 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
         /**
          * Check if this response has a continuation.
          *
+         * If using the streaming API, this property's value
+         * may change while data is being received, therefore
+         * it is best to call it after the operation is complete.
+         *
          * @return true if the response contains a continuation.
          */
         public boolean hasContinuation()
@@ -658,6 +672,10 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
 
         /**
          * Get the continuation from this response.
+         *
+         * If using the streaming API, this property's value
+         * may change while data is being received, therefore
+         * it is best to call it after the operation is complete.
          *
          * @return the continuation, or null if none is present.
          */
@@ -674,6 +692,11 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
         /**
          * Check is this response contains any entries.
          *
+         * If using the streaming API, this method will block
+         * and wait for more data if none is immediately available.
+         * It is also advisable to check {@link Thread#isInterrupted()}
+         * in environments where thread interrupts must be obeyed.
+         *
          * @return true if entries are present, false otherwise.
          */
         public boolean hasEntries()
@@ -686,8 +709,19 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
             return !coreResponse.getEntryList().isEmpty();
         }
 
+        /**
+         * Get a list of the result entries for this response.
+         * If using the streaming API this method will return an empty list.
+         *
+         * @return A list of result entries.
+         */
         public final List<E> getEntries()
         {
+            if(isStreamable())
+            {
+                return new ArrayList<>(0);
+            }
+
             final List<SecondaryIndexQueryOperation.Response.Entry> coreEntries = coreResponse.getEntryList();
             final List<E> convertedList = new ArrayList<>(coreEntries.size());
 
@@ -699,13 +733,6 @@ public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Respo
             return convertedList;
         }
 
-        /**
-         * Factory method.
-         * @param location
-         * @param coreEntry
-         * @param converter
-         * @return
-         */
         @SuppressWarnings("unchecked")
         protected E createEntry(Location location, SecondaryIndexQueryOperation.Response.Entry coreEntry, IndexConverter<T> converter)
         {
