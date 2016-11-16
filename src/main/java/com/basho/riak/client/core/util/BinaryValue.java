@@ -41,6 +41,11 @@ import java.util.Arrays;
  */
 public final class BinaryValue
 {
+    /**
+     * It is expected that UTF-8 charset is available.
+     */
+    private static final Charset theUTF8 = Charset.forName("UTF-8");
+
     private final byte[] data;
 
     private BinaryValue(byte[] data)
@@ -87,7 +92,7 @@ public final class BinaryValue
      */
     public static BinaryValue createFromUtf8(String data)
     {
-        return create(data, Charset.forName("UTF-8"));
+        return create(data, theUTF8);
     }
 
     /**
@@ -197,7 +202,7 @@ public final class BinaryValue
      */
     public String toStringUtf8()
     {
-        return toString(Charset.forName("UTF-8"));
+        return toString(theUTF8);
     }
 
     /**
