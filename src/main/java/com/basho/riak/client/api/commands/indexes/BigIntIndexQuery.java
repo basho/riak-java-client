@@ -16,16 +16,12 @@
 
 package com.basho.riak.client.api.commands.indexes;
 
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
+
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Performs a 2i query where the 2i index keys are numeric.
@@ -42,10 +38,40 @@ import java.util.List;
  * BigInteger key = new BigInteger(someReallyLongNumber);
  * BigIntIndexQuery q = new BigIntIndexQuery.Builder(ns, "my_index", key).build();
  * BigIntIndexQuery.Response resp = client.execute(q);}</pre>
+ *
+ * <p>
+ * You can also stream the results back before the operation is fully complete.
+ * This reduces the time between executing the operation and seeing a result,
+ * and reduces overall memory usage if the iterator is consumed quickly enough.
+ * The result iterable can only be iterated once though.
+ * If the thread is interrupted while the iterator is polling for more results,
+ * a {@link RuntimeException} will be thrown.
+ * <pre class="prettyprint">
+ * {@code
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * BigInteger key = new BigInteger(someReallyLongNumber);
+ * BigIntIndexQuery q = new BigIntIndexQuery.Builder(ns, "my_index", key).build();
+ * RiakFuture<BigIntIndexQuery.StreamingResponse, BigIntIndexQuery> streamingFuture =
+ *     client.executeAsyncStreaming(q, 200);
+ * BigIntIndexQuery.StreamingResponse streamingResponse = streamingFuture.get();
+ *
+ * for (BigIntIndexQuery.Response.Entry e : streamingResponse)
+ * {
+ *     System.out.println(e.getRiakObjectLocation().getKey().toString());
+ * }
+ * // Wait for the command to fully finish.
+ * streamingFuture.await();
+ * // The StreamingResponse will also contain the continuation, if the operation returned one.
+ * streamingResponse.getContinuation(); }</pre>
+ * </p>
+ *
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
-public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntIndexQuery.Response, BigIntIndexQuery>
+public class BigIntIndexQuery
+        extends SecondaryIndexQuery<BigInteger,BigIntIndexQuery.Response, BigIntIndexQuery>
 {
     private final IndexConverter<BigInteger> converter;
 
@@ -57,7 +83,7 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
 
     protected BigIntIndexQuery(Init<BigInteger,?> builder)
     {
-        super(builder);
+        super(builder, Response::new, Response::new);
         this.converter = new IndexConverter<BigInteger>()
         {
             @Override
@@ -77,42 +103,6 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
                 return BinaryValue.createFromUtf8(input.toString());
             }
         };
-    }
-
-    @Override
-    protected RiakFuture<Response, BigIntIndexQuery> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
-            executeCoreAsync(cluster);
-
-        BigIntQueryFuture future = new BigIntQueryFuture(coreFuture);
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    protected final class BigIntQueryFuture
-            extends CoreFutureAdapter<Response,
-                                      BigIntIndexQuery,
-                                      SecondaryIndexQueryOperation.Response,
-                                      SecondaryIndexQueryOperation.Query>
-    {
-        public BigIntQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response,
-                                 SecondaryIndexQueryOperation.Query> coreFuture)
-        {
-            super(coreFuture);
-        }
-
-        @Override
-        protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
-        {
-            return new Response(namespace, coreResponse, converter);
-        }
-
-        @Override
-        protected BigIntIndexQuery convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo)
-        {
-            return BigIntIndexQuery.this;
-        }
     }
 
     protected static abstract class Init<S, T extends Init<S,T>> extends SecondaryIndexQuery.Init<S,T>
@@ -206,34 +196,16 @@ public class BigIntIndexQuery extends SecondaryIndexQuery<BigInteger, BigIntInde
         }
     }
 
-    public static class Response extends SecondaryIndexQuery.Response<BigInteger>
+    public static class Response extends SecondaryIndexQuery.Response<BigInteger, SecondaryIndexQuery.Response.Entry<BigInteger>>
     {
-        protected Response(Namespace queryLocation,
-                           SecondaryIndexQueryOperation.Response coreResponse,
-                           IndexConverter<BigInteger> converter)
+        Response(Namespace queryLocation, IndexConverter<BigInteger> converter, int timeout, StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        {
+            super(queryLocation, converter, timeout, coreFuture);
+        }
+
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BigInteger> converter)
         {
             super(queryLocation, coreResponse, converter);
-        }
-
-        @Override
-        public List<Entry> getEntries()
-        {
-            List<Entry> convertedList = new ArrayList<>();
-            for (SecondaryIndexQueryOperation.Response.Entry e : coreResponse.getEntryList())
-            {
-                Location loc = getLocationFromCoreEntry(e);
-                Entry ce = new Entry(loc, e.getIndexKey(), converter);
-                convertedList.add(ce);
-            }
-            return convertedList;
-        }
-
-        public class Entry extends SecondaryIndexQuery.Response.Entry<BigInteger>
-        {
-            protected Entry(Location riakObjectLocation, BinaryValue indexKey, IndexConverter<BigInteger> converter)
-            {
-                super(riakObjectLocation, indexKey, converter);
-            }
         }
     }
 }

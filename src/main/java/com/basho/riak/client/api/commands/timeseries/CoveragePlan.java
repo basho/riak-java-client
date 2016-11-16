@@ -15,13 +15,12 @@
  */
 package com.basho.riak.client.api.commands.timeseries;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.AsIsRiakCommand;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.ts.CoveragePlanOperation;
 import com.basho.riak.client.core.query.timeseries.CoveragePlanResult;
 
-public class CoveragePlan extends RiakCommand<CoveragePlanResult, String>
+public class CoveragePlan extends AsIsRiakCommand<CoveragePlanResult, String>
 {
     private final CoveragePlanOperation operation;
 
@@ -31,10 +30,8 @@ public class CoveragePlan extends RiakCommand<CoveragePlanResult, String>
     }
 
     @Override
-    protected RiakFuture<CoveragePlanResult, String> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<CoveragePlanResult, String> future = cluster.execute(operation);
-        return future;
+    protected FutureOperation<CoveragePlanResult, ?, String> buildCoreOperation() {
+        return operation;
     }
 
     public static class Builder extends CoveragePlanOperation.AbstractBuilder<CoveragePlan>

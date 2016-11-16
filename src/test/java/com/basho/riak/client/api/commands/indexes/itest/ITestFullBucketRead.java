@@ -110,7 +110,7 @@ public class ITestFullBucketRead extends ITestBase
         {
             assertFalse(e.hasFetchedValue());
             assertNull(e.getFetchedValue());
-            returnedKeys.add(e.getLocation().getKeyAsString());
+            returnedKeys.add(e.getRiakObjectLocation().getKeyAsString());
         }
 
         assertEquals(NUMBER_OF_TEST_VALUES, returnedKeys.size());
@@ -134,7 +134,7 @@ public class ITestFullBucketRead extends ITestBase
             assertTrue(e.hasFetchedValue());
             final RiakObject ro = e.getFetchedValue().getValue(RiakObject.class);
 
-            final int expectedValue = Integer.parseInt(e.getLocation().getKeyAsString().substring(1));
+            final int expectedValue = Integer.parseInt(e.getRiakObjectLocation().getKeyAsString().substring(1));
             assertEquals("v" + expectedValue, ro.getValue().toString());
 
             assertEquals("plain/text", ro.getContentType());
@@ -145,38 +145,41 @@ public class ITestFullBucketRead extends ITestBase
     public void readPlainTextValuesWithCoverageContext()
             throws ExecutionException, InterruptedException, UnknownHostException
     {
-        final Map<String, RiakObject> results = performFBReadWithCoverageContext(false, false);
+        final Map<String, RiakObject> results = performFBReadWithCoverageContext(false, false, false);
         assertEquals(NUMBER_OF_TEST_VALUES, results.size());
 
-        for (int i=0; i<NUMBER_OF_TEST_VALUES; ++i)
-        {
-            final String key = "k"+i;
-            assertTrue(results.containsKey(key));
+        verifyResults(results, false);
+    }
 
-            // since returnBody=false, riakObject mustn't be returned
-            assertNull(results.get(key));
-        }
+    @Test
+    public void readPlainTextValuesStreamedWithCoverageContext()
+            throws ExecutionException, InterruptedException, UnknownHostException
+    {
+        final Map<String, RiakObject> results = performFBReadWithCoverageContext(false, false, true);
+        assertEquals(NUMBER_OF_TEST_VALUES, results.size());
+
+        verifyResults(results, false);
     }
 
     @Test
     public void readPlainTextValuesWithCoverageContextContinuouslyWithReturnBody()
             throws ExecutionException, InterruptedException, UnknownHostException
     {
-        final Map<String, RiakObject> results = performFBReadWithCoverageContext(true, true);
+        final Map<String, RiakObject> results = performFBReadWithCoverageContext(true, true, false);
         assertEquals(NUMBER_OF_TEST_VALUES, results.size());
 
-        for (int i=0; i<NUMBER_OF_TEST_VALUES; ++i)
-        {
-            final String key = "k"+i;
-            assertTrue(results.containsKey(key));
+        verifyResults(results, true);
+    }
 
-            final RiakObject ro = results.get(key);
-            assertNotNull(ro);
 
-            assertEquals("plain/text", ro.getContentType());
-            assertFalse(ro.isDeleted());
-            assertEquals("v"+i, ro.getValue().toStringUtf8());
-        }
+    @Test
+    public void readPlainTextValuesStreamedWithCoverageContextContinuouslyWithReturnBody()
+            throws ExecutionException, InterruptedException, UnknownHostException
+    {
+        final Map<String, RiakObject> results = performFBReadWithCoverageContext(true, true, true);
+        assertEquals(NUMBER_OF_TEST_VALUES, results.size());
+
+        verifyResults(results, true);
     }
 
     @Test
@@ -216,7 +219,31 @@ public class ITestFullBucketRead extends ITestBase
         }
     }
 
-    private Map<String, RiakObject> performFBReadWithCoverageContext(boolean withContinuation,boolean withReturnBody)
+    private static void verifyResults(final Map<String, RiakObject> results, boolean withReturnBody )
+    {
+        for (int i=0; i<NUMBER_OF_TEST_VALUES; ++i)
+        {
+            final String key = "k"+i;
+            assertTrue(results.containsKey(key));
+
+            if (!withReturnBody)
+            {
+                // since returnBody=false, riakObject mustn't be returned
+                assertNull(results.get(key));
+                continue;
+            }
+
+            final RiakObject ro = results.get(key);
+            assertNotNull(ro);
+
+            assertEquals("plain/text", ro.getContentType());
+            assertFalse(ro.isDeleted());
+            assertEquals("v"+i, ro.getValue().toStringUtf8());
+        }
+    }
+
+    private Map<String, RiakObject> performFBReadWithCoverageContext(boolean withContinuation, boolean withReturnBody,
+                                                                     boolean useStreaming)
             throws UnknownHostException, ExecutionException, InterruptedException
     {
         final Map<CoverageEntry, List<Entry>> chunkedKeys = new HashMap<>();
@@ -240,7 +267,7 @@ public class ITestFullBucketRead extends ITestBase
                 for (CoverageEntry ce : coveragePlan.hostEntries(host))
                 {
                     final Map<CoverageEntry, List<Entry>> keys =
-                            retrieveChunkedKeysForCoverageEntry(rc, ce, withContinuation, withReturnBody);
+                            retrieveChunkedKeysForCoverageEntry(rc, ce, withContinuation, withReturnBody, useStreaming);
                     chunkedKeys.putAll(keys);
                 }
             }
@@ -272,7 +299,7 @@ public class ITestFullBucketRead extends ITestBase
         Map<CoverageEntry, List<Entry>> keys = Collections.emptyMap();
         try
         {
-            keys = retrieveChunkedKeysForCoverageEntry(rc, ce, true, true);
+            keys = retrieveChunkedKeysForCoverageEntry(rc, ce, true, true, false);
         }
         finally
         {
@@ -286,9 +313,11 @@ public class ITestFullBucketRead extends ITestBase
     private Map<CoverageEntry, List<Entry>> retrieveChunkedKeysForCoverageEntry(RiakClient rc,
                                                                                 CoverageEntry ce,
                                                                                 boolean withContinuation,
-                                                                                boolean withReturnBody)
+                                                                                boolean withReturnBody,
+                                                                                boolean useStreaming)
             throws ExecutionException, InterruptedException
     {
+        final int pollTimeout = 100;  // <-- in ms in case when useStreaming == true
         final Map<CoverageEntry, List<Entry>> chunkedKeys = new HashMap<>();
         if (!withContinuation)
         {
@@ -296,8 +325,21 @@ public class ITestFullBucketRead extends ITestBase
                 .withReturnBody(withReturnBody)
                 .build();
 
-            final FullBucketRead.Response readResponse = rc.execute(cmd2);
-            chunkedKeys.put(ce, readResponse.getEntries());
+            final FullBucketRead.Response readResponse;
+            if (!useStreaming)
+            {
+                readResponse = rc.execute(cmd2);
+            }
+            else
+            {
+                readResponse = rc.executeAsyncStreaming(cmd2, pollTimeout).get();
+            }
+
+            assertEquals(useStreaming, readResponse.isStreaming());
+            final List<Entry> list = new LinkedList<>();
+            readResponse.forEach( e -> list.add(e));
+
+            chunkedKeys.put(ce, list);
         }
         else
         {
@@ -313,17 +355,25 @@ public class ITestFullBucketRead extends ITestBase
                     .withContinuation(continuation)
                     .build();
 
-                final FullBucketRead.Response r = rc.execute(cmd2);
-                final List<Entry> entries;
+                final FullBucketRead.Response r;
 
-                if (r.hasEntries())
+                if (!useStreaming)
                 {
-                    entries = r.getEntries();
-                    data.addAll(entries);
+                    r = rc.execute(cmd2);
                 }
                 else
                 {
-                    entries = Collections.EMPTY_LIST;
+                    r = rc.executeAsyncStreaming(cmd2, pollTimeout).get();
+                }
+
+                assertEquals(useStreaming, r.isStreaming());
+
+                final List<Entry> entries = new LinkedList<>();
+
+                if (r.hasEntries())
+                {
+                    r.forEach(e-> entries.add(e));
+                    data.addAll(entries);
                 }
 
                 logger.debug("FullBucketRead query(ce={}, token={}) returns:\n  token: {}\n  entries: {}",
@@ -354,7 +404,7 @@ public class ITestFullBucketRead extends ITestBase
                 for (FullBucketRead.Response.Entry re : e.getValue())
                 {
                     final RiakObject ro = re.hasFetchedValue() ? re.getFetchedValue().getValue(RiakObject.class) : null;
-                    results.put(re.getLocation().getKeyAsString(), ro);
+                    results.put(re.getRiakObjectLocation().getKeyAsString(), ro);
                 }
 
                 logger.debug("{} keys were returned for {}:\n\t{}",

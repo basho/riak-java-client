@@ -16,14 +16,18 @@
 
 package com.basho.riak.client.api.commands.indexes;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.StreamableRiakCommand;
+import com.basho.riak.client.api.commands.ChunkedResponseIterator;
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
+import com.basho.riak.client.core.query.ConvertibleIterator;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -34,10 +38,30 @@ import java.util.List;
  *
  * @param <S> the type being used for the query.
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
-public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
+public abstract class SecondaryIndexQuery<T, S extends SecondaryIndexQuery.Response<T, ?>, U extends SecondaryIndexQuery>
+        extends StreamableRiakCommand<S, U, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query>
 {
+    @FunctionalInterface
+    public interface StreamableResponseCreator<T, R extends Response<T, ?>>
+    {
+        R createResponse(Namespace queryLocation,
+                         IndexConverter<T> converter,
+                         int timeout,
+                         StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture);
+    }
+
+    @FunctionalInterface
+    public interface GatherableResponseCreator<T, R extends Response<T, ?>>
+    {
+        R createResponse(Namespace queryLocation,
+                         SecondaryIndexQueryOperation.Response coreResponse,
+                         IndexConverter<T> converter);
+    }
+
     protected final Namespace namespace;
     protected final String indexName;
     protected final BinaryValue continuation;
@@ -51,7 +75,11 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
     protected Integer timeout;
     protected final byte[] coverageContext;
     protected final boolean returnBody;
-    protected SecondaryIndexQuery(Init<T, ?> builder)
+    private final StreamableResponseCreator<T, S> streamableResponseCreator;
+    private final GatherableResponseCreator<T, S> gatherableResponseCreator;
+
+    protected SecondaryIndexQuery(Init<T, ?> builder, StreamableResponseCreator<T,S> streamableCreator,
+                                  GatherableResponseCreator<T,S> gatherableResponseCreator)
     {
         this.namespace = builder.namespace;
         this.indexName = builder.indexName;
@@ -66,6 +94,8 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
         this.timeout = builder.timeout;
         this.coverageContext = builder.coverageContext;
         this.returnBody = builder.returnBody;
+        this.streamableResponseCreator = streamableCreator;
+        this.gatherableResponseCreator = gatherableResponseCreator;
     }
 
     protected abstract IndexConverter<T> getConverter();
@@ -180,7 +210,8 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
         return timeout;
     }
 
-    protected final SecondaryIndexQueryOperation.Query createCoreQuery()
+    @Override
+    protected SecondaryIndexQueryOperation buildCoreOperation(boolean streamResults)
     {
         IndexConverter<T> converter = getConverter();
 
@@ -203,7 +234,7 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
         else
         {
             coreQueryBuilder.withRangeStart(converter.convert(start))
-                            .withRangeEnd(converter.convert(end));
+                    .withRangeEnd(converter.convert(end));
         }
 
         if (maxResults != null)
@@ -220,16 +251,28 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
         {
             coreQueryBuilder.withCoverageContext(coverageContext);
         }
-        return coreQueryBuilder.build();
+
+        return new SecondaryIndexQueryOperation.Builder(coreQueryBuilder.build()).streamResults(streamResults).build();
     }
 
-    protected RiakFuture<SecondaryIndexQueryOperation.Response,
-                         SecondaryIndexQueryOperation.Query> executeCoreAsync(RiakCluster cluster)
+    @Override
+    protected S convertResponse(FutureOperation<SecondaryIndexQueryOperation.Response, ?,
+            SecondaryIndexQueryOperation.Query> request, SecondaryIndexQueryOperation.Response coreResponse)
     {
-        SecondaryIndexQueryOperation.Builder builder =
-                new SecondaryIndexQueryOperation.Builder(this.createCoreQuery());
+        return gatherableResponseCreator.createResponse(namespace, coreResponse, getConverter());
+    }
 
-        return cluster.execute(builder.build());
+    @Override
+    @SuppressWarnings("unchecked")
+    protected U convertInfo(SecondaryIndexQueryOperation.Query coreInfo)
+    {
+        return (U)SecondaryIndexQuery.this;
+    }
+
+    @Override
+    protected S createResponse(int timeout, StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+    {
+        return streamableResponseCreator.createResponse(namespace, getConverter(), timeout, coreFuture);
     }
 
     @Override
@@ -531,7 +574,7 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
          *
          * It has protected access since, due to performance reasons, it might be used only for the Full Bucket Read
          * @param returnBody
-         * @return
+         * @return a reference to this object.
          */
         protected T withReturnBody(boolean returnBody)
         {
@@ -545,68 +588,172 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
      *
      * @param <T> The type contained in the resposne.
      */
-    public abstract static class Response<T>
+    public static class Response<T, E extends Response.Entry<T>>
+            extends StreamableResponse<E, SecondaryIndexQueryOperation.Response.Entry>
     {
         final protected IndexConverter<T> converter;
         final protected SecondaryIndexQueryOperation.Response coreResponse;
         final protected Namespace queryLocation;
 
+        protected Response(final Namespace queryLocation, IndexConverter<T> converter, final int timeout,
+                 final StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        {
+            this.queryLocation = queryLocation;
+            this.converter = converter;
+            this.coreResponse = null;
+            chunkedResponseIterator = new ChunkedResponseIterator<E, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response.Entry>(
+                    coreFuture, timeout, null,
+                    SecondaryIndexQueryOperation.Response::iterator,
+                    SecondaryIndexQueryOperation.Response::getContinuation)
+            {
+                @SuppressWarnings("unchecked")
+                @Override
+                public E next()
+                {
+                    final SecondaryIndexQueryOperation.Response.Entry coreEntity = currentIterator.next();
+                    return Response.this.createEntry(Response.this.queryLocation, coreEntity, converter);
+                }
+            };
+        }
+
         protected Response(Namespace queryLocation,
                            SecondaryIndexQueryOperation.Response coreResponse,
                            IndexConverter<T> converter)
         {
-            this.coreResponse = coreResponse;
-            this.converter = converter;
             this.queryLocation = queryLocation;
+            this.converter = converter;
+            this.coreResponse = coreResponse;
+        }
+
+        /**
+         * Get an iterator over the result data.
+         *
+         * If using the streaming API, this method will block
+         * and wait for more data if none is immediately available.
+         * It is also advisable to check {@link Thread#isInterrupted()}
+         * in environments where thread interrupts must be obeyed.
+         *
+         * @return an iterator over the result data.
+         */
+        public Iterator<E> iterator()
+        {
+            if (isStreaming()) {
+                return super.iterator();
+            }
+
+            return new ConvertibleIterator<SecondaryIndexQueryOperation.Response.Entry, E>(coreResponse.getEntryList().iterator())
+            {
+                @Override
+                protected E convert(SecondaryIndexQueryOperation.Response.Entry e)
+                {
+                    return createEntry(queryLocation, e, converter);
+                }
+            };
         }
 
         /**
          * Check if this response has a continuation.
          *
+         * If using the streaming API, this property's value
+         * may change while data is being received, therefore
+         * it is best to call it after the operation is complete.
+         *
          * @return true if the response contains a continuation.
          */
         public boolean hasContinuation()
         {
+            if (isStreaming())
+            {
+                return chunkedResponseIterator.hasContinuation();
+            }
+
             return coreResponse.hasContinuation();
         }
 
         /**
          * Get the continuation from this response.
          *
+         * If using the streaming API, this property's value
+         * may change while data is being received, therefore
+         * it is best to call it after the operation is complete.
+         *
          * @return the continuation, or null if none is present.
          */
         public BinaryValue getContinuation()
         {
+            if (isStreaming())
+            {
+                return chunkedResponseIterator.getContinuation();
+            }
+
             return coreResponse.getContinuation();
         }
 
         /**
          * Check is this response contains any entries.
          *
+         * If using the streaming API, this method will block
+         * and wait for more data if none is immediately available.
+         * It is also advisable to check {@link Thread#isInterrupted()}
+         * in environments where thread interrupts must be obeyed.
+         *
          * @return true if entries are present, false otherwise.
          */
         public boolean hasEntries()
         {
+            if (isStreaming())
+            {
+                return chunkedResponseIterator.hasNext();
+            }
+
             return !coreResponse.getEntryList().isEmpty();
         }
 
-        protected final Location getLocationFromCoreEntry(SecondaryIndexQueryOperation.Response.Entry e)
+        /**
+         * Get a list of the result entries for this response.
+         *
+         * @return A list of result entries.
+         * @throws IllegalStateException when called while using the streaming API.
+         */
+        public final List<E> getEntries()
         {
-            Location loc = new Location(queryLocation, e.getObjectKey());
-            return loc;
+            if(isStreaming())
+            {
+                throw new IllegalStateException("Use the iterator() while using the streaming API");
+            }
+
+            final List<SecondaryIndexQueryOperation.Response.Entry> coreEntries = coreResponse.getEntryList();
+            final List<E> convertedList = new ArrayList<>(coreEntries.size());
+
+            for (SecondaryIndexQueryOperation.Response.Entry e : coreEntries)
+            {
+                final E ce = createEntry(queryLocation, e, converter);
+                convertedList.add(ce);
+            }
+            return convertedList;
         }
 
-        public abstract List<?> getEntries();
-
-        public abstract static class Entry<T>
+        @SuppressWarnings("unchecked")
+        protected E createEntry(Location location, SecondaryIndexQueryOperation.Response.Entry coreEntry, IndexConverter<T> converter)
         {
-            private final Location RiakObjectLocation;
+            return (E)new Entry(location, coreEntry.getIndexKey(), converter);
+        }
+
+        protected final E createEntry(Namespace namespace, SecondaryIndexQueryOperation.Response.Entry coreEntry, IndexConverter<T> converter)
+        {
+            final Location loc = new Location(queryLocation, coreEntry.getObjectKey());
+            return createEntry(loc, coreEntry, converter);
+        }
+
+        public static class Entry<T>
+        {
+            private final Location riakObjectLocation;
             private final BinaryValue indexKey;
             private final IndexConverter<T> converter;
 
             protected Entry(Location riakObjectLocation, BinaryValue indexKey, IndexConverter<T> converter)
             {
-                this.RiakObjectLocation = riakObjectLocation;
+                this.riakObjectLocation = riakObjectLocation;
                 this.indexKey = indexKey;
                 this.converter = converter;
             }
@@ -618,7 +765,7 @@ public abstract class SecondaryIndexQuery<T, S, U> extends RiakCommand<S, U>
              */
             public Location getRiakObjectLocation()
             {
-                return RiakObjectLocation;
+                return riakObjectLocation;
             }
 
             /**

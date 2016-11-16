@@ -15,10 +15,8 @@
  */
 package com.basho.riak.client.api.commands.kv;
 
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.FetchOperation;
 import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
 import com.basho.riak.client.core.query.Location;
@@ -26,7 +24,6 @@ import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,7 +43,8 @@ import java.util.List;
  * Note that this command must not be used without coverage context
  * for querying buckets that contain a big amount of data.
  *
- * @author Sergey Galkin <sgalkin at basho dot com>
+ * @author Sergey Galkin <srggal at gmail dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @see CoveragePlan
  */
 public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketRead.Response, FullBucketRead>
@@ -55,7 +53,7 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
 
     protected FullBucketRead(Builder builder)
     {
-        super(builder.get2iBuilder());
+        super(builder.get2iBuilder(), Response::new, Response::new);
         this.converter = new IndexConverter<BinaryValue>()
         {
             @Override
@@ -70,42 +68,6 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
     protected IndexConverter<BinaryValue> getConverter()
     {
         return converter;
-    }
-
-    @Override
-    protected RiakFuture<Response, FullBucketRead> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture =
-                executeCoreAsync(cluster);
-
-        RawQueryFuture future = new RawQueryFuture(coreFuture);
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    protected final class RawQueryFuture
-            extends CoreFutureAdapter<Response,
-                                      FullBucketRead,
-                                      SecondaryIndexQueryOperation.Response,
-                                      SecondaryIndexQueryOperation.Query>
-    {
-        public RawQueryFuture(RiakFuture<SecondaryIndexQueryOperation.Response,
-                              SecondaryIndexQueryOperation.Query> coreFuture)
-        {
-            super(coreFuture);
-        }
-
-        @Override
-        protected Response convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
-        {
-            return new Response(namespace, coreResponse, converter);
-        }
-
-        @Override
-        protected FullBucketRead convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo)
-        {
-            return FullBucketRead.this;
-        }
     }
 
     /**
@@ -235,58 +197,47 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
         }
     }
 
-    public static class Response extends SecondaryIndexQuery.Response<BinaryValue>
+    public static class Response extends SecondaryIndexQuery.Response<BinaryValue, Response.Entry>
     {
         private transient List<Entry> convertedList = null;
 
-        protected Response(Namespace queryLocation,
-                           SecondaryIndexQueryOperation.Response coreResponse,
-                           SecondaryIndexQuery.IndexConverter<BinaryValue> converter)
+        protected Response(Namespace queryLocation, IndexConverter<BinaryValue> converter, final int timeout, StreamingRiakFuture<SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query> coreFuture)
+        {
+            super(queryLocation, converter, timeout, coreFuture);
+        }
+
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter<BinaryValue> converter)
         {
             super(queryLocation, coreResponse, converter);
         }
 
         @Override
-        public List<Entry> getEntries()
+        protected Entry createEntry(Location location, SecondaryIndexQueryOperation.Response.Entry coreEntry, IndexConverter<BinaryValue> converter)
         {
-            if (convertedList != null)
+            final FetchValue.Response fr;
+            if (coreEntry.hasBody())
             {
-                return convertedList;
+                FetchOperation.Response resp = coreEntry.getBody();
+
+                // The following code has been copied from the FetchValue.executeAsync - CoreFutureAdapter
+                fr = new FetchValue.Response.Builder()
+                    .withNotFound(resp.isNotFound())
+                    .withUnchanged(resp.isUnchanged())
+                    .withValues(resp.getObjectList())
+                    .withLocation(location) // for ORM
+                    .build();
+            }
+            else
+            {
+                fr = null;
             }
 
-            convertedList = new ArrayList<>(coreResponse.getEntryList().size());
-            for (SecondaryIndexQueryOperation.Response.Entry e : coreResponse.getEntryList())
-            {
-                final Location loc = getLocationFromCoreEntry(e);
-
-                final FetchValue.Response fr;
-                if (e.hasBody())
-                {
-                    FetchOperation.Response resp = e.getBody();
-
-                    // The following code has been copied from the FetchValue.executeAsync - CoreFutureAdapter
-                    fr = new FetchValue.Response.Builder()
-                        .withNotFound(resp.isNotFound())
-                        .withUnchanged(resp.isUnchanged())
-                        .withValues(resp.getObjectList())
-                        .withLocation(loc) // for ORM
-                        .build();
-                }
-                else
-                {
-                    fr = null;
-                }
-
-                Entry ce = new Entry(loc, fr);
-                convertedList.add(ce);
-            }
-            return convertedList;
+            return new Entry(location, fr);
         }
 
-        public static class Entry
+        public static class Entry extends SecondaryIndexQuery.Response.Entry<BinaryValue>
         {
             private final FetchValue.Response fetchedValue;
-            private final Location location;
 
             public Entry(Location location)
             {
@@ -295,8 +246,8 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
 
             public Entry(Location location, FetchValue.Response fetchedResponse)
             {
+                super(location, null, null);
                 this.fetchedValue = fetchedResponse;
-                this.location = location;
             }
 
             public boolean hasFetchedValue()
@@ -309,16 +260,11 @@ public class FullBucketRead extends SecondaryIndexQuery<BinaryValue, FullBucketR
                 return fetchedValue;
             }
 
-            public Location getLocation()
-            {
-                return location;
-            }
-
             @Override
             public String toString()
             {
                 return "FullBucketRead.Response.Entry{" +
-                        "location=" + location +
+                        "location=" + getRiakObjectLocation() +
                         ", hasFetchedValue=" + hasFetchedValue() +
                         '}';
             }

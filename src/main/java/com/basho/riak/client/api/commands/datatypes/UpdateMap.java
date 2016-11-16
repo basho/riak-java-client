@@ -16,9 +16,7 @@
 
 package com.basho.riak.client.api.commands.datatypes;
 
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -50,55 +48,34 @@ import com.basho.riak.client.core.util.BinaryValue;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Location>
+public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response>
 {
-    private final MapUpdate update;
-
     private UpdateMap(Builder builder)
     {
         super(builder);
-        this.update = builder.update;
     }
 
     @Override
-    protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
+    protected Response convertResponse(FutureOperation<DtUpdateOperation.Response, ?, Location> request,
+                                       DtUpdateOperation.Response coreResponse)
     {
-        RiakFuture<DtUpdateOperation.Response, Location> coreFuture =
-            cluster.execute(buildCoreOperation(update));
+        RiakMap map = null;
+        if (coreResponse.hasCrdtElement())
+        {
+            RiakDatatype element = coreResponse.getCrdtElement();
+            map = element.getAsMap();
+        }
+        BinaryValue returnedKey = coreResponse.hasGeneratedKey()
+            ? coreResponse.getGeneratedKey()
+            : null;
 
-        CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location> future =
-            new CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(DtUpdateOperation.Response coreResponse)
-                {
-                    RiakMap map = null;
-                    if (coreResponse.hasCrdtElement())
-                    {
-                        RiakDatatype element = coreResponse.getCrdtElement();
-                        map = element.getAsMap();
-                    }
-                    BinaryValue returnedKey = coreResponse.hasGeneratedKey()
-                        ? coreResponse.getGeneratedKey()
-                        : null;
+        Context returnedCtx = null;
+        if (coreResponse.hasContext())
+        {
+            returnedCtx = new Context(coreResponse.getContext());
+        }
 
-                    Context returnedCtx = null;
-                    if (coreResponse.hasContext())
-                    {
-                        returnedCtx = new Context(coreResponse.getContext());
-                    }
-
-                    return new Response(returnedCtx, map, returnedKey);
-                }
-
-                @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+        return new Response(returnedCtx, map, returnedKey);
     }
 
     public static final class Response extends UpdateDatatype.Response<RiakMap>
@@ -114,8 +91,6 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
      */
     public static final class Builder extends UpdateDatatype.Builder<Builder>
     {
-        private final MapUpdate update;
-
         /**
          * Construct a Builder for an UpdateMap command.
          * @param location the location of the map in Riak.
@@ -123,12 +98,11 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
          */
         public Builder(Location location, MapUpdate update)
         {
-            super(location);
+            super(location, update);
             if (update == null)
             {
                 throw new IllegalArgumentException("Update cannot be null");
             }
-            this.update = update;
         }
 
         /**
@@ -144,12 +118,11 @@ public class UpdateMap extends UpdateDatatype<RiakMap, UpdateMap.Response, Locat
          */
         public Builder(Namespace namespace, MapUpdate update)
         {
-            super(namespace);
+            super(namespace, update);
             if (update == null)
             {
                 throw new IllegalArgumentException("Update cannot be null");
             }
-            this.update = update;
         }
 
         @Override

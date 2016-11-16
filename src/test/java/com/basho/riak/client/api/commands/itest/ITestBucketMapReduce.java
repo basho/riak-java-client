@@ -18,7 +18,6 @@ package com.basho.riak.client.api.commands.itest;
 
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
 import com.basho.riak.client.api.commands.kv.StoreValue;
 import com.basho.riak.client.api.commands.mapreduce.BucketMapReduce;
@@ -35,11 +34,13 @@ import com.basho.riak.client.api.commands.mapreduce.filters.TokenizeFilter;
 import com.basho.riak.client.core.query.functions.Function;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import java.util.concurrent.ExecutionException;
 
 import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -117,6 +118,19 @@ public class ITestBucketMapReduce extends ITestBase
         erlangBucketMR(mapReduceBucketType.toString());
     }
 
+    @Test
+    public void erlangBucketMRDefaultTypeStreaming() throws InterruptedException, ExecutionException
+    {
+        streamingErlangBucketMR(Namespace.DEFAULT_BUCKET_TYPE);
+    }
+
+    @Test
+    public void erlangBucketMRTestTypeStreaming() throws InterruptedException, ExecutionException
+    {
+        Assume.assumeTrue(testBucketType);
+        streamingErlangBucketMR(mapReduceBucketType.toString());
+    }
+
     private void erlangBucketMR(String bucketType) throws InterruptedException, ExecutionException
     {
         Namespace ns = new Namespace(bucketType, mrBucketName);
@@ -138,6 +152,67 @@ public class ITestBucketMapReduce extends ITestBase
 
         assertEquals(42, result.get(42).asInt());
         assertEquals(199, result.get(199).asInt());
+    }
+
+    private void streamingErlangBucketMR(String bucketType) throws InterruptedException, ExecutionException
+    {
+        Namespace ns = new Namespace(bucketType, mrBucketName);
+        BucketMapReduce bmr =
+                new BucketMapReduce.Builder()
+                        .withNamespace(ns)
+                        .withMapPhase(Function.newErlangFunction("riak_kv_mapreduce", "map_object_value"), false)
+                        .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_string_to_integer"), false)
+                        .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_sort"), true)
+                        .build();
+
+        final RiakFuture<MapReduce.Response, BinaryValue> streamingFuture =
+                client.executeAsyncStreaming(bmr, 10);
+
+        boolean found42 = false;
+        boolean found199 = false;
+        int count = 0;
+
+        final MapReduce.Response streamingResponse = streamingFuture.get();
+        assertTrue(streamingResponse.isStreaming());
+        // The streaming query should return many results which are JSON arrays, each
+        // containing a piece of the array [0-199].
+        // Streaming result would look like: [[0], [1,2,3], ... [..., 199]], with the outer
+        // array being the different response chunks streaming in.
+        for (MapReduce.Response response : streamingResponse)
+        {
+            int phaseSize = response.getResultsFromAllPhases().size();
+
+            if (phaseSize == 0)
+            {
+                continue;
+            }
+
+            count += phaseSize;
+
+            final ArrayNode result = response.getResultForPhase(2);
+            if (result == null)
+            {
+                continue;
+            }
+
+            final String valuesString = result.toString();
+
+            if (!found42)
+            {
+                found42 = valuesString.contains("42");
+            }
+            if (!found199)
+            {
+                found199 = valuesString.contains("199");
+            }
+        }
+
+        assertEquals(200, count);
+        assertTrue(found42);
+        assertTrue(found199);
+
+        // Assert that we have consumed the responses, and none are left.
+        assertFalse(streamingFuture.get().iterator().hasNext());
     }
 
     @Test

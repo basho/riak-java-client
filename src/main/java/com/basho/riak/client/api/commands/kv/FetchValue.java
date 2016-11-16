@@ -15,13 +15,13 @@
  */
 package com.basho.riak.client.api.commands.kv;
 
+import com.basho.riak.client.api.GenericRiakCommand;
 import com.basho.riak.client.api.cap.Quorum;
 import com.basho.riak.client.api.cap.VClock;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.operations.FetchOperation;
-import com.basho.riak.client.api.RiakCommand;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
 import com.basho.riak.client.api.commands.RiakOption;
 import com.basho.riak.client.core.query.Location;
 
@@ -70,7 +70,8 @@ import java.util.Map;
  * @since 2.0
  * @see Response
  */
-public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
+public final class FetchValue extends GenericRiakCommand.GenericRiakCommandWithSameInfo<FetchValue.Response, Location,
+        FetchOperation.Response>
 {
     private final Location location;
     private final Map<RiakOption<?>, Object> options = new HashMap<>();
@@ -84,33 +85,22 @@ public final class FetchValue extends RiakCommand<FetchValue.Response, Location>
     @Override
     protected final RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
     {
-        RiakFuture<FetchOperation.Response, Location> coreFuture =
-            cluster.execute(buildCoreOperation());
-
-        CoreFutureAdapter<Response, Location, FetchOperation.Response, Location> future =
-            new CoreFutureAdapter<Response, Location, FetchOperation.Response, Location>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(FetchOperation.Response coreResponse)
-                {
-                    return new Response.Builder().withNotFound(coreResponse.isNotFound())
-                                        .withUnchanged(coreResponse.isUnchanged())
-                                        .withValues(coreResponse.getObjectList())
-                                        .withLocation(location) // for ORM
-                                        .build();
-                }
-
-                @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+        return super.executeAsync(cluster);
     }
 
-    private FetchOperation buildCoreOperation()
+    @Override
+    protected Response convertResponse(FutureOperation<FetchOperation.Response, ?, Location> request,
+                                       FetchOperation.Response coreResponse)
+    {
+        return new Response.Builder().withNotFound(coreResponse.isNotFound())
+                            .withUnchanged(coreResponse.isUnchanged())
+                            .withValues(coreResponse.getObjectList())
+                            .withLocation(location) // for ORM
+                            .build();
+    }
+
+    @Override
+    protected FetchOperation buildCoreOperation()
     {
         FetchOperation.Builder builder = new FetchOperation.Builder(location);
 

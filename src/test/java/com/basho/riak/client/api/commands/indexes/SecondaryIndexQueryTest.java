@@ -26,6 +26,7 @@ import org.junit.Test;
 /**
  *
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  */
 public class SecondaryIndexQueryTest
 {
@@ -43,7 +44,7 @@ public class SecondaryIndexQueryTest
                 .withTimeout(Integer.MAX_VALUE)
                 .build();
 
-        SecondaryIndexQueryOperation.Query query = iiq.createCoreQuery();
+        SecondaryIndexQueryOperation.Query query = iiq.buildCoreOperation(false).getQueryInfo();
 
         assertEquals(ns, query.getNamespace());
         assertEquals("test_index_int", query.getIndexName().toString());
@@ -61,7 +62,7 @@ public class SecondaryIndexQueryTest
                 .withPaginationSort(true)
                 .build();
 
-        query = iiq.createCoreQuery();
+        query = iiq.buildCoreOperation(false).getQueryInfo();
 
         assertEquals(ns, query.getNamespace());
         assertEquals("test_index_int", query.getIndexName().toString());
@@ -98,7 +99,7 @@ public class SecondaryIndexQueryTest
             .withRegexTermFilter("filter")
             .build();
 
-        SecondaryIndexQueryOperation.Query query = biq.createCoreQuery();
+        SecondaryIndexQueryOperation.Query query = biq.buildCoreOperation(false).getQueryInfo();
 
         assertEquals(ns, query.getNamespace());
         assertEquals("test_index_bin", query.getIndexName().toString());
@@ -116,7 +117,7 @@ public class SecondaryIndexQueryTest
             .withRegexTermFilter("filter")
             .build();
 
-        query = biq.createCoreQuery();
+        query = biq.buildCoreOperation(false).getQueryInfo();
 
         assertEquals(ns, query.getNamespace());
         assertEquals("test_index_bin", query.getIndexName().toString());
@@ -128,6 +129,7 @@ public class SecondaryIndexQueryTest
         assertEquals(true, query.isReturnKeyAndIndex());
     }
 
+    @Test
     public void rawIndexQueryBuildsCorrectly()
     {
         Namespace ns = new Namespace("bucket_type", "bucket_name");
@@ -140,7 +142,7 @@ public class SecondaryIndexQueryTest
             new RawIndexQuery.Builder(ns, "test_index", SecondaryIndexQuery.Type._INT, indexMatch)
                 .build();
 
-        SecondaryIndexQueryOperation.Query query = riq.createCoreQuery();
+        SecondaryIndexQueryOperation.Query query = riq.buildCoreOperation(false).getQueryInfo();
 
         assertEquals(ns, query.getNamespace());
         assertEquals("test_index_int", query.getIndexName().toString());
@@ -151,7 +153,7 @@ public class SecondaryIndexQueryTest
                                       indexStart, indexEnd)
                 .build();
 
-        query = riq.createCoreQuery();
+        query = riq.buildCoreOperation(false).getQueryInfo();
 
         assertEquals(ns, query.getNamespace());
         assertEquals("test_index_int", query.getIndexName().toString());

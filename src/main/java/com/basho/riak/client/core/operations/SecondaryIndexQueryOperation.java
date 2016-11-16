@@ -15,20 +15,20 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.PBStreamingFutureOperation;
 import com.basho.riak.client.core.RiakMessage;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.indexes.IndexNames;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakPB.RpbPair;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -38,17 +38,27 @@ import java.util.List;
  * @since 2.0
  */
 public class SecondaryIndexQueryOperation
-        extends FutureOperation<SecondaryIndexQueryOperation.Response, Object, SecondaryIndexQueryOperation.Query>
+        extends PBStreamingFutureOperation<SecondaryIndexQueryOperation.Response,
+                        Object, SecondaryIndexQueryOperation.Query>
 {
-    private final static Logger logger = LoggerFactory.getLogger(SecondaryIndexQueryOperation.class);
     private final RiakKvPB.RpbIndexReq pbReq;
     private final Query query;
 
     private SecondaryIndexQueryOperation(Builder builder)
     {
+        // Decide if we should release results as they come in (stream), or gather them all until the operation is
+        // done (not stream).
+        super(RiakMessageCodes.MSG_IndexReq,
+                RiakMessageCodes.MSG_IndexResp,
+                builder.pbReqBuilder,
+                null,
+                builder.streamResults);
+
         // Yo dawg, we don't ever not want to use streaming.
         builder.pbReqBuilder.setStream(true);
         this.query = builder.query;
+
+        // TODO: get rid of pbReq usage by switching to use query insted
         this.pbReq = builder.pbReqBuilder.build();
     }
 
@@ -58,50 +68,76 @@ public class SecondaryIndexQueryOperation
         SecondaryIndexQueryOperation.Response.Builder responseBuilder =
                 new SecondaryIndexQueryOperation.Response.Builder();
 
+        final boolean isIndexBodyResp = rawResponse != null &&
+                                        !rawResponse.isEmpty() &&
+                                        objectIsIndexBodyResp(rawResponse.get(0));
+
         for (Object o : rawResponse)
         {
-            if (o instanceof RiakKvPB.RpbIndexBodyResp)
-            {
-                assert pbReq.getReturnBody();
-                final RiakKvPB.RpbIndexBodyResp bodyResp = (RiakKvPB.RpbIndexBodyResp)o;
-                convertBodies(responseBuilder, bodyResp);
-
-                if (bodyResp.hasContinuation())
-                {
-                    responseBuilder.withContinuation(
-                            BinaryValue.unsafeCreate(bodyResp.getContinuation().toByteArray()));
-                }
-                continue;
-            }
-
-            final RiakKvPB.RpbIndexResp pbEntry = (RiakKvPB.RpbIndexResp) o;
-
-            /**
-             * The 2i API is inconsistent on the Riak side. If it's not
-             * a range query, return_terms is ignored it only returns the
-             * list of object keys and you have to have
-             * preserved the index key if you want to return it to the user
-             * with the results.
-             *
-             * Also, the $key index queries just ignore return_terms altogether.
-             */
-
-            if (pbReq.getReturnTerms() && !query.indexName.toString().equalsIgnoreCase(IndexNames.KEY))
-            {
-                convertTerms(responseBuilder, pbEntry);
-            }
-            else
-            {
-                convertKeys(responseBuilder, pbEntry);
-            }
-
-            if (pbEntry.hasContinuation())
-            {
-                responseBuilder.withContinuation(
-                        BinaryValue.unsafeCreate(pbEntry.getContinuation().toByteArray()));
-            }
+            convertSingleResponse(responseBuilder, isIndexBodyResp, o);
         }
+
         return responseBuilder.build();
+    }
+
+    private boolean objectIsIndexBodyResp(Object o)
+    {
+        return o instanceof RiakKvPB.RpbIndexBodyResp;
+    }
+
+    private void convertSingleResponse(Response.Builder responseBuilder, boolean isIndexBodyResp, Object o)
+    {
+        if (isIndexBodyResp)
+        {
+            convertIndexBodyResp(responseBuilder, o);
+        }
+        else
+        {
+            convertIndexResp(responseBuilder, o);
+        }
+    }
+
+    private void convertIndexBodyResp(Response.Builder responseBuilder, Object o)
+    {
+        assert pbReq.getReturnBody();
+        final RiakKvPB.RpbIndexBodyResp bodyResp = (RiakKvPB.RpbIndexBodyResp)o;
+        convertBodies(responseBuilder, bodyResp);
+
+        if (bodyResp.hasContinuation())
+        {
+            responseBuilder.withContinuation(
+                    BinaryValue.unsafeCreate(bodyResp.getContinuation().toByteArray()));
+        }
+    }
+
+    private void convertIndexResp(Response.Builder responseBuilder, Object o)
+    {
+        final RiakKvPB.RpbIndexResp pbEntry = (RiakKvPB.RpbIndexResp) o;
+
+        /**
+         * The 2i API is inconsistent on the Riak side. If it's not
+         * a range query, return_terms is ignored it only returns the
+         * list of object keys and you have to have
+         * preserved the index key if you want to return it to the user
+         * with the results.
+         *
+         * Also, the $key index queries just ignore return_terms altogether.
+         */
+
+        if (pbReq.getReturnTerms() && !query.indexName.toString().equalsIgnoreCase(IndexNames.KEY))
+        {
+            convertTerms(responseBuilder, pbEntry);
+        }
+        else
+        {
+            convertKeys(responseBuilder, pbEntry);
+        }
+
+        if (pbEntry.hasContinuation())
+        {
+            responseBuilder.withContinuation(
+                    BinaryValue.unsafeCreate(pbEntry.getContinuation().toByteArray()));
+        }
     }
 
     private static void convertKeys(SecondaryIndexQueryOperation.Response.Builder builder,
@@ -144,12 +180,6 @@ public class SecondaryIndexQueryOperation
                         BinaryValue.unsafeCreate(objKey.toByteArray())));
             }
         }
-    }
-
-    @Override
-    protected RiakMessage createChannelMessage()
-    {
-        return new RiakMessage(RiakMessageCodes.MSG_IndexReq, pbReq.toByteArray());
     }
 
     @Override
@@ -196,6 +226,32 @@ public class SecondaryIndexQueryOperation
         return query;
     }
 
+    @Override
+    protected Response processStreamingChunk(Object rawResponseChunk)
+    {
+        SecondaryIndexQueryOperation.Response.Builder responseBuilder =
+                new SecondaryIndexQueryOperation.Response.Builder();
+
+        final boolean bodyResp = objectIsIndexBodyResp(rawResponseChunk);
+
+        convertSingleResponse(responseBuilder, bodyResp, rawResponseChunk);
+
+        final Response response = responseBuilder.build();
+
+        if (response.hasContinuation())
+        {
+            // Return the continuation in the normal fashion as well
+            final RiakKvPB.RpbIndexResp continuationOnlyResponse =
+                    RiakKvPB.RpbIndexResp.newBuilder().setContinuation(
+                    ByteString.copyFrom(response.getContinuation().unsafeGetValue()))
+                                         .build();
+
+            processBatchMessage(continuationOnlyResponse);
+        }
+
+        return response;
+    }
+
     /**
      * Builder that constructs a QueryOperation.
      */
@@ -203,6 +259,7 @@ public class SecondaryIndexQueryOperation
     {
         private final RiakKvPB.RpbIndexReq.Builder pbReqBuilder = RiakKvPB.RpbIndexReq.newBuilder();
         private final Query query;
+        private boolean streamResults = false;
 
         /**
          * Constructs a builder for a QueryOperation.
@@ -285,6 +342,26 @@ public class SecondaryIndexQueryOperation
             {
                 pbReqBuilder.setCoverContext(ByteString.copyFrom(query.coverageContext));
             }
+        }
+
+        /**
+         * Set the streamResults flag.
+         * <p>
+         * If unset or false, the entire result set will be available through the {@link ListKeysOperation#get()}
+         * method once the operation is complete.
+         * <p>
+         * If set to true, results will be pushed to the queue available through the
+         * {@link ListKeysOperation#getResultsQueue()}
+         * method as soon as they are available.
+         *
+         * @param streamResults whether to stream results to {@link ListKeysOperation#get()}(false), or
+         *                      {@link ListKeysOperation#getResultsQueue()}(true)
+         * @return A reference to this object.
+         */
+        public Builder streamResults(boolean streamResults)
+        {
+            this.streamResults = streamResults;
+            return this;
         }
 
         /**
@@ -644,7 +721,7 @@ public class SecondaryIndexQueryOperation
         }
     }
 
-    public static class Response
+    public static class Response implements Iterable<Response.Entry>
     {
         private final BinaryValue continuation;
         private final List<Response.Entry> entryList;
@@ -668,6 +745,12 @@ public class SecondaryIndexQueryOperation
         public List<Response.Entry> getEntryList()
         {
             return entryList;
+        }
+
+        @Override
+        public Iterator<Entry> iterator()
+        {
+            return getEntryList().iterator();
         }
 
         public static class Entry
@@ -738,6 +821,12 @@ public class SecondaryIndexQueryOperation
             Builder addEntry(Response.Entry entry)
             {
                 entryList.add(entry);
+                return this;
+            }
+
+            Builder addAllEntries(Collection<? extends Entry> entries)
+            {
+                entryList.addAll(entries);
                 return this;
             }
 

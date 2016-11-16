@@ -102,7 +102,7 @@ public class Row implements Iterable<Cell>
         }
         else // if (pbRow != null)
         {
-            return ConvertibleIterator.iterateAsCell(pbRow.getCellsList().iterator());
+            return ConvertibleIteratorUtils.iterateAsCell(pbRow.getCellsList().iterator());
         }
     }
 

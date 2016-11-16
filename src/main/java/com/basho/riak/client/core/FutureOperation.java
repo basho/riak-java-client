@@ -91,7 +91,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     private final CountDownLatch latch = new CountDownLatch(1);
     private volatile OperationRetrier retrier;
     private volatile int remainingTries = 1;
-    private volatile List<U> rawResponse = new LinkedList<>();
+    private volatile List<U> rawResponses = new LinkedList<>();
     private volatile Throwable exception;
     private volatile T converted;
     private volatile State state = State.CREATED;
@@ -194,7 +194,9 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     {
         stateCheck(State.CREATED, State.WRITTEN, State.RETRY);
         U decodedMessage = decode(rawResponse);
-        this.rawResponse.add(decodedMessage);
+
+        processMessage(decodedMessage);
+
         exception = null;
         if (done(decodedMessage))
         {
@@ -206,6 +208,16 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
             }
             state = State.CLEANUP_WAIT;
         }
+    }
+
+    protected void processMessage(U decodedMessage)
+    {
+        processBatchMessage(decodedMessage);
+    }
+
+    protected void processBatchMessage(U decodedMessage)
+    {
+        this.rawResponses.add(decodedMessage);
     }
 
     public synchronized final void setComplete()
@@ -322,7 +334,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
     {
         try
         {
-            converted = convert(rawResponse);
+            converted = convert(rawResponses);
         }
         catch (IllegalArgumentException ex)
         {
@@ -358,7 +370,7 @@ public abstract class FutureOperation<T, U, S> implements RiakFuture<T,S>
         {
             if (null == converted)
             {
-                converted = convert(rawResponse);
+                converted = convert(rawResponses);
             }
 
             return converted;

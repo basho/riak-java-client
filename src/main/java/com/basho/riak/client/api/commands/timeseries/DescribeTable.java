@@ -1,8 +1,6 @@
 package com.basho.riak.client.api.commands.timeseries;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.ts.DescribeTableOperation;
 import com.basho.riak.client.core.query.timeseries.TableDefinition;
 
@@ -13,7 +11,7 @@ import com.basho.riak.client.core.query.timeseries.TableDefinition;
  * @author Alex Moore <amoore at basho dot com>
   * @since 2.0.4
  */
-public class DescribeTable extends RiakCommand<TableDefinition, String>
+public class DescribeTable extends AsIsRiakCommand<TableDefinition, String>
 {
     private final String tableName;
 
@@ -34,15 +32,7 @@ public class DescribeTable extends RiakCommand<TableDefinition, String>
     }
 
     @Override
-    protected RiakFuture<TableDefinition, String> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<TableDefinition, String> future =
-                cluster.execute(buildCoreOperation());
-
-        return future;
-    }
-
-    private DescribeTableOperation buildCoreOperation()
+    protected DescribeTableOperation buildCoreOperation()
     {
         return new DescribeTableOperation(this.tableName);
     }

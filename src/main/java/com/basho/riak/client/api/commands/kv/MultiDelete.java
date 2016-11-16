@@ -21,7 +21,7 @@ import java.util.List;
  * <pre class="prettyprint">
  * {@code
  * MultiDelete multiDelete = ...;
- * MultiDelete.Response response = client.execute(multiDelete);
+ * MultiDelete.Response response = client.execute(multiDelete);}
  * </p>
  * <p>
  * The maximum number of concurrent requests defaults to 10. This can be changed

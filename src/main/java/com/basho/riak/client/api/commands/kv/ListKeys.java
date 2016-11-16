@@ -15,11 +15,12 @@
  */
 package com.basho.riak.client.api.commands.kv;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.StreamableRiakCommand;
+import com.basho.riak.client.api.commands.ChunkedResponseIterator;
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListKeysOperation;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
+import com.basho.riak.client.core.query.ConvertibleIterator;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
@@ -44,13 +45,35 @@ import java.util.List;
  * }}</pre>
  * </p>
  * <p>
+ * You can also stream the results back before the operation is fully complete.
+ * This reduces the time between executing the operation and seeing a result,
+ * and reduces overall memory usage if the iterator is consumed quickly enough.
+ * The result iterable can only be iterated once though.
+ * If the thread is interrupted while the iterator is polling for more results,
+ * a {@link RuntimeException} will be thrown.
+ * <pre class="prettyprint">
+ * {@code
+ * Namespace ns = new Namespace("my_type", "my_bucket");
+ * ListKeys lk = new ListKeys.Builder(ns).build();
+ * RiakFuture<ListKeys.StreamingResponse, Namespace> streamFuture =
+ *     client.executeAsyncStreaming(lk, 200);
+ * final ListKeys.StreamingResponse streamingResponse = streamFuture.get();
+ * ListKeys.Response response = client.execute(lk);
+ * for (Location l : streamingResponse)
+ * {
+ *     System.out.println(l.getKeyAsString());
+ * }}</pre>
+ * </p>
+ * <p>
  * <b>This is a very expensive operation and is not recommended for use on a production system</b>
  * </p>
  *
  * @author Dave Rusek <drusek at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
+public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandWithSameInfo<ListKeys.Response,
+        Namespace, ListKeysOperation.Response>
 {
     private final Namespace namespace;
     private final int timeout;
@@ -62,31 +85,20 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
     }
 
     @Override
-    protected final RiakFuture<ListKeys.Response, Namespace> executeAsync(RiakCluster cluster)
+    protected Response convertResponse(FutureOperation<ListKeysOperation.Response, ?, Namespace> request,
+                                       ListKeysOperation.Response coreResponse)
     {
-        RiakFuture<ListKeysOperation.Response, Namespace> coreFuture =
-            cluster.execute(buildCoreOperation());
-
-        CoreFutureAdapter<ListKeys.Response, Namespace, ListKeysOperation.Response, Namespace> future =
-            new CoreFutureAdapter<ListKeys.Response, Namespace, ListKeysOperation.Response, Namespace>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(ListKeysOperation.Response coreResponse)
-                {
-                    return new Response(namespace, coreResponse.getKeys());
-                }
-
-                @Override
-                protected Namespace convertQueryInfo(Namespace coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+        return new Response(namespace, coreResponse.getKeys());
     }
 
-    private ListKeysOperation buildCoreOperation()
+    @Override
+    protected Response createResponse(int timeout, StreamingRiakFuture<ListKeysOperation.Response, Namespace> coreFuture)
+    {
+        return new Response(namespace, timeout, coreFuture);
+    }
+
+    @Override
+    protected ListKeysOperation buildCoreOperation(boolean streamResults)
     {
         ListKeysOperation.Builder builder = new ListKeysOperation.Builder(namespace);
 
@@ -95,10 +107,12 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
             builder.withTimeout(timeout);
         }
 
+        builder.streamResults(streamResults);
+
         return builder.build();
     }
 
-    public static class Response implements Iterable<Location>
+    public static class Response extends StreamableRiakCommand.StreamableResponse<Location, BinaryValue>
     {
         private final Namespace namespace;
         private final List<BinaryValue> keys;
@@ -109,41 +123,36 @@ public final class ListKeys extends RiakCommand<ListKeys.Response, Namespace>
             this.keys = keys;
         }
 
+        Response(Namespace namespace,
+                          int pollTimeout,
+                          StreamingRiakFuture<ListKeysOperation.Response, Namespace> coreFuture)
+        {
+            super(new ChunkedResponseIterator<>(coreFuture,
+                    pollTimeout,
+                    (key) -> new Location(namespace, key),
+                    (nextChunk) -> nextChunk.getKeys().iterator()));
+
+            this.namespace = namespace;
+            this.keys = null;
+        }
+
         @Override
         public Iterator<Location> iterator()
         {
-            return new Itr(namespace, keys.iterator());
-        }
-    }
+            if (isStreaming())
+            {
+                return super.iterator();
+            }
 
-    private static class Itr implements Iterator<Location>
-    {
-        private final Iterator<BinaryValue> iterator;
-        private final Namespace namespace;
-
-        private Itr(Namespace namespace, Iterator<BinaryValue> iterator)
-        {
-            this.iterator = iterator;
-            this.namespace = namespace;
-        }
-
-        @Override
-        public boolean hasNext()
-        {
-            return iterator.hasNext();
-        }
-
-        @Override
-        public Location next()
-        {
-            BinaryValue key = iterator.next();
-            return new Location(namespace, key);
-        }
-
-        @Override
-        public void remove()
-        {
-            iterator.remove();
+            assert keys != null;
+            return new ConvertibleIterator<BinaryValue, Location>(keys.iterator())
+            {
+                @Override
+                protected Location convert(BinaryValue key)
+                {
+                    return new Location(namespace, key);
+                }
+            };
         }
     }
 

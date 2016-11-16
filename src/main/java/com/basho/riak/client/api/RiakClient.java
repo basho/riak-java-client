@@ -155,6 +155,7 @@ import java.util.concurrent.TimeoutException;
  * </ul>
  * @author Dave Rusek <drusek at basho dot com>
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho.com>
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
@@ -277,8 +278,9 @@ public class RiakClient
      * @return a new RiakClient instance.
      * @throws java.net.UnknownHostException if a supplied hostname cannot be resolved.
      * @since 2.0.3
-     * @see com.basho.riak.client.core.RiakCluster.Builder#Builder(RiakNode.Builder, List)
+     * @see com.basho.riak.client.core.RiakCluster.Builder#RiakCluster.Builder(RiakNode.Builder, List)
      */
+    // NB: IntelliJ will see the above @see statement as invalid, but it's correct: https://bugs.openjdk.java.net/browse/JDK-8031625
     public static RiakClient newClient(RiakNode.Builder nodeBuilder,  List<String> addresses) throws UnknownHostException
     {
         final RiakCluster cluster = new RiakCluster.Builder(nodeBuilder, addresses).build();
@@ -400,6 +402,44 @@ public class RiakClient
     public <T,S> RiakFuture<T,S> executeAsync(RiakCommand<T,S> command)
     {
         return command.executeAsync(cluster);
+    }
+
+    /**
+     * Execute a StreamableRiakCommand asynchronously, and stream the results back before
+     * the command {@link RiakFuture#isDone() is done}.
+     * <p>
+     *     Calling this method  causes the client to execute the provided
+     *     StreamableRiakCommand asynchronously.
+     *     It will immediately return a RiakFuture that contains an
+     *     <b>immediately</b> available result (via {@link RiakFuture#get()}) that
+     *     data will be streamed to.
+     *     The RiakFuture will also keep track of the overall operation's progress
+     *     with the {@link RiakFuture#isDone}, etc methods.
+     * </p>
+     * <p>
+     *     Because the consumer thread will poll for new results, it is advisable to check the
+     *     consumer thread's interrupted status via
+     *     {@link Thread#isInterrupted() Thread.currentThread().isInterrupted() }, as the result
+     *     iterator will not propagate an InterruptedException, but it will set the Thread's
+     *     interrupted flag.
+     * </p>
+     * @param <I> StreamableRiakCommand's immediate return type, available before the command/operation is complete.
+     * @param <S> The RiakCommand's query info type.
+     * @param command The RiakCommand to execute.
+     * @param timeoutMS The polling timeout in milliseconds for each result chunk.
+     *                  If the timeout is reached it will try again, instead of blocking indefinitely.
+     *                  If the value is too small (less than the average chunk arrival time), the
+     *                  result iterator will essentially busy wait.
+     *                  If the timeout is too large (much greater than the average chunk arrival time),
+     *                  the result iterator can block the consuming thread from seeing the done()
+     *                  status until the timeout is reached.
+     * @return a RiakFuture for the operation
+     * @since 2.1.0
+     * @see RiakFuture
+     */
+    public <I extends StreamableRiakCommand.StreamableResponse,S> RiakFuture<I,S> executeAsyncStreaming(StreamableRiakCommand<I, S, ?, ?> command, int timeoutMS)
+    {
+        return command.executeAsyncStreaming(cluster, timeoutMS);
     }
 
     /**

@@ -15,11 +15,12 @@
  */
 package com.basho.riak.client.api.commands.buckets;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.commands.ChunkedResponseIterator;
+import com.basho.riak.client.api.StreamableRiakCommand;
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.StreamingRiakFuture;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
+import com.basho.riak.client.core.query.ConvertibleIterator;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
 
@@ -39,10 +40,30 @@ import java.util.List;
  *     System.out.println(ns.getBucketName());
  * }}</pre>
  * </p>
+ * <p>
+ * You can also stream the results back before the operation is fully complete.
+ * This reduces the time between executing the operation and seeing a result,
+ * and reduces overall memory usage if the iterator is consumed quickly enough.
+ * The result iterable can only be iterated once though.
+ * If the thread is interrupted while the iterator is polling for more results,
+ * a {@link RuntimeException} will be thrown.
+ * <pre class="prettyprint">
+ * {@code
+ * ListBuckets lb = new ListBuckets.Builder("my_type").build();
+ * final RiakFuture<ListBuckets.StreamingResponse, BinaryValue> streamFuture =
+ *     client.executeAsyncStreaming(lb, 200);
+ * final ListBuckets.StreamingResponse streamingResponse = streamFuture.get();
+ * for (Namespace ns : streamingResponse)
+ * {
+ *     System.out.println(ns.getBucketName());
+ * }}</pre>
+ * </p>
  * @author Dave Rusek <drusek at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryValue>
+public final class ListBuckets extends StreamableRiakCommand.StreamableRiakCommandWithSameInfo<ListBuckets.Response, BinaryValue,
+        ListBucketsOperation.Response>
 {
     private final int timeout;
     private final BinaryValue type;
@@ -54,31 +75,20 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
     }
 
     @Override
-    protected RiakFuture<Response, BinaryValue> executeAsync(RiakCluster cluster)
+    protected Response convertResponse(FutureOperation<ListBucketsOperation.Response, ?, BinaryValue> request,
+                                       ListBucketsOperation.Response coreResponse)
     {
-        RiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture =
-            cluster.execute(buildCoreOperation());
-
-        CoreFutureAdapter<ListBuckets.Response, BinaryValue, ListBucketsOperation.Response, BinaryValue> future =
-            new CoreFutureAdapter<ListBuckets.Response, BinaryValue, ListBucketsOperation.Response, BinaryValue>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(ListBucketsOperation.Response coreResponse)
-                {
-                    return new Response(type, coreResponse.getBuckets());
-                }
-
-                @Override
-                protected BinaryValue convertQueryInfo(BinaryValue coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+        return new Response(type, coreResponse.getBuckets());
     }
 
-    private ListBucketsOperation buildCoreOperation()
+    @Override
+    protected Response createResponse(int timeout, StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture)
+    {
+        return new Response(type, timeout, coreFuture);
+    }
+
+    @Override
+    protected ListBucketsOperation buildCoreOperation(boolean streamResults)
     {
         ListBucketsOperation.Builder builder = new ListBucketsOperation.Builder();
         if (timeout > 0)
@@ -90,6 +100,8 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         {
             builder.withBucketType(type);
         }
+
+        builder.streamResults(streamResults);
 
         return builder.build();
     }
@@ -108,10 +120,23 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
      * </pre>
      * </p>
      */
-    public static class Response implements Iterable<Namespace>
+    public static class Response extends StreamableRiakCommand.StreamableResponse<Namespace, BinaryValue>
     {
         private final BinaryValue type;
         private final List<BinaryValue> buckets;
+
+        Response(BinaryValue type,
+                          int pollTimeout,
+                          StreamingRiakFuture<ListBucketsOperation.Response, BinaryValue> coreFuture)
+        {
+            super(new ChunkedResponseIterator<>(coreFuture,
+                    pollTimeout,
+                    (bucketName) -> new Namespace(type, bucketName),
+                    (response) -> response.getBuckets().iterator()));
+
+            this.type = type;
+            this.buckets = null;
+        }
 
         public Response(BinaryValue type, List<BinaryValue> buckets)
         {
@@ -122,38 +147,19 @@ public final class ListBuckets extends RiakCommand<ListBuckets.Response, BinaryV
         @Override
         public Iterator<Namespace> iterator()
         {
-            return new Itr(buckets.iterator(), type);
-        }
-    }
+            if (isStreaming()) {
+                return super.iterator();
+            }
 
-    private static class Itr implements Iterator<Namespace>
-    {
-        private final Iterator<BinaryValue> iterator;
-        private final BinaryValue type;
-
-        private Itr(Iterator<BinaryValue> iterator, BinaryValue type)
-        {
-            this.iterator = iterator;
-            this.type = type;
-        }
-
-        @Override
-        public boolean hasNext()
-        {
-            return iterator.hasNext();
-        }
-
-        @Override
-        public Namespace next()
-        {
-            BinaryValue bucket = iterator.next();
-            return new Namespace(type, bucket);
-        }
-
-        @Override
-        public void remove()
-        {
-            iterator.remove();
+            assert  buckets != null;
+            return new ConvertibleIterator<BinaryValue, Namespace>(buckets.iterator())
+            {
+                @Override
+                protected Namespace convert(BinaryValue bucket)
+                {
+                    return new Namespace(type, bucket);
+                }
+            };
         }
     }
 

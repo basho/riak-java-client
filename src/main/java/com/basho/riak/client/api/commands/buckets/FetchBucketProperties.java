@@ -16,10 +16,7 @@
 
 package com.basho.riak.client.api.commands.buckets;
 
-import com.basho.riak.client.api.RiakCommand;
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
 
@@ -39,7 +36,7 @@ import com.basho.riak.client.core.query.Namespace;
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
-public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOperation.Response, Namespace>
+public final class FetchBucketProperties extends AsIsRiakCommand<FetchBucketPropsOperation.Response, Namespace>
 {
     private final Namespace namespace;
 
@@ -49,31 +46,7 @@ public final class FetchBucketProperties extends RiakCommand<FetchBucketPropsOpe
     }
 
     @Override
-    protected final RiakFuture<FetchBucketPropsOperation.Response, Namespace> executeAsync(RiakCluster cluster)
-    {
-        RiakFuture<FetchBucketPropsOperation.Response, Namespace> coreFuture =
-            cluster.execute(buildCoreOperation());
-
-        CoreFutureAdapter<FetchBucketPropsOperation.Response, Namespace, FetchBucketPropsOperation.Response, Namespace> future =
-            new CoreFutureAdapter<FetchBucketPropsOperation.Response, Namespace, FetchBucketPropsOperation.Response, Namespace>(coreFuture)
-            {
-                @Override
-                protected FetchBucketPropsOperation.Response convertResponse(FetchBucketPropsOperation.Response coreResponse)
-                {
-                    return coreResponse;
-                }
-
-                @Override
-                protected Namespace convertQueryInfo(Namespace coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
-    }
-
-    private FetchBucketPropsOperation buildCoreOperation()
+    protected FetchBucketPropsOperation buildCoreOperation()
     {
         return new FetchBucketPropsOperation.Builder(namespace).build();
     }

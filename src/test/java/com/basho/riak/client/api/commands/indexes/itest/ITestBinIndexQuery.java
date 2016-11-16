@@ -20,76 +20,54 @@ import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.annotations.RiakBucketName;
 import com.basho.riak.client.api.annotations.RiakIndex;
 import com.basho.riak.client.api.annotations.RiakKey;
-import com.basho.riak.client.api.annotations.RiakVClock;
-import com.basho.riak.client.api.cap.VClock;
-import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
 import com.basho.riak.client.api.commands.indexes.BinIndexQuery;
+import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery;
 import com.basho.riak.client.api.commands.kv.StoreValue;
+import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.core.query.Location;
-import com.basho.riak.client.core.query.Namespace;
-import java.util.concurrent.ExecutionException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
- *
  * @author Brian Roach <roach at basho dot com>
+ * @author Alex Moore <amoore at basho dot com>
  * @since 2.0
  */
-public class ITestBinIndexQuery extends ITestAutoCleanupBase
+public class ITestBinIndexQuery extends ITestIndexBase
 {
+    private static final String OBJECT_KEY_BASE = "index_test_object_key";
+    private static final String INDEX_NAME = "test_index";
+    private static final String INDEX_KEY_BASE = "index_test_index_key";
+    private static RiakClient client = new RiakClient(cluster);
+
+    @BeforeClass
+    public static void setupData() throws InterruptedException
+    {
+        createIndexedPojo(0, 1);
+        createIndexedPojo(1, 1);
+        createIndexedPojo(2, 2);
+    }
+
     @Test
     public void testMatchQuery() throws ExecutionException, InterruptedException
     {
         Assume.assumeTrue(test2i);
 
-        RiakClient client = new RiakClient(cluster);
+        BinIndexQuery indexQuery = new BinIndexQuery.Builder(namespace, INDEX_NAME, indexKey(1)).withKeyAndIndex(true)
+                                                                                                .build();
+        BinIndexQuery.Response indexResponse = client.execute(indexQuery);
 
-        IndexedPojo ip = new IndexedPojo();
-        ip.key = "index_test_object_key";
-        ip.bucketName = bucketName.toString();
-        ip.indexKey = "index_test_index_key";
-        ip.value = "My Object Value!";
+        assertTrue(indexResponse.hasEntries());
+        assertEquals(2, indexResponse.getEntries().size());
 
-        StoreValue sv = new StoreValue.Builder(ip).build();
-        RiakFuture<StoreValue.Response, Location> svFuture = client.executeAsync(sv);
-
-        svFuture.await();
-        assertTrue(svFuture.isSuccess());
-
-        IndexedPojo ip2 = new IndexedPojo();
-        ip2.key = "index_test_object_key2";
-        ip2.bucketName = bucketName.toString();
-        ip2.indexKey = "index_test_index_key";
-        ip2.value = "My Object Value!";
-
-        sv = new StoreValue.Builder(ip2).build();
-        svFuture = client.executeAsync(sv);
-
-        svFuture.await();
-        assertTrue(svFuture.isSuccess());
-
-        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
-
-        BinIndexQuery biq  =
-            new BinIndexQuery.Builder(ns, "test_index", "index_test_index_key").withKeyAndIndex(true).build();
-        BinIndexQuery.Response iResp = client.execute(biq);
-
-        assertTrue(iResp.hasEntries());
-        assertEquals(2, iResp.getEntries().size());
-
-        boolean found = false;
-        for (BinIndexQuery.Response.Entry e : iResp.getEntries())
-        {
-            if (e.getRiakObjectLocation().getKey().toString().equals("index_test_object_key"))
-            {
-                found = true;
-                assertEquals(ip.indexKey, e.getIndexKey());
-            }
-        }
+        boolean found = assertFirstObjectFound(indexResponse.getEntries());
 
         assertTrue(found);
     }
@@ -99,12 +77,90 @@ public class ITestBinIndexQuery extends ITestAutoCleanupBase
     {
         Assume.assumeTrue(test2i);
 
-        RiakClient client = new RiakClient(cluster);
+        BinIndexQuery indexQuery = new BinIndexQuery.Builder(namespace,
+                                                             INDEX_NAME,
+                                                             indexKey(0),
+                                                             indexKey(9)).withKeyAndIndex(true).build();
+        BinIndexQuery.Response indexResponse = client.execute(indexQuery);
 
+        assertTrue(indexResponse.hasEntries());
+        assertEquals(3, indexResponse.getEntries().size());
+
+        boolean found = assertFirstObjectFound(indexResponse.getEntries());
+
+        assertTrue(found);
+    }
+
+    @Test
+    public void testStreamingRangeQuery() throws ExecutionException, InterruptedException
+    {
+        Assume.assumeTrue(test2i);
+
+        BinIndexQuery indexQuery = new BinIndexQuery.Builder(namespace,
+                                                             INDEX_NAME,
+                                                             indexKey(0),
+                                                             indexKey(9)).withKeyAndIndex(true).build();
+
+        final RiakFuture<BinIndexQuery.Response, BinIndexQuery> streamingFuture =
+                client.executeAsyncStreaming(indexQuery, 200);
+
+        final BinIndexQuery.Response streamingResponse = streamingFuture.get();
+
+        assertTrue(streamingResponse.hasEntries());
+
+        boolean caught = false;
+        try
+        {
+            streamingResponse.getEntries();
+        }
+        catch (IllegalStateException unused)
+        {
+            caught = true;
+        }
+        assertTrue(caught);
+
+        final String expectedObjectKey = objectKey(1);
+        final String expectedIndexKey = indexKey(1);
+        boolean found = false;
+        int size = 0;
+
+        for (BinIndexQuery.Response.Entry e : streamingResponse)
+        {
+            size++;
+            if (e.getRiakObjectLocation().getKey().toString().equals(expectedObjectKey))
+            {
+                found = true;
+                assertEquals(expectedIndexKey, e.getIndexKey());
+            }
+        }
+
+        assertTrue(found);
+        assertEquals(3, size);
+    }
+
+    private boolean assertFirstObjectFound(Iterable<BinIndexQuery.Response.Entry<String>> entries)
+    {
+        final String expectedObjectKey = objectKey(1);
+        final String expectedIndexKey = indexKey(1);
+        boolean found = false;
+
+        for (BinIndexQuery.Response.Entry e : entries)
+        {
+            if (e.getRiakObjectLocation().getKey().toString().equals(expectedObjectKey))
+            {
+                found = true;
+                assertEquals(expectedIndexKey, e.getIndexKey());
+            }
+        }
+        return found;
+    }
+
+    private static void createIndexedPojo(int keySuffix, int indexSuffix) throws InterruptedException
+    {
         IndexedPojo ip = new IndexedPojo();
-        ip.key = "index_test_object_key1";
-        ip.bucketName = bucketName.toString();
-        ip.indexKey = "index_test_index_key1";
+        ip.key = objectKey(keySuffix);
+        ip.bucketName = namespace.getBucketNameAsString();
+        ip.indexKey = indexKey(indexSuffix);
         ip.value = "My Object Value!";
 
         StoreValue sv = new StoreValue.Builder(ip).build();
@@ -112,41 +168,19 @@ public class ITestBinIndexQuery extends ITestAutoCleanupBase
 
         svFuture.await();
         assertTrue(svFuture.isSuccess());
-
-        IndexedPojo ip2 = new IndexedPojo();
-        ip2.key = "index_test_object_key2";
-        ip2.bucketName = bucketName.toString();
-        ip2.indexKey = "index_test_index_key2";
-        ip2.value = "My Object Value!";
-
-        sv = new StoreValue.Builder(ip2).build();
-        svFuture = client.executeAsync(sv);
-
-        svFuture.await();
-        assertTrue(svFuture.isSuccess());
-
-        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
-        BinIndexQuery biq  =
-            new BinIndexQuery.Builder(ns, "test_index", "index_test_index_key0", "index_test_index_key9").withKeyAndIndex(true).build();
-        BinIndexQuery.Response iResp = client.execute(biq);
-
-        assertTrue(iResp.hasEntries());
-        assertEquals(2, iResp.getEntries().size());
-
-        boolean found = false;
-        for (BinIndexQuery.Response.Entry e : iResp.getEntries())
-        {
-            if (e.getRiakObjectLocation().getKey().toString().equals("index_test_object_key1"))
-            {
-                found = true;
-                assertEquals(ip.indexKey, e.getIndexKey());
-            }
-        }
-
-        assertTrue(found);
     }
 
-    public static class IndexedPojo
+    private static String objectKey(int suffix)
+    {
+        return OBJECT_KEY_BASE + suffix;
+    }
+
+    private static String indexKey(int suffix)
+    {
+        return INDEX_KEY_BASE + suffix;
+    }
+
+    private static class IndexedPojo
     {
         @RiakKey
         public String key;
@@ -154,11 +188,8 @@ public class ITestBinIndexQuery extends ITestAutoCleanupBase
         @RiakBucketName
         public String bucketName;
 
-        @RiakIndex(name="test_index")
+        @RiakIndex(name = INDEX_NAME)
         String indexKey;
-
-        @RiakVClock
-        VClock vclock;
 
         public String value;
     }

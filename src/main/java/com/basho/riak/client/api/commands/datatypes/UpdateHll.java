@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Basho Technologies Inc
+ * Copyright 2016 Basho Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package com.basho.riak.client.api.commands.datatypes;
 
-import com.basho.riak.client.api.commands.CoreFutureAdapter;
-import com.basho.riak.client.core.RiakCluster;
-import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.operations.DtUpdateOperation;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
@@ -46,55 +44,35 @@ import com.basho.riak.client.core.util.BinaryValue;
  * </p>
  *
  * @author Alex Moore <amoore at basho dot com>
- * @since 2.1
+ * @since 2.1.0
  */
-public class UpdateHll extends UpdateDatatype<RiakHll, UpdateHll.Response, Location>
+ 
+public class UpdateHll extends UpdateDatatype<RiakHll, UpdateHll.Response>
 {
-    private final HllUpdate update;
-
     private UpdateHll(Builder builder)
     {
         super(builder);
-        this.update = builder.update;
     }
 
     @Override
-    protected RiakFuture<Response, Location> executeAsync(RiakCluster cluster)
+    protected Response convertResponse(FutureOperation<DtUpdateOperation.Response, ?, Location> request,
+                                       DtUpdateOperation.Response coreResponse)
     {
-        RiakFuture<DtUpdateOperation.Response, Location> coreFuture =
-            cluster.execute(buildCoreOperation(update));
-
-        CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location> future =
-            new CoreFutureAdapter<Response, Location, DtUpdateOperation.Response, Location>(coreFuture)
-            {
-                @Override
-                protected Response convertResponse(DtUpdateOperation.Response coreResponse)
-                {
-                    RiakHll hll = null;
-                    if (coreResponse.hasCrdtElement())
-                    {
-                        RiakDatatype element = coreResponse.getCrdtElement();
-                        hll = element.getAsHll();
-                    }
-                    BinaryValue returnedKey = coreResponse.hasGeneratedKey()
-                        ? coreResponse.getGeneratedKey()
-                        : null;
-                    Context returnedCtx = null;
-                    if (coreResponse.hasContext())
-                    {
-                        returnedCtx = new Context(coreResponse.getContext());
-                    }
-                    return new Response(returnedCtx, hll, returnedKey);
-                }
-
-                @Override
-                protected Location convertQueryInfo(Location coreQueryInfo)
-                {
-                    return coreQueryInfo;
-                }
-            };
-        coreFuture.addListener(future);
-        return future;
+        RiakHll hll = null;
+        if (coreResponse.hasCrdtElement())
+        {
+            RiakDatatype element = coreResponse.getCrdtElement();
+            hll = element.getAsHll();
+        }
+        BinaryValue returnedKey = coreResponse.hasGeneratedKey()
+            ? coreResponse.getGeneratedKey()
+            : null;
+        Context returnedCtx = null;
+        if (coreResponse.hasContext())
+        {
+            returnedCtx = new Context(coreResponse.getContext());
+        }
+        return new Response(returnedCtx, hll, returnedKey);
     }
 
     /**
@@ -102,8 +80,6 @@ public class UpdateHll extends UpdateDatatype<RiakHll, UpdateHll.Response, Locat
      */
     public static class Builder extends UpdateDatatype.Builder<Builder>
     {
-        private final HllUpdate update;
-
         /**
          * Construct a Builder for an UpdateHll command.
          * @param location the location of the HyperLogLog in Riak.
@@ -111,12 +87,11 @@ public class UpdateHll extends UpdateDatatype<RiakHll, UpdateHll.Response, Locat
          */
         public Builder(Location location, HllUpdate update)
         {
-            super(location);
+            super(location, update);
             if (update == null)
             {
                 throw new IllegalArgumentException("Update cannot be null");
             }
-            this.update = update;
         }
 
         /**
@@ -131,12 +106,11 @@ public class UpdateHll extends UpdateDatatype<RiakHll, UpdateHll.Response, Locat
          */
         public Builder(Namespace namespace, HllUpdate update)
         {
-            super(namespace);
+            super(namespace, update);
             if (update == null)
             {
                 throw new IllegalArgumentException("Update cannot be null");
             }
-            this.update = update;
         }
 
         /**

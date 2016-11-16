@@ -15,29 +15,29 @@
  */
 package com.basho.riak.client.core.operations;
 
-import com.basho.riak.client.core.FutureOperation;
-import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.PBStreamingFutureOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.util.BinaryValue;
-import com.basho.riak.protobuf.RiakMessageCodes;
 import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakMessageCodes;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class ListKeysOperation extends FutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Namespace>
+public class ListKeysOperation extends PBStreamingFutureOperation<ListKeysOperation.Response, RiakKvPB.RpbListKeysResp, Namespace>
 {
-    private final Logger logger = LoggerFactory.getLogger("ListKeysOperation");
     private final Namespace namespace;
-    private final RiakKvPB.RpbListKeysReq.Builder reqBuilder;
 
     private ListKeysOperation(Builder builder)
     {
-        this.reqBuilder = builder.reqBuilder;
+        super(RiakMessageCodes.MSG_ListKeysReq,
+                RiakMessageCodes.MSG_ListKeysResp,
+                builder.reqBuilder,
+                RiakKvPB.RpbListKeysResp.PARSER,
+                builder.streamResults);
+
         this.namespace = builder.namespace;
     }
 
@@ -47,32 +47,21 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
         Response.Builder builder = new Response.Builder();
         for (RiakKvPB.RpbListKeysResp resp : rawResponse)
         {
-            for (ByteString bucket : resp.getKeysList())
-            {
-                builder.addKey(BinaryValue.unsafeCreate(bucket.toByteArray()));
-            }
+            builder.addKeys(convertSingleResponse(resp));
         }
         return builder.build();
     }
 
-    @Override
-    protected RiakMessage createChannelMessage()
+    private List<BinaryValue> convertSingleResponse(RiakKvPB.RpbListKeysResp resp)
     {
-        return new RiakMessage(RiakMessageCodes.MSG_ListKeysReq, reqBuilder.build().toByteArray());
-    }
+        List<BinaryValue> keys = new ArrayList<>(resp.getKeysCount());
 
-    @Override
-    protected RiakKvPB.RpbListKeysResp decode(RiakMessage rawMessage)
-    {
-        try
+        for (ByteString key : resp.getKeysList())
         {
-            Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_ListKeysResp);
-            return RiakKvPB.RpbListKeysResp.parseFrom(rawMessage.getData());
+            keys.add(BinaryValue.unsafeCreate(key.toByteArray()));
         }
-        catch (InvalidProtocolBufferException e)
-        {
-            throw new IllegalArgumentException("Invalid message received", e);
-        }
+
+        return keys;
     }
 
     @Override
@@ -87,11 +76,18 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
         return namespace;
     }
 
+    @Override
+    protected Response processStreamingChunk(RiakKvPB.RpbListKeysResp rawResponseChunk)
+    {
+        return new Response.Builder().addKeys(convertSingleResponse(rawResponseChunk)).build();
+    }
+
     public static class Builder
     {
         private final RiakKvPB.RpbListKeysReq.Builder reqBuilder =
             RiakKvPB.RpbListKeysReq.newBuilder();
         private final Namespace namespace;
+        private boolean streamResults;
 
         /**
          * Construct a builder for a ListKeysOperaiton.
@@ -118,13 +114,31 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
             return this;
         }
 
+        /**
+         * Set the streamResults flag.
+         *
+         * If unset or false, the entire result set will be available through the {@link ListKeysOperation#get()}
+         * method once the operation is complete.
+         *
+         * If set to true, results will be pushed to the queue available through the {@link ListKeysOperation#getResultsQueue()}
+         * method as soon as they are available.
+         *
+         * @param streamResults whether to stream results to {@link ListKeysOperation#get()}(false), or {@link ListKeysOperation#getResultsQueue()}(true)
+         * @return A reference to this object.
+         */
+        public Builder streamResults(boolean streamResults)
+        {
+            this.streamResults = streamResults;
+            return this;
+        }
+
         public ListKeysOperation build()
         {
             return new ListKeysOperation(this);
         }
     }
 
-    public static class Response
+    public static class Response implements Iterable<BinaryValue>
     {
         private final List<BinaryValue> keys;
         private Response(Builder builder)
@@ -135,6 +149,12 @@ public class ListKeysOperation extends FutureOperation<ListKeysOperation.Respons
         public List<BinaryValue> getKeys()
         {
             return keys;
+        }
+
+        @Override
+        public Iterator<BinaryValue> iterator()
+        {
+            return keys.iterator();
         }
 
         static class Builder
