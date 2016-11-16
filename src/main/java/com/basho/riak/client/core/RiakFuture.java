@@ -191,7 +191,7 @@ public interface RiakFuture<V, T> extends Future<V>
     T getQueryInfo();
     /**
      * Add a listener to this RiakFuture.
-     * @param listener a FiakFutureListener that will be notified when this RiakFuture completes.
+     * @param listener a RiakFutureListener that will be notified when this RiakFuture completes.
      */
     void addListener(RiakFutureListener<V,T> listener);
     /**
