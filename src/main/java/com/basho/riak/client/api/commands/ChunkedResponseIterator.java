@@ -37,8 +37,8 @@ import java.util.function.Function;
  * {@link Iterator} in environments where thread interrupts must be obeyed.
  *
  * @param <FinalT> The final converted type that this class exposes as part of its iterator.
- * @param <ChunkT> The type of the response chunks, contains an Iterable&lt;{@link CoreT}&gt;
- * @param <CoreT> The raw response type, will get converted to {@link FinalT}.
+ * @param <ChunkT> The type of the response chunks, contains an Iterable&lt;<b>CoreT</b>&gt;
+ * @param <CoreT> The raw response type, will get converted to <b>FinalT</b>.
  * @author Alex Moore <amoore at basho.com>
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.1.0
