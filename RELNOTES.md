@@ -1,7 +1,23 @@
 Release Notes
 =============
 
+### 2.1.0
+
+**Notes**
+ * Java 7 support has been deprecated, and Java 8+ is now required.
+
+Following issues / PRs addressed:
+
+* [Added HyperLogLog Datatype Support](https://github.com/basho/riak-java-client/pull/669)
+* [Added streaming support for ListKeys, ListBuckets, Secondary Index, and MapReduce Commands/Operations](https://github.com/basho/riak-java-client/pull/677)
+* [Added cleanup() method to RiakCluster & RiakClient for container Environments](https://github.com/basho/riak-java-client/pull/674)
+* [Moved CI from internal buildbot to public Travis CI](https://travis-ci.org/basho/riak-java-client)
+* [Enhanced - Reduce the number of charset lookups performed in BinaryValue class](https://github.com/basho/riak-java-client/pull/688)
+
 ### 2.0.8
+
+**Notes**
+ * This is the last version of Riak Java Client that supports Java 7.
 
 Following issues / PRs addressed:
 
