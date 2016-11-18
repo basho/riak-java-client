@@ -63,6 +63,19 @@ public class ConflictResolverFactoryTest
         assertEquals(resolver, resolver2);
     }
 
+    @Test
+    public void registerLambdaResolverClass() throws UnresolvedConflictException
+    {
+        ConflictResolverFactory factory = ConflictResolverFactory.getInstance();
+        ConflictResolver<Pojo> conflictResolver = objectList -> objectList.get(0);
+        factory.registerConflictResolver(Pojo.class, conflictResolver);
+
+        ConflictResolver<Pojo> resolver2 = factory.getConflictResolver(Pojo.class);
+
+        assertTrue(resolver2 != null);
+        assertEquals(conflictResolver, resolver2);
+    }
+
     public static class Pojo
     {
         public Pojo() {}
