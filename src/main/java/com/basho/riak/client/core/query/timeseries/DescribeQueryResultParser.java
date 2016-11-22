@@ -49,6 +49,7 @@ class DescribeQueryResultParser
     private final static int LOCAL_KEY_IDX = 4;
     private final static int QUANTUM_INTERVAL_IDX = 5;
     private final static int QUANTUM_UNIT_IDX = 6;
+    private final static int SORT_ORDER_IDX = 7;
 
     static List<FullColumnDescription> ConvertToColumnDescriptions(QueryResult queryResult)
     {
@@ -119,7 +120,10 @@ class DescribeQueryResultParser
         final boolean isValidV2Description =
                 describeBaseIsValid && cells.size() == 7 && DescribeRowV2ChunkIsValid(cells);
 
-        return isValidV1Description || isValidV2Description;
+        final boolean isValidV3Description =
+                describeBaseIsValid && cells.size() == 8 && DescribeRowV3ChunkIsValid(cells);
+
+        return isValidV1Description || isValidV2Description || isValidV3Description;
     }
 
     private static boolean DescribeRowV1ChunkIsValid(List<Cell> cells)
@@ -151,5 +155,17 @@ class DescribeQueryResultParser
 
         return quantumIntervalCell != null ? quantumIntervalCell.hasLong() : true &&
                 quantumUnitCell != null ? quantumUnitCell.hasVarcharValue() : true;
+    }
+
+    private static boolean DescribeRowV3ChunkIsValid(List<Cell> cells)
+    {
+        if (cells.size() < 8)
+        {
+            return false;
+        }
+
+        final Cell sortOrderCell = cells.get(SORT_ORDER_IDX);
+
+        return sortOrderCell != null ? sortOrderCell.hasVarcharValue() : true;
     }
 }

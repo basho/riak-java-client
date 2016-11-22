@@ -19,6 +19,7 @@ import org.junit.runners.MethodSorters;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -41,6 +42,7 @@ import static org.junit.Assume.assumeTrue;
  *      temperature double,
  *      uv_index    sint64,
  *      observed    boolean not null,
+ *      sensor_data blob,
  *      PRIMARY KEY(
  *          (geohash, user, quantum(time, 15, 'm')),
  *           geohash, user, time)
@@ -152,7 +154,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
-        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
+        assertEquals(8, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(1, queryResult.getRowsCount());
 
         assertRowMatches(rows.get(1), queryResult.iterator().next());
@@ -173,7 +175,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
-        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
+        assertEquals(8, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(1, queryResult.getRowsCount());
 
         assertRowMatches(rows.get(1), queryResult.iterator().next());
@@ -193,7 +195,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
-        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
+        assertEquals(8, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(2, queryResult.getRowsCount());
 
         final Iterator<? extends Row> itor = queryResult.iterator();
@@ -335,9 +337,9 @@ public class ITestTimeSeries extends ITestTsBase
         assertFutureSuccess(resultFuture);
 
         final QueryResult tableDescription = resultFuture.get();
-        assertEquals(7, tableDescription.getRowsCount());
+        assertEquals(8, tableDescription.getRowsCount());
         int numColumnDesc = tableDescription.getColumnDescriptionsCopy().size();
-        assertTrue(numColumnDesc == 5 || numColumnDesc == 7);
+        assertTrue(numColumnDesc == 5 || numColumnDesc == 7 || numColumnDesc == 8);
     }
 
     @Test
@@ -354,7 +356,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         final TableDefinition tableDefinition = describeFuture.get();
         final Collection<FullColumnDescription> fullColumnDescriptions = tableDefinition.getFullColumnDescriptions();
-        assertEquals(7, fullColumnDescriptions.size());
+        assertEquals(8, fullColumnDescriptions.size());
 
         TableDefinitionTest.assertFullColumnDefinitionsMatch(GetCreatedTableFullDescriptions(),
                                                              new ArrayList<>(fullColumnDescriptions));
@@ -398,13 +400,7 @@ public class ITestTimeSeries extends ITestTsBase
 
     private static List<FullColumnDescription> GetCreatedTableFullDescriptions()
     {
-        return Arrays.asList(new FullColumnDescription("geohash", ColumnDescription.ColumnType.VARCHAR, false, 1),
-                             new FullColumnDescription("user", ColumnDescription.ColumnType.VARCHAR, false, 2),
-                             new FullColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP, false, 3),
-                             new FullColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR, false),
-                             new FullColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE, true),
-                             new FullColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64, true),
-                             new FullColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN, false));
+        return GeoCheckinWideTableDefinition.getFullColumnDescriptions().stream().collect(Collectors.toList());
     }
 
     private static <T> List<T> toList(Iterator<T> itor)
@@ -449,9 +445,21 @@ public class ITestTimeSeries extends ITestTsBase
         }
         else
         {
-            assertEquals(Double.toString(expectedCells.get(5).getLong()), Double.toString(actualCells.get(5).getLong()));
+            assertEquals(expectedCell5.getLong(), actualCell5.getLong());
         }
 
         assertEquals(expectedCells.get(6).getBoolean(),  actualCells.get(6).getBoolean());
+
+        Cell expectedCell7 = expectedCells.get(7);
+        Cell actualCell7 = actualCells.get(7);
+
+        if (expectedCell7 == null)
+        {
+            assertNull(actualCell7);
+        }
+        else
+        {
+            assertEquals(expectedCell7.getVarcharValue(), actualCell7.getVarcharValue());
+        }
     }
 }

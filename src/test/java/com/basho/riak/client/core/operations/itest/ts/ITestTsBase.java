@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
  *      temperature double,
  *      uv_index    sint64,
  *      observed    boolean not null,
+ *      sensor_data blob,
  *      PRIMARY KEY(
  *          (geohash, user, quantum(time, 15, 'm')),
  *           geohash, user, time)
@@ -55,7 +56,8 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
             new FullColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR,  false),
             new FullColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE, true),
             new FullColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64,  true),
-            new FullColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN,  false)
+            new FullColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN,  false),
+            new FullColumnDescription("sensor_data", ColumnDescription.ColumnType.BLOB, true)
         )
     );
 
@@ -69,27 +71,33 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
     protected final static List<Row> rows = Arrays.asList(
             // "Normal" Data
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fifteenMinsAgo),
-                    new Cell("cloudy"), new Cell(79.0), new Cell(1), new Cell(true)),
+                    new Cell("cloudy"), new Cell(79.0), new Cell(1), new Cell(true), null),
 
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fiveMinsAgo),
-                    new Cell("sunny"),  new Cell(80.5), new Cell(2), new Cell(true)),
+                    new Cell("sunny"),  new Cell(80.5), new Cell(2), new Cell(true), null),
 
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now),
-                    new Cell("sunny"),  new Cell(81.0), new Cell(10), new Cell(false)),
+                    new Cell("sunny"),  new Cell(81.0), new Cell(10), new Cell(false), null),
 
             // Null Cell row
             new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo),
-                    new Cell("cloudy"), null, null, new Cell(true)),
+                    new Cell("cloudy"), null, null, new Cell(true), null),
 
             // Data for single reads / deletes
             new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fifteenMinsAgo),
-                    new Cell("rain"), new Cell(79.0), new Cell(2), new Cell(false)),
+                    new Cell("rain"), new Cell(79.0), new Cell(2), new Cell(false), null),
 
             new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo),
-                    new Cell("wind"),  new Cell(50.5), new Cell(3), new Cell(true)),
+                    new Cell("wind"),  new Cell(50.5), new Cell(3), new Cell(true), null),
 
             new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(now),
-                    new Cell("snow"),  new Cell(20.0), new Cell(11), new Cell(true)));
+                    new Cell("snow"),  new Cell(20.0), new Cell(11), new Cell(true), null),
+
+
+            // Data for blob tests
+            new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(now + 3),
+                    new Cell("snow"), new Cell(20.0), new Cell(11), new Cell(true), new Cell(new byte[] {0,1,2,3,4,5,6,7}))
+    );
 
     @BeforeClass
     public static void BeforeClass() throws ExecutionException, InterruptedException

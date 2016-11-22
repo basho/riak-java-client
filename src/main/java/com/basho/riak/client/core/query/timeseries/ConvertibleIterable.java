@@ -32,65 +32,8 @@ public abstract class ConvertibleIterable<S,D> implements Iterable<D>
         }
     }
 
-    private static class ImmutableIterablePBRow extends ConvertibleIterable<Row, RiakTsPB.TsRow>
-    {
-        public ImmutableIterablePBRow(Iterable<Row> source)
-        {
-            super(source);
-        }
-
-        @Override
-        public Iterator<RiakTsPB.TsRow> iterator()
-        {
-            return ConvertibleIteratorUtils.iterateAsPbRow(this.source.iterator());
-        }
-    }
-
-    private static class ImmutableIterableRow extends ConvertibleIterable<RiakTsPB.TsRow, Row>
-    {
-        public ImmutableIterableRow(Iterable<RiakTsPB.TsRow> source)
-        {
-            super(source);
-        }
-
-        @Override
-        public Iterator<Row> iterator()
-        {
-            return ConvertibleIteratorUtils.iterateAsRow(this.source.iterator());
-        }
-    }
-
-    private static class ImmutableIterableCell extends ConvertibleIterable<RiakTsPB.TsCell, Cell>
-    {
-        public ImmutableIterableCell(Iterable<RiakTsPB.TsCell> source)
-        {
-            super(source);
-        }
-
-        @Override
-        public Iterator<Cell> iterator()
-        {
-            return ConvertibleIteratorUtils.iterateAsCell(this.source.iterator());
-        }
-    }
-
-    public static ConvertibleIterable<Row, RiakTsPB.TsRow> asIterablePbRow(Iterable<Row> iterable)
-    {
-        return new ImmutableIterablePBRow(iterable);
-    }
-
-    public static ConvertibleIterable<RiakTsPB.TsRow, Row> asIterableRow(Iterable<RiakTsPB.TsRow> iterable)
-    {
-        return new ImmutableIterableRow(iterable);
-    }
-
     public static ConvertibleIterable<Cell, RiakTsPB.TsCell> asIterablePbCell(Iterable<Cell> iterable)
     {
         return new ImmutableIterablePBCell(iterable);
-    }
-
-    public static ConvertibleIterable<RiakTsPB.TsCell, Cell> asIterableCell(Iterable<RiakTsPB.TsCell> iterable)
-    {
-        return new ImmutableIterableCell(iterable);
     }
 }

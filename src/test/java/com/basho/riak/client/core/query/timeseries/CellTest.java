@@ -109,4 +109,14 @@ public class CellTest
         assertTrue(c.hasTimestamp());
         assertEquals(c.getTimestamp(), t);
     }
+    @Test
+    public void TestBlobs()
+    {
+        byte[] b = new byte[] {0,1,2,3,4,5};
+        Cell c = new Cell(b);
+        assertTrue(c.hasBlob());
+        assertEquals(c.getBlob(), b);
+
+        assertTrue(c.toString().contains("0x000102030405"));
+    }
 }

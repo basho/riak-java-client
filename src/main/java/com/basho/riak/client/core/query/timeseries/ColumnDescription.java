@@ -62,7 +62,8 @@ public class ColumnDescription
         SINT64,
         DOUBLE,
         TIMESTAMP,
-        BOOLEAN
+        BOOLEAN,
+        BLOB
     }
 
     @Override

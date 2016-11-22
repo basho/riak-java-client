@@ -35,61 +35,77 @@ class ConvertibleIteratorUtils
         }
     }
 
-    private static class ImmutablePBRowIterator extends ConvertibleIterator<Row, RiakTsPB.TsRow>
+    private abstract static class ConvertibleZipperator<S, S2, D> implements Iterator<D>
     {
-        public ImmutablePBRowIterator(Iterator<Row> iterator)
+        private final Iterator<S> iterator1;
+        private final Iterator<S2> iterator2;
+
+        public ConvertibleZipperator(Iterator<S> iterator, Iterator<S2> iterator2)
         {
-            super(iterator);
+            this.iterator1 = iterator;
+            this.iterator2 = iterator2;
+        }
+
+        abstract protected D convert(S source, S2 source2);
+
+        @Override
+        public boolean hasNext() {
+            return iterator1.hasNext() && iterator2.hasNext();
         }
 
         @Override
-        protected RiakTsPB.TsRow convert(Row row)
-        {
-            return row.getPbRow();
+        public D next() {
+            return convert(iterator1.next(), iterator2.next());
+        }
+
+        @Override
+        public final void remove() {
+            throw new UnsupportedOperationException();
         }
     }
 
-    private static class ImmutableCellIterator extends ConvertibleIterator<RiakTsPB.TsCell, Cell>
+    private static class ImmutableCellIterator extends ConvertibleZipperator<RiakTsPB.TsCell, RiakTsPB.TsColumnDescription, Cell>
     {
-        public ImmutableCellIterator(Iterator<RiakTsPB.TsCell> iterator)
+        public ImmutableCellIterator(Iterator<RiakTsPB.TsCell> cellIterator,
+                                     Iterator<RiakTsPB.TsColumnDescription> descriptionIterator )
         {
-            super(iterator);
+            super(cellIterator, descriptionIterator);
         }
 
         @Override
-        protected Cell convert(RiakTsPB.TsCell pbCell)
+        protected Cell convert(RiakTsPB.TsCell pbCell, RiakTsPB.TsColumnDescription columnDescription)
         {
             if (pbCell.equals(NullTSCell))
             {
                 return null;
             }
 
-            return new Cell(pbCell);
+            return new Cell(pbCell, columnDescription);
         }
     }
 
-    private static class ImmutableRowIterator extends ConvertibleIterator<RiakTsPB.TsRow,Row>
+    private static class ImmutableRowIterator extends ConvertibleIterator<RiakTsPB.TsRow, Row>
     {
-        public ImmutableRowIterator(Iterator<RiakTsPB.TsRow> iterator)
+        private final Iterable<RiakTsPB.TsColumnDescription> columnDescriptions;
+
+        public ImmutableRowIterator(Iterator<RiakTsPB.TsRow> iterator,
+                                    Iterable<RiakTsPB.TsColumnDescription> columnDescriptions)
         {
             super(iterator);
+            this.columnDescriptions = columnDescriptions;
         }
 
         @Override
         protected Row convert(RiakTsPB.TsRow source)
         {
-            return new Row(source);
+            return new Row(source, columnDescriptions);
         }
     }
 
-    public static ConvertibleIterator<Row, RiakTsPB.TsRow> iterateAsPbRow(Iterator<Row> iterator)
+    public static ConvertibleIterator<RiakTsPB.TsRow, Row> iterateAsRow(Iterator<RiakTsPB.TsRow> iterator,
+                                                                        Iterable<RiakTsPB.TsColumnDescription> columnDescriptions)
     {
-        return new ImmutablePBRowIterator(iterator);
-    }
-
-    public static ConvertibleIterator<RiakTsPB.TsRow, Row> iterateAsRow(Iterator<RiakTsPB.TsRow> iterator)
-    {
-        return new ImmutableRowIterator(iterator);
+        return new ImmutableRowIterator(iterator, columnDescriptions);
     }
 
     public static ConvertibleIterator<Cell, RiakTsPB.TsCell> iterateAsPbCell(Iterator<Cell> iterator)
@@ -97,8 +113,10 @@ class ConvertibleIteratorUtils
         return new ImmutablePBCellIterator(iterator);
     }
 
-    public static ConvertibleIterator<RiakTsPB.TsCell, Cell> iterateAsCell(Iterator<RiakTsPB.TsCell> iterator)
+    public static ConvertibleZipperator<RiakTsPB.TsCell, RiakTsPB.TsColumnDescription, Cell>
+        iterateAsCell(Iterator<RiakTsPB.TsCell> cellIterator,
+                      Iterator<RiakTsPB.TsColumnDescription> columnDescriptionIterator)
     {
-        return new ImmutableCellIterator(iterator);
+        return new ImmutableCellIterator(cellIterator, columnDescriptionIterator);
     }
 }

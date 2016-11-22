@@ -13,6 +13,7 @@ public class FullColumnDescription extends ColumnDescription
     private final Integer partitionKeyOrdinal;
     private final Integer localKeyOrdinal;
     private final Quantum quantum;
+    private final SortOrder sortOrder;
 
     /**
      * Creates a basic FullColumnDescription, for non-key columns.
@@ -121,12 +122,24 @@ public class FullColumnDescription extends ColumnDescription
                                  Integer localKeyOrdinal,
                                  Quantum quantum)
     {
+        this(name, type, isNullable, partitionKeyOrdinal, localKeyOrdinal, quantum, null);
+    }
+
+    public FullColumnDescription(String name,
+                                 ColumnDescription.ColumnType type,
+                                 boolean isNullable,
+                                 Integer partitionKeyOrdinal,
+                                 Integer localKeyOrdinal,
+                                 Quantum quantum,
+                                 SortOrder order)
+    {
         super(name, type);
         this.isNullable = isNullable;
         this.partitionKeyOrdinal = partitionKeyOrdinal;
         this.localKeyOrdinal = localKeyOrdinal;
         validateQuantumUsage(type, partitionKeyOrdinal, quantum);
         this.quantum = quantum;
+        this.sortOrder = order;
     }
 
     private void validateQuantumUsage(ColumnType type, Integer partitionKeyOrdinal, Quantum quantum)
@@ -146,6 +159,12 @@ public class FullColumnDescription extends ColumnDescription
         }
     }
 
+
+    public enum SortOrder
+    {
+        ASC,
+        DESC
+    }
     /**
      * Whether this column's values are nullable.
      * @return boolean
@@ -210,5 +229,15 @@ public class FullColumnDescription extends ColumnDescription
     public boolean hasQuantum()
     {
         return quantum != null;
+    }
+
+    public SortOrder getSortOrder()
+    {
+        return sortOrder;
+    }
+
+    public boolean hasSortOrder()
+    {
+        return sortOrder != null;
     }
 }
