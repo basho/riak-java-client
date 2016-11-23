@@ -53,15 +53,18 @@ public class FullColumnDescription extends ColumnDescription
      * @param isNullable The nullability of the column.
      * @param keyOrdinal The ordinal number of where this column appears in the ordered Local Key column set.
      *                   <b>Use null if not a key column.</b>
+     * @param keyOrder The order in which this key column will be sorted on disk as part of the local key.
+     *                 Default is ASC.
+     *                 <b>Use null if not a key column.</b>
      * @throws IllegalArgumentException if Column Name or Column Type are null or empty.
      */
     public FullColumnDescription(String name,
                                  ColumnDescription.ColumnType type,
                                  boolean isNullable,
                                  Integer keyOrdinal,
-                                 KeyOrder order)
+                                 KeyOrder keyOrder)
     {
-        this(name, type, isNullable, keyOrdinal, keyOrdinal, null, order);
+        this(name, type, isNullable, keyOrdinal, keyOrdinal, null, keyOrder);
     }
 
     /**
@@ -124,6 +127,9 @@ public class FullColumnDescription extends ColumnDescription
      * @param localKeyOrdinal The ordinal number of where this column appears in
      *                        the ordered Local Key column set.
      *                        <b>Use null if not a key column.</b>
+     * @param keyOrder The order in which this key column will be sorted on disk as part of the local key.
+     *                 Default is ASC.
+     *                 <b>Use null if not a key column.</b>
      * @throws IllegalArgumentException if Column Name or Column Type are null or empty.
      */
     public FullColumnDescription(String name,
@@ -131,9 +137,9 @@ public class FullColumnDescription extends ColumnDescription
                                  boolean isNullable,
                                  Integer partitionKeyOrdinal,
                                  Integer localKeyOrdinal,
-                                 KeyOrder order)
+                                 KeyOrder keyOrder)
     {
-        this(name, type, isNullable, partitionKeyOrdinal, localKeyOrdinal, null, order);
+        this(name, type, isNullable, partitionKeyOrdinal, localKeyOrdinal, null, keyOrder);
     }
 
     /**
@@ -184,8 +190,9 @@ public class FullColumnDescription extends ColumnDescription
      *                <b>Use
      *                {@link #FullColumnDescription(String, ColumnDescription.ColumnType, boolean, Integer, Integer)}
      *                if the quantum is not needed. </b>
-     * @param keyOrder The key order in which this record will be sorted. // TODO: get better description
-     *              <b>Use null if not a key column.</b>
+     * @param keyOrder The order in which this key column will be sorted on disk as part of the local key.
+     *                 Default is ASC.
+     *                 <b>Use null if not a key column.</b>
      * @throws IllegalArgumentException if the Column Name or Column Type are null or empty,
      *                                  or if the quantum is set on a non-Timestamp column,
      *                                  or the quantum is set on a non-partition key column.
