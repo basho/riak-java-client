@@ -13,7 +13,7 @@ public class FullColumnDescription extends ColumnDescription
     private final Integer partitionKeyOrdinal;
     private final Integer localKeyOrdinal;
     private final Quantum quantum;
-    private final SortOrder sortOrder;
+    private final KeyOrder keyOrder;
 
     /**
      * Creates a basic FullColumnDescription, for non-key columns.
@@ -26,7 +26,7 @@ public class FullColumnDescription extends ColumnDescription
                                  ColumnDescription.ColumnType type,
                                  boolean isNullable)
     {
-        this(name, type, isNullable, null, null, null);
+        this(name, type, isNullable, null, null, null, null);
     }
 
     /**
@@ -53,6 +53,24 @@ public class FullColumnDescription extends ColumnDescription
      * @param isNullable The nullability of the column.
      * @param keyOrdinal The ordinal number of where this column appears in the ordered Local Key column set.
      *                   <b>Use null if not a key column.</b>
+     * @throws IllegalArgumentException if Column Name or Column Type are null or empty.
+     */
+    public FullColumnDescription(String name,
+                                 ColumnDescription.ColumnType type,
+                                 boolean isNullable,
+                                 Integer keyOrdinal,
+                                 KeyOrder order)
+    {
+        this(name, type, isNullable, keyOrdinal, keyOrdinal, null, order);
+    }
+
+    /**
+     * Creates a FullColumnDescription. Useful for key columns where the partition and local key oridinals are the same.
+     * @param name The name of the column. Required - must not be null or an empty string.
+     * @param type The type of the column. Required - must not be null.
+     * @param isNullable The nullability of the column.
+     * @param keyOrdinal The ordinal number of where this column appears in the ordered Local Key column set.
+     *                   <b>Use null if not a key column.</b>
      * @param quantum The {@link Quantum} setting if this column
      *                is used in partition key time quantization.
      *                <b>Use
@@ -68,7 +86,7 @@ public class FullColumnDescription extends ColumnDescription
                                  Integer keyOrdinal,
                                  Quantum quantum)
     {
-        this(name, type, isNullable, keyOrdinal, keyOrdinal, quantum);
+        this(name, type, isNullable, keyOrdinal, keyOrdinal, quantum, null);
     }
 
     /**
@@ -91,7 +109,31 @@ public class FullColumnDescription extends ColumnDescription
                                  Integer partitionKeyOrdinal,
                                  Integer localKeyOrdinal)
     {
-        this(name, type, isNullable, partitionKeyOrdinal, localKeyOrdinal, null);
+        this(name, type, isNullable, partitionKeyOrdinal, localKeyOrdinal, null, null);
+    }
+
+    /**
+     * Creates a FullColumnDescription.
+     * Useful for automating creation of FullColumnDescriptions where the values can vary.
+     * @param name The name of the column. Required - must not be null or an empty string.
+     * @param type The type of the column. Required - must not be null.
+     * @param isNullable The nullability of the column.
+     * @param partitionKeyOrdinal The ordinal number of where this column appears in
+     *                            the ordered Partition Key column set.
+     *                            <b>Use null if not a key column.</b>
+     * @param localKeyOrdinal The ordinal number of where this column appears in
+     *                        the ordered Local Key column set.
+     *                        <b>Use null if not a key column.</b>
+     * @throws IllegalArgumentException if Column Name or Column Type are null or empty.
+     */
+    public FullColumnDescription(String name,
+                                 ColumnDescription.ColumnType type,
+                                 boolean isNullable,
+                                 Integer partitionKeyOrdinal,
+                                 Integer localKeyOrdinal,
+                                 KeyOrder order)
+    {
+        this(name, type, isNullable, partitionKeyOrdinal, localKeyOrdinal, null, order);
     }
 
     /**
@@ -125,13 +167,36 @@ public class FullColumnDescription extends ColumnDescription
         this(name, type, isNullable, partitionKeyOrdinal, localKeyOrdinal, quantum, null);
     }
 
+    /**
+     * Creates a FullColumnDescription.
+     * Useful for automating creation of FullColumnDescriptions where the values can vary.
+     * @param name The name of the column. Required - must not be null or an empty string.
+     * @param type The type of the column. Required - must not be null.
+     * @param isNullable The nullability of the column.
+     * @param partitionKeyOrdinal The ordinal number of where this column appears in
+     *                            the ordered Partition Key column set.
+     *                            <b>Use null if not a key column.</b>
+     * @param localKeyOrdinal The ordinal number of where this column appears in
+     *                        the ordered Local Key column set.
+     *                        <b>Use null if not a key column.</b>
+     * @param quantum The {@link Quantum} setting if this column
+     *                is used in partition key time quantization.
+     *                <b>Use
+     *                {@link #FullColumnDescription(String, ColumnDescription.ColumnType, boolean, Integer, Integer)}
+     *                if the quantum is not needed. </b>
+     * @param keyOrder The key order in which this record will be sorted. // TODO: get better description
+     *              <b>Use null if not a key column.</b>
+     * @throws IllegalArgumentException if the Column Name or Column Type are null or empty,
+     *                                  or if the quantum is set on a non-Timestamp column,
+     *                                  or the quantum is set on a non-partition key column.
+     */
     public FullColumnDescription(String name,
                                  ColumnDescription.ColumnType type,
                                  boolean isNullable,
                                  Integer partitionKeyOrdinal,
                                  Integer localKeyOrdinal,
                                  Quantum quantum,
-                                 SortOrder order)
+                                 KeyOrder keyOrder)
     {
         super(name, type);
         this.isNullable = isNullable;
@@ -139,7 +204,7 @@ public class FullColumnDescription extends ColumnDescription
         this.localKeyOrdinal = localKeyOrdinal;
         validateQuantumUsage(type, partitionKeyOrdinal, quantum);
         this.quantum = quantum;
-        this.sortOrder = order;
+        this.keyOrder = keyOrder;
     }
 
     private void validateQuantumUsage(ColumnType type, Integer partitionKeyOrdinal, Quantum quantum)
@@ -160,11 +225,12 @@ public class FullColumnDescription extends ColumnDescription
     }
 
 
-    public enum SortOrder
+    public enum KeyOrder
     {
         ASC,
         DESC
     }
+
     /**
      * Whether this column's values are nullable.
      * @return boolean
@@ -231,13 +297,13 @@ public class FullColumnDescription extends ColumnDescription
         return quantum != null;
     }
 
-    public SortOrder getSortOrder()
+    public KeyOrder getKeyOrder()
     {
-        return sortOrder;
+        return keyOrder;
     }
 
-    public boolean hasSortOrder()
+    public boolean hasKeyOrder()
     {
-        return sortOrder != null;
+        return keyOrder != null;
     }
 }

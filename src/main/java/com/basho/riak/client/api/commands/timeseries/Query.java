@@ -34,6 +34,7 @@ public class Query extends AsIsRiakCommand<QueryResult, String>
     {
         return new QueryOperation.Builder(builder.queryText)
                                            .withCoverageContext(builder.coverageContext)
+                                           .withQueryBufferReuse(builder.queryBufferReuse)
                                            .build();
     }
 
@@ -49,6 +50,7 @@ public class Query extends AsIsRiakCommand<QueryResult, String>
         private final Map<String, BinaryValue> interpolations = new HashMap<>();
         private final Set<String> knownParams;
         private byte[] coverageContext = null;
+        private boolean queryBufferReuse = false;
 
         /**
          * Construct a Builder for a Time Series Query command.

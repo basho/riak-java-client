@@ -50,7 +50,8 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
     protected final static TableDefinition GeoCheckinWideTableDefinition = new TableDefinition(tableName,
         Arrays.asList(
             new FullColumnDescription("geohash", ColumnDescription.ColumnType.VARCHAR,  false, 1),
-            new FullColumnDescription("user", ColumnDescription.ColumnType.VARCHAR,  false, 2),
+            new FullColumnDescription("user", ColumnDescription.ColumnType.VARCHAR, false, 2, 2, null, FullColumnDescription
+                    .KeyOrder.DESC),
             new FullColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP,  false, 3,
                                       new Quantum(15, TimeUnit.MINUTES)),
             new FullColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR,  false),

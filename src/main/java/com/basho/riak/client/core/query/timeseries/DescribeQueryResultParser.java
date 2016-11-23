@@ -81,7 +81,10 @@ class DescribeQueryResultParser
 
         final Quantum quantum = parseQuantumCells(cells);
 
-        return new FullColumnDescription(name, type, isNullable, partitionKeyOrdinal, localKeyOrdinal, quantum);
+        final FullColumnDescription.KeyOrder keyOrder = parseSortOrder(cells);
+
+        return new FullColumnDescription(name, type, isNullable, partitionKeyOrdinal, localKeyOrdinal, quantum,
+                                         keyOrder);
     }
 
     private static Integer parseKeyCell(Cell keyCell)
@@ -111,6 +114,33 @@ class DescribeQueryResultParser
         final TimeUnit quantumUnit = Quantum.parseTimeUnit(quantumUnitCell.getVarcharAsUTF8String());
 
         return new Quantum(quantumInterval.intValue(), quantumUnit);
+    }
+
+    private static FullColumnDescription.KeyOrder parseSortOrder(List<Cell> cells)
+    {
+        if (cells.size() < 8)
+        {
+            return null;
+        }
+
+        final Cell sortCell = cells.get(SORT_ORDER_IDX);
+
+        if(!sortCell.hasVarcharValue())
+        {
+            return null;
+        }
+
+        if(sortCell.getVarcharAsUTF8String().equalsIgnoreCase("ASC"))
+        {
+            return FullColumnDescription.KeyOrder.ASC;
+        }
+
+        if(sortCell.getVarcharAsUTF8String().equalsIgnoreCase("DESC"))
+        {
+            return FullColumnDescription.KeyOrder.DESC;
+        }
+
+        return null;
     }
 
     private static boolean DescribeFnRowResultIsValid(List<Cell> cells)

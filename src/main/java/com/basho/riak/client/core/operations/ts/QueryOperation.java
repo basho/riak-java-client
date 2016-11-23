@@ -43,6 +43,7 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
         private final String queryText;
         private final RiakTsPB.TsQueryReq.Builder reqBuilder = RiakTsPB.TsQueryReq.newBuilder();
         private byte[] coverageContext;
+        private boolean queryBufferReuse;
 
         public Builder(String queryText)
         {
@@ -81,6 +82,17 @@ public class QueryOperation extends TTBFutureOperation<QueryResult, String>
         public QueryOperation build()
         {
             return new QueryOperation(this);
+        }
+
+        public Builder withQueryBufferReuse(boolean queryBufferReuse)
+        {
+            this.queryBufferReuse = queryBufferReuse;
+            return this;
+        }
+
+        public boolean getQueryBufferReuse()
+        {
+            return queryBufferReuse;
         }
     }
 }
