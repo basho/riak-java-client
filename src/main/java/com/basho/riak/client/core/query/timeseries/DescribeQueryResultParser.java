@@ -125,7 +125,7 @@ class DescribeQueryResultParser
 
         final Cell sortCell = cells.get(SORT_ORDER_IDX);
 
-        if(!sortCell.hasVarcharValue())
+        if(sortCell == null || !sortCell.hasVarcharValue())
         {
             return null;
         }

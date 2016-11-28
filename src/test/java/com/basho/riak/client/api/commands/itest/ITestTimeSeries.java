@@ -20,6 +20,7 @@ import org.junit.runners.MethodSorters;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -255,18 +256,19 @@ public class ITestTimeSeries extends ITestTsBase
     @Test
     public void test_l_TestFetchingSingleRowsWorks() throws ExecutionException, InterruptedException
     {
+        Row expectedRow = rows.get(7);
+        List<Cell> keyCells = expectedRow.getCellsCopy().stream().limit(3).collect(Collectors.toList()) ;
+
         RiakClient client = new RiakClient(cluster);
 
-        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"),
-                                                  Cell.newTimestamp(fifteenMinsAgo));
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
 
         QueryResult queryResult = client.execute(fetch);
 
         assertEquals(1, queryResult.getRowsCount());
-        Row row = queryResult.getRowsCopy().get(0);
-        assertEquals("rain", row.getCellsCopy().get(3).getVarcharAsUTF8String());
-        assertEquals(79.0, row.getCellsCopy().get(4).getDouble(), Double.MIN_VALUE);
+
+        Row actualRow = queryResult.getRowsCopy().get(0);
+        assertRowMatches(expectedRow, actualRow);
     }
 
     @Test
