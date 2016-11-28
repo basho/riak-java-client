@@ -34,7 +34,6 @@ public class Query extends AsIsRiakCommand<QueryResult, String>
     {
         return new QueryOperation.Builder(builder.queryText)
                                            .withCoverageContext(builder.coverageContext)
-                                           .withQueryBufferReuse(builder.queryBufferReuse)
                                            .build();
     }
 
@@ -50,7 +49,6 @@ public class Query extends AsIsRiakCommand<QueryResult, String>
         private final Map<String, BinaryValue> interpolations = new HashMap<>();
         private final Set<String> knownParams;
         private byte[] coverageContext = null;
-        private boolean queryBufferReuse = false;
 
         /**
          * Construct a Builder for a Time Series Query command.
@@ -110,38 +108,6 @@ public class Query extends AsIsRiakCommand<QueryResult, String>
                 logger.error(msg);
                 throw new IllegalArgumentException(msg);
             }
-        }
-
-        /**
-         * Add the option for Riak to cache the temp table used for the sorting and paging of a query.
-         * <p>
-         *     If enabled, this can make subsequent result page fetches faster, but at the cost of
-         *     possibly stale information. Updates that occur before the cache expires will not be
-         *     seen in the temp table.
-         * </p>
-         * <p>
-         *     This can only be used for queries that use either the LIMIT, OFFSET, or ORDER BY keywords,
-         *     and the setting will be ignored in other queries.</p>
-         * <p>
-         *     The temp table used to sort and page results will expire and be deleted after a set amount of time.
-         *     Please see Riak's <q>riak_kv.timeseries_query_buffers_expire_ms</q>
-         *     and <q>riak_kv.timeseries_query_buffers_incomplete_release_ms</q> settings for more
-         *     information on expiry time.
-         * </p>
-         * <p>
-         *     <b>NOTE: </b>
-         *     This caching will only work if subsequent queries are sent to the
-         *     same node that the first query was sent to.
-         *     It is incompatible with Load Balancers at this time.
-         * </p>
-         * Default is false.
-         * @param queryBufferReuse Whether to cache the temp table or not.
-         * @return a reference to this object
-         */
-        public Builder withTempTableCaching(boolean queryBufferReuse)
-        {
-            this.queryBufferReuse = queryBufferReuse;
-            return this;
         }
 
         /**

@@ -59,7 +59,7 @@ public class TermToBinaryCodec
         return decodeTsResponse(response);
     }
 
-    public static OtpOutputStream encodeTsQueryRequest(String queryText, byte[] coverageContext, boolean queryBufferReuse)
+    public static OtpOutputStream encodeTsQueryRequest(String queryText, byte[] coverageContext)
     {
         final OtpOutputStream os = new OtpOutputStream();
         os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value
@@ -88,8 +88,6 @@ public class TermToBinaryCodec
         {
             os.write_binary(coverageContext);
         }
-
-        os.write_boolean(queryBufferReuse);
 
         return os;
     }

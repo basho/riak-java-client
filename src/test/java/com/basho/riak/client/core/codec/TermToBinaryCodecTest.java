@@ -216,17 +216,17 @@ public class TermToBinaryCodecTest
     @Test
     public void encodesQueryRequestCorrectly()
     {
-        // {tsqueryreq,{tsinterpolation,<<"SELECT * FROM FRAZZLE">>,[]},false,undefined, false}
+        // {tsqueryreq,{tsinterpolation,<<"SELECT * FROM FRAZZLE">>,[]},false,undefined}
         final byte[] exp = {(byte)131,104,5,100,0,10,116,115,113,117,101,114,121,114,101,
                             113,104,3,100,0,15,116,115,105,110,116,101,114,112,111,
                             108,97,116,105,111,110,109,0,0,0,21,83,69,76,69,67,84,
                             32,42,32,70,82,79,77,32,70,82,65,90,90,76,69,106,100,0,
                             5,102,97,108,115,101,100,0,9,117,110,100,101,102,105,
-                            110,101,100,100,0,5,102,97,108,115,101};
+                            110,101,100};
 
         try
         {
-            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, null, false);
+            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, null);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
@@ -242,19 +242,17 @@ public class TermToBinaryCodecTest
     {
         // {tsqueryreq, {tsinterpolation, <<"SELECT * FROM FRAZZLE">>, []},
         //              false,
-        //              <<131,104,2,98,40,26,4,204,109,0,0,0,12,131,104,1,100,0,6,102,111,111,98,97,114>>,
-        //              false}
+        //              <<131,104,2,98,40,26,4,204,109,0,0,0,12,131,104,1,100,0,6,102,111,111,98,97,114>>}
         final byte[] exp = {(byte)131,104,5,100,0,10,116,115,113,117,101,114,121,114,101,
                             113,104,3,100,0,15,116,115,105,110,116,101,114,112,111,
                             108,97,116,105,111,110,109,0,0,0,21,83,69,76,69,67,84,
                             32,42,32,70,82,79,77,32,70,82,65,90,90,76,69,106,100,0,
                             5,102,97,108,115,101,109,0,0,0,25,(byte)131,104,2,98,40,26,4,
-                            (byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114,
-                            100,0,5,102,97,108,115,101};
+                            (byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114};
 
         try
         {
-            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, CONTEXT, false);
+            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, CONTEXT);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
@@ -277,12 +275,11 @@ public class TermToBinaryCodecTest
                             108,97,116,105,111,110,109,0,0,0,21,83,69,76,69,67,84,
                             32,42,32,70,82,79,77,32,70,82,65,90,90,76,69,106,100,0,
                             5,102,97,108,115,101,109,0,0,0,25,(byte)131,104,2,98,40,26,4,
-                            (byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114,
-                            100,0,4,116,114,117,101};
+                            (byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114};
 
         try
         {
-            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, CONTEXT, true);
+            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, CONTEXT);
             os.flush();
             byte[] msg = os.toByteArray();
             Assert.assertArrayEquals(exp, msg);
