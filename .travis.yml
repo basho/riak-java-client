@@ -17,7 +17,7 @@ env:
   matrix:
     - RIAK_FLAVOR=riak-ts RIAK_DOWNLOAD_URL=docker
     - RIAK_VERSION=2.0.7 RIAK_FLAVOR=riak-kv RIAK_DOWNLOAD_URL=http://s3.amazonaws.com/downloads.basho.com/riak/2.0/2.0.7/ubuntu/trusty/riak_2.0.7-1_amd64.deb
-    - RIAK_VERSION=2.1.4 RIAK_FLAVOR=riak-kv RIAK_DOWNLOAD_URL=http://s3.amazonaws.com/downloads.basho.com/riak/2.1/2.1.4/ubuntu/trusty/riak_2.1.4-1_amd64.deb
+    - RIAK_VERSION=2.2.0 RIAK_FLAVOR=riak-kv RIAK_DOWNLOAD_URL=http://s3.amazonaws.com/downloads.basho.com/riak/2.2/2.2.0/ubuntu/trusty/riak_2.2.0-1_amd64.deb
   global:
     - RIAK_HOSTS=localhost:8087
 notifications:
