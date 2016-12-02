@@ -64,8 +64,8 @@ public class TermToBinaryCodec
         final OtpOutputStream os = new OtpOutputStream();
         os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value
 
-        // TsQueryReq is a 5-tuple: {'tsqueryreq', TsInterpolation, boolIsStreaming, bytesCoverContext, boolAllow_qbuf_reuse}
-        os.write_tuple_head(5);
+        // TsQueryReq is a 4-tuple: {'tsqueryreq', TsInterpolation, boolIsStreaming, bytesCoverContext}
+        os.write_tuple_head(4);
         os.write_atom(TS_QUERY_REQ);
 
         // TsInterpolation is a 3-tuple
