@@ -180,15 +180,6 @@ public final class RiakTsPB {
      * </pre>
      */
     com.google.protobuf.ByteString getCoverContext();
-
-    /**
-     * <code>optional bool allow_qbuf_reuse = 4 [default = false];</code>
-     */
-    boolean hasAllowQbufReuse();
-    /**
-     * <code>optional bool allow_qbuf_reuse = 4 [default = false];</code>
-     */
-    boolean getAllowQbufReuse();
   }
   /**
    * Protobuf type {@code TsQueryReq}
@@ -267,11 +258,6 @@ public final class RiakTsPB {
             case 26: {
               bitField0_ |= 0x00000004;
               coverContext_ = input.readBytes();
-              break;
-            }
-            case 32: {
-              bitField0_ |= 0x00000008;
-              allowQbufReuse_ = input.readBool();
               break;
             }
           }
@@ -385,26 +371,10 @@ public final class RiakTsPB {
       return coverContext_;
     }
 
-    public static final int ALLOW_QBUF_REUSE_FIELD_NUMBER = 4;
-    private boolean allowQbufReuse_;
-    /**
-     * <code>optional bool allow_qbuf_reuse = 4 [default = false];</code>
-     */
-    public boolean hasAllowQbufReuse() {
-      return ((bitField0_ & 0x00000008) == 0x00000008);
-    }
-    /**
-     * <code>optional bool allow_qbuf_reuse = 4 [default = false];</code>
-     */
-    public boolean getAllowQbufReuse() {
-      return allowQbufReuse_;
-    }
-
     private void initFields() {
       query_ = com.basho.riak.protobuf.RiakTsPB.TsInterpolation.getDefaultInstance();
       stream_ = false;
       coverContext_ = com.google.protobuf.ByteString.EMPTY;
-      allowQbufReuse_ = false;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -434,9 +404,6 @@ public final class RiakTsPB {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeBytes(3, coverContext_);
       }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeBool(4, allowQbufReuse_);
-      }
       getUnknownFields().writeTo(output);
     }
 
@@ -457,10 +424,6 @@ public final class RiakTsPB {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(3, coverContext_);
-      }
-      if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(4, allowQbufReuse_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -594,8 +557,6 @@ public final class RiakTsPB {
         bitField0_ = (bitField0_ & ~0x00000002);
         coverContext_ = com.google.protobuf.ByteString.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000004);
-        allowQbufReuse_ = false;
-        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -640,10 +601,6 @@ public final class RiakTsPB {
           to_bitField0_ |= 0x00000004;
         }
         result.coverContext_ = coverContext_;
-        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
-          to_bitField0_ |= 0x00000008;
-        }
-        result.allowQbufReuse_ = allowQbufReuse_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -668,9 +625,6 @@ public final class RiakTsPB {
         }
         if (other.hasCoverContext()) {
           setCoverContext(other.getCoverContext());
-        }
-        if (other.hasAllowQbufReuse()) {
-          setAllowQbufReuse(other.getAllowQbufReuse());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -936,38 +890,6 @@ public final class RiakTsPB {
       public Builder clearCoverContext() {
         bitField0_ = (bitField0_ & ~0x00000004);
         coverContext_ = getDefaultInstance().getCoverContext();
-        onChanged();
-        return this;
-      }
-
-      private boolean allowQbufReuse_ ;
-      /**
-       * <code>optional bool allow_qbuf_reuse = 4 [default = false];</code>
-       */
-      public boolean hasAllowQbufReuse() {
-        return ((bitField0_ & 0x00000008) == 0x00000008);
-      }
-      /**
-       * <code>optional bool allow_qbuf_reuse = 4 [default = false];</code>
-       */
-      public boolean getAllowQbufReuse() {
-        return allowQbufReuse_;
-      }
-      /**
-       * <code>optional bool allow_qbuf_reuse = 4 [default = false];</code>
-       */
-      public Builder setAllowQbufReuse(boolean value) {
-        bitField0_ |= 0x00000008;
-        allowQbufReuse_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional bool allow_qbuf_reuse = 4 [default = false];</code>
-       */
-      public Builder clearAllowQbufReuse() {
-        bitField0_ = (bitField0_ & ~0x00000008);
-        allowQbufReuse_ = false;
         onChanged();
         return this;
       }
@@ -14499,44 +14421,44 @@ public final class RiakTsPB {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\rriak_ts.proto\032\nriak.proto\"|\n\nTsQueryRe" +
+      "\n\rriak_ts.proto\032\nriak.proto\"[\n\nTsQueryRe" +
       "q\022\037\n\005query\030\001 \001(\0132\020.TsInterpolation\022\025\n\006st" +
       "ream\030\002 \001(\010:\005false\022\025\n\rcover_context\030\003 \001(\014" +
-      "\022\037\n\020allow_qbuf_reuse\030\004 \001(\010:\005false\"^\n\013TsQ" +
-      "ueryResp\022%\n\007columns\030\001 \003(\0132\024.TsColumnDesc" +
-      "ription\022\024\n\004rows\030\002 \003(\0132\006.TsRow\022\022\n\004done\030\003 " +
-      "\001(\010:\004true\"@\n\010TsGetReq\022\r\n\005table\030\001 \002(\014\022\024\n\003" +
-      "key\030\002 \003(\0132\007.TsCell\022\017\n\007timeout\030\003 \001(\r\"H\n\tT" +
-      "sGetResp\022%\n\007columns\030\001 \003(\0132\024.TsColumnDesc" +
-      "ription\022\024\n\004rows\030\002 \003(\0132\006.TsRow\"V\n\010TsPutRe",
-      "q\022\r\n\005table\030\001 \002(\014\022%\n\007columns\030\002 \003(\0132\024.TsCo" +
-      "lumnDescription\022\024\n\004rows\030\003 \003(\0132\006.TsRow\"\013\n" +
-      "\tTsPutResp\"P\n\010TsDelReq\022\r\n\005table\030\001 \002(\014\022\024\n" +
-      "\003key\030\002 \003(\0132\007.TsCell\022\016\n\006vclock\030\003 \001(\014\022\017\n\007t" +
-      "imeout\030\004 \001(\r\"\013\n\tTsDelResp\"A\n\017TsInterpola" +
-      "tion\022\014\n\004base\030\001 \002(\014\022 \n\016interpolations\030\002 \003" +
-      "(\0132\010.RpbPair\"@\n\023TsColumnDescription\022\014\n\004n" +
-      "ame\030\001 \002(\014\022\033\n\004type\030\002 \002(\0162\r.TsColumnType\"\037" +
-      "\n\005TsRow\022\026\n\005cells\030\001 \003(\0132\007.TsCell\"{\n\006TsCel" +
-      "l\022\025\n\rvarchar_value\030\001 \001(\014\022\024\n\014sint64_value",
-      "\030\002 \001(\022\022\027\n\017timestamp_value\030\003 \001(\022\022\025\n\rboole" +
-      "an_value\030\004 \001(\010\022\024\n\014double_value\030\005 \001(\001\"/\n\r" +
-      "TsListKeysReq\022\r\n\005table\030\001 \002(\014\022\017\n\007timeout\030" +
-      "\002 \001(\r\"4\n\016TsListKeysResp\022\024\n\004keys\030\001 \003(\0132\006." +
-      "TsRow\022\014\n\004done\030\002 \001(\010\"q\n\rTsCoverageReq\022\037\n\005" +
-      "query\030\001 \001(\0132\020.TsInterpolation\022\r\n\005table\030\002" +
-      " \002(\014\022\025\n\rreplace_cover\030\003 \001(\014\022\031\n\021unavailab" +
-      "le_cover\030\004 \003(\014\"3\n\016TsCoverageResp\022!\n\007entr" +
-      "ies\030\001 \003(\0132\020.TsCoverageEntry\"[\n\017TsCoverag" +
-      "eEntry\022\n\n\002ip\030\001 \002(\014\022\014\n\004port\030\002 \002(\r\022\025\n\rcove",
-      "r_context\030\003 \002(\014\022\027\n\005range\030\004 \001(\0132\010.TsRange" +
-      "\"\223\001\n\007TsRange\022\022\n\nfield_name\030\001 \002(\014\022\023\n\013lowe" +
-      "r_bound\030\002 \002(\022\022\035\n\025lower_bound_inclusive\030\003" +
-      " \002(\010\022\023\n\013upper_bound\030\004 \002(\022\022\035\n\025upper_bound" +
-      "_inclusive\030\005 \002(\010\022\014\n\004desc\030\006 \002(\014*Y\n\014TsColu" +
-      "mnType\022\013\n\007VARCHAR\020\000\022\n\n\006SINT64\020\001\022\n\n\006DOUBL" +
-      "E\020\002\022\r\n\tTIMESTAMP\020\003\022\013\n\007BOOLEAN\020\004\022\010\n\004BLOB\020" +
-      "\005B#\n\027com.basho.riak.protobufB\010RiakTsPB"
+      "\"^\n\013TsQueryResp\022%\n\007columns\030\001 \003(\0132\024.TsCol" +
+      "umnDescription\022\024\n\004rows\030\002 \003(\0132\006.TsRow\022\022\n\004" +
+      "done\030\003 \001(\010:\004true\"@\n\010TsGetReq\022\r\n\005table\030\001 " +
+      "\002(\014\022\024\n\003key\030\002 \003(\0132\007.TsCell\022\017\n\007timeout\030\003 \001" +
+      "(\r\"H\n\tTsGetResp\022%\n\007columns\030\001 \003(\0132\024.TsCol" +
+      "umnDescription\022\024\n\004rows\030\002 \003(\0132\006.TsRow\"V\n\010" +
+      "TsPutReq\022\r\n\005table\030\001 \002(\014\022%\n\007columns\030\002 \003(\013",
+      "2\024.TsColumnDescription\022\024\n\004rows\030\003 \003(\0132\006.T" +
+      "sRow\"\013\n\tTsPutResp\"P\n\010TsDelReq\022\r\n\005table\030\001" +
+      " \002(\014\022\024\n\003key\030\002 \003(\0132\007.TsCell\022\016\n\006vclock\030\003 \001" +
+      "(\014\022\017\n\007timeout\030\004 \001(\r\"\013\n\tTsDelResp\"A\n\017TsIn" +
+      "terpolation\022\014\n\004base\030\001 \002(\014\022 \n\016interpolati" +
+      "ons\030\002 \003(\0132\010.RpbPair\"@\n\023TsColumnDescripti" +
+      "on\022\014\n\004name\030\001 \002(\014\022\033\n\004type\030\002 \002(\0162\r.TsColum" +
+      "nType\"\037\n\005TsRow\022\026\n\005cells\030\001 \003(\0132\007.TsCell\"{" +
+      "\n\006TsCell\022\025\n\rvarchar_value\030\001 \001(\014\022\024\n\014sint6" +
+      "4_value\030\002 \001(\022\022\027\n\017timestamp_value\030\003 \001(\022\022\025",
+      "\n\rboolean_value\030\004 \001(\010\022\024\n\014double_value\030\005 " +
+      "\001(\001\"/\n\rTsListKeysReq\022\r\n\005table\030\001 \002(\014\022\017\n\007t" +
+      "imeout\030\002 \001(\r\"4\n\016TsListKeysResp\022\024\n\004keys\030\001" +
+      " \003(\0132\006.TsRow\022\014\n\004done\030\002 \001(\010\"q\n\rTsCoverage" +
+      "Req\022\037\n\005query\030\001 \001(\0132\020.TsInterpolation\022\r\n\005" +
+      "table\030\002 \002(\014\022\025\n\rreplace_cover\030\003 \001(\014\022\031\n\021un" +
+      "available_cover\030\004 \003(\014\"3\n\016TsCoverageResp\022" +
+      "!\n\007entries\030\001 \003(\0132\020.TsCoverageEntry\"[\n\017Ts" +
+      "CoverageEntry\022\n\n\002ip\030\001 \002(\014\022\014\n\004port\030\002 \002(\r\022" +
+      "\025\n\rcover_context\030\003 \002(\014\022\027\n\005range\030\004 \001(\0132\010.",
+      "TsRange\"\223\001\n\007TsRange\022\022\n\nfield_name\030\001 \002(\014\022" +
+      "\023\n\013lower_bound\030\002 \002(\022\022\035\n\025lower_bound_incl" +
+      "usive\030\003 \002(\010\022\023\n\013upper_bound\030\004 \002(\022\022\035\n\025uppe" +
+      "r_bound_inclusive\030\005 \002(\010\022\014\n\004desc\030\006 \002(\014*Y\n" +
+      "\014TsColumnType\022\013\n\007VARCHAR\020\000\022\n\n\006SINT64\020\001\022\n" +
+      "\n\006DOUBLE\020\002\022\r\n\tTIMESTAMP\020\003\022\013\n\007BOOLEAN\020\004\022\010" +
+      "\n\004BLOB\020\005B#\n\027com.basho.riak.protobufB\010Ria" +
+      "kTsPB"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -14556,7 +14478,7 @@ public final class RiakTsPB {
     internal_static_TsQueryReq_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_TsQueryReq_descriptor,
-        new java.lang.String[] { "Query", "Stream", "CoverContext", "AllowQbufReuse", });
+        new java.lang.String[] { "Query", "Stream", "CoverContext", });
     internal_static_TsQueryResp_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_TsQueryResp_fieldAccessorTable = new
