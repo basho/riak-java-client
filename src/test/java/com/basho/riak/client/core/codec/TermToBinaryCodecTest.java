@@ -91,7 +91,7 @@ public class TermToBinaryCodecTest
     public void encodesPutRequestCorrectly_2()
     {
         // A = riakc_ts_put_operator:serialize(<<"test_table">>,
-        //                                     [{<<"series">>, <<"family">>, 12345678, 1, true, 34.3, []}],
+        //                                     [{<<"series">>, <<"family">>, 12345678, 1, true, 34.3, [], <<0,1,2,3,4,5,6,7>>}],
         //                                     true).
         // A = {tsputreq,<<"test_table">>,[],[{<<"series">>,<<"family">>,12345678,1,true,34.3,[]}]}
         final byte[] exp = {(byte)131,104,4, // outer tuple arity 4
@@ -99,7 +99,7 @@ public class TermToBinaryCodecTest
                             109,0,0,0,10,116,101,115,116,95,116,97,98,108,101, // table name binary
                             106, // empty list
                             108,0,0,0,1, // list start arity 1
-                                104,8, // row tuple arity 7
+                                104,8, // row tuple arity 8
                                     109,0,0,0,6,115,101,114,105,101,115, // series binary
                                     109,0,0,0,6,102,97,109,105,108,121, // family binary
                                     98,0,(byte)188,97,78, // integer
@@ -217,7 +217,7 @@ public class TermToBinaryCodecTest
     public void encodesQueryRequestCorrectly()
     {
         // {tsqueryreq,{tsinterpolation,<<"SELECT * FROM FRAZZLE">>,[]},false,undefined}
-        final byte[] exp = {(byte)131,104,5,100,0,10,116,115,113,117,101,114,121,114,101,
+        final byte[] exp = {(byte)131,104,4,100,0,10,116,115,113,117,101,114,121,114,101,
                             113,104,3,100,0,15,116,115,105,110,116,101,114,112,111,
                             108,97,116,105,111,110,109,0,0,0,21,83,69,76,69,67,84,
                             32,42,32,70,82,79,77,32,70,82,65,90,90,76,69,106,100,0,
@@ -243,34 +243,7 @@ public class TermToBinaryCodecTest
         // {tsqueryreq, {tsinterpolation, <<"SELECT * FROM FRAZZLE">>, []},
         //              false,
         //              <<131,104,2,98,40,26,4,204,109,0,0,0,12,131,104,1,100,0,6,102,111,111,98,97,114>>}
-        final byte[] exp = {(byte)131,104,5,100,0,10,116,115,113,117,101,114,121,114,101,
-                            113,104,3,100,0,15,116,115,105,110,116,101,114,112,111,
-                            108,97,116,105,111,110,109,0,0,0,21,83,69,76,69,67,84,
-                            32,42,32,70,82,79,77,32,70,82,65,90,90,76,69,106,100,0,
-                            5,102,97,108,115,101,109,0,0,0,25,(byte)131,104,2,98,40,26,4,
-                            (byte)204,109,0,0,0,12,(byte)131,104,1,100,0,6,102,111,111,98,97,114};
-
-        try
-        {
-            OtpOutputStream os = TermToBinaryCodec.encodeTsQueryRequest(QUERY, CONTEXT);
-            os.flush();
-            byte[] msg = os.toByteArray();
-            Assert.assertArrayEquals(exp, msg);
-        }
-        catch (IOException ex)
-        {
-            Assert.fail(ex.getMessage());
-        }
-    }
-
-    @Test
-    public void encodesQueryRequestWithCoverageContextAndBufferReuseCorrectly()
-    {
-        // {tsqueryreq, {tsinterpolation, <<"SELECT * FROM FRAZZLE">>, []},
-        //              false,
-        //              <<131,104,2,98,40,26,4,204,109,0,0,0,12,131,104,1,100,0,6,102,111,111,98,97,114>>,
-        //              true}
-        final byte[] exp = {(byte)131,104,5,100,0,10,116,115,113,117,101,114,121,114,101,
+        final byte[] exp = {(byte)131,104,4,100,0,10,116,115,113,117,101,114,121,114,101,
                             113,104,3,100,0,15,116,115,105,110,116,101,114,112,111,
                             108,97,116,105,111,110,109,0,0,0,21,83,69,76,69,67,84,
                             32,42,32,70,82,79,77,32,70,82,65,90,90,76,69,106,100,0,
