@@ -378,7 +378,8 @@ public class ITestTimeSeries extends ITestTsBase
 
         final String message = describeFuture.cause().getMessage();
         assertTrue(message.toLowerCase().contains(BAD_TABLE_NAME.toLowerCase()));
-        assertTrue(message.toLowerCase().contains("not an active table"));
+        assertTrue(message.toLowerCase().contains("not"));
+        assertTrue(message.toLowerCase().contains("active"));
     }
 
     @Test

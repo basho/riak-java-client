@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+### 2.1.1
+
+Following issues / PRs addressed:
+
+*  [Added TS 1.5 Feature Support](https://github.com/basho/riak-java-client/pull/691)
+
 ### 2.1.0
 
 **Notes**
