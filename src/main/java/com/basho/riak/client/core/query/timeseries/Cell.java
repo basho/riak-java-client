@@ -168,13 +168,29 @@ public class Cell
         {
             initTimestamp(pbCell.getTimestampValue());
         }
-        else if (pbCell.hasVarcharValue() && columnDescription.getType() == RiakTsPB.TsColumnType.VARCHAR)
+        else if (pbCell.hasVarcharValue() )
         {
-            initVarchar(pbCell.getVarcharValue().toStringUtf8());
-        }
-        else if (pbCell.hasVarcharValue() && columnDescription.getType() == RiakTsPB.TsColumnType.BLOB)
-        {
-            initBlob(pbCell.getVarcharValue().toByteArray());
+            //  If there is no column description provided, VARCHAR will be used by default
+            final RiakTsPB.TsColumnType type = columnDescription == null ? RiakTsPB.TsColumnType.VARCHAR : columnDescription.getType();
+
+            switch (type)
+            {
+                case VARCHAR:
+                    initVarchar(pbCell.getVarcharValue().toStringUtf8());
+                    break;
+
+                case BLOB:
+                    initBlob(pbCell.getVarcharValue().toByteArray());
+                    break;
+
+                default:
+                    throw new IllegalStateException(
+                            String.format(
+                                    "Type '%s' from the provided ColumnDefinition contradicts to the actual VARCHAR value",
+                                    type.name()
+                                )
+                        );
+            }
         }
         else
         {

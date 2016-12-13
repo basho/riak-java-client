@@ -37,8 +37,8 @@ class ConvertibleIteratorUtils
 
     private abstract static class ConvertibleZipperator<S, S2, D> implements Iterator<D>
     {
-        private final Iterator<S> iterator1;
-        private final Iterator<S2> iterator2;
+        protected final Iterator<S> iterator1;
+        protected final Iterator<S2> iterator2;
 
         public ConvertibleZipperator(Iterator<S> iterator, Iterator<S2> iterator2)
         {
@@ -81,6 +81,17 @@ class ConvertibleIteratorUtils
             }
 
             return new Cell(pbCell, columnDescription);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iterator1.hasNext();
+        }
+
+        @Override
+        public Cell next() {
+            final RiakTsPB.TsColumnDescription description = iterator2.hasNext() ? iterator2.next() : null;
+            return convert(iterator1.next(), description);
         }
     }
 
