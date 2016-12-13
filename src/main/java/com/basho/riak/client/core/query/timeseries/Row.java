@@ -106,7 +106,11 @@ public class Row implements Iterable<Cell>
         }
         else // if (pbRow != null)
         {
-            return ConvertibleIteratorUtils.iterateAsCell(pbRow.getCellsList().iterator(), pbColumnDescriptions.iterator());
+            assert pbRow != null;
+
+            return ConvertibleIteratorUtils.iterateAsCell(pbRow.getCellsList().iterator(),
+                    // if there is no ColumnDescription what else we could do with that?
+                    pbColumnDescriptions == null ?  Collections.emptyIterator() : pbColumnDescriptions.iterator());
         }
     }
 
