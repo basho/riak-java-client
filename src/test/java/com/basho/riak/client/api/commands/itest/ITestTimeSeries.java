@@ -63,7 +63,7 @@ public class ITestTimeSeries extends ITestTsBase
     @BeforeClass
     public static void SetupCheck()
     {
-        assertTrue(testTs_1_5_Features());
+        assumeTrue("Timeseries 1.5 features not supported in this test environment, skipping tests.", testTs_1_5_Features());
     }
 
     @Rule
