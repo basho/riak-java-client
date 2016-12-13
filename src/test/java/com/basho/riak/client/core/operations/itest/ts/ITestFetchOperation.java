@@ -12,6 +12,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -38,9 +39,9 @@ public class ITestFetchOperation extends ITestTsBase
     @Test
     public void testSingleFetch() throws ExecutionException, InterruptedException
     {
-        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"),
-                                                  new Cell("user4"),
-                                                  Cell.newTimestamp(fifteenMinsAgo));
+        final Row expectedRow = rows.get(4);
+        final List<Cell> keyCells = expectedRow.getCellsCopy().stream().limit(3).collect(Collectors.toList());
+
         FetchOperation fetchOp = new FetchOperation.Builder(tableName, keyCells).build();
 
         final RiakFuture<QueryResult, String> future = cluster.execute(fetchOp);
@@ -50,11 +51,9 @@ public class ITestFetchOperation extends ITestTsBase
         QueryResult result = future.get();
 
         assertEquals(1, result.getRowsCount());
-        assertEquals(7, result.getColumnDescriptionsCopy().size());
+        assertEquals(expectedRow.getCellsCount(), result.getColumnDescriptionsCopy().size());
 
-        Row row = result.getRowsCopy().get(0);
-        assertEquals(7, row.getCellsCount());
-        assertEquals("rain", row.getCellsCopy().get(3).getVarcharAsUTF8String());
-        assertEquals(79.0, row.getCellsCopy().get(4).getDouble(), Double.MIN_VALUE);
+        Row actualRow = result.getRowsCopy().get(0);
+        assertEquals(expectedRow, actualRow);
     }
 }

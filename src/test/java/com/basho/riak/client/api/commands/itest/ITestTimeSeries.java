@@ -257,7 +257,7 @@ public class ITestTimeSeries extends ITestTsBase
     public void test_l_TestFetchingSingleRowsWorks() throws ExecutionException, InterruptedException
     {
         Row expectedRow = rows.get(7);
-        List<Cell> keyCells = expectedRow.getCellsCopy().stream().limit(3).collect(Collectors.toList()) ;
+        List<Cell> keyCells = expectedRow.getCellsCopy().stream().limit(3).collect(Collectors.toList());
 
         RiakClient client = new RiakClient(cluster);
 

@@ -65,7 +65,8 @@ public class ITestQueryOperation extends ITestTsBase
             );
 
         assertNotNull(queryResult);
-        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
+        assertEquals(GeoCheckinWideTableDefinition.getFullColumnDescriptions().size(),
+                     queryResult.getColumnDescriptionsCopy().size());
         assertEquals(1, queryResult.getRowsCount());
     }
 
