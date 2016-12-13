@@ -14,9 +14,12 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Time Series Operation Integration Tests Base
@@ -46,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class ITestTsBase extends ITestAutoCleanupBase
 {
     protected final static String tableName = "GeoCheckin_Wide";
+    protected final static String tableName_ts_1_5 = "GeoCheckin_Wide_1_5";
 
     protected final static TableDefinition GeoCheckinWideTableDefinition = new TableDefinition(tableName,
         Arrays.asList(
@@ -57,10 +61,19 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
             new FullColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR,  false),
             new FullColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE, true),
             new FullColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64,  true),
-            new FullColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN,  false),
-            new FullColumnDescription("sensor_data", ColumnDescription.ColumnType.BLOB, true)
+            new FullColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN,  false)
         )
     );
+
+    protected final static TableDefinition GeoCheckin_1_5_TableDefinition;
+
+    static
+    {
+        final LinkedList<FullColumnDescription> geoCheckinColumns =
+                new LinkedList<>(GeoCheckinWideTableDefinition.getFullColumnDescriptions());
+        geoCheckinColumns.add(new FullColumnDescription("sensor_data", ColumnDescription.ColumnType.BLOB, true));
+        GeoCheckin_1_5_TableDefinition = new TableDefinition(tableName, geoCheckinColumns);
+    }
 
     protected final static long now = 1443806900000L; // "now"
     protected final static long fiveMinsInMS = 5L * 60L * 1000L;
@@ -69,36 +82,54 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
     protected final static long fifteenMinsAgo = tenMinsAgo - fiveMinsInMS;
     protected final static long fifteenMinsInFuture = now + (fiveMinsInMS * 3L);
 
-    protected final static List<Row> rows = Arrays.asList(
+    protected final static List<Row> rows;
+    protected static final List<Row> ts_1_5_rows;
+
+    private static Function<Row,Row> convertToTs1_5Row = x ->
+    {
+        final List<Cell> cells = new LinkedList<>(x.getCellsCopy());
+        cells.add(null);
+        return new Row(cells);
+    };
+
+    static
+    {
+        rows = Arrays.asList(
             // "Normal" Data
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fifteenMinsAgo),
-                    new Cell("cloudy"), new Cell(79.0), new Cell(1), new Cell(true), null),
+                    new Cell("cloudy"), new Cell(79.0), new Cell(1), new Cell(true)),
 
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(fiveMinsAgo),
-                    new Cell("sunny"),  new Cell(80.5), new Cell(2), new Cell(true), null),
+                    new Cell("sunny"),  new Cell(80.5), new Cell(2), new Cell(true)),
 
             new Row(new Cell("hash1"), new Cell("user1"), Cell.newTimestamp(now),
-                    new Cell("sunny"),  new Cell(81.0), new Cell(10), new Cell(false), null),
+                    new Cell("sunny"),  new Cell(81.0), new Cell(10), new Cell(false)),
 
             // Null Cell row
             new Row(new Cell("hash1"), new Cell("user2"), Cell.newTimestamp(fiveMinsAgo),
-                    new Cell("cloudy"), null, null, new Cell(true), null),
+                    new Cell("cloudy"), null, null, new Cell(true)),
 
             // Data for single reads / deletes
             new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fifteenMinsAgo),
-                    new Cell("rain"), new Cell(79.0), new Cell(2), new Cell(false), null),
+                    new Cell("rain"), new Cell(79.0), new Cell(2), new Cell(false)),
 
             new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(fiveMinsAgo),
-                    new Cell("wind"),  new Cell(50.5), new Cell(3), new Cell(true), null),
+                    new Cell("wind"),  new Cell(50.5), new Cell(3), new Cell(true)),
 
             new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(now),
-                    new Cell("snow"),  new Cell(20.0), new Cell(11), new Cell(true), null),
+                    new Cell("snow"),  new Cell(20.0), new Cell(11), new Cell(true)));
 
+        final LinkedList<Row> extendedRows = new LinkedList<>();
+        extendedRows.addAll(rows.stream()
+                                .map(convertToTs1_5Row)
+                                .collect(Collectors.toList()));
+        // Data for blob tests
+        extendedRows.add(new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(now + 3),
+                                 new Cell("snow"), new Cell(20.0), new Cell(11), new Cell(true),
+                                 new Cell(new byte[] {0,1,2,3,4,5,6,7})));
 
-            // Data for blob tests
-            new Row(new Cell("hash2"), new Cell("user4"), Cell.newTimestamp(now + 3),
-                    new Cell("snow"), new Cell(20.0), new Cell(11), new Cell(true), new Cell(new byte[] {0,1,2,3,4,5,6,7}))
-    );
+        ts_1_5_rows = extendedRows;
+    }
 
     @BeforeClass
     public static void BeforeClass() throws ExecutionException, InterruptedException
@@ -177,5 +208,24 @@ public abstract class ITestTsBase extends ITestAutoCleanupBase
 
         assertFutureSuccess(future);
         return future.get();
+    }
+
+    protected static boolean testTs_1_5_Features()
+    {
+        final Namespace ns = new Namespace(tableName_ts_1_5, tableName_ts_1_5);
+        final FetchBucketPropsOperation fbp = new FetchBucketPropsOperation.Builder(ns).build();
+
+        final RiakFuture<FetchBucketPropsOperation.Response, Namespace> execute = cluster.execute(fbp);
+        try
+        {
+            final FetchBucketPropsOperation.Response response = execute.get();
+            response.getBucketProperties();
+        }
+        catch (Exception ex)
+        {
+            System.out.println(ex.toString());
+            return false;
+        }
+        return true;
     }
 }

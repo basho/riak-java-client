@@ -11,16 +11,13 @@ import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.itest.ts.ITestTsBase;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.timeseries.*;
-import org.junit.FixMethodOrder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -58,9 +55,15 @@ public class ITestTimeSeries extends ITestTsBase
 
     private RiakFuture<Void, String> createTableAsync(final RiakClient client, String tableName) throws InterruptedException
     {
-        final TableDefinition tableDef = new TableDefinition(tableName, GeoCheckinWideTableDefinition.getFullColumnDescriptions());
+        final TableDefinition tableDef = new TableDefinition(tableName, GeoCheckin_1_5_TableDefinition.getFullColumnDescriptions());
 
         return createTableAsync(client, tableDef);
+    }
+
+    @BeforeClass
+    public static void SetupCheck()
+    {
+        assertTrue(testTs_1_5_Features());
     }
 
     @Rule
@@ -105,7 +108,7 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        Store store = new Store.Builder(tableName).withRows(rows).build();
+        Store store = new Store.Builder(tableName).withRows(ts_1_5_rows).build();
 
         RiakFuture<Void, String> execFuture = client.executeAsync(store);
 
@@ -158,7 +161,7 @@ public class ITestTimeSeries extends ITestTsBase
         assertEquals(8, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(1, queryResult.getRowsCount());
 
-        assertRowMatches(rows.get(1), queryResult.iterator().next());
+        assertRowMatches(ts_1_5_rows.get(1), queryResult.iterator().next());
     }
 
     @Test
@@ -179,7 +182,7 @@ public class ITestTimeSeries extends ITestTsBase
         assertEquals(8, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(1, queryResult.getRowsCount());
 
-        assertRowMatches(rows.get(1), queryResult.iterator().next());
+        assertRowMatches(ts_1_5_rows.get(1), queryResult.iterator().next());
     }
 
     @Test
@@ -200,8 +203,8 @@ public class ITestTimeSeries extends ITestTsBase
         assertEquals(2, queryResult.getRowsCount());
 
         final Iterator<? extends Row> itor = queryResult.iterator();
-        assertRowMatches(rows.get(1), itor.next());
-        assertRowMatches(rows.get(2), itor.next());
+        assertRowMatches(ts_1_5_rows.get(1), itor.next());
+        assertRowMatches(ts_1_5_rows.get(2), itor.next());
     }
 
     @Test
@@ -256,7 +259,7 @@ public class ITestTimeSeries extends ITestTsBase
     @Test
     public void test_l_TestFetchingSingleRowsWorks() throws ExecutionException, InterruptedException
     {
-        Row expectedRow = rows.get(7);
+        Row expectedRow = ts_1_5_rows.get(7);
         List<Cell> keyCells = expectedRow.getCellsCopy().stream().limit(3).collect(Collectors.toList());
 
         RiakClient client = new RiakClient(cluster);
@@ -403,7 +406,7 @@ public class ITestTimeSeries extends ITestTsBase
 
     private static List<FullColumnDescription> GetCreatedTableFullDescriptions()
     {
-        return GeoCheckinWideTableDefinition.getFullColumnDescriptions().stream().collect(Collectors.toList());
+        return GeoCheckin_1_5_TableDefinition.getFullColumnDescriptions().stream().collect(Collectors.toList());
     }
 
     private static <T> List<T> toList(Iterator<T> itor)
