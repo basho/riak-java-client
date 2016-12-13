@@ -325,26 +325,44 @@ public class TermToBinaryCodec
         if (cell instanceof OtpErlangBinary)
         {
             final OtpErlangBinary v = (OtpErlangBinary) cell;
-            if (columnDescriptions.get(j).getType() == RiakTsPB.TsColumnType.VARCHAR)
+            final RiakTsPB.TsColumnType type = columnDescriptions.get(j).getType();
+            switch (type)
             {
-                final String s = new String(v.binaryValue(), StandardCharsets.UTF_8);
-                return new Cell(s);
-            }
-            else if (columnDescriptions.get(j).getType() == RiakTsPB.TsColumnType.BLOB)
-            {
-                return new Cell(v.binaryValue());
+                case VARCHAR:
+                    final String s = new String(v.binaryValue(), StandardCharsets.UTF_8);
+                    return new Cell(s);
+
+                case BLOB:
+                    return new Cell(v.binaryValue());
+
+                default:
+                    throw new IllegalStateException(
+                            String.format(
+                                    "Type '%s' from the provided ColumnDescription contradicts to the actual OtpErlangBinary value",
+                                    type.name()
+                            )
+                    );
             }
         }
         else if (cell instanceof OtpErlangLong)
         {
             final OtpErlangLong v = (OtpErlangLong) cell;
-            if (columnDescriptions.get(j).getType() == RiakTsPB.TsColumnType.TIMESTAMP)
+            final RiakTsPB.TsColumnType type = columnDescriptions.get(j).getType();
+            switch (type)
             {
-                return Cell.newTimestamp(v.longValue());
-            }
-            else if (columnDescriptions.get(j).getType() == RiakTsPB.TsColumnType.SINT64)
-            {
-                return new Cell(v.longValue());
+                case TIMESTAMP:
+                    return Cell.newTimestamp(v.longValue());
+
+                case SINT64:
+                    return new Cell(v.longValue());
+
+                default:
+                    throw new IllegalStateException(
+                            String.format(
+                                    "Type '%s' from the provided ColumnDescription contradicts to the actual OtpErlangLong value",
+                                    type.name()
+                            )
+                    );
             }
         }
         else if (cell instanceof OtpErlangDouble)
