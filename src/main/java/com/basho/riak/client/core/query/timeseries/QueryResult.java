@@ -81,7 +81,7 @@ public class QueryResult implements Iterable<Row>
         }
         else
         {
-            return ConvertibleIteratorUtils.iterateAsRow(this.pbRows.iterator());
+            return ConvertibleIteratorUtils.iterateAsRow(this.pbRows.iterator(), this.pbColumnDescriptions);
         }
     }
 

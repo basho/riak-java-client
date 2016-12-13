@@ -5,18 +5,21 @@ import com.basho.riak.client.core.util.CharsetUtils;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
 
+import javax.xml.bind.DatatypeConverter;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
 /**
  * Holds a piece of data for a Time Series @{link Row}.
- * A cell can hold 5 different types of raw data:
+ * A cell can hold 6 different types of raw data:
  * <ol>
  * <li><b>Varchar</b>s, which can hold byte arrays. Commonly used to store encoded strings.</li>
  * <li><b>SInt64</b>s, which can hold any signed 64-bit integers.</li>
  * <li><b>Double</b>s, which can hold any 64-bit floating point numbers.</li>
  * <li><b>Timestamp</b>s, which can hold any unix/epoch timestamp. Millisecond resolution is required.</li>
  * <li><b>Boolean</b>s, which can hold a true/false value. </li>
+ * <li><b>Blob</b>s, which can hold any binary data.</li>
  * </ol>
  * Immutable once created.
  *
@@ -32,6 +35,7 @@ public class Cell
     private static final int DOUBLE_MASK = 0x00000004;
     private static final int TIMESTAMP_MASK = 0x00000008;
     private static final int BOOLEAN_MASK = 0x00000010;
+    private static final int BLOB_MASK = 0x00000011;
     private int typeBitfield = 0x0;
 
     private String varcharValue = "";
@@ -39,6 +43,7 @@ public class Cell
     private double doubleValue = 0.0;
     private long timestampValue = 0L;
     private boolean booleanValue = false;
+    private byte[] blobValue = {};
 
     /**
      * Creates a new "Varchar" Cell, based on the UTF8 binary encoding of the provided String.
@@ -130,7 +135,22 @@ public class Cell
         initTimestamp(timestampValue.getTime());
     }
 
-    Cell(RiakTsPB.TsCell pbCell)
+    /**
+     * Creates a new "Blob" Cell from the provided byte array.
+     *
+     * @param blobValue The blob to store.
+     */
+    public Cell(byte[] blobValue)
+    {
+        if (blobValue == null)
+        {
+            throw new IllegalArgumentException("Value for BLOB value cannot be NULL.");
+        }
+
+        initBlob(blobValue);
+    }
+
+    Cell(RiakTsPB.TsCell pbCell, RiakTsPB.TsColumnDescription columnDescription)
     {
         if (pbCell.hasBooleanValue())
         {
@@ -148,9 +168,29 @@ public class Cell
         {
             initTimestamp(pbCell.getTimestampValue());
         }
-        else if (pbCell.hasVarcharValue())
+        else if (pbCell.hasVarcharValue() )
         {
-            initVarchar(pbCell.getVarcharValue().toStringUtf8());
+            //  If there is no column description provided, VARCHAR will be used by default
+            final RiakTsPB.TsColumnType type = columnDescription == null ? RiakTsPB.TsColumnType.VARCHAR : columnDescription.getType();
+
+            switch (type)
+            {
+                case VARCHAR:
+                    initVarchar(pbCell.getVarcharValue().toStringUtf8());
+                    break;
+
+                case BLOB:
+                    initBlob(pbCell.getVarcharValue().toByteArray());
+                    break;
+
+                default:
+                    throw new IllegalStateException(
+                            String.format(
+                                    "Type '%s' from the provided ColumnDefinition contradicts to the actual VARCHAR value",
+                                    type.name()
+                                )
+                        );
+            }
         }
         else
         {
@@ -205,6 +245,12 @@ public class Cell
         this.varcharValue = stringValue;
     }
 
+    private void initBlob(byte[] blobValue)
+    {
+        setBitfieldType(BLOB_MASK);
+        this.blobValue = blobValue;
+    }
+
     private void setBitfieldType(int mask)
     {
         typeBitfield |= mask;
@@ -212,7 +258,7 @@ public class Cell
 
     private boolean bitfieldHasType(int mask)
     {
-        return (typeBitfield & mask) == mask;
+        return typeBitfield == mask;
     }
 
     public boolean hasVarcharValue()
@@ -238,6 +284,11 @@ public class Cell
     public boolean hasBoolean()
     {
         return bitfieldHasType(BOOLEAN_MASK);
+    }
+
+    public boolean hasBlob()
+    {
+        return bitfieldHasType(BLOB_MASK);
     }
 
     public String getVarcharAsUTF8String()
@@ -270,6 +321,11 @@ public class Cell
         return booleanValue;
     }
 
+    public byte[] getBlob()
+    {
+        return blobValue;
+    }
+
     RiakTsPB.TsCell getPbCell()
     {
         final RiakTsPB.TsCell.Builder builder = RiakTsPB.TsCell.newBuilder();
@@ -293,6 +349,10 @@ public class Cell
         else if (hasDouble())
         {
             builder.setDoubleValue(doubleValue);
+        }
+        else if(hasBlob())
+        {
+            builder.setVarcharValue(ByteString.copyFrom(blobValue));
         }
 
         return builder.build();
@@ -332,6 +392,13 @@ public class Cell
         {
             sb.append(this.getBoolean());
         }
+        else if (this.hasBlob())
+        {
+            final int length = blobValue.length > 8 ? 8 : blobValue.length;
+            final byte[] blobBlurb = Arrays.copyOfRange(blobValue, 0, length);
+            sb.append("0x");
+            sb.append(DatatypeConverter.printHexBinary(blobBlurb));
+        }
 
         sb.append(" }");
         return sb.toString();
@@ -351,6 +418,10 @@ public class Cell
 
         Cell cell = (Cell) o;
 
+        if (typeBitfield != cell.typeBitfield)
+        {
+            return false;
+        }
         if (sint64Value != cell.sint64Value)
         {
             return false;
@@ -367,11 +438,12 @@ public class Cell
         {
             return false;
         }
-        if (typeBitfield != cell.typeBitfield)
+        if (varcharValue != null ? !varcharValue.equals(cell.varcharValue) : cell.varcharValue != null)
         {
             return false;
         }
-        return varcharValue.equals(cell.varcharValue);
+        return Arrays.equals(blobValue, cell.blobValue);
+
     }
 
     @Override
@@ -379,13 +451,14 @@ public class Cell
     {
         int result;
         long temp;
-        result = varcharValue.hashCode();
+        result = typeBitfield;
+        result = 31 * result + (varcharValue != null ? varcharValue.hashCode() : 0);
         result = 31 * result + (int) (sint64Value ^ (sint64Value >>> 32));
         temp = Double.doubleToLongBits(doubleValue);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + (int) (timestampValue ^ (timestampValue >>> 32));
         result = 31 * result + (booleanValue ? 1 : 0);
-        result = 31 * result + typeBitfield;
+        result = 31 * result + Arrays.hashCode(blobValue);
         return result;
     }
 }

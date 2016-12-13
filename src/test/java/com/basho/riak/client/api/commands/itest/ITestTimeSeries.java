@@ -11,14 +11,13 @@ import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.operations.itest.ts.ITestTsBase;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.timeseries.*;
-import org.junit.FixMethodOrder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -41,6 +40,7 @@ import static org.junit.Assume.assumeTrue;
  *      temperature double,
  *      uv_index    sint64,
  *      observed    boolean not null,
+ *      sensor_data blob,
  *      PRIMARY KEY(
  *          (geohash, user, quantum(time, 15, 'm')),
  *           geohash, user, time)
@@ -55,9 +55,15 @@ public class ITestTimeSeries extends ITestTsBase
 
     private RiakFuture<Void, String> createTableAsync(final RiakClient client, String tableName) throws InterruptedException
     {
-        final TableDefinition tableDef = new TableDefinition(tableName, GeoCheckinWideTableDefinition.getFullColumnDescriptions());
+        final TableDefinition tableDef = new TableDefinition(tableName, GeoCheckin_1_5_TableDefinition.getFullColumnDescriptions());
 
         return createTableAsync(client, tableDef);
+    }
+
+    @BeforeClass
+    public static void SetupCheck()
+    {
+        assumeTrue("Timeseries 1.5 features not supported in this test environment, skipping tests.", testTs_1_5_Features());
     }
 
     @Rule
@@ -102,7 +108,7 @@ public class ITestTimeSeries extends ITestTsBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        Store store = new Store.Builder(tableName).withRows(rows).build();
+        Store store = new Store.Builder(tableName).withRows(ts_1_5_rows).build();
 
         RiakFuture<Void, String> execFuture = client.executeAsync(store);
 
@@ -152,10 +158,10 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
-        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
+        assertEquals(8, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(1, queryResult.getRowsCount());
 
-        assertRowMatches(rows.get(1), queryResult.iterator().next());
+        assertRowMatches(ts_1_5_rows.get(1), queryResult.iterator().next());
     }
 
     @Test
@@ -173,10 +179,10 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
-        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
+        assertEquals(8, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(1, queryResult.getRowsCount());
 
-        assertRowMatches(rows.get(1), queryResult.iterator().next());
+        assertRowMatches(ts_1_5_rows.get(1), queryResult.iterator().next());
     }
 
     @Test
@@ -193,12 +199,12 @@ public class ITestTimeSeries extends ITestTsBase
 
         final QueryResult queryResult = executeQuery(new Query.Builder(queryText));
 
-        assertEquals(7, queryResult.getColumnDescriptionsCopy().size());
+        assertEquals(8, queryResult.getColumnDescriptionsCopy().size());
         assertEquals(2, queryResult.getRowsCount());
 
         final Iterator<? extends Row> itor = queryResult.iterator();
-        assertRowMatches(rows.get(1), itor.next());
-        assertRowMatches(rows.get(2), itor.next());
+        assertRowMatches(ts_1_5_rows.get(1), itor.next());
+        assertRowMatches(ts_1_5_rows.get(2), itor.next());
     }
 
     @Test
@@ -253,18 +259,19 @@ public class ITestTimeSeries extends ITestTsBase
     @Test
     public void test_l_TestFetchingSingleRowsWorks() throws ExecutionException, InterruptedException
     {
+        Row expectedRow = ts_1_5_rows.get(7);
+        List<Cell> keyCells = expectedRow.getCellsCopy().stream().limit(3).collect(Collectors.toList());
+
         RiakClient client = new RiakClient(cluster);
 
-        final List<Cell> keyCells = Arrays.asList(new Cell("hash2"), new Cell("user4"),
-                                                  Cell.newTimestamp(fifteenMinsAgo));
         Fetch fetch = new Fetch.Builder(tableName, keyCells).build();
 
         QueryResult queryResult = client.execute(fetch);
 
         assertEquals(1, queryResult.getRowsCount());
-        Row row = queryResult.getRowsCopy().get(0);
-        assertEquals("rain", row.getCellsCopy().get(3).getVarcharAsUTF8String());
-        assertEquals(79.0, row.getCellsCopy().get(4).getDouble(), Double.MIN_VALUE);
+
+        Row actualRow = queryResult.getRowsCopy().get(0);
+        assertRowMatches(expectedRow, actualRow);
     }
 
     @Test
@@ -335,9 +342,9 @@ public class ITestTimeSeries extends ITestTsBase
         assertFutureSuccess(resultFuture);
 
         final QueryResult tableDescription = resultFuture.get();
-        assertEquals(7, tableDescription.getRowsCount());
+        assertEquals(8, tableDescription.getRowsCount());
         int numColumnDesc = tableDescription.getColumnDescriptionsCopy().size();
-        assertTrue(numColumnDesc == 5 || numColumnDesc == 7);
+        assertTrue(numColumnDesc == 5 || numColumnDesc == 7 || numColumnDesc == 8);
     }
 
     @Test
@@ -354,7 +361,7 @@ public class ITestTimeSeries extends ITestTsBase
 
         final TableDefinition tableDefinition = describeFuture.get();
         final Collection<FullColumnDescription> fullColumnDescriptions = tableDefinition.getFullColumnDescriptions();
-        assertEquals(7, fullColumnDescriptions.size());
+        assertEquals(8, fullColumnDescriptions.size());
 
         TableDefinitionTest.assertFullColumnDefinitionsMatch(GetCreatedTableFullDescriptions(),
                                                              new ArrayList<>(fullColumnDescriptions));
@@ -374,7 +381,8 @@ public class ITestTimeSeries extends ITestTsBase
 
         final String message = describeFuture.cause().getMessage();
         assertTrue(message.toLowerCase().contains(BAD_TABLE_NAME.toLowerCase()));
-        assertTrue(message.toLowerCase().contains("not an active table"));
+        assertTrue(message.toLowerCase().contains("not"));
+        assertTrue(message.toLowerCase().contains("active"));
     }
 
     @Test
@@ -398,13 +406,7 @@ public class ITestTimeSeries extends ITestTsBase
 
     private static List<FullColumnDescription> GetCreatedTableFullDescriptions()
     {
-        return Arrays.asList(new FullColumnDescription("geohash", ColumnDescription.ColumnType.VARCHAR, false, 1),
-                             new FullColumnDescription("user", ColumnDescription.ColumnType.VARCHAR, false, 2),
-                             new FullColumnDescription("time", ColumnDescription.ColumnType.TIMESTAMP, false, 3),
-                             new FullColumnDescription("weather", ColumnDescription.ColumnType.VARCHAR, false),
-                             new FullColumnDescription("temperature", ColumnDescription.ColumnType.DOUBLE, true),
-                             new FullColumnDescription("uv_index", ColumnDescription.ColumnType.SINT64, true),
-                             new FullColumnDescription("observed", ColumnDescription.ColumnType.BOOLEAN, false));
+        return GeoCheckin_1_5_TableDefinition.getFullColumnDescriptions().stream().collect(Collectors.toList());
     }
 
     private static <T> List<T> toList(Iterator<T> itor)
@@ -449,9 +451,21 @@ public class ITestTimeSeries extends ITestTsBase
         }
         else
         {
-            assertEquals(Double.toString(expectedCells.get(5).getLong()), Double.toString(actualCells.get(5).getLong()));
+            assertEquals(expectedCell5.getLong(), actualCell5.getLong());
         }
 
         assertEquals(expectedCells.get(6).getBoolean(),  actualCells.get(6).getBoolean());
+
+        Cell expectedCell7 = expectedCells.get(7);
+        Cell actualCell7 = actualCells.get(7);
+
+        if (expectedCell7 == null)
+        {
+            assertNull(actualCell7);
+        }
+        else
+        {
+            assertEquals(expectedCell7.getVarcharValue(), actualCell7.getVarcharValue());
+        }
     }
 }

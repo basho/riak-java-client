@@ -11,6 +11,7 @@ public final class RiakDtPB {
   public interface MapFieldOrBuilder extends
       // @@protoc_insertion_point(interface_extends:MapField)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required bytes name = 1;</code>
      */
@@ -194,6 +195,7 @@ public final class RiakDtPB {
        * <code>MAP = 5;</code>
        */
       public static final int MAP_VALUE = 5;
+
 
       public final int getNumber() { return value; }
 
@@ -525,9 +527,11 @@ public final class RiakDtPB {
 
       public final boolean isInitialized() {
         if (!hasName()) {
+          
           return false;
         }
         if (!hasType()) {
+          
           return false;
         }
         return true;
@@ -636,6 +640,7 @@ public final class RiakDtPB {
   public interface MapEntryOrBuilder extends
       // @@protoc_insertion_point(interface_extends:MapEntry)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required .MapField field = 1;</code>
      */
@@ -692,7 +697,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 6;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry>
+    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry> 
         getMapValueList();
     /**
      * <code>repeated .MapEntry map_value = 6;</code>
@@ -705,7 +710,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 6;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
         getMapValueOrBuilderList();
     /**
      * <code>repeated .MapEntry map_value = 6;</code>
@@ -959,7 +964,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 6;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
         getMapValueOrBuilderList() {
       return mapValue_;
     }
@@ -1336,7 +1341,7 @@ public final class RiakDtPB {
               mapValueBuilder_ = null;
               mapValue_ = other.mapValue_;
               bitField0_ = (bitField0_ & ~0x00000020);
-              mapValueBuilder_ =
+              mapValueBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getMapValueFieldBuilder() : null;
             } else {
@@ -1350,13 +1355,16 @@ public final class RiakDtPB {
 
       public final boolean isInitialized() {
         if (!hasField()) {
+          
           return false;
         }
         if (!getField().isInitialized()) {
+          
           return false;
         }
         for (int i = 0; i < getMapValueCount(); i++) {
           if (!getMapValue(i).isInitialized()) {
+            
             return false;
           }
         }
@@ -1485,7 +1493,7 @@ public final class RiakDtPB {
        * <code>required .MapField field = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapField, com.basho.riak.protobuf.RiakDtPB.MapField.Builder, com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.MapField, com.basho.riak.protobuf.RiakDtPB.MapField.Builder, com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder> 
           getFieldFieldBuilder() {
         if (fieldBuilder_ == null) {
           fieldBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -1864,7 +1872,7 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapEntry map_value = 6;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
            getMapValueOrBuilderList() {
         if (mapValueBuilder_ != null) {
           return mapValueBuilder_.getMessageOrBuilderList();
@@ -1890,12 +1898,12 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapEntry map_value = 6;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder> 
            getMapValueBuilderList() {
         return getMapValueFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapEntry, com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder, com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.MapEntry, com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder, com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
           getMapValueFieldBuilder() {
         if (mapValueBuilder_ == null) {
           mapValueBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -1923,6 +1931,7 @@ public final class RiakDtPB {
   public interface DtFetchReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DtFetchReq)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required bytes bucket = 1;</code>
      *
@@ -2820,12 +2829,15 @@ public final class RiakDtPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
+          
           return false;
         }
         if (!hasKey()) {
+          
           return false;
         }
         if (!hasType()) {
+          
           return false;
         }
         return true;
@@ -3309,6 +3321,7 @@ public final class RiakDtPB {
   public interface DtValueOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DtValue)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>optional sint64 counter_value = 1;</code>
      */
@@ -3334,7 +3347,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 3;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry>
+    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry> 
         getMapValueList();
     /**
      * <code>repeated .MapEntry map_value = 3;</code>
@@ -3347,7 +3360,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 3;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
         getMapValueOrBuilderList();
     /**
      * <code>repeated .MapEntry map_value = 3;</code>
@@ -3373,6 +3386,19 @@ public final class RiakDtPB {
      * </pre>
      */
     long getHllValue();
+
+    /**
+     * <code>repeated bytes gset_value = 5;</code>
+     */
+    java.util.List<com.google.protobuf.ByteString> getGsetValueList();
+    /**
+     * <code>repeated bytes gset_value = 5;</code>
+     */
+    int getGsetValueCount();
+    /**
+     * <code>repeated bytes gset_value = 5;</code>
+     */
+    com.google.protobuf.ByteString getGsetValue(int index);
   }
   /**
    * Protobuf type {@code DtValue}
@@ -3457,6 +3483,14 @@ public final class RiakDtPB {
               hllValue_ = input.readUInt64();
               break;
             }
+            case 42: {
+              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+                gsetValue_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                mutable_bitField0_ |= 0x00000010;
+              }
+              gsetValue_.add(input.readBytes());
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -3470,6 +3504,9 @@ public final class RiakDtPB {
         }
         if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
           mapValue_ = java.util.Collections.unmodifiableList(mapValue_);
+        }
+        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
+          gsetValue_ = java.util.Collections.unmodifiableList(gsetValue_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -3551,7 +3588,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 3;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
         getMapValueOrBuilderList() {
       return mapValue_;
     }
@@ -3600,11 +3637,34 @@ public final class RiakDtPB {
       return hllValue_;
     }
 
+    public static final int GSET_VALUE_FIELD_NUMBER = 5;
+    private java.util.List<com.google.protobuf.ByteString> gsetValue_;
+    /**
+     * <code>repeated bytes gset_value = 5;</code>
+     */
+    public java.util.List<com.google.protobuf.ByteString>
+        getGsetValueList() {
+      return gsetValue_;
+    }
+    /**
+     * <code>repeated bytes gset_value = 5;</code>
+     */
+    public int getGsetValueCount() {
+      return gsetValue_.size();
+    }
+    /**
+     * <code>repeated bytes gset_value = 5;</code>
+     */
+    public com.google.protobuf.ByteString getGsetValue(int index) {
+      return gsetValue_.get(index);
+    }
+
     private void initFields() {
       counterValue_ = 0L;
       setValue_ = java.util.Collections.emptyList();
       mapValue_ = java.util.Collections.emptyList();
       hllValue_ = 0L;
+      gsetValue_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -3637,6 +3697,9 @@ public final class RiakDtPB {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeUInt64(4, hllValue_);
       }
+      for (int i = 0; i < gsetValue_.size(); i++) {
+        output.writeBytes(5, gsetValue_.get(i));
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -3666,6 +3729,15 @@ public final class RiakDtPB {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(4, hllValue_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < gsetValue_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(gsetValue_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getGsetValueList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3802,6 +3874,8 @@ public final class RiakDtPB {
         }
         hllValue_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000008);
+        gsetValue_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -3852,6 +3926,11 @@ public final class RiakDtPB {
           to_bitField0_ |= 0x00000002;
         }
         result.hllValue_ = hllValue_;
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          gsetValue_ = java.util.Collections.unmodifiableList(gsetValue_);
+          bitField0_ = (bitField0_ & ~0x00000010);
+        }
+        result.gsetValue_ = gsetValue_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3899,7 +3978,7 @@ public final class RiakDtPB {
               mapValueBuilder_ = null;
               mapValue_ = other.mapValue_;
               bitField0_ = (bitField0_ & ~0x00000004);
-              mapValueBuilder_ =
+              mapValueBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getMapValueFieldBuilder() : null;
             } else {
@@ -3910,6 +3989,16 @@ public final class RiakDtPB {
         if (other.hasHllValue()) {
           setHllValue(other.getHllValue());
         }
+        if (!other.gsetValue_.isEmpty()) {
+          if (gsetValue_.isEmpty()) {
+            gsetValue_ = other.gsetValue_;
+            bitField0_ = (bitField0_ & ~0x00000010);
+          } else {
+            ensureGsetValueIsMutable();
+            gsetValue_.addAll(other.gsetValue_);
+          }
+          onChanged();
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -3917,6 +4006,7 @@ public final class RiakDtPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getMapValueCount(); i++) {
           if (!getMapValue(i).isInitialized()) {
+            
             return false;
           }
         }
@@ -4241,7 +4331,7 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapEntry map_value = 3;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
            getMapValueOrBuilderList() {
         if (mapValueBuilder_ != null) {
           return mapValueBuilder_.getMessageOrBuilderList();
@@ -4267,12 +4357,12 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapEntry map_value = 3;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder> 
            getMapValueBuilderList() {
         return getMapValueFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapEntry, com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder, com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.MapEntry, com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder, com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
           getMapValueFieldBuilder() {
         if (mapValueBuilder_ == null) {
           mapValueBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -4338,6 +4428,78 @@ public final class RiakDtPB {
         return this;
       }
 
+      private java.util.List<com.google.protobuf.ByteString> gsetValue_ = java.util.Collections.emptyList();
+      private void ensureGsetValueIsMutable() {
+        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
+          gsetValue_ = new java.util.ArrayList<com.google.protobuf.ByteString>(gsetValue_);
+          bitField0_ |= 0x00000010;
+         }
+      }
+      /**
+       * <code>repeated bytes gset_value = 5;</code>
+       */
+      public java.util.List<com.google.protobuf.ByteString>
+          getGsetValueList() {
+        return java.util.Collections.unmodifiableList(gsetValue_);
+      }
+      /**
+       * <code>repeated bytes gset_value = 5;</code>
+       */
+      public int getGsetValueCount() {
+        return gsetValue_.size();
+      }
+      /**
+       * <code>repeated bytes gset_value = 5;</code>
+       */
+      public com.google.protobuf.ByteString getGsetValue(int index) {
+        return gsetValue_.get(index);
+      }
+      /**
+       * <code>repeated bytes gset_value = 5;</code>
+       */
+      public Builder setGsetValue(
+          int index, com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureGsetValueIsMutable();
+        gsetValue_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes gset_value = 5;</code>
+       */
+      public Builder addGsetValue(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureGsetValueIsMutable();
+        gsetValue_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes gset_value = 5;</code>
+       */
+      public Builder addAllGsetValue(
+          java.lang.Iterable<? extends com.google.protobuf.ByteString> values) {
+        ensureGsetValueIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, gsetValue_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes gset_value = 5;</code>
+       */
+      public Builder clearGsetValue() {
+        gsetValue_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000010);
+        onChanged();
+        return this;
+      }
+
       // @@protoc_insertion_point(builder_scope:DtValue)
     }
 
@@ -4352,6 +4514,7 @@ public final class RiakDtPB {
   public interface DtFetchRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DtFetchResp)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>optional bytes context = 1;</code>
      */
@@ -4534,6 +4697,10 @@ public final class RiakDtPB {
        * <code>HLL = 4;</code>
        */
       HLL(3, 4),
+      /**
+       * <code>GSET = 5;</code>
+       */
+      GSET(4, 5),
       ;
 
       /**
@@ -4552,6 +4719,11 @@ public final class RiakDtPB {
        * <code>HLL = 4;</code>
        */
       public static final int HLL_VALUE = 4;
+      /**
+       * <code>GSET = 5;</code>
+       */
+      public static final int GSET_VALUE = 5;
+
 
       public final int getNumber() { return value; }
 
@@ -4561,6 +4733,7 @@ public final class RiakDtPB {
           case 2: return SET;
           case 3: return MAP;
           case 4: return HLL;
+          case 5: return GSET;
           default: return null;
         }
       }
@@ -4935,10 +5108,12 @@ public final class RiakDtPB {
 
       public final boolean isInitialized() {
         if (!hasType()) {
+          
           return false;
         }
         if (hasValue()) {
           if (!getValue().isInitialized()) {
+            
             return false;
           }
         }
@@ -5137,7 +5312,7 @@ public final class RiakDtPB {
        * <code>optional .DtValue value = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.DtValue, com.basho.riak.protobuf.RiakDtPB.DtValue.Builder, com.basho.riak.protobuf.RiakDtPB.DtValueOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.DtValue, com.basho.riak.protobuf.RiakDtPB.DtValue.Builder, com.basho.riak.protobuf.RiakDtPB.DtValueOrBuilder> 
           getValueFieldBuilder() {
         if (valueBuilder_ == null) {
           valueBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -5164,6 +5339,7 @@ public final class RiakDtPB {
   public interface CounterOpOrBuilder extends
       // @@protoc_insertion_point(interface_extends:CounterOp)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>optional sint64 increment = 1;</code>
      */
@@ -5572,6 +5748,7 @@ public final class RiakDtPB {
   public interface SetOpOrBuilder extends
       // @@protoc_insertion_point(interface_extends:SetOp)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>repeated bytes adds = 1;</code>
      */
@@ -6192,6 +6369,482 @@ public final class RiakDtPB {
     // @@protoc_insertion_point(class_scope:SetOp)
   }
 
+  public interface GSetOpOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:GSetOp)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated bytes adds = 1;</code>
+     */
+    java.util.List<com.google.protobuf.ByteString> getAddsList();
+    /**
+     * <code>repeated bytes adds = 1;</code>
+     */
+    int getAddsCount();
+    /**
+     * <code>repeated bytes adds = 1;</code>
+     */
+    com.google.protobuf.ByteString getAdds(int index);
+  }
+  /**
+   * Protobuf type {@code GSetOp}
+   *
+   * <pre>
+   * An operation to update a GSet, on its own.
+   * GSet members are opaque binary values, you can only add
+   * them to a Set.
+   * </pre>
+   */
+  public static final class GSetOp extends
+      com.google.protobuf.GeneratedMessage implements
+      // @@protoc_insertion_point(message_implements:GSetOp)
+      GSetOpOrBuilder {
+    // Use GSetOp.newBuilder() to construct.
+    private GSetOp(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private GSetOp(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final GSetOp defaultInstance;
+    public static GSetOp getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public GSetOp getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private GSetOp(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                adds_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              adds_.add(input.readBytes());
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          adds_ = java.util.Collections.unmodifiableList(adds_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.basho.riak.protobuf.RiakDtPB.internal_static_GSetOp_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.basho.riak.protobuf.RiakDtPB.internal_static_GSetOp_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.basho.riak.protobuf.RiakDtPB.GSetOp.class, com.basho.riak.protobuf.RiakDtPB.GSetOp.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<GSetOp> PARSER =
+        new com.google.protobuf.AbstractParser<GSetOp>() {
+      public GSetOp parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new GSetOp(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<GSetOp> getParserForType() {
+      return PARSER;
+    }
+
+    public static final int ADDS_FIELD_NUMBER = 1;
+    private java.util.List<com.google.protobuf.ByteString> adds_;
+    /**
+     * <code>repeated bytes adds = 1;</code>
+     */
+    public java.util.List<com.google.protobuf.ByteString>
+        getAddsList() {
+      return adds_;
+    }
+    /**
+     * <code>repeated bytes adds = 1;</code>
+     */
+    public int getAddsCount() {
+      return adds_.size();
+    }
+    /**
+     * <code>repeated bytes adds = 1;</code>
+     */
+    public com.google.protobuf.ByteString getAdds(int index) {
+      return adds_.get(index);
+    }
+
+    private void initFields() {
+      adds_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < adds_.size(); i++) {
+        output.writeBytes(1, adds_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      {
+        int dataSize = 0;
+        for (int i = 0; i < adds_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(adds_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getAddsList().size();
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static com.basho.riak.protobuf.RiakDtPB.GSetOp parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.GSetOp parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.GSetOp parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.GSetOp parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.GSetOp parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.GSetOp parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.GSetOp parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.GSetOp parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.GSetOp parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.basho.riak.protobuf.RiakDtPB.GSetOp parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.basho.riak.protobuf.RiakDtPB.GSetOp prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code GSetOp}
+     *
+     * <pre>
+     * An operation to update a GSet, on its own.
+     * GSet members are opaque binary values, you can only add
+     * them to a Set.
+     * </pre>
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:GSetOp)
+        com.basho.riak.protobuf.RiakDtPB.GSetOpOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.basho.riak.protobuf.RiakDtPB.internal_static_GSetOp_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.basho.riak.protobuf.RiakDtPB.internal_static_GSetOp_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.basho.riak.protobuf.RiakDtPB.GSetOp.class, com.basho.riak.protobuf.RiakDtPB.GSetOp.Builder.class);
+      }
+
+      // Construct using com.basho.riak.protobuf.RiakDtPB.GSetOp.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        adds_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.basho.riak.protobuf.RiakDtPB.internal_static_GSetOp_descriptor;
+      }
+
+      public com.basho.riak.protobuf.RiakDtPB.GSetOp getDefaultInstanceForType() {
+        return com.basho.riak.protobuf.RiakDtPB.GSetOp.getDefaultInstance();
+      }
+
+      public com.basho.riak.protobuf.RiakDtPB.GSetOp build() {
+        com.basho.riak.protobuf.RiakDtPB.GSetOp result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public com.basho.riak.protobuf.RiakDtPB.GSetOp buildPartial() {
+        com.basho.riak.protobuf.RiakDtPB.GSetOp result = new com.basho.riak.protobuf.RiakDtPB.GSetOp(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          adds_ = java.util.Collections.unmodifiableList(adds_);
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.adds_ = adds_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.basho.riak.protobuf.RiakDtPB.GSetOp) {
+          return mergeFrom((com.basho.riak.protobuf.RiakDtPB.GSetOp)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.basho.riak.protobuf.RiakDtPB.GSetOp other) {
+        if (other == com.basho.riak.protobuf.RiakDtPB.GSetOp.getDefaultInstance()) return this;
+        if (!other.adds_.isEmpty()) {
+          if (adds_.isEmpty()) {
+            adds_ = other.adds_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureAddsIsMutable();
+            adds_.addAll(other.adds_);
+          }
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.basho.riak.protobuf.RiakDtPB.GSetOp parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.basho.riak.protobuf.RiakDtPB.GSetOp) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<com.google.protobuf.ByteString> adds_ = java.util.Collections.emptyList();
+      private void ensureAddsIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          adds_ = new java.util.ArrayList<com.google.protobuf.ByteString>(adds_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public java.util.List<com.google.protobuf.ByteString>
+          getAddsList() {
+        return java.util.Collections.unmodifiableList(adds_);
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public int getAddsCount() {
+        return adds_.size();
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public com.google.protobuf.ByteString getAdds(int index) {
+        return adds_.get(index);
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public Builder setAdds(
+          int index, com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureAddsIsMutable();
+        adds_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public Builder addAdds(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureAddsIsMutable();
+        adds_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public Builder addAllAdds(
+          java.lang.Iterable<? extends com.google.protobuf.ByteString> values) {
+        ensureAddsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, adds_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes adds = 1;</code>
+       */
+      public Builder clearAdds() {
+        adds_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:GSetOp)
+    }
+
+    static {
+      defaultInstance = new GSetOp(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:GSetOp)
+  }
+
   public interface HllOpOrBuilder extends
       // @@protoc_insertion_point(interface_extends:HllOp)
       com.google.protobuf.MessageOrBuilder {
@@ -6669,6 +7322,7 @@ public final class RiakDtPB {
   public interface MapUpdateOrBuilder extends
       // @@protoc_insertion_point(interface_extends:MapUpdate)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required .MapField field = 1;</code>
      */
@@ -6942,6 +7596,7 @@ public final class RiakDtPB {
        * <code>DISABLE = 2;</code>
        */
       public static final int DISABLE_VALUE = 2;
+
 
       public final int getNumber() { return value; }
 
@@ -7474,13 +8129,16 @@ public final class RiakDtPB {
 
       public final boolean isInitialized() {
         if (!hasField()) {
+          
           return false;
         }
         if (!getField().isInitialized()) {
+          
           return false;
         }
         if (hasMapOp()) {
           if (!getMapOp().isInitialized()) {
+            
             return false;
           }
         }
@@ -7609,7 +8267,7 @@ public final class RiakDtPB {
        * <code>required .MapField field = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapField, com.basho.riak.protobuf.RiakDtPB.MapField.Builder, com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.MapField, com.basho.riak.protobuf.RiakDtPB.MapField.Builder, com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder> 
           getFieldFieldBuilder() {
         if (fieldBuilder_ == null) {
           fieldBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -7725,7 +8383,7 @@ public final class RiakDtPB {
        * <code>optional .CounterOp counter_op = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.CounterOp, com.basho.riak.protobuf.RiakDtPB.CounterOp.Builder, com.basho.riak.protobuf.RiakDtPB.CounterOpOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.CounterOp, com.basho.riak.protobuf.RiakDtPB.CounterOp.Builder, com.basho.riak.protobuf.RiakDtPB.CounterOpOrBuilder> 
           getCounterOpFieldBuilder() {
         if (counterOpBuilder_ == null) {
           counterOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -7841,7 +8499,7 @@ public final class RiakDtPB {
        * <code>optional .SetOp set_op = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.SetOp, com.basho.riak.protobuf.RiakDtPB.SetOp.Builder, com.basho.riak.protobuf.RiakDtPB.SetOpOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.SetOp, com.basho.riak.protobuf.RiakDtPB.SetOp.Builder, com.basho.riak.protobuf.RiakDtPB.SetOpOrBuilder> 
           getSetOpFieldBuilder() {
         if (setOpBuilder_ == null) {
           setOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -8047,7 +8705,7 @@ public final class RiakDtPB {
        * <code>optional .MapOp map_op = 6;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapOp, com.basho.riak.protobuf.RiakDtPB.MapOp.Builder, com.basho.riak.protobuf.RiakDtPB.MapOpOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.MapOp, com.basho.riak.protobuf.RiakDtPB.MapOp.Builder, com.basho.riak.protobuf.RiakDtPB.MapOpOrBuilder> 
           getMapOpFieldBuilder() {
         if (mapOpBuilder_ == null) {
           mapOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -8074,6 +8732,7 @@ public final class RiakDtPB {
   public interface MapOpOrBuilder extends
       // @@protoc_insertion_point(interface_extends:MapOp)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>repeated .MapField removes = 1;</code>
      *
@@ -8083,7 +8742,7 @@ public final class RiakDtPB {
      * operations to the values stored in the Map.
      * </pre>
      */
-    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapField>
+    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapField> 
         getRemovesList();
     /**
      * <code>repeated .MapField removes = 1;</code>
@@ -8114,7 +8773,7 @@ public final class RiakDtPB {
      * operations to the values stored in the Map.
      * </pre>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder> 
         getRemovesOrBuilderList();
     /**
      * <code>repeated .MapField removes = 1;</code>
@@ -8131,7 +8790,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapUpdate updates = 2;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapUpdate>
+    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapUpdate> 
         getUpdatesList();
     /**
      * <code>repeated .MapUpdate updates = 2;</code>
@@ -8144,7 +8803,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapUpdate updates = 2;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder> 
         getUpdatesOrBuilderList();
     /**
      * <code>repeated .MapUpdate updates = 2;</code>
@@ -8293,7 +8952,7 @@ public final class RiakDtPB {
      * operations to the values stored in the Map.
      * </pre>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder> 
         getRemovesOrBuilderList() {
       return removes_;
     }
@@ -8346,7 +9005,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapUpdate updates = 2;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder> 
         getUpdatesOrBuilderList() {
       return updates_;
     }
@@ -8636,7 +9295,7 @@ public final class RiakDtPB {
               removesBuilder_ = null;
               removes_ = other.removes_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              removesBuilder_ =
+              removesBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getRemovesFieldBuilder() : null;
             } else {
@@ -8662,7 +9321,7 @@ public final class RiakDtPB {
               updatesBuilder_ = null;
               updates_ = other.updates_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              updatesBuilder_ =
+              updatesBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getUpdatesFieldBuilder() : null;
             } else {
@@ -8677,11 +9336,13 @@ public final class RiakDtPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getRemovesCount(); i++) {
           if (!getRemoves(i).isInitialized()) {
+            
             return false;
           }
         }
         for (int i = 0; i < getUpdatesCount(); i++) {
           if (!getUpdates(i).isInitialized()) {
+            
             return false;
           }
         }
@@ -8992,7 +9653,7 @@ public final class RiakDtPB {
        * operations to the values stored in the Map.
        * </pre>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder> 
            getRemovesOrBuilderList() {
         if (removesBuilder_ != null) {
           return removesBuilder_.getMessageOrBuilderList();
@@ -9036,12 +9697,12 @@ public final class RiakDtPB {
        * operations to the values stored in the Map.
        * </pre>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapField.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapField.Builder> 
            getRemovesBuilderList() {
         return getRemovesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapField, com.basho.riak.protobuf.RiakDtPB.MapField.Builder, com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.MapField, com.basho.riak.protobuf.RiakDtPB.MapField.Builder, com.basho.riak.protobuf.RiakDtPB.MapFieldOrBuilder> 
           getRemovesFieldBuilder() {
         if (removesBuilder_ == null) {
           removesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -9250,7 +9911,7 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapUpdate updates = 2;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder> 
            getUpdatesOrBuilderList() {
         if (updatesBuilder_ != null) {
           return updatesBuilder_.getMessageOrBuilderList();
@@ -9276,12 +9937,12 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapUpdate updates = 2;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapUpdate.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapUpdate.Builder> 
            getUpdatesBuilderList() {
         return getUpdatesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapUpdate, com.basho.riak.protobuf.RiakDtPB.MapUpdate.Builder, com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.MapUpdate, com.basho.riak.protobuf.RiakDtPB.MapUpdate.Builder, com.basho.riak.protobuf.RiakDtPB.MapUpdateOrBuilder> 
           getUpdatesFieldBuilder() {
         if (updatesBuilder_ == null) {
           updatesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -9309,6 +9970,7 @@ public final class RiakDtPB {
   public interface DtOpOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DtOp)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>optional .CounterOp counter_op = 1;</code>
      */
@@ -9375,6 +10037,19 @@ public final class RiakDtPB {
      * </pre>
      */
     com.basho.riak.protobuf.RiakDtPB.HllOpOrBuilder getHllOpOrBuilder();
+
+    /**
+     * <code>optional .GSetOp gset_op = 5;</code>
+     */
+    boolean hasGsetOp();
+    /**
+     * <code>optional .GSetOp gset_op = 5;</code>
+     */
+    com.basho.riak.protobuf.RiakDtPB.GSetOp getGsetOp();
+    /**
+     * <code>optional .GSetOp gset_op = 5;</code>
+     */
+    com.basho.riak.protobuf.RiakDtPB.GSetOpOrBuilder getGsetOpOrBuilder();
   }
   /**
    * Protobuf type {@code DtOp}
@@ -9483,6 +10158,19 @@ public final class RiakDtPB {
                 hllOp_ = subBuilder.buildPartial();
               }
               bitField0_ |= 0x00000008;
+              break;
+            }
+            case 42: {
+              com.basho.riak.protobuf.RiakDtPB.GSetOp.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000010) == 0x00000010)) {
+                subBuilder = gsetOp_.toBuilder();
+              }
+              gsetOp_ = input.readMessage(com.basho.riak.protobuf.RiakDtPB.GSetOp.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(gsetOp_);
+                gsetOp_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000010;
               break;
             }
           }
@@ -9624,11 +10312,33 @@ public final class RiakDtPB {
       return hllOp_;
     }
 
+    public static final int GSET_OP_FIELD_NUMBER = 5;
+    private com.basho.riak.protobuf.RiakDtPB.GSetOp gsetOp_;
+    /**
+     * <code>optional .GSetOp gset_op = 5;</code>
+     */
+    public boolean hasGsetOp() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional .GSetOp gset_op = 5;</code>
+     */
+    public com.basho.riak.protobuf.RiakDtPB.GSetOp getGsetOp() {
+      return gsetOp_;
+    }
+    /**
+     * <code>optional .GSetOp gset_op = 5;</code>
+     */
+    public com.basho.riak.protobuf.RiakDtPB.GSetOpOrBuilder getGsetOpOrBuilder() {
+      return gsetOp_;
+    }
+
     private void initFields() {
       counterOp_ = com.basho.riak.protobuf.RiakDtPB.CounterOp.getDefaultInstance();
       setOp_ = com.basho.riak.protobuf.RiakDtPB.SetOp.getDefaultInstance();
       mapOp_ = com.basho.riak.protobuf.RiakDtPB.MapOp.getDefaultInstance();
       hllOp_ = com.basho.riak.protobuf.RiakDtPB.HllOp.getDefaultInstance();
+      gsetOp_ = com.basho.riak.protobuf.RiakDtPB.GSetOp.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -9661,6 +10371,9 @@ public final class RiakDtPB {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeMessage(4, hllOp_);
       }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeMessage(5, gsetOp_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -9685,6 +10398,10 @@ public final class RiakDtPB {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, hllOp_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, gsetOp_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -9804,6 +10521,7 @@ public final class RiakDtPB {
           getSetOpFieldBuilder();
           getMapOpFieldBuilder();
           getHllOpFieldBuilder();
+          getGsetOpFieldBuilder();
         }
       }
       private static Builder create() {
@@ -9836,6 +10554,12 @@ public final class RiakDtPB {
           hllOpBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000008);
+        if (gsetOpBuilder_ == null) {
+          gsetOp_ = com.basho.riak.protobuf.RiakDtPB.GSetOp.getDefaultInstance();
+        } else {
+          gsetOpBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -9896,6 +10620,14 @@ public final class RiakDtPB {
         } else {
           result.hllOp_ = hllOpBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        if (gsetOpBuilder_ == null) {
+          result.gsetOp_ = gsetOp_;
+        } else {
+          result.gsetOp_ = gsetOpBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -9924,6 +10656,9 @@ public final class RiakDtPB {
         if (other.hasHllOp()) {
           mergeHllOp(other.getHllOp());
         }
+        if (other.hasGsetOp()) {
+          mergeGsetOp(other.getGsetOp());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -9931,7 +10666,7 @@ public final class RiakDtPB {
       public final boolean isInitialized() {
         if (hasMapOp()) {
           if (!getMapOp().isInitialized()) {
-
+            
             return false;
           }
         }
@@ -10060,7 +10795,7 @@ public final class RiakDtPB {
        * <code>optional .CounterOp counter_op = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.CounterOp, com.basho.riak.protobuf.RiakDtPB.CounterOp.Builder, com.basho.riak.protobuf.RiakDtPB.CounterOpOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.CounterOp, com.basho.riak.protobuf.RiakDtPB.CounterOp.Builder, com.basho.riak.protobuf.RiakDtPB.CounterOpOrBuilder> 
           getCounterOpFieldBuilder() {
         if (counterOpBuilder_ == null) {
           counterOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -10176,7 +10911,7 @@ public final class RiakDtPB {
        * <code>optional .SetOp set_op = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.SetOp, com.basho.riak.protobuf.RiakDtPB.SetOp.Builder, com.basho.riak.protobuf.RiakDtPB.SetOpOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.SetOp, com.basho.riak.protobuf.RiakDtPB.SetOp.Builder, com.basho.riak.protobuf.RiakDtPB.SetOpOrBuilder> 
           getSetOpFieldBuilder() {
         if (setOpBuilder_ == null) {
           setOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -10292,7 +11027,7 @@ public final class RiakDtPB {
        * <code>optional .MapOp map_op = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapOp, com.basho.riak.protobuf.RiakDtPB.MapOp.Builder, com.basho.riak.protobuf.RiakDtPB.MapOpOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.MapOp, com.basho.riak.protobuf.RiakDtPB.MapOp.Builder, com.basho.riak.protobuf.RiakDtPB.MapOpOrBuilder> 
           getMapOpFieldBuilder() {
         if (mapOpBuilder_ == null) {
           mapOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -10453,7 +11188,7 @@ public final class RiakDtPB {
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.HllOp, com.basho.riak.protobuf.RiakDtPB.HllOp.Builder, com.basho.riak.protobuf.RiakDtPB.HllOpOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.HllOp, com.basho.riak.protobuf.RiakDtPB.HllOp.Builder, com.basho.riak.protobuf.RiakDtPB.HllOpOrBuilder> 
           getHllOpFieldBuilder() {
         if (hllOpBuilder_ == null) {
           hllOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -10464,6 +11199,122 @@ public final class RiakDtPB {
           hllOp_ = null;
         }
         return hllOpBuilder_;
+      }
+
+      private com.basho.riak.protobuf.RiakDtPB.GSetOp gsetOp_ = com.basho.riak.protobuf.RiakDtPB.GSetOp.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          com.basho.riak.protobuf.RiakDtPB.GSetOp, com.basho.riak.protobuf.RiakDtPB.GSetOp.Builder, com.basho.riak.protobuf.RiakDtPB.GSetOpOrBuilder> gsetOpBuilder_;
+      /**
+       * <code>optional .GSetOp gset_op = 5;</code>
+       */
+      public boolean hasGsetOp() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional .GSetOp gset_op = 5;</code>
+       */
+      public com.basho.riak.protobuf.RiakDtPB.GSetOp getGsetOp() {
+        if (gsetOpBuilder_ == null) {
+          return gsetOp_;
+        } else {
+          return gsetOpBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .GSetOp gset_op = 5;</code>
+       */
+      public Builder setGsetOp(com.basho.riak.protobuf.RiakDtPB.GSetOp value) {
+        if (gsetOpBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          gsetOp_ = value;
+          onChanged();
+        } else {
+          gsetOpBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .GSetOp gset_op = 5;</code>
+       */
+      public Builder setGsetOp(
+          com.basho.riak.protobuf.RiakDtPB.GSetOp.Builder builderForValue) {
+        if (gsetOpBuilder_ == null) {
+          gsetOp_ = builderForValue.build();
+          onChanged();
+        } else {
+          gsetOpBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .GSetOp gset_op = 5;</code>
+       */
+      public Builder mergeGsetOp(com.basho.riak.protobuf.RiakDtPB.GSetOp value) {
+        if (gsetOpBuilder_ == null) {
+          if (((bitField0_ & 0x00000010) == 0x00000010) &&
+              gsetOp_ != com.basho.riak.protobuf.RiakDtPB.GSetOp.getDefaultInstance()) {
+            gsetOp_ =
+              com.basho.riak.protobuf.RiakDtPB.GSetOp.newBuilder(gsetOp_).mergeFrom(value).buildPartial();
+          } else {
+            gsetOp_ = value;
+          }
+          onChanged();
+        } else {
+          gsetOpBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000010;
+        return this;
+      }
+      /**
+       * <code>optional .GSetOp gset_op = 5;</code>
+       */
+      public Builder clearGsetOp() {
+        if (gsetOpBuilder_ == null) {
+          gsetOp_ = com.basho.riak.protobuf.RiakDtPB.GSetOp.getDefaultInstance();
+          onChanged();
+        } else {
+          gsetOpBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000010);
+        return this;
+      }
+      /**
+       * <code>optional .GSetOp gset_op = 5;</code>
+       */
+      public com.basho.riak.protobuf.RiakDtPB.GSetOp.Builder getGsetOpBuilder() {
+        bitField0_ |= 0x00000010;
+        onChanged();
+        return getGsetOpFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .GSetOp gset_op = 5;</code>
+       */
+      public com.basho.riak.protobuf.RiakDtPB.GSetOpOrBuilder getGsetOpOrBuilder() {
+        if (gsetOpBuilder_ != null) {
+          return gsetOpBuilder_.getMessageOrBuilder();
+        } else {
+          return gsetOp_;
+        }
+      }
+      /**
+       * <code>optional .GSetOp gset_op = 5;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          com.basho.riak.protobuf.RiakDtPB.GSetOp, com.basho.riak.protobuf.RiakDtPB.GSetOp.Builder, com.basho.riak.protobuf.RiakDtPB.GSetOpOrBuilder> 
+          getGsetOpFieldBuilder() {
+        if (gsetOpBuilder_ == null) {
+          gsetOpBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              com.basho.riak.protobuf.RiakDtPB.GSetOp, com.basho.riak.protobuf.RiakDtPB.GSetOp.Builder, com.basho.riak.protobuf.RiakDtPB.GSetOpOrBuilder>(
+                  getGsetOp(),
+                  getParentForChildren(),
+                  isClean());
+          gsetOp_ = null;
+        }
+        return gsetOpBuilder_;
       }
 
       // @@protoc_insertion_point(builder_scope:DtOp)
@@ -10480,6 +11331,7 @@ public final class RiakDtPB {
   public interface DtUpdateReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DtUpdateReq)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required bytes bucket = 1;</code>
      *
@@ -11570,15 +12422,19 @@ public final class RiakDtPB {
 
       public final boolean isInitialized() {
         if (!hasBucket()) {
+          
           return false;
         }
         if (!hasType()) {
+          
           return false;
         }
         if (!hasOp()) {
+          
           return false;
         }
         if (!getOp().isInitialized()) {
+          
           return false;
         }
         return true;
@@ -11946,7 +12802,7 @@ public final class RiakDtPB {
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.DtOp, com.basho.riak.protobuf.RiakDtPB.DtOp.Builder, com.basho.riak.protobuf.RiakDtPB.DtOpOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.DtOp, com.basho.riak.protobuf.RiakDtPB.DtOp.Builder, com.basho.riak.protobuf.RiakDtPB.DtOpOrBuilder> 
           getOpFieldBuilder() {
         if (opBuilder_ == null) {
           opBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -12293,6 +13149,7 @@ public final class RiakDtPB {
   public interface DtUpdateRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DtUpdateResp)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>optional bytes key = 1;</code>
      *
@@ -12352,7 +13209,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 5;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry>
+    java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry> 
         getMapValueList();
     /**
      * <code>repeated .MapEntry map_value = 5;</code>
@@ -12365,7 +13222,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 5;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
         getMapValueOrBuilderList();
     /**
      * <code>repeated .MapEntry map_value = 5;</code>
@@ -12381,6 +13238,19 @@ public final class RiakDtPB {
      * <code>optional uint64 hll_value = 6;</code>
      */
     long getHllValue();
+
+    /**
+     * <code>repeated bytes gset_value = 7;</code>
+     */
+    java.util.List<com.google.protobuf.ByteString> getGsetValueList();
+    /**
+     * <code>repeated bytes gset_value = 7;</code>
+     */
+    int getGsetValueCount();
+    /**
+     * <code>repeated bytes gset_value = 7;</code>
+     */
+    com.google.protobuf.ByteString getGsetValue(int index);
   }
   /**
    * Protobuf type {@code DtUpdateResp}
@@ -12476,6 +13346,14 @@ public final class RiakDtPB {
               hllValue_ = input.readUInt64();
               break;
             }
+            case 58: {
+              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+                gsetValue_ = new java.util.ArrayList<com.google.protobuf.ByteString>();
+                mutable_bitField0_ |= 0x00000040;
+              }
+              gsetValue_.add(input.readBytes());
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -12489,6 +13367,9 @@ public final class RiakDtPB {
         }
         if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
           mapValue_ = java.util.Collections.unmodifiableList(mapValue_);
+        }
+        if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+          gsetValue_ = java.util.Collections.unmodifiableList(gsetValue_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -12616,7 +13497,7 @@ public final class RiakDtPB {
     /**
      * <code>repeated .MapEntry map_value = 5;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
         getMapValueOrBuilderList() {
       return mapValue_;
     }
@@ -12655,6 +13536,28 @@ public final class RiakDtPB {
       return hllValue_;
     }
 
+    public static final int GSET_VALUE_FIELD_NUMBER = 7;
+    private java.util.List<com.google.protobuf.ByteString> gsetValue_;
+    /**
+     * <code>repeated bytes gset_value = 7;</code>
+     */
+    public java.util.List<com.google.protobuf.ByteString>
+        getGsetValueList() {
+      return gsetValue_;
+    }
+    /**
+     * <code>repeated bytes gset_value = 7;</code>
+     */
+    public int getGsetValueCount() {
+      return gsetValue_.size();
+    }
+    /**
+     * <code>repeated bytes gset_value = 7;</code>
+     */
+    public com.google.protobuf.ByteString getGsetValue(int index) {
+      return gsetValue_.get(index);
+    }
+
     private void initFields() {
       key_ = com.google.protobuf.ByteString.EMPTY;
       context_ = com.google.protobuf.ByteString.EMPTY;
@@ -12662,6 +13565,7 @@ public final class RiakDtPB {
       setValue_ = java.util.Collections.emptyList();
       mapValue_ = java.util.Collections.emptyList();
       hllValue_ = 0L;
+      gsetValue_ = java.util.Collections.emptyList();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -12700,6 +13604,9 @@ public final class RiakDtPB {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeUInt64(6, hllValue_);
       }
+      for (int i = 0; i < gsetValue_.size(); i++) {
+        output.writeBytes(7, gsetValue_.get(i));
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -12737,6 +13644,15 @@ public final class RiakDtPB {
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(6, hllValue_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < gsetValue_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeBytesSizeNoTag(gsetValue_.get(i));
+        }
+        size += dataSize;
+        size += 1 * getGsetValueList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -12878,6 +13794,8 @@ public final class RiakDtPB {
         }
         hllValue_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000020);
+        gsetValue_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000040);
         return this;
       }
 
@@ -12936,6 +13854,11 @@ public final class RiakDtPB {
           to_bitField0_ |= 0x00000008;
         }
         result.hllValue_ = hllValue_;
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
+          gsetValue_ = java.util.Collections.unmodifiableList(gsetValue_);
+          bitField0_ = (bitField0_ & ~0x00000040);
+        }
+        result.gsetValue_ = gsetValue_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -12989,7 +13912,7 @@ public final class RiakDtPB {
               mapValueBuilder_ = null;
               mapValue_ = other.mapValue_;
               bitField0_ = (bitField0_ & ~0x00000010);
-              mapValueBuilder_ =
+              mapValueBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getMapValueFieldBuilder() : null;
             } else {
@@ -13000,6 +13923,16 @@ public final class RiakDtPB {
         if (other.hasHllValue()) {
           setHllValue(other.getHllValue());
         }
+        if (!other.gsetValue_.isEmpty()) {
+          if (gsetValue_.isEmpty()) {
+            gsetValue_ = other.gsetValue_;
+            bitField0_ = (bitField0_ & ~0x00000040);
+          } else {
+            ensureGsetValueIsMutable();
+            gsetValue_.addAll(other.gsetValue_);
+          }
+          onChanged();
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -13007,7 +13940,7 @@ public final class RiakDtPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getMapValueCount(); i++) {
           if (!getMapValue(i).isInitialized()) {
-
+            
             return false;
           }
         }
@@ -13434,7 +14367,7 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapEntry map_value = 5;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
            getMapValueOrBuilderList() {
         if (mapValueBuilder_ != null) {
           return mapValueBuilder_.getMessageOrBuilderList();
@@ -13460,12 +14393,12 @@ public final class RiakDtPB {
       /**
        * <code>repeated .MapEntry map_value = 5;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder> 
            getMapValueBuilderList() {
         return getMapValueFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakDtPB.MapEntry, com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder, com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder>
+          com.basho.riak.protobuf.RiakDtPB.MapEntry, com.basho.riak.protobuf.RiakDtPB.MapEntry.Builder, com.basho.riak.protobuf.RiakDtPB.MapEntryOrBuilder> 
           getMapValueFieldBuilder() {
         if (mapValueBuilder_ == null) {
           mapValueBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -13507,6 +14440,78 @@ public final class RiakDtPB {
       public Builder clearHllValue() {
         bitField0_ = (bitField0_ & ~0x00000020);
         hllValue_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<com.google.protobuf.ByteString> gsetValue_ = java.util.Collections.emptyList();
+      private void ensureGsetValueIsMutable() {
+        if (!((bitField0_ & 0x00000040) == 0x00000040)) {
+          gsetValue_ = new java.util.ArrayList<com.google.protobuf.ByteString>(gsetValue_);
+          bitField0_ |= 0x00000040;
+         }
+      }
+      /**
+       * <code>repeated bytes gset_value = 7;</code>
+       */
+      public java.util.List<com.google.protobuf.ByteString>
+          getGsetValueList() {
+        return java.util.Collections.unmodifiableList(gsetValue_);
+      }
+      /**
+       * <code>repeated bytes gset_value = 7;</code>
+       */
+      public int getGsetValueCount() {
+        return gsetValue_.size();
+      }
+      /**
+       * <code>repeated bytes gset_value = 7;</code>
+       */
+      public com.google.protobuf.ByteString getGsetValue(int index) {
+        return gsetValue_.get(index);
+      }
+      /**
+       * <code>repeated bytes gset_value = 7;</code>
+       */
+      public Builder setGsetValue(
+          int index, com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureGsetValueIsMutable();
+        gsetValue_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes gset_value = 7;</code>
+       */
+      public Builder addGsetValue(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  ensureGsetValueIsMutable();
+        gsetValue_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes gset_value = 7;</code>
+       */
+      public Builder addAllGsetValue(
+          java.lang.Iterable<? extends com.google.protobuf.ByteString> values) {
+        ensureGsetValueIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, gsetValue_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated bytes gset_value = 7;</code>
+       */
+      public Builder clearGsetValue() {
+        gsetValue_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000040);
         onChanged();
         return this;
       }
@@ -13558,6 +14563,11 @@ public final class RiakDtPB {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_SetOp_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_GSetOp_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_GSetOp_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_HllOp_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -13608,36 +14618,39 @@ public final class RiakDtPB {
       " \002(\014\022\t\n\001r\030\004 \001(\r\022\n\n\002pr\030\005 \001(\r\022\024\n\014basic_quo",
       "rum\030\006 \001(\010\022\023\n\013notfound_ok\030\007 \001(\010\022\017\n\007timeou" +
       "t\030\010 \001(\r\022\025\n\rsloppy_quorum\030\t \001(\010\022\r\n\005n_val\030" +
-      "\n \001(\r\022\035\n\017include_context\030\013 \001(\010:\004true\"d\n\007" +
+      "\n \001(\r\022\035\n\017include_context\030\013 \001(\010:\004true\"x\n\007" +
       "DtValue\022\025\n\rcounter_value\030\001 \001(\022\022\021\n\tset_va" +
       "lue\030\002 \003(\014\022\034\n\tmap_value\030\003 \003(\0132\t.MapEntry\022" +
-      "\021\n\thll_value\030\004 \001(\004\"\220\001\n\013DtFetchResp\022\017\n\007co" +
-      "ntext\030\001 \001(\014\022#\n\004type\030\002 \002(\0162\025.DtFetchResp." +
-      "DataType\022\027\n\005value\030\003 \001(\0132\010.DtValue\"2\n\010Dat" +
-      "aType\022\013\n\007COUNTER\020\001\022\007\n\003SET\020\002\022\007\n\003MAP\020\003\022\007\n\003" +
-      "HLL\020\004\"\036\n\tCounterOp\022\021\n\tincrement\030\001 \001(\022\"&\n",
-      "\005SetOp\022\014\n\004adds\030\001 \003(\014\022\017\n\007removes\030\002 \003(\014\"\025\n" +
-      "\005HllOp\022\014\n\004adds\030\001 \003(\014\"\321\001\n\tMapUpdate\022\030\n\005fi" +
-      "eld\030\001 \002(\0132\t.MapField\022\036\n\ncounter_op\030\002 \001(\013" +
-      "2\n.CounterOp\022\026\n\006set_op\030\003 \001(\0132\006.SetOp\022\023\n\013" +
-      "register_op\030\004 \001(\014\022\"\n\007flag_op\030\005 \001(\0162\021.Map" +
-      "Update.FlagOp\022\026\n\006map_op\030\006 \001(\0132\006.MapOp\"!\n" +
-      "\006FlagOp\022\n\n\006ENABLE\020\001\022\013\n\007DISABLE\020\002\"@\n\005MapO" +
-      "p\022\032\n\007removes\030\001 \003(\0132\t.MapField\022\033\n\007updates" +
-      "\030\002 \003(\0132\n.MapUpdate\"n\n\004DtOp\022\036\n\ncounter_op" +
-      "\030\001 \001(\0132\n.CounterOp\022\026\n\006set_op\030\002 \001(\0132\006.Set",
-      "Op\022\026\n\006map_op\030\003 \001(\0132\006.MapOp\022\026\n\006hll_op\030\004 \001" +
-      "(\0132\006.HllOp\"\361\001\n\013DtUpdateReq\022\016\n\006bucket\030\001 \002" +
-      "(\014\022\013\n\003key\030\002 \001(\014\022\014\n\004type\030\003 \002(\014\022\017\n\007context" +
-      "\030\004 \001(\014\022\021\n\002op\030\005 \002(\0132\005.DtOp\022\t\n\001w\030\006 \001(\r\022\n\n\002" +
-      "dw\030\007 \001(\r\022\n\n\002pw\030\010 \001(\r\022\032\n\013return_body\030\t \001(" +
-      "\010:\005false\022\017\n\007timeout\030\n \001(\r\022\025\n\rsloppy_quor" +
-      "um\030\013 \001(\010\022\r\n\005n_val\030\014 \001(\r\022\035\n\017include_conte" +
-      "xt\030\r \001(\010:\004true\"\207\001\n\014DtUpdateResp\022\013\n\003key\030\001" +
-      " \001(\014\022\017\n\007context\030\002 \001(\014\022\025\n\rcounter_value\030\003" +
-      " \001(\022\022\021\n\tset_value\030\004 \003(\014\022\034\n\tmap_value\030\005 \003",
-      "(\0132\t.MapEntry\022\021\n\thll_value\030\006 \001(\004B#\n\027com." +
-      "basho.riak.protobufB\010RiakDtPB"
+      "\021\n\thll_value\030\004 \001(\004\022\022\n\ngset_value\030\005 \003(\014\"\232" +
+      "\001\n\013DtFetchResp\022\017\n\007context\030\001 \001(\014\022#\n\004type\030" +
+      "\002 \002(\0162\025.DtFetchResp.DataType\022\027\n\005value\030\003 " +
+      "\001(\0132\010.DtValue\"<\n\010DataType\022\013\n\007COUNTER\020\001\022\007" +
+      "\n\003SET\020\002\022\007\n\003MAP\020\003\022\007\n\003HLL\020\004\022\010\n\004GSET\020\005\"\036\n\tC",
+      "ounterOp\022\021\n\tincrement\030\001 \001(\022\"&\n\005SetOp\022\014\n\004" +
+      "adds\030\001 \003(\014\022\017\n\007removes\030\002 \003(\014\"\026\n\006GSetOp\022\014\n" +
+      "\004adds\030\001 \003(\014\"\025\n\005HllOp\022\014\n\004adds\030\001 \003(\014\"\321\001\n\tM" +
+      "apUpdate\022\030\n\005field\030\001 \002(\0132\t.MapField\022\036\n\nco" +
+      "unter_op\030\002 \001(\0132\n.CounterOp\022\026\n\006set_op\030\003 \001" +
+      "(\0132\006.SetOp\022\023\n\013register_op\030\004 \001(\014\022\"\n\007flag_" +
+      "op\030\005 \001(\0162\021.MapUpdate.FlagOp\022\026\n\006map_op\030\006 " +
+      "\001(\0132\006.MapOp\"!\n\006FlagOp\022\n\n\006ENABLE\020\001\022\013\n\007DIS" +
+      "ABLE\020\002\"@\n\005MapOp\022\032\n\007removes\030\001 \003(\0132\t.MapFi" +
+      "eld\022\033\n\007updates\030\002 \003(\0132\n.MapUpdate\"\210\001\n\004DtO",
+      "p\022\036\n\ncounter_op\030\001 \001(\0132\n.CounterOp\022\026\n\006set" +
+      "_op\030\002 \001(\0132\006.SetOp\022\026\n\006map_op\030\003 \001(\0132\006.MapO" +
+      "p\022\026\n\006hll_op\030\004 \001(\0132\006.HllOp\022\030\n\007gset_op\030\005 \001" +
+      "(\0132\007.GSetOp\"\361\001\n\013DtUpdateReq\022\016\n\006bucket\030\001 " +
+      "\002(\014\022\013\n\003key\030\002 \001(\014\022\014\n\004type\030\003 \002(\014\022\017\n\007contex" +
+      "t\030\004 \001(\014\022\021\n\002op\030\005 \002(\0132\005.DtOp\022\t\n\001w\030\006 \001(\r\022\n\n" +
+      "\002dw\030\007 \001(\r\022\n\n\002pw\030\010 \001(\r\022\032\n\013return_body\030\t \001" +
+      "(\010:\005false\022\017\n\007timeout\030\n \001(\r\022\025\n\rsloppy_quo" +
+      "rum\030\013 \001(\010\022\r\n\005n_val\030\014 \001(\r\022\035\n\017include_cont" +
+      "ext\030\r \001(\010:\004true\"\233\001\n\014DtUpdateResp\022\013\n\003key\030",
+      "\001 \001(\014\022\017\n\007context\030\002 \001(\014\022\025\n\rcounter_value\030" +
+      "\003 \001(\022\022\021\n\tset_value\030\004 \003(\014\022\034\n\tmap_value\030\005 " +
+      "\003(\0132\t.MapEntry\022\021\n\thll_value\030\006 \001(\004\022\022\n\ngse" +
+      "t_value\030\007 \003(\014B#\n\027com.basho.riak.protobuf" +
+      "B\010RiakDtPB"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -13674,7 +14687,7 @@ public final class RiakDtPB {
     internal_static_DtValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_DtValue_descriptor,
-        new java.lang.String[] { "CounterValue", "SetValue", "MapValue", "HllValue", });
+        new java.lang.String[] { "CounterValue", "SetValue", "MapValue", "HllValue", "GsetValue", });
     internal_static_DtFetchResp_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_DtFetchResp_fieldAccessorTable = new
@@ -13693,42 +14706,48 @@ public final class RiakDtPB {
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_SetOp_descriptor,
         new java.lang.String[] { "Adds", "Removes", });
-    internal_static_HllOp_descriptor =
+    internal_static_GSetOp_descriptor =
       getDescriptor().getMessageTypes().get(7);
+    internal_static_GSetOp_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_GSetOp_descriptor,
+        new java.lang.String[] { "Adds", });
+    internal_static_HllOp_descriptor =
+      getDescriptor().getMessageTypes().get(8);
     internal_static_HllOp_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_HllOp_descriptor,
         new java.lang.String[] { "Adds", });
     internal_static_MapUpdate_descriptor =
-      getDescriptor().getMessageTypes().get(8);
+      getDescriptor().getMessageTypes().get(9);
     internal_static_MapUpdate_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_MapUpdate_descriptor,
         new java.lang.String[] { "Field", "CounterOp", "SetOp", "RegisterOp", "FlagOp", "MapOp", });
     internal_static_MapOp_descriptor =
-      getDescriptor().getMessageTypes().get(9);
+      getDescriptor().getMessageTypes().get(10);
     internal_static_MapOp_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_MapOp_descriptor,
         new java.lang.String[] { "Removes", "Updates", });
     internal_static_DtOp_descriptor =
-      getDescriptor().getMessageTypes().get(10);
+      getDescriptor().getMessageTypes().get(11);
     internal_static_DtOp_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_DtOp_descriptor,
-        new java.lang.String[] { "CounterOp", "SetOp", "MapOp", "HllOp", });
+        new java.lang.String[] { "CounterOp", "SetOp", "MapOp", "HllOp", "GsetOp", });
     internal_static_DtUpdateReq_descriptor =
-      getDescriptor().getMessageTypes().get(11);
+      getDescriptor().getMessageTypes().get(12);
     internal_static_DtUpdateReq_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_DtUpdateReq_descriptor,
         new java.lang.String[] { "Bucket", "Key", "Type", "Context", "Op", "W", "Dw", "Pw", "ReturnBody", "Timeout", "SloppyQuorum", "NVal", "IncludeContext", });
     internal_static_DtUpdateResp_descriptor =
-      getDescriptor().getMessageTypes().get(12);
+      getDescriptor().getMessageTypes().get(13);
     internal_static_DtUpdateResp_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_DtUpdateResp_descriptor,
-        new java.lang.String[] { "Key", "Context", "CounterValue", "SetValue", "MapValue", "HllValue", });
+        new java.lang.String[] { "Key", "Context", "CounterValue", "SetValue", "MapValue", "HllValue", "GsetValue", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

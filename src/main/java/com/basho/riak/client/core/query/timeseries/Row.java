@@ -14,6 +14,7 @@ import java.util.*;
 public class Row implements Iterable<Cell>
 {
     private final RiakTsPB.TsRow pbRow;
+    private final Iterable<RiakTsPB.TsColumnDescription> pbColumnDescriptions;
     private final Iterable<Cell> cells;
     private final int cellCount;
 
@@ -23,7 +24,8 @@ public class Row implements Iterable<Cell>
      */
     public Row(Iterable<Cell> cells)
     {
-        pbRow = null;
+        this.pbRow = null;
+        this.pbColumnDescriptions = null;
         this.cells = cells;
         int cellCount = 0;
 
@@ -41,14 +43,16 @@ public class Row implements Iterable<Cell>
      */
     public Row(Cell... cells)
     {
-        pbRow = null;
+        this.pbRow = null;
+        this.pbColumnDescriptions = null;
         this.cells = Arrays.asList(cells);
         cellCount = cells.length;
     }
 
-    Row(RiakTsPB.TsRow pbRow)
+    Row(RiakTsPB.TsRow pbRow, Iterable<RiakTsPB.TsColumnDescription> pbColumnDescriptions)
     {
         this.pbRow = pbRow;
+        this.pbColumnDescriptions = pbColumnDescriptions;
         cells = null;
         cellCount = pbRow.getCellsCount();
     }
@@ -102,7 +106,11 @@ public class Row implements Iterable<Cell>
         }
         else // if (pbRow != null)
         {
-            return ConvertibleIteratorUtils.iterateAsCell(pbRow.getCellsList().iterator());
+            assert pbRow != null;
+
+            return ConvertibleIteratorUtils.iterateAsCell(pbRow.getCellsList().iterator(),
+                    // if there is no ColumnDescription what else we could do with that?
+                    pbColumnDescriptions == null ?  Collections.emptyIterator() : pbColumnDescriptions.iterator());
         }
     }
 

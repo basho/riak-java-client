@@ -36,7 +36,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQueryResp, String>
 {
-    private final RiakTsPB.TsQueryReq.Builder reqBuilder;
     private final String queryText;
 
     private CreateTableOperation(AbstractBuilder builder)
@@ -46,7 +45,6 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
                 builder.reqBuilder,
                 RiakTsPB.TsQueryResp.PARSER);
 
-        this.reqBuilder = builder.reqBuilder;
         this.queryText = builder.queryText;
     }
 
@@ -205,6 +203,12 @@ public class CreateTableOperation extends PBFutureOperation<Void, RiakTsPB.TsQue
             {
                 sb.append(", ")
                         .append(lk.getName());
+
+                if (lk.hasKeyOrder())
+                {
+                    sb.append(" ");
+                    sb.append(lk.getKeyOrder().toString());
+                }
             }
 
             return sb;

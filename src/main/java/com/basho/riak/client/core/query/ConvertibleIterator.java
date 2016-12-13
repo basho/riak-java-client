@@ -1,7 +1,5 @@
 package com.basho.riak.client.core.query;
 
-import com.basho.riak.protobuf.RiakTsPB;
-
 import java.util.Iterator;
 
 /**
@@ -9,8 +7,9 @@ import java.util.Iterator;
  * @author Alex Moore <amoore at basho dot com>
  * @since 2.0.3
  */
-public abstract class ConvertibleIterator<S,D> implements Iterator<D> {
-    private final Iterator<S> iterator;
+public abstract class ConvertibleIterator<S,D> implements Iterator<D>
+{
+    protected final Iterator<S> iterator;
 
     public ConvertibleIterator(Iterator<S> iterator) {
         this.iterator = iterator;
@@ -19,12 +18,12 @@ public abstract class ConvertibleIterator<S,D> implements Iterator<D> {
     abstract protected D convert(S source);
 
     @Override
-    public final boolean hasNext() {
+    public boolean hasNext() {
         return iterator.hasNext();
     }
 
     @Override
-    public final D next() {
+    public D next() {
         return convert(iterator.next());
     }
 

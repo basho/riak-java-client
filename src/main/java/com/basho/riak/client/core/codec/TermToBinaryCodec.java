@@ -64,7 +64,7 @@ public class TermToBinaryCodec
         final OtpOutputStream os = new OtpOutputStream();
         os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value
 
-        // TsQueryReq is a 4-tuple: {'tsqueryreq', TsInt, boolIsStreaming, bytesCoverContext}
+        // TsQueryReq is a 4-tuple: {'tsqueryreq', TsInterpolation, boolIsStreaming, bytesCoverContext}
         os.write_tuple_head(4);
         os.write_atom(TS_QUERY_REQ);
 
@@ -171,6 +171,10 @@ public class TermToBinaryCodec
         {
             stream.write_double(cell.getDouble());
         }
+        else if(cell.hasBlob())
+        {
+            stream.write_binary(cell.getBlob());
+        }
         else
         {
             logger.error("Unknown TS cell type encountered.");
@@ -181,11 +185,9 @@ public class TermToBinaryCodec
     private static QueryResult decodeTsResponse(byte[] response)
             throws OtpErlangDecodeException, InvalidTermToBinaryException
     {
-        QueryResult result = null;
+        final OtpInputStream is = new OtpInputStream(response);
 
-        OtpInputStream is = new OtpInputStream(response);
-
-        int firstByte = is.read1skip_version();
+        final int firstByte = is.read1skip_version();
         is.reset();
 
         if (firstByte != OtpExternal.smallTupleTag && firstByte != OtpExternal.largeTupleTag)
@@ -213,7 +215,7 @@ public class TermToBinaryCodec
     private static QueryResult parseTupleResult(OtpInputStream is)
             throws OtpErlangDecodeException, InvalidTermToBinaryException
     {
-        QueryResult result;
+        final QueryResult result;
         final int msgArity = is.read_tuple_head();
         // Response is:
         // {'rpberrorresp', ErrMsg, ErrCode}
@@ -322,30 +324,55 @@ public class TermToBinaryCodec
     {
         if (cell instanceof OtpErlangBinary)
         {
-            OtpErlangBinary v = (OtpErlangBinary) cell;
-            String s = new String(v.binaryValue(), StandardCharsets.UTF_8);
-            return new Cell(s);
+            final OtpErlangBinary v = (OtpErlangBinary) cell;
+            final RiakTsPB.TsColumnType type = columnDescriptions.get(j).getType();
+            switch (type)
+            {
+                case VARCHAR:
+                    final String s = new String(v.binaryValue(), StandardCharsets.UTF_8);
+                    return new Cell(s);
+
+                case BLOB:
+                    return new Cell(v.binaryValue());
+
+                default:
+                    throw new IllegalStateException(
+                            String.format(
+                                    "Type '%s' from the provided ColumnDescription contradicts to the actual OtpErlangBinary value",
+                                    type.name()
+                            )
+                    );
+            }
         }
         else if (cell instanceof OtpErlangLong)
         {
-            OtpErlangLong v = (OtpErlangLong) cell;
-            if (columnDescriptions.get(j).getType() == RiakTsPB.TsColumnType.TIMESTAMP)
+            final OtpErlangLong v = (OtpErlangLong) cell;
+            final RiakTsPB.TsColumnType type = columnDescriptions.get(j).getType();
+            switch (type)
             {
-                return Cell.newTimestamp(v.longValue());
-            }
-            else
-            {
-                return new Cell(v.longValue());
+                case TIMESTAMP:
+                    return Cell.newTimestamp(v.longValue());
+
+                case SINT64:
+                    return new Cell(v.longValue());
+
+                default:
+                    throw new IllegalStateException(
+                            String.format(
+                                    "Type '%s' from the provided ColumnDescription contradicts to the actual OtpErlangLong value",
+                                    type.name()
+                            )
+                    );
             }
         }
         else if (cell instanceof OtpErlangDouble)
         {
-            OtpErlangDouble v = (OtpErlangDouble) cell;
+            final OtpErlangDouble v = (OtpErlangDouble) cell;
             return new Cell(v.doubleValue());
         }
         else if (cell instanceof OtpErlangAtom)
         {
-            OtpErlangAtom v = (OtpErlangAtom) cell;
+            final OtpErlangAtom v = (OtpErlangAtom) cell;
             return new Cell(v.booleanValue());
         }
         else if (cell instanceof OtpErlangList)
@@ -354,10 +381,8 @@ public class TermToBinaryCodec
             assert (l.arity() == 0);
             return null;
         }
-        else
-        {
-            throw new InvalidTermToBinaryException("Unknown cell type encountered: " + cell.toString() + ", unable to" +
-                                                           " continue parsing.");
-        }
+
+        throw new InvalidTermToBinaryException("Unknown cell type encountered: " + cell.toString() +
+                                               ", unable to continue parsing.");
     }
 }

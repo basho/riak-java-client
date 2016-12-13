@@ -49,6 +49,7 @@ class DescribeQueryResultParser
     private final static int LOCAL_KEY_IDX = 4;
     private final static int QUANTUM_INTERVAL_IDX = 5;
     private final static int QUANTUM_UNIT_IDX = 6;
+    private final static int SORT_ORDER_IDX = 7;
 
     static List<FullColumnDescription> ConvertToColumnDescriptions(QueryResult queryResult)
     {
@@ -80,7 +81,10 @@ class DescribeQueryResultParser
 
         final Quantum quantum = parseQuantumCells(cells);
 
-        return new FullColumnDescription(name, type, isNullable, partitionKeyOrdinal, localKeyOrdinal, quantum);
+        final FullColumnDescription.KeyOrder keyOrder = parseSortOrder(cells);
+
+        return new FullColumnDescription(name, type, isNullable, partitionKeyOrdinal, localKeyOrdinal, quantum,
+                                         keyOrder);
     }
 
     private static Integer parseKeyCell(Cell keyCell)
@@ -112,6 +116,33 @@ class DescribeQueryResultParser
         return new Quantum(quantumInterval.intValue(), quantumUnit);
     }
 
+    private static FullColumnDescription.KeyOrder parseSortOrder(List<Cell> cells)
+    {
+        if (cells.size() < 8)
+        {
+            return null;
+        }
+
+        final Cell sortCell = cells.get(SORT_ORDER_IDX);
+
+        if(sortCell == null || !sortCell.hasVarcharValue())
+        {
+            return null;
+        }
+
+        if(sortCell.getVarcharAsUTF8String().equalsIgnoreCase("ASC"))
+        {
+            return FullColumnDescription.KeyOrder.ASC;
+        }
+
+        if(sortCell.getVarcharAsUTF8String().equalsIgnoreCase("DESC"))
+        {
+            return FullColumnDescription.KeyOrder.DESC;
+        }
+
+        return null;
+    }
+
     private static boolean DescribeFnRowResultIsValid(List<Cell> cells)
     {
         final boolean describeBaseIsValid = DescribeRowV1ChunkIsValid(cells);
@@ -119,7 +150,10 @@ class DescribeQueryResultParser
         final boolean isValidV2Description =
                 describeBaseIsValid && cells.size() == 7 && DescribeRowV2ChunkIsValid(cells);
 
-        return isValidV1Description || isValidV2Description;
+        final boolean isValidV3Description =
+                describeBaseIsValid && cells.size() == 8 && DescribeRowV3ChunkIsValid(cells);
+
+        return isValidV1Description || isValidV2Description || isValidV3Description;
     }
 
     private static boolean DescribeRowV1ChunkIsValid(List<Cell> cells)
@@ -151,5 +185,17 @@ class DescribeQueryResultParser
 
         return quantumIntervalCell != null ? quantumIntervalCell.hasLong() : true &&
                 quantumUnitCell != null ? quantumUnitCell.hasVarcharValue() : true;
+    }
+
+    private static boolean DescribeRowV3ChunkIsValid(List<Cell> cells)
+    {
+        if (cells.size() < 8)
+        {
+            return false;
+        }
+
+        final Cell sortOrderCell = cells.get(SORT_ORDER_IDX);
+
+        return sortOrderCell != null ? sortOrderCell.hasVarcharValue() : true;
     }
 }

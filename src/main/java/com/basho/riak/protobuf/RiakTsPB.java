@@ -33,6 +33,10 @@ public final class RiakTsPB {
      * <code>BOOLEAN = 4;</code>
      */
     BOOLEAN(4, 4),
+    /**
+     * <code>BLOB = 5;</code>
+     */
+    BLOB(5, 5),
     ;
 
     /**
@@ -55,6 +59,11 @@ public final class RiakTsPB {
      * <code>BOOLEAN = 4;</code>
      */
     public static final int BOOLEAN_VALUE = 4;
+    /**
+     * <code>BLOB = 5;</code>
+     */
+    public static final int BLOB_VALUE = 5;
+
 
     public final int getNumber() { return value; }
 
@@ -65,6 +74,7 @@ public final class RiakTsPB {
         case 2: return DOUBLE;
         case 3: return TIMESTAMP;
         case 4: return BOOLEAN;
+        case 5: return BLOB;
         default: return null;
       }
     }
@@ -119,6 +129,7 @@ public final class RiakTsPB {
   public interface TsQueryReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsQueryReq)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>optional .TsInterpolation query = 1;</code>
      *
@@ -622,6 +633,7 @@ public final class RiakTsPB {
       public final boolean isInitialized() {
         if (hasQuery()) {
           if (!getQuery().isInitialized()) {
+            
             return false;
           }
         }
@@ -786,7 +798,7 @@ public final class RiakTsPB {
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsInterpolation, com.basho.riak.protobuf.RiakTsPB.TsInterpolation.Builder, com.basho.riak.protobuf.RiakTsPB.TsInterpolationOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsInterpolation, com.basho.riak.protobuf.RiakTsPB.TsInterpolation.Builder, com.basho.riak.protobuf.RiakTsPB.TsInterpolationOrBuilder> 
           getQueryFieldBuilder() {
         if (queryBuilder_ == null) {
           queryBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -896,10 +908,11 @@ public final class RiakTsPB {
   public interface TsQueryRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsQueryResp)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>repeated .TsColumnDescription columns = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsColumnDescription>
+    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsColumnDescription> 
         getColumnsList();
     /**
      * <code>repeated .TsColumnDescription columns = 1;</code>
@@ -912,7 +925,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsColumnDescription columns = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder> 
         getColumnsOrBuilderList();
     /**
      * <code>repeated .TsColumnDescription columns = 1;</code>
@@ -927,7 +940,7 @@ public final class RiakTsPB {
      * 0 to n rows
      * </pre>
      */
-    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow>
+    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow> 
         getRowsList();
     /**
      * <code>repeated .TsRow rows = 2;</code>
@@ -952,7 +965,7 @@ public final class RiakTsPB {
      * 0 to n rows
      * </pre>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
         getRowsOrBuilderList();
     /**
      * <code>repeated .TsRow rows = 2;</code>
@@ -1103,7 +1116,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsColumnDescription columns = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder> 
         getColumnsOrBuilderList() {
       return columns_;
     }
@@ -1146,7 +1159,7 @@ public final class RiakTsPB {
      * 0 to n rows
      * </pre>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
         getRowsOrBuilderList() {
       return rows_;
     }
@@ -1468,7 +1481,7 @@ public final class RiakTsPB {
               columnsBuilder_ = null;
               columns_ = other.columns_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              columnsBuilder_ =
+              columnsBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getColumnsFieldBuilder() : null;
             } else {
@@ -1494,7 +1507,7 @@ public final class RiakTsPB {
               rowsBuilder_ = null;
               rows_ = other.rows_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              rowsBuilder_ =
+              rowsBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getRowsFieldBuilder() : null;
             } else {
@@ -1512,6 +1525,7 @@ public final class RiakTsPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getColumnsCount(); i++) {
           if (!getColumns(i).isInitialized()) {
+            
             return false;
           }
         }
@@ -1732,7 +1746,7 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsColumnDescription columns = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder> 
            getColumnsOrBuilderList() {
         if (columnsBuilder_ != null) {
           return columnsBuilder_.getMessageOrBuilderList();
@@ -1758,12 +1772,12 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsColumnDescription columns = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsColumnDescription.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsColumnDescription.Builder> 
            getColumnsBuilderList() {
         return getColumnsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsColumnDescription, com.basho.riak.protobuf.RiakTsPB.TsColumnDescription.Builder, com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsColumnDescription, com.basho.riak.protobuf.RiakTsPB.TsColumnDescription.Builder, com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder> 
           getColumnsFieldBuilder() {
         if (columnsBuilder_ == null) {
           columnsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -2032,7 +2046,7 @@ public final class RiakTsPB {
        * 0 to n rows
        * </pre>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
            getRowsOrBuilderList() {
         if (rowsBuilder_ != null) {
           return rowsBuilder_.getMessageOrBuilderList();
@@ -2070,12 +2084,12 @@ public final class RiakTsPB {
        * 0 to n rows
        * </pre>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow.Builder> 
            getRowsBuilderList() {
         return getRowsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsRow, com.basho.riak.protobuf.RiakTsPB.TsRow.Builder, com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsRow, com.basho.riak.protobuf.RiakTsPB.TsRow.Builder, com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
           getRowsFieldBuilder() {
         if (rowsBuilder_ == null) {
           rowsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -2135,6 +2149,7 @@ public final class RiakTsPB {
   public interface TsGetReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsGetReq)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required bytes table = 1;</code>
      */
@@ -2147,7 +2162,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsCell key = 2;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCell>
+    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCell> 
         getKeyList();
     /**
      * <code>repeated .TsCell key = 2;</code>
@@ -2160,7 +2175,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsCell key = 2;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder> 
         getKeyOrBuilderList();
     /**
      * <code>repeated .TsCell key = 2;</code>
@@ -2316,7 +2331,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsCell key = 2;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder> 
         getKeyOrBuilderList() {
       return key_;
     }
@@ -2617,7 +2632,7 @@ public final class RiakTsPB {
               keyBuilder_ = null;
               key_ = other.key_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              keyBuilder_ =
+              keyBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getKeyFieldBuilder() : null;
             } else {
@@ -2634,6 +2649,7 @@ public final class RiakTsPB {
 
       public final boolean isInitialized() {
         if (!hasTable()) {
+          
           return false;
         }
         return true;
@@ -2888,7 +2904,7 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsCell key = 2;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder> 
            getKeyOrBuilderList() {
         if (keyBuilder_ != null) {
           return keyBuilder_.getMessageOrBuilderList();
@@ -2914,12 +2930,12 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsCell key = 2;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCell.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCell.Builder> 
            getKeyBuilderList() {
         return getKeyFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsCell, com.basho.riak.protobuf.RiakTsPB.TsCell.Builder, com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsCell, com.basho.riak.protobuf.RiakTsPB.TsCell.Builder, com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder> 
           getKeyFieldBuilder() {
         if (keyBuilder_ == null) {
           keyBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -2979,10 +2995,11 @@ public final class RiakTsPB {
   public interface TsGetRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsGetResp)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>repeated .TsColumnDescription columns = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsColumnDescription>
+    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsColumnDescription> 
         getColumnsList();
     /**
      * <code>repeated .TsColumnDescription columns = 1;</code>
@@ -2995,7 +3012,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsColumnDescription columns = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder> 
         getColumnsOrBuilderList();
     /**
      * <code>repeated .TsColumnDescription columns = 1;</code>
@@ -3010,7 +3027,7 @@ public final class RiakTsPB {
      * 0 or 1 rows
      * </pre>
      */
-    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow>
+    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow> 
         getRowsList();
     /**
      * <code>repeated .TsRow rows = 2;</code>
@@ -3035,7 +3052,7 @@ public final class RiakTsPB {
      * 0 or 1 rows
      * </pre>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
         getRowsOrBuilderList();
     /**
      * <code>repeated .TsRow rows = 2;</code>
@@ -3171,7 +3188,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsColumnDescription columns = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder> 
         getColumnsOrBuilderList() {
       return columns_;
     }
@@ -3214,7 +3231,7 @@ public final class RiakTsPB {
      * 0 or 1 rows
      * </pre>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
         getRowsOrBuilderList() {
       return rows_;
     }
@@ -3505,7 +3522,7 @@ public final class RiakTsPB {
               columnsBuilder_ = null;
               columns_ = other.columns_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              columnsBuilder_ =
+              columnsBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getColumnsFieldBuilder() : null;
             } else {
@@ -3531,7 +3548,7 @@ public final class RiakTsPB {
               rowsBuilder_ = null;
               rows_ = other.rows_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              rowsBuilder_ =
+              rowsBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getRowsFieldBuilder() : null;
             } else {
@@ -3546,6 +3563,7 @@ public final class RiakTsPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getColumnsCount(); i++) {
           if (!getColumns(i).isInitialized()) {
+            
             return false;
           }
         }
@@ -3766,7 +3784,7 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsColumnDescription columns = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder> 
            getColumnsOrBuilderList() {
         if (columnsBuilder_ != null) {
           return columnsBuilder_.getMessageOrBuilderList();
@@ -3792,12 +3810,12 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsColumnDescription columns = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsColumnDescription.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsColumnDescription.Builder> 
            getColumnsBuilderList() {
         return getColumnsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsColumnDescription, com.basho.riak.protobuf.RiakTsPB.TsColumnDescription.Builder, com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsColumnDescription, com.basho.riak.protobuf.RiakTsPB.TsColumnDescription.Builder, com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder> 
           getColumnsFieldBuilder() {
         if (columnsBuilder_ == null) {
           columnsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -4066,7 +4084,7 @@ public final class RiakTsPB {
        * 0 or 1 rows
        * </pre>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
            getRowsOrBuilderList() {
         if (rowsBuilder_ != null) {
           return rowsBuilder_.getMessageOrBuilderList();
@@ -4104,12 +4122,12 @@ public final class RiakTsPB {
        * 0 or 1 rows
        * </pre>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow.Builder> 
            getRowsBuilderList() {
         return getRowsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsRow, com.basho.riak.protobuf.RiakTsPB.TsRow.Builder, com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsRow, com.basho.riak.protobuf.RiakTsPB.TsRow.Builder, com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
           getRowsFieldBuilder() {
         if (rowsBuilder_ == null) {
           rowsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -4137,6 +4155,7 @@ public final class RiakTsPB {
   public interface TsPutReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsPutReq)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required bytes table = 1;</code>
      */
@@ -4153,7 +4172,7 @@ public final class RiakTsPB {
      * optional: omitting it should use table order
      * </pre>
      */
-    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsColumnDescription>
+    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsColumnDescription> 
         getColumnsList();
     /**
      * <code>repeated .TsColumnDescription columns = 2;</code>
@@ -4178,7 +4197,7 @@ public final class RiakTsPB {
      * optional: omitting it should use table order
      * </pre>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder> 
         getColumnsOrBuilderList();
     /**
      * <code>repeated .TsColumnDescription columns = 2;</code>
@@ -4193,7 +4212,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsRow rows = 3;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow>
+    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow> 
         getRowsList();
     /**
      * <code>repeated .TsRow rows = 3;</code>
@@ -4206,7 +4225,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsRow rows = 3;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
         getRowsOrBuilderList();
     /**
      * <code>repeated .TsRow rows = 3;</code>
@@ -4367,7 +4386,7 @@ public final class RiakTsPB {
      * optional: omitting it should use table order
      * </pre>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder> 
         getColumnsOrBuilderList() {
       return columns_;
     }
@@ -4414,7 +4433,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsRow rows = 3;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
         getRowsOrBuilderList() {
       return rows_;
     }
@@ -4716,7 +4735,7 @@ public final class RiakTsPB {
               columnsBuilder_ = null;
               columns_ = other.columns_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              columnsBuilder_ =
+              columnsBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getColumnsFieldBuilder() : null;
             } else {
@@ -4742,7 +4761,7 @@ public final class RiakTsPB {
               rowsBuilder_ = null;
               rows_ = other.rows_;
               bitField0_ = (bitField0_ & ~0x00000004);
-              rowsBuilder_ =
+              rowsBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getRowsFieldBuilder() : null;
             } else {
@@ -4756,10 +4775,12 @@ public final class RiakTsPB {
 
       public final boolean isInitialized() {
         if (!hasTable()) {
+          
           return false;
         }
         for (int i = 0; i < getColumnsCount(); i++) {
           if (!getColumns(i).isInitialized()) {
+            
             return false;
           }
         }
@@ -5075,7 +5096,7 @@ public final class RiakTsPB {
        * optional: omitting it should use table order
        * </pre>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder> 
            getColumnsOrBuilderList() {
         if (columnsBuilder_ != null) {
           return columnsBuilder_.getMessageOrBuilderList();
@@ -5113,12 +5134,12 @@ public final class RiakTsPB {
        * optional: omitting it should use table order
        * </pre>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsColumnDescription.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsColumnDescription.Builder> 
            getColumnsBuilderList() {
         return getColumnsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsColumnDescription, com.basho.riak.protobuf.RiakTsPB.TsColumnDescription.Builder, com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsColumnDescription, com.basho.riak.protobuf.RiakTsPB.TsColumnDescription.Builder, com.basho.riak.protobuf.RiakTsPB.TsColumnDescriptionOrBuilder> 
           getColumnsFieldBuilder() {
         if (columnsBuilder_ == null) {
           columnsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -5327,7 +5348,7 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsRow rows = 3;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
            getRowsOrBuilderList() {
         if (rowsBuilder_ != null) {
           return rowsBuilder_.getMessageOrBuilderList();
@@ -5353,12 +5374,12 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsRow rows = 3;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow.Builder> 
            getRowsBuilderList() {
         return getRowsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsRow, com.basho.riak.protobuf.RiakTsPB.TsRow.Builder, com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsRow, com.basho.riak.protobuf.RiakTsPB.TsRow.Builder, com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
           getRowsFieldBuilder() {
         if (rowsBuilder_ == null) {
           rowsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -5699,6 +5720,7 @@ public final class RiakTsPB {
   public interface TsDelReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsDelReq)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required bytes table = 1;</code>
      */
@@ -5711,7 +5733,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsCell key = 2;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCell>
+    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCell> 
         getKeyList();
     /**
      * <code>repeated .TsCell key = 2;</code>
@@ -5724,7 +5746,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsCell key = 2;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder> 
         getKeyOrBuilderList();
     /**
      * <code>repeated .TsCell key = 2;</code>
@@ -5894,7 +5916,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsCell key = 2;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder> 
         getKeyOrBuilderList() {
       return key_;
     }
@@ -6224,7 +6246,7 @@ public final class RiakTsPB {
               keyBuilder_ = null;
               key_ = other.key_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              keyBuilder_ =
+              keyBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getKeyFieldBuilder() : null;
             } else {
@@ -6244,6 +6266,7 @@ public final class RiakTsPB {
 
       public final boolean isInitialized() {
         if (!hasTable()) {
+          
           return false;
         }
         return true;
@@ -6498,7 +6521,7 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsCell key = 2;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder> 
            getKeyOrBuilderList() {
         if (keyBuilder_ != null) {
           return keyBuilder_.getMessageOrBuilderList();
@@ -6524,12 +6547,12 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsCell key = 2;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCell.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCell.Builder> 
            getKeyBuilderList() {
         return getKeyFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsCell, com.basho.riak.protobuf.RiakTsPB.TsCell.Builder, com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsCell, com.basho.riak.protobuf.RiakTsPB.TsCell.Builder, com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder> 
           getKeyFieldBuilder() {
         if (keyBuilder_ == null) {
           keyBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -6937,6 +6960,7 @@ public final class RiakTsPB {
   public interface TsInterpolationOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsInterpolation)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required bytes base = 1;</code>
      */
@@ -6949,7 +6973,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .RpbPair interpolations = 2;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair>
+    java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair> 
         getInterpolationsList();
     /**
      * <code>repeated .RpbPair interpolations = 2;</code>
@@ -6962,7 +6986,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .RpbPair interpolations = 2;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
         getInterpolationsOrBuilderList();
     /**
      * <code>repeated .RpbPair interpolations = 2;</code>
@@ -7104,7 +7128,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .RpbPair interpolations = 2;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
         getInterpolationsOrBuilderList() {
       return interpolations_;
     }
@@ -7382,7 +7406,7 @@ public final class RiakTsPB {
               interpolationsBuilder_ = null;
               interpolations_ = other.interpolations_;
               bitField0_ = (bitField0_ & ~0x00000002);
-              interpolationsBuilder_ =
+              interpolationsBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getInterpolationsFieldBuilder() : null;
             } else {
@@ -7396,10 +7420,12 @@ public final class RiakTsPB {
 
       public final boolean isInitialized() {
         if (!hasBase()) {
+          
           return false;
         }
         for (int i = 0; i < getInterpolationsCount(); i++) {
           if (!getInterpolations(i).isInitialized()) {
+            
             return false;
           }
         }
@@ -7655,7 +7681,7 @@ public final class RiakTsPB {
       /**
        * <code>repeated .RpbPair interpolations = 2;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
            getInterpolationsOrBuilderList() {
         if (interpolationsBuilder_ != null) {
           return interpolationsBuilder_.getMessageOrBuilderList();
@@ -7681,12 +7707,12 @@ public final class RiakTsPB {
       /**
        * <code>repeated .RpbPair interpolations = 2;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakPB.RpbPair.Builder> 
            getInterpolationsBuilderList() {
         return getInterpolationsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakPB.RpbPair, com.basho.riak.protobuf.RiakPB.RpbPair.Builder, com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder>
+          com.basho.riak.protobuf.RiakPB.RpbPair, com.basho.riak.protobuf.RiakPB.RpbPair.Builder, com.basho.riak.protobuf.RiakPB.RpbPairOrBuilder> 
           getInterpolationsFieldBuilder() {
         if (interpolationsBuilder_ == null) {
           interpolationsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -7714,6 +7740,7 @@ public final class RiakTsPB {
   public interface TsColumnDescriptionOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsColumnDescription)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required bytes name = 1;</code>
      */
@@ -8103,9 +8130,11 @@ public final class RiakTsPB {
 
       public final boolean isInitialized() {
         if (!hasName()) {
+          
           return false;
         }
         if (!hasType()) {
+          
           return false;
         }
         return true;
@@ -8214,10 +8243,11 @@ public final class RiakTsPB {
   public interface TsRowOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsRow)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>repeated .TsCell cells = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCell>
+    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCell> 
         getCellsList();
     /**
      * <code>repeated .TsCell cells = 1;</code>
@@ -8230,7 +8260,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsCell cells = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder> 
         getCellsOrBuilderList();
     /**
      * <code>repeated .TsCell cells = 1;</code>
@@ -8351,7 +8381,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsCell cells = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder> 
         getCellsOrBuilderList() {
       return cells_;
     }
@@ -8600,7 +8630,7 @@ public final class RiakTsPB {
               cellsBuilder_ = null;
               cells_ = other.cells_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              cellsBuilder_ =
+              cellsBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getCellsFieldBuilder() : null;
             } else {
@@ -8830,7 +8860,7 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsCell cells = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder> 
            getCellsOrBuilderList() {
         if (cellsBuilder_ != null) {
           return cellsBuilder_.getMessageOrBuilderList();
@@ -8856,12 +8886,12 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsCell cells = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCell.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCell.Builder> 
            getCellsBuilderList() {
         return getCellsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsCell, com.basho.riak.protobuf.RiakTsPB.TsCell.Builder, com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsCell, com.basho.riak.protobuf.RiakTsPB.TsCell.Builder, com.basho.riak.protobuf.RiakTsPB.TsCellOrBuilder> 
           getCellsFieldBuilder() {
         if (cellsBuilder_ == null) {
           cellsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -8889,6 +8919,7 @@ public final class RiakTsPB {
   public interface TsCellOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsCell)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>optional bytes varchar_value = 1;</code>
      */
@@ -9600,6 +9631,7 @@ public final class RiakTsPB {
   public interface TsListKeysReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsListKeysReq)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required bytes table = 1;</code>
      */
@@ -9979,6 +10011,7 @@ public final class RiakTsPB {
 
       public final boolean isInitialized() {
         if (!hasTable()) {
+          
           return false;
         }
         return true;
@@ -10084,10 +10117,11 @@ public final class RiakTsPB {
   public interface TsListKeysRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsListKeysResp)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>repeated .TsRow keys = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow>
+    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow> 
         getKeysList();
     /**
      * <code>repeated .TsRow keys = 1;</code>
@@ -10100,7 +10134,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsRow keys = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
         getKeysOrBuilderList();
     /**
      * <code>repeated .TsRow keys = 1;</code>
@@ -10236,7 +10270,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsRow keys = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
         getKeysOrBuilderList() {
       return keys_;
     }
@@ -10516,7 +10550,7 @@ public final class RiakTsPB {
               keysBuilder_ = null;
               keys_ = other.keys_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              keysBuilder_ =
+              keysBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getKeysFieldBuilder() : null;
             } else {
@@ -10749,7 +10783,7 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsRow keys = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
            getKeysOrBuilderList() {
         if (keysBuilder_ != null) {
           return keysBuilder_.getMessageOrBuilderList();
@@ -10775,12 +10809,12 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsRow keys = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsRow.Builder> 
            getKeysBuilderList() {
         return getKeysFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsRow, com.basho.riak.protobuf.RiakTsPB.TsRow.Builder, com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsRow, com.basho.riak.protobuf.RiakTsPB.TsRow.Builder, com.basho.riak.protobuf.RiakTsPB.TsRowOrBuilder> 
           getKeysFieldBuilder() {
         if (keysBuilder_ == null) {
           keysBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -10840,6 +10874,7 @@ public final class RiakTsPB {
   public interface TsCoverageReqOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsCoverageReq)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>optional .TsInterpolation query = 1;</code>
      *
@@ -11446,10 +11481,12 @@ public final class RiakTsPB {
 
       public final boolean isInitialized() {
         if (!hasTable()) {
+          
           return false;
         }
         if (hasQuery()) {
           if (!getQuery().isInitialized()) {
+            
             return false;
           }
         }
@@ -11614,7 +11651,7 @@ public final class RiakTsPB {
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsInterpolation, com.basho.riak.protobuf.RiakTsPB.TsInterpolation.Builder, com.basho.riak.protobuf.RiakTsPB.TsInterpolationOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsInterpolation, com.basho.riak.protobuf.RiakTsPB.TsInterpolation.Builder, com.basho.riak.protobuf.RiakTsPB.TsInterpolationOrBuilder> 
           getQueryFieldBuilder() {
         if (queryBuilder_ == null) {
           queryBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -11827,10 +11864,11 @@ public final class RiakTsPB {
   public interface TsCoverageRespOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsCoverageResp)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>repeated .TsCoverageEntry entries = 1;</code>
      */
-    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCoverageEntry>
+    java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCoverageEntry> 
         getEntriesList();
     /**
      * <code>repeated .TsCoverageEntry entries = 1;</code>
@@ -11843,7 +11881,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsCoverageEntry entries = 1;</code>
      */
-    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCoverageEntryOrBuilder>
+    java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCoverageEntryOrBuilder> 
         getEntriesOrBuilderList();
     /**
      * <code>repeated .TsCoverageEntry entries = 1;</code>
@@ -11968,7 +12006,7 @@ public final class RiakTsPB {
     /**
      * <code>repeated .TsCoverageEntry entries = 1;</code>
      */
-    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCoverageEntryOrBuilder>
+    public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCoverageEntryOrBuilder> 
         getEntriesOrBuilderList() {
       return entries_;
     }
@@ -12227,7 +12265,7 @@ public final class RiakTsPB {
               entriesBuilder_ = null;
               entries_ = other.entries_;
               bitField0_ = (bitField0_ & ~0x00000001);
-              entriesBuilder_ =
+              entriesBuilder_ = 
                 com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
                    getEntriesFieldBuilder() : null;
             } else {
@@ -12242,6 +12280,7 @@ public final class RiakTsPB {
       public final boolean isInitialized() {
         for (int i = 0; i < getEntriesCount(); i++) {
           if (!getEntries(i).isInitialized()) {
+            
             return false;
           }
         }
@@ -12462,7 +12501,7 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsCoverageEntry entries = 1;</code>
        */
-      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCoverageEntryOrBuilder>
+      public java.util.List<? extends com.basho.riak.protobuf.RiakTsPB.TsCoverageEntryOrBuilder> 
            getEntriesOrBuilderList() {
         if (entriesBuilder_ != null) {
           return entriesBuilder_.getMessageOrBuilderList();
@@ -12488,12 +12527,12 @@ public final class RiakTsPB {
       /**
        * <code>repeated .TsCoverageEntry entries = 1;</code>
        */
-      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCoverageEntry.Builder>
+      public java.util.List<com.basho.riak.protobuf.RiakTsPB.TsCoverageEntry.Builder> 
            getEntriesBuilderList() {
         return getEntriesFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsCoverageEntry, com.basho.riak.protobuf.RiakTsPB.TsCoverageEntry.Builder, com.basho.riak.protobuf.RiakTsPB.TsCoverageEntryOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsCoverageEntry, com.basho.riak.protobuf.RiakTsPB.TsCoverageEntry.Builder, com.basho.riak.protobuf.RiakTsPB.TsCoverageEntryOrBuilder> 
           getEntriesFieldBuilder() {
         if (entriesBuilder_ == null) {
           entriesBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
@@ -12521,6 +12560,7 @@ public final class RiakTsPB {
   public interface TsCoverageEntryOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsCoverageEntry)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required bytes ip = 1;</code>
      */
@@ -13081,16 +13121,20 @@ public final class RiakTsPB {
 
       public final boolean isInitialized() {
         if (!hasIp()) {
+          
           return false;
         }
         if (!hasPort()) {
+          
           return false;
         }
         if (!hasCoverContext()) {
+          
           return false;
         }
         if (hasRange()) {
           if (!getRange().isInitialized()) {
+            
             return false;
           }
         }
@@ -13373,7 +13417,7 @@ public final class RiakTsPB {
        * </pre>
        */
       private com.google.protobuf.SingleFieldBuilder<
-          com.basho.riak.protobuf.RiakTsPB.TsRange, com.basho.riak.protobuf.RiakTsPB.TsRange.Builder, com.basho.riak.protobuf.RiakTsPB.TsRangeOrBuilder>
+          com.basho.riak.protobuf.RiakTsPB.TsRange, com.basho.riak.protobuf.RiakTsPB.TsRange.Builder, com.basho.riak.protobuf.RiakTsPB.TsRangeOrBuilder> 
           getRangeFieldBuilder() {
         if (rangeBuilder_ == null) {
           rangeBuilder_ = new com.google.protobuf.SingleFieldBuilder<
@@ -13400,6 +13444,7 @@ public final class RiakTsPB {
   public interface TsRangeOrBuilder extends
       // @@protoc_insertion_point(interface_extends:TsRange)
       com.google.protobuf.MessageOrBuilder {
+
     /**
      * <code>required bytes field_name = 1;</code>
      */
@@ -14007,21 +14052,27 @@ public final class RiakTsPB {
 
       public final boolean isInitialized() {
         if (!hasFieldName()) {
+          
           return false;
         }
         if (!hasLowerBound()) {
+          
           return false;
         }
         if (!hasLowerBoundInclusive()) {
+          
           return false;
         }
         if (!hasUpperBound()) {
+          
           return false;
         }
         if (!hasUpperBoundInclusive()) {
+          
           return false;
         }
         if (!hasDesc()) {
+          
           return false;
         }
         return true;
@@ -14403,10 +14454,11 @@ public final class RiakTsPB {
       "TsRange\"\223\001\n\007TsRange\022\022\n\nfield_name\030\001 \002(\014\022" +
       "\023\n\013lower_bound\030\002 \002(\022\022\035\n\025lower_bound_incl" +
       "usive\030\003 \002(\010\022\023\n\013upper_bound\030\004 \002(\022\022\035\n\025uppe" +
-      "r_bound_inclusive\030\005 \002(\010\022\014\n\004desc\030\006 \002(\014*O\n" +
+      "r_bound_inclusive\030\005 \002(\010\022\014\n\004desc\030\006 \002(\014*Y\n" +
       "\014TsColumnType\022\013\n\007VARCHAR\020\000\022\n\n\006SINT64\020\001\022\n" +
-      "\n\006DOUBLE\020\002\022\r\n\tTIMESTAMP\020\003\022\013\n\007BOOLEAN\020\004B#" +
-      "\n\027com.basho.riak.protobufB\010RiakTsPB"
+      "\n\006DOUBLE\020\002\022\r\n\tTIMESTAMP\020\003\022\013\n\007BOOLEAN\020\004\022\010" +
+      "\n\004BLOB\020\005B#\n\027com.basho.riak.protobufB\010Ria" +
+      "kTsPB"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
