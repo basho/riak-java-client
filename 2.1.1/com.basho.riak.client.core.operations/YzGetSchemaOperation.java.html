@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>YzGetSchemaOperation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.operations</a> &gt; <span class="el_source">YzGetSchemaOperation.java</span></div><h1>YzGetSchemaOperation.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.core.operations;
+
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.query.search.YokozunaSchema;
+import com.basho.riak.protobuf.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakYokozunaPB;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.List;
+
+/**
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ */
+public class YzGetSchemaOperation extends FutureOperation&lt;YzGetSchemaOperation.Response, RiakYokozunaPB.RpbYokozunaSchemaGetResp, String&gt;
+{
+    private final RiakYokozunaPB.RpbYokozunaSchemaGetReq.Builder reqBuilder;
+    private final String schemaName;
+
+    private YzGetSchemaOperation(Builder builder)
+<span class="nc" id="L37">    {</span>
+<span class="nc" id="L38">        this.reqBuilder = builder.reqBuilder;</span>
+<span class="nc" id="L39">        this.schemaName = builder.schemaName;</span>
+<span class="nc" id="L40">    }</span>
+
+    @Override
+    protected YzGetSchemaOperation.Response convert(List&lt;RiakYokozunaPB.RpbYokozunaSchemaGetResp&gt; rawResponse)
+    {
+        // This isn't a streaming op, so there's only one protobuf in the list
+<span class="nc" id="L46">        RiakYokozunaPB.RpbYokozunaSchemaGetResp response = rawResponse.get(0);</span>
+
+<span class="nc" id="L48">        return new Response(new YokozunaSchema(response.getSchema().getName().toStringUtf8(),</span>
+<span class="nc" id="L49">                                    response.getSchema().getContent().toStringUtf8()));</span>
+    }
+
+    @Override
+    protected RiakMessage createChannelMessage()
+    {
+<span class="nc" id="L55">        RiakYokozunaPB.RpbYokozunaSchemaGetReq req = reqBuilder.build();</span>
+<span class="nc" id="L56">        return new RiakMessage(RiakMessageCodes.MSG_YokozunaSchemaGetReq, req.toByteArray());</span>
+    }
+
+    @Override
+    protected RiakYokozunaPB.RpbYokozunaSchemaGetResp decode(RiakMessage rawMessage)
+    {
+<span class="nc" id="L62">        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_YokozunaSchemaGetResp);</span>
+        try
+        {
+<span class="nc" id="L65">            return RiakYokozunaPB.RpbYokozunaSchemaGetResp.parseFrom(rawMessage.getData());</span>
+        }
+<span class="nc" id="L67">        catch (InvalidProtocolBufferException ex)</span>
+        {
+<span class="nc" id="L69">            throw new IllegalArgumentException(&quot;Invalid message received&quot;, ex);</span>
+        }
+    }
+
+    @Override
+    public String getQueryInfo()
+    {
+<span class="nc" id="L76">        return schemaName;</span>
+    }
+
+    public static class Builder
+    {
+<span class="nc" id="L81">        private final RiakYokozunaPB.RpbYokozunaSchemaGetReq.Builder reqBuilder =</span>
+<span class="nc" id="L82">            RiakYokozunaPB.RpbYokozunaSchemaGetReq.newBuilder();</span>
+        private final String schemaName;
+
+        public Builder(String schemaName)
+<span class="nc" id="L86">        {</span>
+<span class="nc bnc" id="L87" title="All 4 branches missed.">            if (null == schemaName || schemaName.length() == 0)</span>
+            {
+<span class="nc" id="L89">                throw new IllegalArgumentException(&quot;Schema name cannot be null or zero length&quot;);</span>
+            }
+<span class="nc" id="L91">            reqBuilder.setName(ByteString.copyFromUtf8(schemaName));</span>
+<span class="nc" id="L92">            this.schemaName = schemaName;</span>
+<span class="nc" id="L93">        }</span>
+
+        public YzGetSchemaOperation build()
+        {
+<span class="nc" id="L97">            return new YzGetSchemaOperation(this);</span>
+        }
+    }
+
+    public static class Response
+    {
+        private final YokozunaSchema schema;
+
+        Response(YokozunaSchema schema)
+<span class="nc" id="L106">        {</span>
+<span class="nc" id="L107">            this.schema = schema;</span>
+<span class="nc" id="L108">        }</span>
+
+        public YokozunaSchema getSchema()
+        {
+<span class="nc" id="L112">            return schema;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RiakResponseHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.netty</a> &gt; <span class="el_source">RiakResponseHandler.java</span></div><h1>RiakResponseHandler.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.core.netty;
+
+import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.RiakResponseListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+
+/**
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+public class RiakResponseHandler extends ChannelInboundHandlerAdapter
+{
+    private RiakResponseListener listener;
+
+    public RiakResponseHandler(RiakResponseListener listener)
+    {
+<span class="fc" id="L19">        super();</span>
+<span class="fc" id="L20">        this.listener = listener;</span>
+<span class="fc" id="L21">    }</span>
+
+    @Override
+    public void channelRead(ChannelHandlerContext chc, Object message) throws Exception
+    {
+<span class="fc" id="L26">        RiakMessage riakMessage = (RiakMessage) message;</span>
+<span class="fc bfc" id="L27" title="All 2 branches covered.">        if (riakMessage.isRiakError())</span>
+        {
+<span class="fc" id="L29">            listener.onRiakErrorResponse(chc.channel(), riakMessage.getRiakError());</span>
+        }
+        else
+        {
+<span class="fc" id="L33">            listener.onSuccess(chc.channel(), riakMessage);</span>
+        }
+<span class="fc" id="L35">    }</span>
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+            throws Exception
+    {
+        // On any exception in the pipeline we explitly close the context here
+        // so the channel doesn't get reused by the ConnectionPool.
+<span class="fc" id="L43">        listener.onException(ctx.channel(), cause);</span>
+<span class="fc" id="L44">        ctx.close();</span>
+<span class="fc" id="L45">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

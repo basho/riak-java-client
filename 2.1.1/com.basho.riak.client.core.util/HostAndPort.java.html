@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HostAndPort.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.util</a> &gt; <span class="el_source">HostAndPort.java</span></div><h1>HostAndPort.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013-2015 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.core.util;
+
+import java.io.Serializable;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * An immutable representation of a host and port.
+ *
+ * Note: Introduced  to reduce the amount of 3rd party dependencies such as guava
+ *       (http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/net/HostAndPort.html).
+ *
+ * @author Sergey Galkin &lt;srggal at gmail dot com&gt;
+ * @since 2.0.3
+*/
+public final class HostAndPort implements Serializable
+{
+    private static final long serialVersionUID = 0;
+    private final int port;
+    private final String host;
+    private transient InetSocketAddress inetAddress;
+
+    private HostAndPort(String host, int port)
+<span class="fc" id="L40">    {</span>
+<span class="fc" id="L41">        this.host = host;</span>
+<span class="fc" id="L42">        this.port = port;</span>
+<span class="fc" id="L43">    }</span>
+
+    public boolean hasPort()
+    {
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        return port &gt;= 0;</span>
+    }
+
+    public int getPort()
+    {
+<span class="fc" id="L52">        return port;</span>
+    }
+
+    public int getPortOrDefault(int defaultPort)
+    {
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">        if (!hasPort())</span>
+        {
+<span class="nc" id="L59">            return defaultPort;</span>
+        }
+<span class="fc" id="L61">        return port;</span>
+    }
+
+    public String getHost()
+    {
+<span class="fc" id="L66">        return host;</span>
+    }
+
+    public InetSocketAddress asInetSocketAddress()
+    {
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (inetAddress == null)</span>
+        {
+<span class="nc" id="L73">            inetAddress = new InetSocketAddress(getHost(), getPort());</span>
+        }
+
+<span class="nc" id="L76">        return inetAddress;</span>
+    }
+
+    public static List&lt;HostAndPort&gt; hostsFromString(String hostPortStr, int defaultPort)
+    {
+<span class="fc" id="L81">        checkHost(hostPortStr);</span>
+<span class="fc" id="L82">        String rawHosts[] = hostPortStr.split(&quot;,&quot;);</span>
+
+<span class="fc" id="L84">        List&lt;HostAndPort&gt; retVal = new ArrayList&lt;&gt;(rawHosts.length);</span>
+
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        for ( String s: rawHosts)</span>
+        {
+<span class="fc" id="L88">            retVal.add(HostAndPort.fromString(s, defaultPort));</span>
+        }
+
+<span class="fc" id="L91">        return retVal;</span>
+    }
+
+    public static HostAndPort fromString(String hostPortStr, int defaultPort)
+    {
+<span class="fc" id="L96">        hostPortStr = hostPortStr.trim();</span>
+<span class="fc" id="L97">        checkHost(hostPortStr);</span>
+
+<span class="fc" id="L99">        final int idx = hostPortStr.indexOf(':');</span>
+        final HostAndPort retVal;
+
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        if ( idx == -1 )</span>
+        {
+<span class="fc" id="L104">            retVal = fromParts(hostPortStr, defaultPort);</span>
+        }
+        else
+        {
+            try
+            {
+<span class="fc" id="L110">                retVal = fromParts(</span>
+<span class="fc" id="L111">                        hostPortStr.substring(0, idx),</span>
+<span class="fc" id="L112">                        Integer.parseInt(hostPortStr.substring(idx + 1))</span>
+                );
+            }
+<span class="nc" id="L115">            catch (NumberFormatException ex)</span>
+            {
+<span class="nc" id="L117">                throw new IllegalArgumentException(&quot;Unparseable port number: &quot; + hostPortStr);</span>
+<span class="fc" id="L118">            }</span>
+        }
+<span class="fc" id="L120">        return retVal;</span>
+    }
+
+    public static HostAndPort fromParts(String host, int port)
+    {
+<span class="fc" id="L125">        checkHost(host);</span>
+<span class="fc" id="L126">        return new HostAndPort(host, port);</span>
+    }
+
+    private static void checkHost(String host) throws IllegalArgumentException
+    {
+<span class="pc bpc" id="L131" title="2 of 4 branches missed.">        if (host == null || host.isEmpty())</span>
+        {
+<span class="nc" id="L133">            throw new IllegalArgumentException(&quot;Host must be provided, it can't be null or empty&quot;);</span>
+        }
+<span class="fc" id="L135">    }</span>
+
+    @Override
+    public boolean equals(Object o)
+    {
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L141" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+
+<span class="nc" id="L143">        HostAndPort that = (HostAndPort) o;</span>
+
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (getPort() != that.getPort()) return false;</span>
+<span class="nc" id="L146">        return getHost().equals(that.getHost());</span>
+    }
+
+    @Override
+    public int hashCode()
+    {
+<span class="fc" id="L152">        int result = getPort();</span>
+<span class="fc" id="L153">        result = 31 * result + getHost().hashCode();</span>
+<span class="fc" id="L154">        return result;</span>
+    }
+
+    @Override
+    public String toString()
+    {
+<span class="nc" id="L160">        return &quot;HostAndPort{&quot; +</span>
+                &quot;host='&quot; + host + '\'' +
+                &quot;, port=&quot; + port +
+                '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

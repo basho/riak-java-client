@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StoreValue.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.kv</a> &gt; <span class="el_source">StoreValue.java</span></div><h1>StoreValue.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.api.commands.kv;
+
+import com.basho.riak.client.api.GenericRiakCommand;
+import com.basho.riak.client.api.cap.Quorum;
+import com.basho.riak.client.api.cap.VClock;
+import com.basho.riak.client.api.convert.Converter;
+import com.basho.riak.client.api.convert.Converter.OrmExtracted;
+import com.basho.riak.client.api.convert.ConverterFactory;
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.operations.StoreOperation;
+import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.api.commands.RiakOption;
+import com.basho.riak.client.core.util.BinaryValue;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.fasterxml.jackson.core.type.TypeReference;
+
+/**
+ * Command used to store a value in Riak.
+ * &lt;script src=&quot;https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js&quot;&gt;&lt;/script&gt;
+ * &lt;p&gt;
+ * To store a value in Riak you supply a {@link com.basho.riak.client.core.query.Location}
+ * and an object to store. The object may be an instance of {@link com.basho.riak.client.core.query.RiakObject}
+ * or your own POJO. In the case of a POJO the default serialization uses the Jackson JSON library
+ * to store your object as JSON in Riak.
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * Namespace ns = new Namespace(&quot;my_type&quot;,&quot;my_bucket&quot;);
+ * Location loc = new Location(ns, &quot;my_key&quot;);
+ * RiakObject ro = new RiakObject();
+ * ro.setValue(BinaryValue.create(&quot;This is my value&quot;));
+ * StoreValue sv =
+ *      new StoreValue.Builder(ro).withLocation(loc).build();
+ * StoreValue.Response response = client.execute(sv);}&lt;/pre&gt;
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * All operations can called async as well.
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * ...
+ * RiakFuture&lt;StoreValue.Response, Location&gt; future = client.executeAsync(sv);
+ * ...
+ * future.await();
+ * if (future.isSuccess())
+ * {
+ *     ...
+ * }}&lt;/pre&gt;
+ * &lt;/p&gt;
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+public final class StoreValue extends GenericRiakCommand.GenericRiakCommandWithSameInfo&lt;StoreValue.Response,
+        Location, StoreOperation.Response&gt;
+{
+    private final Namespace namespace;
+    private final BinaryValue key;
+<span class="fc" id="L77">    private final Map&lt;Option&lt;?&gt;, Object&gt; options = new HashMap&lt;&gt;();</span>
+    private final Object value;
+    private final TypeReference&lt;?&gt; typeReference;
+    private final VClock vclock;
+
+    StoreValue(Builder builder)
+<span class="fc" id="L83">    {</span>
+<span class="fc" id="L84">        this.options.putAll(builder.options);</span>
+<span class="fc" id="L85">        this.namespace = builder.namespace;</span>
+<span class="fc" id="L86">        this.key = builder.key;</span>
+<span class="fc" id="L87">        this.value = builder.value;</span>
+<span class="fc" id="L88">        this.typeReference = builder.typeReference;</span>
+<span class="fc" id="L89">        this.vclock = builder.vclock;</span>
+<span class="fc" id="L90">    }</span>
+
+    @Override
+    protected Response convertResponse(FutureOperation&lt;StoreOperation.Response, ?, Location&gt; request,
+                                       StoreOperation.Response coreResponse)
+    {
+<span class="nc" id="L96">        Location loc = request.getQueryInfo();</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (coreResponse.hasGeneratedKey())</span>
+        {
+<span class="nc" id="L99">            loc = new Location(loc.getNamespace(), coreResponse.getGeneratedKey());</span>
+        }
+
+<span class="nc" id="L102">        return new Response.Builder()</span>
+<span class="nc" id="L103">                .withValues(coreResponse.getObjectList())</span>
+<span class="nc" id="L104">                .withGeneratedKey(loc.getKey())</span>
+<span class="nc" id="L105">                .withLocation(loc) // for ORM</span>
+<span class="nc" id="L106">                .build();</span>
+    }
+
+    @Override
+    protected RiakFuture&lt;Response, Location&gt; executeAsync(RiakCluster cluster)
+    {
+<span class="nc" id="L112">        return super.executeAsync(cluster);</span>
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    @Override
+    protected StoreOperation buildCoreOperation()
+    {
+        Converter converter;
+
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (typeReference == null)</span>
+        {
+<span class="nc" id="L123">            converter = ConverterFactory.getInstance().getConverter(value.getClass());</span>
+        }
+        else
+        {
+<span class="nc" id="L127">            converter = ConverterFactory.getInstance().getConverter(typeReference);</span>
+        }
+
+<span class="nc" id="L130">        final OrmExtracted orm = converter.fromDomain(value, namespace, key);</span>
+
+        // If there's no vector clock in the object, use one possibly given via
+        // the builder.
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (orm.getRiakObject().getVClock() == null)</span>
+        {
+<span class="nc" id="L136">            orm.getRiakObject().setVClock(vclock);</span>
+        }
+
+        StoreOperation.Builder builder;
+
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (orm.hasKey())</span>
+        {
+<span class="nc" id="L143">            Location loc = new Location(orm.getNamespace(), orm.getKey());</span>
+<span class="nc" id="L144">            builder = new StoreOperation.Builder(loc);</span>
+<span class="nc" id="L145">        }</span>
+        else
+        {
+<span class="nc" id="L148">            builder = new StoreOperation.Builder(orm.getNamespace());</span>
+        }
+
+<span class="nc" id="L151">        builder.withContent(orm.getRiakObject());</span>
+
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        for (Map.Entry&lt;Option&lt;?&gt;, Object&gt; opPair : options.entrySet())</span>
+        {
+<span class="nc" id="L155">            RiakOption&lt;?&gt; option = opPair.getKey();</span>
+
+<span class="nc bnc" id="L157" title="All 2 branches missed.">            if (option == Option.TIMEOUT)</span>
+            {
+<span class="nc" id="L159">                builder.withTimeout((Integer) opPair.getValue());</span>
+            }
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            else if (option == Option.RETURN_HEAD)</span>
+            {
+<span class="nc" id="L163">                builder.withReturnHead((Boolean) opPair.getValue());</span>
+            }
+<span class="nc bnc" id="L165" title="All 2 branches missed.">            else if (option == Option.ASIS)</span>
+            {
+<span class="nc" id="L167">                builder.withAsis((Boolean) opPair.getValue());</span>
+            }
+<span class="nc bnc" id="L169" title="All 2 branches missed.">            else if (option == Option.DW)</span>
+            {
+<span class="nc" id="L171">                builder.withDw(((Quorum) opPair.getValue()).getIntValue());</span>
+            }
+<span class="nc bnc" id="L173" title="All 2 branches missed.">            else if (option == Option.IF_NONE_MATCH)</span>
+            {
+<span class="nc" id="L175">                builder.withIfNoneMatch((Boolean) opPair.getValue());</span>
+            }
+<span class="nc bnc" id="L177" title="All 2 branches missed.">            else if (option == Option.IF_NOT_MODIFIED)</span>
+            {
+<span class="nc" id="L179">                builder.withIfNotModified((Boolean) opPair.getValue());</span>
+            }
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            else if (option == Option.N_VAL)</span>
+            {
+<span class="nc" id="L183">                builder.withNVal((Integer) opPair.getValue());</span>
+            }
+<span class="nc bnc" id="L185" title="All 2 branches missed.">            else if (option == Option.PW)</span>
+            {
+<span class="nc" id="L187">                builder.withPw(((Quorum) opPair.getValue()).getIntValue());</span>
+            }
+<span class="nc bnc" id="L189" title="All 2 branches missed.">            else if (option == Option.SLOPPY_QUORUM)</span>
+            {
+<span class="nc" id="L191">                builder.withSloppyQuorum((Boolean) opPair.getValue());</span>
+            }
+<span class="nc bnc" id="L193" title="All 2 branches missed.">            else if (option == Option.W)</span>
+            {
+<span class="nc" id="L195">                builder.withW(((Quorum) opPair.getValue()).getIntValue());</span>
+            }
+<span class="nc bnc" id="L197" title="All 2 branches missed.">            else if (option == Option.RETURN_BODY)</span>
+            {
+<span class="nc" id="L199">                builder.withReturnBody((Boolean) opPair.getValue());</span>
+            }
+<span class="nc" id="L201">        }</span>
+
+<span class="nc" id="L203">        return builder.build();</span>
+    }
+
+    /**
+    * Options For controlling how Riak performs the store operation.
+    * &lt;p&gt;
+    * These options can be supplied to the {@link StoreValue.Builder} to change
+    * how Riak performs the operation. These override the defaults provided
+    * by the bucket.
+    * &lt;/p&gt;
+    * @author Dave Rusek &lt;drusek at basho dot com&gt;
+    * @since 2.0
+    * @see &lt;a href=&quot;http://docs.basho.com/riak/latest/dev/advanced/cap-controls/&quot;&gt;Replication Properties&lt;/a&gt;
+    */
+   public final static class Option&lt;T&gt; extends RiakOption&lt;T&gt;
+   {
+       /**
+        * Write Quorum.
+        * How many replicas to write to before returning a successful response.
+        */
+<span class="fc" id="L223">       public static final Option&lt;Quorum&gt; W = new Option&lt;&gt;(&quot;W&quot;);</span>
+       /**
+        * Durable Write Quorum.
+        * How many replicas to commit to durable storage before returning a successful response.
+        */
+<span class="fc" id="L228">       public static final Option&lt;Quorum&gt; DW = new Option&lt;&gt;(&quot;DW&quot;);</span>
+       /**
+        * Primary Write Quorum.
+        * How many primary nodes must be up when the write is attempted.
+        */
+<span class="fc" id="L233">       public static final Option&lt;Quorum&gt; PW = new Option&lt;&gt;(&quot;PW&quot;);</span>
+       /**
+        * If Not Modified.
+        * Update the value only if the vclock in the supplied object matches the one in the database.
+        */
+<span class="fc" id="L238">       public static final Option&lt;Boolean&gt; IF_NOT_MODIFIED = new Option&lt;&gt;(&quot;IF_NOT_MODIFIED&quot;);</span>
+       /**
+        * If None Match.
+        * Store the value only if this bucket/key combination are not already defined.
+        */
+<span class="fc" id="L243">       public static final Option&lt;Boolean&gt; IF_NONE_MATCH = new Option&lt;&gt;(&quot;IF_NONE_MATCH&quot;);</span>
+       /**
+        * Return Body.
+        * Return the object stored in Riak. Note this will return all siblings.
+        */
+<span class="fc" id="L248">       public static final Option&lt;Boolean&gt; RETURN_BODY = new Option&lt;&gt;(&quot;RETURN_BODY&quot;);</span>
+       /**
+        * Return Head.
+        * Like {@link #RETURN_BODY} except that the value(s) in the object are blank to
+        * avoid returning potentially large value(s).
+        */
+<span class="fc" id="L254">       public static final Option&lt;Boolean&gt; RETURN_HEAD = new Option&lt;&gt;(&quot;RETURN_HEAD&quot;);</span>
+       /**
+        * Timeout.
+        * Sets the server-side timeout for this operation. The default in Riak is 60 seconds.
+        */
+<span class="fc" id="L259">       public static final Option&lt;Integer&gt; TIMEOUT = new Option&lt;&gt;(&quot;TIMEOUT&quot;);</span>
+
+<span class="fc" id="L261">       public static final Option&lt;Boolean&gt; ASIS = new Option&lt;&gt;(&quot;ASIS&quot;);</span>
+<span class="fc" id="L262">       public static final Option&lt;Boolean&gt; SLOPPY_QUORUM = new Option&lt;&gt;(&quot;SLOPPY_QUORUM&quot;);</span>
+<span class="fc" id="L263">       public static final Option&lt;Integer&gt; N_VAL = new Option&lt;&gt;(&quot;N_VAL&quot;);</span>
+
+       private Option(String name)
+       {
+<span class="fc" id="L267">           super(name);</span>
+<span class="fc" id="L268">       }</span>
+   }
+
+    public static class Response extends KvResponseBase
+    {
+        private final BinaryValue generatedKey;
+
+        Response(Init&lt;?&gt; builder)
+        {
+<span class="nc" id="L277">            super(builder);</span>
+<span class="nc" id="L278">            this.generatedKey = builder.generatedKey;</span>
+<span class="nc" id="L279">        }</span>
+
+        public boolean hasGeneratedKey()
+        {
+<span class="nc bnc" id="L283" title="All 2 branches missed.">            return generatedKey != null;</span>
+        }
+
+        public BinaryValue getGeneratedKey()
+        {
+<span class="nc" id="L288">            return generatedKey;</span>
+        }
+
+<span class="nc" id="L291">        protected static abstract class Init&lt;T extends Init&lt;T&gt;&gt; extends KvResponseBase.Init&lt;T&gt;</span>
+        {
+            private BinaryValue generatedKey;
+
+            T withGeneratedKey(BinaryValue generatedKey)
+            {
+<span class="nc" id="L297">                this.generatedKey = generatedKey;</span>
+<span class="nc" id="L298">                return self();</span>
+            }
+        }
+
+<span class="nc" id="L302">        static class Builder extends Init&lt;Builder&gt;</span>
+        {
+            @Override
+            protected Builder self()
+            {
+<span class="nc" id="L307">                return this;</span>
+            }
+
+            @Override
+            Response build()
+            {
+<span class="nc" id="L313">                return new Response(this);</span>
+            }
+        }
+    }
+
+    /**
+     * Used to construct a StoreValue command.
+     */
+    public static class Builder
+    {
+<span class="pc" id="L323">        private final Map&lt;Option&lt;?&gt;, Object&gt; options = new HashMap&lt;&gt;();</span>
+        private final Object value;
+        private Namespace namespace;
+        private BinaryValue key;
+        private TypeReference&lt;?&gt; typeReference;
+        private VClock vclock;
+
+        /**
+         * Construct a Builder for a StoreValue command.
+         * &lt;p&gt;
+         * Prior to storing the object, it's raw type (class) will
+         * be used to retrieve a converter from the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+         * For anything other than a RiakObject this is the {@link com.basho.riak.client.api.convert.JSONConverter}
+         * by default.
+         * &lt;/p&gt;
+         * @param value The object to be stored in Riak.
+         */
+        public Builder(Object value)
+<span class="fc" id="L341">        {</span>
+<span class="fc" id="L342">            this.value = value;</span>
+<span class="fc" id="L343">        }</span>
+
+        /**
+         * Construct a Builder for a StoreValue command.
+         * &lt;p&gt;
+         * Prior to storing the object, the supplied TypeReference will
+         * be used to retrieve a converter from the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+         * For anything other than a RiakObject this is the {@link com.basho.riak.client.api.convert.JSONConverter}
+         * by default.
+         * &lt;/p&gt;
+         * @param value The object to be stored in Riak.
+         * @param typeReference the TypeReference for the object.
+         */
+        public Builder(Object value, TypeReference&lt;?&gt; typeReference)
+<span class="nc" id="L357">        {</span>
+<span class="nc" id="L358">            this.value = value;</span>
+<span class="nc" id="L359">            this.typeReference = typeReference;</span>
+<span class="nc" id="L360">        }</span>
+
+        /**
+         * Set the location to store the object.
+         * &lt;p&gt;
+         * When storing a RiakObject or a POJO that does not have annotations for
+         * the bucket and key, a {@link com.basho.riak.client.core.query.Location}
+         * must be provided.
+         * &lt;/p&gt;
+         * @param location the location to store the object in Riak.
+         * @return a reference to this object.
+         */
+        public Builder withLocation(Location location)
+        {
+<span class="fc" id="L374">            this.namespace = location.getNamespace();</span>
+<span class="fc" id="L375">            this.key = location.getKey();</span>
+<span class="fc" id="L376">            return this;</span>
+        }
+
+        /**
+         * Set the namespace to store the object.
+         * &lt;p&gt;
+         * When storing a POJO that does not have an annotation for the
+         * bucket type and bucket, a {@link com.basho.riak.client.core.query.Namespace}
+         * must be supplied.
+         * &lt;/p&gt;
+         * @param namespace The namespaec to store the object.
+         * @return a reference to this object.
+         */
+        public Builder withNamespace(Namespace namespace)
+        {
+<span class="nc" id="L391">            this.namespace = namespace;</span>
+<span class="nc" id="L392">            return this;</span>
+        }
+
+        /**
+         * Set the Riak-side timeout value.
+         * &lt;p&gt;
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * &lt;/p&gt;
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
+        public Builder withTimeout(int timeout)
+        {
+<span class="nc" id="L406">            withOption(Option.TIMEOUT, timeout);</span>
+<span class="nc" id="L407">            return this;</span>
+        }
+
+        /**
+         * Add an optional setting for this command.
+         * This will be passed along with the request to Riak to tell it how
+         * to behave when servicing the request.
+         *
+         * @param option the option
+         * @param value the value for the option
+         * @return a reference to this object.
+         */
+        public &lt;T&gt; Builder withOption(Option&lt;T&gt; option, T value)
+        {
+<span class="fc" id="L421">            options.put(option, value);</span>
+<span class="fc" id="L422">            return this;</span>
+        }
+
+        /**
+         * Set the vector clock.
+         * &lt;p&gt;
+         * When storing core Java types ({@code HashMap},
+         * {@code ArrayList},{@code String}, etc) or non-annotated POJOs this
+         * method allows you to specify the vector clock retrieved from a
+         * prior fetch operation.
+         * &lt;/p&gt;
+         * @param vclock The vector clock to send to Riak.
+         * @return a reference to this object.
+         */
+        public Builder withVectorClock(VClock vclock)
+        {
+<span class="nc" id="L438">            this.vclock = vclock;</span>
+<span class="nc" id="L439">            return this;</span>
+        }
+
+        /**
+         * Construct the StoreValue command.
+         * @return the new StoreValue command.
+         */
+        public StoreValue build()
+        {
+<span class="fc" id="L448">            return new StoreValue(this);</span>
+        }
+    }
+
+    @Override
+    public int hashCode()
+    {
+<span class="nc" id="L455">        final int prime = 31;</span>
+<span class="nc" id="L456">        int result = 1;</span>
+<span class="nc bnc" id="L457" title="All 2 branches missed.">        result = prime * result + (namespace != null ? namespace.hashCode() : 0);</span>
+<span class="nc bnc" id="L458" title="All 2 branches missed.">        result = prime * result + (key != null ? key.hashCode() : 0);</span>
+<span class="nc" id="L459">        result = prime * result + options.hashCode();</span>
+<span class="nc bnc" id="L460" title="All 2 branches missed.">        result = prime * result + (value != null ? value.hashCode() : 0);</span>
+<span class="nc bnc" id="L461" title="All 2 branches missed.">        result = prime * result + (typeReference != null ? typeReference.hashCode() : 0);</span>
+<span class="nc bnc" id="L462" title="All 2 branches missed.">        result = prime * result + (vclock != null ? vclock.hashCode() : 0);</span>
+<span class="nc" id="L463">        return result;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+<span class="pc bpc" id="L469" title="1 of 2 branches missed.">        if (this == obj)</span>
+        {
+<span class="nc" id="L471">            return true;</span>
+        }
+<span class="pc bpc" id="L473" title="1 of 2 branches missed.">        if (obj == null)</span>
+        {
+<span class="nc" id="L475">            return false;</span>
+        }
+<span class="pc bpc" id="L477" title="1 of 2 branches missed.">        if (!(obj instanceof StoreValue))</span>
+        {
+<span class="nc" id="L479">            return false;</span>
+        }
+
+<span class="fc" id="L482">        final StoreValue other = (StoreValue) obj;</span>
+<span class="pc bpc" id="L483" title="5 of 6 branches missed.">        if (this.namespace != other.namespace &amp;&amp; (this.namespace == null || !this.namespace.equals(other.namespace)))</span>
+        {
+<span class="nc" id="L485">            return false;</span>
+        }
+<span class="pc bpc" id="L487" title="5 of 6 branches missed.">        if (this.key != other.key &amp;&amp; (this.key == null || !this.key.equals(other.key)))</span>
+        {
+<span class="nc" id="L489">            return false;</span>
+        }
+<span class="pc bpc" id="L491" title="3 of 6 branches missed.">        if (this.options != other.options &amp;&amp; (this.options == null || !this.options.equals(other.options)))</span>
+        {
+<span class="nc" id="L493">            return false;</span>
+        }
+<span class="pc bpc" id="L495" title="3 of 6 branches missed.">        if (this.value != other.value &amp;&amp; (this.value == null || !this.value.equals(other.value)))</span>
+        {
+<span class="nc" id="L497">            return false;</span>
+        }
+<span class="pc bpc" id="L499" title="5 of 6 branches missed.">        if (this.typeReference != other.typeReference &amp;&amp; (this.typeReference == null || !this.typeReference.equals(other.typeReference)))</span>
+        {
+<span class="nc" id="L501">            return false;</span>
+        }
+<span class="pc bpc" id="L503" title="5 of 6 branches missed.">        if (this.vclock != other.vclock &amp;&amp; (this.vclock == null || !this.vclock.equals(other.vclock)))</span>
+        {
+<span class="nc" id="L505">            return false;</span>
+        }
+<span class="fc" id="L507">        return true;</span>
+    }
+
+    @Override
+    public String toString()
+    {
+<span class="nc" id="L513">        return String.format(&quot;{namespace: %s, key: %s, options: %s, value: %s,&quot;</span>
+                + &quot; typeReference: %s, vclock: %s}&quot;, namespace, key, options,
+                value, typeReference, vclock);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

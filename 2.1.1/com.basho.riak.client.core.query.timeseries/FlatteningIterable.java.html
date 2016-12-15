@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FlatteningIterable.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.query.timeseries</a> &gt; <span class="el_source">FlatteningIterable.java</span></div><h1>FlatteningIterable.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.core.query.timeseries;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+/**
+ * Created by alex on 12/8/15.
+ */
+public class FlatteningIterable&lt;O,I&gt; implements Iterable&lt;I&gt;
+{
+    public interface InnerIterableProvider&lt;O,I&gt;
+    {
+        Iterator&lt;I&gt; getInnerIterator(O provider);
+    }
+
+    private final Iterable&lt;O&gt; source;
+    private final InnerIterableProvider&lt;O, I&gt; innerIterableProvider;
+
+    public FlatteningIterable(Iterable&lt;O&gt; source, InnerIterableProvider&lt;O,I&gt; innerIterableProvider)
+<span class="nc" id="L20">    {</span>
+<span class="nc" id="L21">        this.source = source;</span>
+<span class="nc" id="L22">        this.innerIterableProvider = innerIterableProvider;</span>
+<span class="nc" id="L23">    }</span>
+
+    @Override
+    public Iterator&lt;I&gt; iterator()
+    {
+<span class="nc" id="L28">        return new FlatteningIterator&lt;&gt;(source.iterator(), innerIterableProvider);</span>
+    }
+
+    private static class FlatteningIterator&lt;O,I&gt; implements Iterator&lt;I&gt;
+    {
+        private final Iterator&lt;O&gt; iteratorSource;
+        private final InnerIterableProvider&lt;O, I&gt; innerIterableProvider;
+<span class="nc" id="L35">        private Iterator&lt;I&gt; currentIterator = null;</span>
+
+        public FlatteningIterator(Iterator&lt;O&gt; source, InnerIterableProvider&lt;O,I&gt; innerIterableProvider)
+<span class="nc" id="L38">        {</span>
+<span class="nc" id="L39">            this.iteratorSource = source;</span>
+<span class="nc" id="L40">            this.innerIterableProvider = innerIterableProvider;</span>
+<span class="nc" id="L41">            loadNextIterator();</span>
+<span class="nc" id="L42">        }</span>
+
+        @Override
+        public boolean hasNext()
+        {
+<span class="nc bnc" id="L47" title="All 2 branches missed.">            if (currentIteratorHasMore())</span>
+            {
+<span class="nc" id="L49">                return true;</span>
+            }
+<span class="nc bnc" id="L51" title="All 2 branches missed.">            else if (currentIteratorIsEmptyButSourceHasMore())</span>
+            {
+<span class="nc" id="L53">                loadNextIterator();</span>
+<span class="nc" id="L54">                return hasNext();</span>
+            }
+            else
+            {
+<span class="nc" id="L58">                return false;</span>
+            }
+        }
+
+        @Override
+        public I next()
+        {
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            if (currentIteratorHasMore())</span>
+            {
+<span class="nc" id="L67">                return currentIterator.next();</span>
+            }
+<span class="nc bnc" id="L69" title="All 2 branches missed.">            else if (currentIteratorIsEmptyButSourceHasMore())</span>
+            {
+<span class="nc" id="L71">                loadNextIterator();</span>
+<span class="nc" id="L72">                return next();</span>
+            }
+            else
+            {
+<span class="nc" id="L76">                throw new NoSuchElementException();</span>
+            }
+        }
+
+        @Override
+        public void remove()
+        {
+<span class="nc" id="L83">            throw new UnsupportedOperationException();</span>
+        }
+
+        private boolean currentIteratorHasMore()
+        {
+<span class="nc bnc" id="L88" title="All 2 branches missed.">            return this.currentIterator != null &amp;&amp;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">                   this.currentIterator.hasNext();</span>
+        }
+
+        private boolean currentIteratorIsEmptyButSourceHasMore()
+        {
+<span class="nc bnc" id="L94" title="All 2 branches missed.">            return currentIterator != null &amp;&amp;</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                    !currentIterator.hasNext() &amp;&amp;</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">                    iteratorSource.hasNext();</span>
+        }
+
+        private void loadNextIterator()
+        {
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            if (this.iteratorSource.hasNext())</span>
+            {
+<span class="nc" id="L103">                this.currentIterator = innerIterableProvider.getInnerIterator(this.iteratorSource.next());</span>
+            }
+            else
+            {
+<span class="nc" id="L107">                this.currentIterator = null;</span>
+            }
+<span class="nc" id="L109">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

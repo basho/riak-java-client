@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClassUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.convert.reflection</a> &gt; <span class="el_source">ClassUtil.java</span></div><h1>ClassUtil.java</h1><pre class="source lang-java linenums">/*
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.basho.riak.client.api.convert.reflection;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+/**
+ * Reflection/class utilities.
+ *
+ * @author russell
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 1.0
+ */
+public final class ClassUtil
+{
+<span class="nc" id="L29">    private ClassUtil() {}</span>
+
+    /**
+     * Make the {@link Member} accessible if possible, throw
+     * {@link IllegalArgumentException} is not.
+     *
+     * @param member the member to check
+     * @return the member
+     * @throws IllegalArgumentException if cannot set accessibility
+     */
+    @SuppressWarnings(&quot;deprecation&quot;)
+    public static &lt;T extends Member&gt; T checkAndFixAccess(T member)
+    {
+<span class="fc" id="L42">        com.fasterxml.jackson.databind.util.ClassUtil.checkAndFixAccess(member);</span>
+<span class="fc" id="L43">        return member;</span>
+    }
+
+    public static void setFieldValue(Field field, Object obj, Object value)
+    {
+        try
+        {
+<span class="fc" id="L50">            field.set(obj, value);</span>
+        }
+<span class="nc" id="L52">        catch (IllegalAccessException e)</span>
+        {
+<span class="nc" id="L54">            throw new IllegalStateException(&quot;Unable to set Riak annotated field value&quot;, e);</span>
+<span class="fc" id="L55">        }</span>
+<span class="fc" id="L56">    }</span>
+
+    public static &lt;T&gt; Object getFieldValue(Field f, T obj)
+    {
+<span class="fc" id="L60">        Object value = null;</span>
+        try
+        {
+<span class="fc" id="L63">            value = f.get(obj);</span>
+        }
+<span class="nc" id="L65">        catch (IllegalAccessException e)</span>
+        {
+<span class="nc" id="L67">            throw new IllegalStateException(&quot;Unable to get Riak annotated field value&quot;, e);</span>
+<span class="fc" id="L68">        }</span>
+
+<span class="fc" id="L70">        return value;</span>
+    }
+
+    public static &lt;T&gt; Object getMethodValue(Method m, T obj)
+    {
+<span class="fc" id="L75">        Object value = null;</span>
+        try
+        {
+<span class="fc" id="L78">            value = m.invoke(obj);</span>
+        }
+<span class="nc" id="L80">        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)</span>
+        {
+<span class="nc" id="L82">            throw new IllegalStateException(&quot;Unable to get Riak annotated method value&quot;, e);</span>
+<span class="fc" id="L83">        }</span>
+
+<span class="fc" id="L85">        return value;</span>
+    }
+
+    public static &lt;T&gt; void setMethodValue(Method m, T obj, Object value)
+    {
+        try
+        {
+<span class="fc" id="L92">            m.invoke(obj, value);</span>
+        }
+<span class="nc" id="L94">        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)</span>
+        {
+<span class="nc" id="L96">            throw new IllegalStateException(&quot;Unable to set Riak annotated method value&quot;, e);</span>
+<span class="fc" id="L97">        }</span>
+<span class="fc" id="L98">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

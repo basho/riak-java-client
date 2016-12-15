@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Search.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.search</a> &gt; <span class="el_source">Search.java</span></div><h1>Search.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.api.commands.search;
+
+import com.basho.riak.client.api.AsIsRiakCommand;
+import com.basho.riak.client.api.commands.RiakOption;
+import com.basho.riak.client.core.operations.SearchOperation;
+import com.basho.riak.client.core.util.BinaryValue;
+
+import java.util.*;
+
+/**
+ * Command used to perform a search in Riak.
+ * &lt;script src=&quot;https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js&quot;&gt;&lt;/script&gt;
+ * &lt;p&gt;
+ * To do a search in Riak, you must have search turned on, indexes created, and documents/objects indexed.
+ * Please see http://docs.basho.com/riak/latest/dev/using/search/ for more information.
+ *
+ * To use the Search class, you need a minimum of an Index to search, and a query to execute.
+ * Other options are available for pagination, sorting, filtering and what fields to return.
+ *
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * String index = &quot;Author_Biographies&quot;;
+ * String query = &quot;name_s:Al* AND bio_tsd:awesome&quot;;
+ *
+ * Search sch =
+ *      new Search.Builder(index, query).withRows(10).build();
+ * SearchOperation.Response response = client.execute(sch);}&lt;/pre&gt;
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * All operations can called async as well.
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * ...
+ * RiakFuture&lt;SearchOperation.Response, BinaryValue&gt; future = client.executeAsync(sv);
+ * ...
+ * future.await();
+ * if (future.isSuccess())
+ * {
+ *     ...
+ * }}&lt;/pre&gt;
+ * &lt;/p&gt;
+ *
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+public final class Search extends AsIsRiakCommand&lt;SearchOperation.Response, BinaryValue&gt;
+{
+    /**
+     * Enum that encapsulates the possible settings for a search command's presort setting.
+     * Presort results by the key, or search score.
+     */
+<span class="nc" id="L67">    public enum Presort</span>
+    {
+<span class="nc" id="L69">        KEY(&quot;key&quot;), SCORE(&quot;score&quot;);</span>
+
+        final String sortStr;
+
+        Presort(String sortStr)
+<span class="nc" id="L74">        {</span>
+<span class="nc" id="L75">            this.sortStr = sortStr;</span>
+<span class="nc" id="L76">        }</span>
+    }
+
+    private final String index;
+    private final String query;
+    private final int start;
+    private final int rows;
+    private final Presort presort;
+    private final String filterQuery;
+    private final String sortField;
+    private final List&lt;String&gt; returnFields;
+<span class="nc" id="L87">    private final Map&lt;Option&lt;?&gt;, Object&gt; options = new HashMap&lt;&gt;();</span>
+
+    public Search(Builder builder)
+<span class="nc" id="L90">    {</span>
+<span class="nc" id="L91">        this.index = builder.index;</span>
+<span class="nc" id="L92">        this.query = builder.query;</span>
+<span class="nc" id="L93">        this.start = builder.start;</span>
+<span class="nc" id="L94">        this.rows = builder.rows;</span>
+<span class="nc" id="L95">        this.presort = builder.presort;</span>
+<span class="nc" id="L96">        this.filterQuery = builder.filterQuery;</span>
+<span class="nc" id="L97">        this.sortField = builder.sortField;</span>
+<span class="nc" id="L98">        this.returnFields = builder.returnFields;</span>
+<span class="nc" id="L99">        this.options.putAll(builder.options);</span>
+<span class="nc" id="L100">    }</span>
+
+    @Override
+    protected SearchOperation buildCoreOperation()
+    {
+<span class="nc" id="L105">        SearchOperation.Builder builder = new SearchOperation.Builder(BinaryValue.create(index), query);</span>
+
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        for (Map.Entry&lt;Option&lt;?&gt;, Object&gt; option : options.entrySet())</span>
+        {
+<span class="nc bnc" id="L109" title="All 2 branches missed.">            if (option.getKey() == Option.DEFAULT_FIELD)</span>
+            {
+<span class="nc" id="L111">                builder.withDefaultField((String) option.getValue());</span>
+            }
+<span class="nc bnc" id="L113" title="All 2 branches missed.">            else if (option.getKey() == Option.DEFAULT_OPERATION)</span>
+            {
+<span class="nc" id="L115">                Option.Operation op = (Option.Operation) option.getValue();</span>
+<span class="nc" id="L116">                builder.withDefaultOperation(op.opStr);</span>
+            }
+<span class="nc" id="L118">        }</span>
+
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (start &gt;= 0)</span>
+        {
+<span class="nc" id="L122">            builder.withStart(start);</span>
+        }
+
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        if (rows &gt;= 0)</span>
+        {
+<span class="nc" id="L127">            builder.withNumRows(rows);</span>
+        }
+
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (presort != null)</span>
+        {
+<span class="nc" id="L132">            builder.withPresort(presort.sortStr);</span>
+        }
+
+<span class="nc bnc" id="L135" title="All 2 branches missed.">        if (filterQuery != null)</span>
+        {
+<span class="nc" id="L137">            builder.withFilterQuery(filterQuery);</span>
+        }
+
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (sortField != null)</span>
+        {
+<span class="nc" id="L142">            builder.withSortField(sortField);</span>
+        }
+
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (returnFields != null)</span>
+        {
+<span class="nc" id="L147">            builder.withReturnFields(returnFields);</span>
+        }
+
+<span class="nc" id="L150">        return builder.build();</span>
+    }
+
+    /*
+    * Options For controlling how Riak performs the search operation.
+    * &lt;p&gt;
+    * These options can be supplied to the {@link Search.Builder} to change
+    * how Riak performs the operation. These override the defaults provided
+    * by Riak.
+    * &lt;/p&gt;
+    * @author Dave Rusek &lt;drusek at basho dot com&gt;
+    * @since 2.0
+    */
+   public static final class Option&lt;T&gt; extends RiakOption&lt;T&gt;
+   {
+       /**
+        * Enum that encapsulates the possible operators for a Riak search query default operator field.
+        * Can be an &quot;AND&quot;, or &quot;OR&quot; operator.
+        */
+<span class="nc" id="L169">       public static enum Operation</span>
+       {
+<span class="nc" id="L171">           AND(&quot;and&quot;), OR(&quot;or&quot;);</span>
+
+           final String opStr;
+
+           Operation(String opStr)
+<span class="nc" id="L176">           {</span>
+<span class="nc" id="L177">               this.opStr = opStr;</span>
+<span class="nc" id="L178">           }</span>
+       }
+
+<span class="nc" id="L181">       public static Option&lt;Operation&gt; DEFAULT_OPERATION = new Option&lt;&gt;(&quot;DEFAULT_OPERATION&quot;);</span>
+<span class="nc" id="L182">       public static Option&lt;String&gt; DEFAULT_FIELD = new Option&lt;&gt;(&quot;DEFAULT_FIELD&quot;);</span>
+
+       private Option(String name)
+       {
+<span class="nc" id="L186">           super(name);</span>
+<span class="nc" id="L187">       }</span>
+   }
+
+   /**
+    * Builder for a Search command.
+    */
+    public static class Builder
+    {
+        private final String index;
+        private final String query;
+<span class="nc" id="L197">        private int start = -1;</span>
+<span class="nc" id="L198">        private int rows = -1;</span>
+        private Presort presort;
+        private String filterQuery;
+        private String sortField;
+        private List&lt;String&gt; returnFields;
+<span class="nc" id="L203">        private Map&lt;Option&lt;?&gt;, Object&gt; options = new HashMap&lt;&gt;();</span>
+
+        /**
+         * Construct a Builder for a Search command.
+         * @param index The index to search.
+         * @param query The query to execute against the index.
+         */
+        public Builder(String index, String query)
+<span class="nc" id="L211">        {</span>
+<span class="nc" id="L212">            this.index = index;</span>
+<span class="nc" id="L213">            this.query = query;</span>
+<span class="nc" id="L214">        }</span>
+
+        /**
+         * Set the presort option, you may presort the results by Key or Score.
+         * @param presort the {@link com.basho.riak.client.api.commands.search.Search.Presort} option to set.
+         * @return a reference to this object.
+         */
+        public Builder withPresort(Presort presort)
+        {
+<span class="nc" id="L223">            this.presort = presort;</span>
+<span class="nc" id="L224">            return this;</span>
+        }
+
+        /**
+         * Set the starting row to return.
+         * @param start the first row to return out of the result set.
+         *              Use in conjunction with {@link #withRows(int)} to paginate the results.
+         * @return a reference to this object.
+         */
+        public Builder withStart(int start)
+        {
+<span class="nc" id="L235">            this.start = start;</span>
+<span class="nc" id="L236">            return this;</span>
+        }
+
+        /**
+         * Set the maximum number of rows to return.
+         * @param rows The total number of rows to return.
+         *             Use in conjunction with {@link #withStart(int)} to paginate the results.
+         * @return a reference to this object.
+         */
+        public Builder withRows(int rows)
+        {
+<span class="nc" id="L247">            this.rows = rows;</span>
+<span class="nc" id="L248">            return this;</span>
+        }
+
+        /**
+         * Add an optional setting for this command.
+         * This will be passed along with the request to Riak to tell it how
+         * to behave when servicing the request.
+         *
+         * @param option the option.
+         * @param value the value for the option.
+         * @return a reference to this object.
+         */
+        public &lt;T&gt; Builder withOption(Option&lt;T&gt; option, T value)
+        {
+<span class="nc" id="L262">            options.put(option, value);</span>
+<span class="nc" id="L263">            return this;</span>
+        }
+
+        /**
+         * Set a filter to use for this search.
+         * @param query the query string to filter the search with.
+         * @return a reference to this object.
+         */
+        public Builder filter(String query)
+        {
+<span class="nc" id="L273">            this.filterQuery = query;</span>
+<span class="nc" id="L274">            return this;</span>
+        }
+
+        /**
+         * Set a field to sort the results on.
+         * @param field the field to sort the results with.
+         * @return a reference to this object.
+         */
+        public Builder sort(String field)
+        {
+<span class="nc" id="L284">            this.sortField = field;</span>
+<span class="nc" id="L285">            return this;</span>
+        }
+
+        /**
+         * Set the list of fields that should be returned for each record in the result set.
+         * @param fields the collection of fields to return with each result.
+         * @return a reference to this object.
+         */
+        public Builder returnFields(Iterable&lt;String&gt; fields)
+        {
+<span class="nc" id="L295">            this.returnFields = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">            for (String field : fields)</span>
+            {
+<span class="nc" id="L298">                returnFields.add(field);</span>
+<span class="nc" id="L299">            }</span>
+<span class="nc" id="L300">            return this;</span>
+        }
+
+        /**
+         * Set the list of fields that should be returned for each record in the result set.
+         * @param fields the varargs list of fields to return with each result.
+         * @return a reference to this object.
+         */
+        public Builder returnFields(String... fields)
+        {
+<span class="nc" id="L310">            this.returnFields(Arrays.asList(fields));</span>
+<span class="nc" id="L311">            return this;</span>
+        }
+
+        /**
+         * Construct the Search command.
+         * @return the new Search command.
+         */
+        public Search build()
+        {
+<span class="nc" id="L320">            return new Search(this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

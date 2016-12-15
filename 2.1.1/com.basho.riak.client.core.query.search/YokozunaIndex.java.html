@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>YokozunaIndex.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.query.search</a> &gt; <span class="el_source">YokozunaIndex.java</span></div><h1>YokozunaIndex.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.core.query.search;
+
+/**
+ * Represents a Yokozuna Index.
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ */
+public class YokozunaIndex
+{
+    private final String name;
+    private final String schema;
+    private volatile Integer nVal;
+
+    /**
+     * Constructs a Yokozuna index without naming the schema.
+     *
+     * Due to an implementation detail on the Riak side, the index name is restricted
+     * to US-ASCII characters. The supplied String is converted to bytes
+     * using the UTF-8 Charset.
+     *
+     * @param name The name for this index.
+     */
+    public YokozunaIndex(String name)
+    {
+<span class="nc" id="L40">        this(name, null);</span>
+<span class="nc" id="L41">    }</span>
+
+    /**
+     * Constructs a Yokozuna index.
+     * Due to an implementation detail on the Riak side, the index name is restricted
+     * to US-ASCII characters. The supplied String is converted to bytes
+     * using the UTF-8 Charset.
+     *
+     * @param name The name of the index.
+     * @param schema The name of a schema
+     */
+    public YokozunaIndex(String name, String schema)
+<span class="nc" id="L53">    {</span>
+<span class="nc bnc" id="L54" title="All 4 branches missed.">        if (null == name || name.length() == 0)</span>
+        {
+<span class="nc" id="L56">            throw new IllegalArgumentException(&quot;Index name can not be null or zero length&quot;);</span>
+        }
+
+<span class="nc" id="L59">        this.name = name;</span>
+<span class="nc" id="L60">        this.schema = schema;</span>
+<span class="nc" id="L61">    }</span>
+
+    /**
+     * Set the nVal.
+     *
+     * @param nVal the number of replicas.
+     * @return a reference to this object.
+     */
+    public YokozunaIndex withNVal(int nVal)
+    {
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (nVal &lt; 1)</span>
+        {
+<span class="nc" id="L73">            throw new IllegalArgumentException(&quot;nVal must be &gt;= 1&quot;);</span>
+        }
+
+<span class="nc" id="L76">        this.nVal = nVal;</span>
+<span class="nc" id="L77">        return this;</span>
+    }
+
+    /**
+     * Returns the name of this index as a UTF-8.
+     *
+     * @return The name of the index as UTF-8 encoded String.
+     */
+    public String getName()
+    {
+<span class="nc" id="L87">        return name;</span>
+    }
+
+    /**
+     * Returns the schema name for this index.
+     * @return The schema name.
+     */
+    public String getSchema()
+    {
+<span class="nc" id="L96">        return schema;</span>
+    }
+
+    /**
+     * Determine if an nVal value has been set.
+     *
+     * @return true if set, false otherwise.
+     */
+    public boolean hasNVal()
+    {
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        return nVal != null;</span>
+    }
+
+    /**
+     * Get the nVal.
+     *
+     * @return the nVal value or null if not set.
+     */
+    public Integer getNVal()
+    {
+<span class="nc" id="L116">        return nVal;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

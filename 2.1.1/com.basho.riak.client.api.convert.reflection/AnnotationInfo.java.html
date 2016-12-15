@@ -1,0 +1,1505 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AnnotationInfo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.convert.reflection</a> &gt; <span class="el_source">AnnotationInfo.java</span></div><h1>AnnotationInfo.java</h1><pre class="source lang-java linenums">/*
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.basho.riak.client.api.convert.reflection;
+
+import static com.basho.riak.client.api.convert.reflection.ClassUtil.getFieldValue;
+import static com.basho.riak.client.api.convert.reflection.ClassUtil.setFieldValue;
+import static com.basho.riak.client.api.convert.reflection.ClassUtil.getMethodValue;
+import static com.basho.riak.client.api.convert.reflection.ClassUtil.setMethodValue;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.basho.riak.client.core.query.links.RiakLink;
+import com.basho.riak.client.api.cap.BasicVClock;
+import com.basho.riak.client.api.cap.VClock;
+import com.basho.riak.client.core.query.UserMetadata.RiakUserMetadata;
+import com.basho.riak.client.core.query.indexes.BigIntIndex;
+import com.basho.riak.client.core.query.indexes.IndexType;
+import com.basho.riak.client.core.query.indexes.LongIntIndex;
+import com.basho.riak.client.core.query.indexes.RawIndex;
+import com.basho.riak.client.core.query.indexes.RiakIndexes;
+import com.basho.riak.client.core.query.indexes.StringBinIndex;
+import com.basho.riak.client.core.query.links.RiakLinks;
+import com.basho.riak.client.core.util.BinaryValue;
+import java.lang.reflect.Method;
+import java.math.BigInteger;
+import java.util.HashSet;
+import java.util.LinkedList;
+
+/**
+ * Class that containsKeyKey the Riak annotated fields for an annotated class
+ *
+ * @author russell
+ *
+ */
+public class AnnotationInfo
+{
+    private final Field riakKeyField;
+    private final Method riakKeySetter;
+    private final Method riakKeyGetter;
+    private final List&lt;UsermetaField&gt; usermetaFields;
+    private final List&lt;UsermetaMethod&gt; usermetaMethods;
+    private final List&lt;RiakIndexField&gt; indexFields;
+    private final List&lt;RiakIndexMethod&gt; indexMethods;
+    private final Field riakLinksField;
+    private final Method riakLinksGetter;
+    private final Method riakLinksSetter;
+    private final Field riakVClockField;
+    private final Method riakVClockSetter;
+    private final Method riakVClockGetter;
+    private final Field riakTombstoneField;
+    private final Method riakTombstoneSetter;
+    private final Method riakTombstoneGetter;
+    private final Field riakContentTypeField;
+    private final Method riakContentTypeGetter;
+    private final Method riakContentTypeSetter;
+    private final Field riakLastModifiedField;
+    private final Method riakLastModifiedSetter;
+    private final Field riakVTagField;
+    private final Method riakVTagSetter;
+    private final Field riakBucketNameField;
+    private final Method riakBucketNameSetter;
+    private final Method riakBucketNameGetter;
+    private final Field riakBucketTypeField;
+    private final Method riakBucketTypeSetter;
+    private final Method riakBucketTypeGetter;
+
+    private AnnotationInfo(Builder builder)
+<span class="fc" id="L86">    {</span>
+<span class="fc" id="L87">        this.riakKeyField = builder.riakKeyField;</span>
+<span class="fc" id="L88">        this.riakKeyGetter = builder.riakKeyGetter;</span>
+<span class="fc" id="L89">        this.riakKeySetter = builder.riakKeySetter;</span>
+<span class="fc" id="L90">        this.riakLinksField = builder.riakLinksField;</span>
+<span class="fc" id="L91">        this.riakLinksGetter = builder.riakLinksGetter;</span>
+<span class="fc" id="L92">        this.riakLinksSetter = builder.riakLinksSetter;</span>
+<span class="fc" id="L93">        this.riakVClockField = builder.riakVClockField;</span>
+<span class="fc" id="L94">        this.riakVClockGetter = builder.riakVClockGetter;</span>
+<span class="fc" id="L95">        this.riakVClockSetter = builder.riakVClockSetter;</span>
+<span class="fc" id="L96">        this.riakTombstoneField = builder.riakTombstoneField;</span>
+<span class="fc" id="L97">        this.riakTombstoneGetter = builder.riakTombstoneGetter;</span>
+<span class="fc" id="L98">        this.riakTombstoneSetter = builder.riakTombstoneSetter;</span>
+<span class="fc" id="L99">        this.usermetaFields = builder.usermetaFields;</span>
+<span class="fc" id="L100">        this.usermetaMethods = builder.usermetaMethods;</span>
+<span class="fc" id="L101">        this.indexFields = builder.indexFields;</span>
+<span class="fc" id="L102">        this.indexMethods = builder.indexMethods;</span>
+<span class="fc" id="L103">        this.riakContentTypeField = builder.riakContentTypeField;</span>
+<span class="fc" id="L104">        this.riakContentTypeGetter = builder.riakContentTypeGetter;</span>
+<span class="fc" id="L105">        this.riakContentTypeSetter = builder.riakContentTypeSetter;</span>
+<span class="fc" id="L106">        this.riakLastModifiedField = builder.riakLastModifiedField;</span>
+<span class="fc" id="L107">        this.riakLastModifiedSetter = builder.riakLastModified;</span>
+<span class="fc" id="L108">        this.riakVTagField = builder.riakVTagField;</span>
+<span class="fc" id="L109">        this.riakVTagSetter = builder.riakVTagSetter;</span>
+<span class="fc" id="L110">        this.riakBucketNameField = builder.riakBucketNameField;</span>
+<span class="fc" id="L111">        this.riakBucketNameGetter = builder.riakBucketNameGetter;</span>
+<span class="fc" id="L112">        this.riakBucketNameSetter = builder.riakBucketNameSetter;</span>
+<span class="fc" id="L113">        this.riakBucketTypeField = builder.riakBucketTypeField;</span>
+<span class="fc" id="L114">        this.riakBucketTypeGetter = builder.riakBucketTypeGetter;</span>
+<span class="fc" id="L115">        this.riakBucketTypeSetter = builder.riakBucketTypeSetter;</span>
+<span class="fc" id="L116">    }</span>
+
+    /**
+     * Returns the key.
+     * &lt;p&gt;
+     * The @RiakKey annotation allows for any type to be used. this method will
+     * call the object's toString() method to return a String.
+     * &lt;/p&gt;
+     *
+     * @param &lt;T&gt; the type of the domain object
+     * @param obj the domain object
+     * @return the String representation of the key
+     */
+    public &lt;T&gt; BinaryValue getRiakKey(T obj)
+    {
+        // TODO: charset
+<span class="fc" id="L132">        BinaryValue key = null;</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">        if (riakKeyGetter != null)</span>
+        {
+<span class="fc bfc" id="L135" title="All 2 branches covered.">            if (riakKeyGetter.getReturnType().isArray())</span>
+            {
+<span class="fc" id="L137">                Object o = getMethodValue(riakKeyGetter, obj);</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">                if (o != null)</span>
+                {
+<span class="fc" id="L140">                    key = BinaryValue.create((byte[]) o);</span>
+                }
+<span class="fc" id="L142">            }</span>
+            else
+            {
+<span class="fc" id="L145">                Object o = getMethodValue(riakKeyGetter, obj);</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">                if (o != null)</span>
+                {
+<span class="fc" id="L148">                    key = BinaryValue.create((String) o);</span>
+                }
+<span class="fc" id="L150">            }</span>
+        }
+<span class="fc bfc" id="L152" title="All 2 branches covered.">        else if (riakKeyField != null)</span>
+        {
+<span class="fc bfc" id="L154" title="All 2 branches covered.">            if (riakKeyField.getType().equals(String.class))</span>
+            {
+<span class="fc" id="L156">                Object o = getFieldValue(riakKeyField, obj);</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">                if (o != null)</span>
+                {
+<span class="fc" id="L159">                    key = BinaryValue.create((String) o);</span>
+                }
+<span class="fc" id="L161">            }</span>
+            else
+            {
+<span class="fc" id="L164">                Object o = getFieldValue(riakKeyField, obj);</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">                if (o != null)</span>
+                {
+<span class="fc" id="L167">                    key = BinaryValue.create((byte[]) o);</span>
+                }
+            }
+        }
+
+<span class="fc" id="L172">        return key;</span>
+    }
+
+    // TODO: charset
+    public &lt;T&gt; void setRiakKey(T obj, BinaryValue key)
+    {
+<span class="fc bfc" id="L178" title="All 2 branches covered.">        if (riakKeySetter != null)</span>
+        {
+<span class="fc bfc" id="L180" title="All 2 branches covered.">            if (riakKeySetter.getParameterTypes()[0].isArray())</span>
+            {
+<span class="fc" id="L182">                setMethodValue(riakKeySetter, obj, key.unsafeGetValue());</span>
+            }
+            else
+            {
+<span class="fc" id="L186">                setMethodValue(riakKeySetter, obj, key.toString());</span>
+            }
+        }
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        else if (riakKeyField != null)</span>
+        {
+<span class="fc bfc" id="L191" title="All 2 branches covered.">            if (riakKeyField.getType().equals(String.class))</span>
+            {
+<span class="fc" id="L193">                setFieldValue(riakKeyField, obj, key.toString());</span>
+            }
+            else
+            {
+<span class="fc" id="L197">                setFieldValue(riakKeyField, obj, key.unsafeGetValue());</span>
+            }
+        }
+<span class="fc" id="L200">    }</span>
+
+    // TODO: charset in annotation
+    public &lt;T&gt; BinaryValue getRiakBucketName(T obj)
+    {
+<span class="fc" id="L205">        BinaryValue bucketName = null;</span>
+
+<span class="fc bfc" id="L207" title="All 2 branches covered.">        if (riakBucketNameGetter != null)</span>
+        {
+<span class="fc bfc" id="L209" title="All 2 branches covered.">            if (riakBucketNameGetter.getReturnType().isArray())</span>
+            {
+<span class="fc" id="L211">                Object o = getMethodValue(riakBucketNameGetter, obj);</span>
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">                if (o != null)</span>
+                {
+<span class="fc" id="L214">                    bucketName = BinaryValue.create((byte[]) o);</span>
+                }
+<span class="fc" id="L216">            }</span>
+            else
+            {
+<span class="fc" id="L219">                Object o = getMethodValue(riakBucketNameGetter, obj);</span>
+<span class="fc bfc" id="L220" title="All 2 branches covered.">                if (o != null)</span>
+                {
+<span class="fc" id="L222">                    bucketName = BinaryValue.create((String) o);</span>
+                }
+<span class="fc" id="L224">            }</span>
+        }
+<span class="fc bfc" id="L226" title="All 2 branches covered.">        else if (riakBucketNameField != null)</span>
+        {
+<span class="fc bfc" id="L228" title="All 2 branches covered.">            if (riakBucketNameField.getType().equals(String.class))</span>
+            {
+<span class="fc" id="L230">                Object o = getFieldValue(riakBucketNameField, obj);</span>
+<span class="fc bfc" id="L231" title="All 2 branches covered.">                if (o != null)</span>
+                {
+<span class="fc" id="L233">                    bucketName = BinaryValue.create((String) o);</span>
+                }
+<span class="fc" id="L235">            }</span>
+            else
+            {
+<span class="fc" id="L238">                Object o = getFieldValue(riakBucketNameField, obj);</span>
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">                if (o != null)</span>
+                {
+<span class="fc" id="L241">                    bucketName = BinaryValue.create((byte[]) o);</span>
+                }
+            }
+        }
+
+<span class="fc" id="L246">        return bucketName;</span>
+    }
+
+    // TODO: charset in annotation
+    public &lt;T&gt; void setRiakBucketName(T obj, BinaryValue bucketName)
+    {
+<span class="fc bfc" id="L252" title="All 2 branches covered.">        if (riakBucketNameSetter != null)</span>
+        {
+<span class="fc bfc" id="L254" title="All 2 branches covered.">            if (riakBucketNameSetter.getParameterTypes()[0].isArray())</span>
+            {
+<span class="fc" id="L256">                setMethodValue(riakBucketNameSetter, obj, bucketName.unsafeGetValue());</span>
+            }
+            else
+            {
+<span class="fc" id="L260">                setMethodValue(riakBucketNameSetter, obj, bucketName.toString());</span>
+            }
+        }
+<span class="fc bfc" id="L263" title="All 2 branches covered.">        else if (riakBucketNameField != null)</span>
+        {
+<span class="fc bfc" id="L265" title="All 2 branches covered.">            if (riakBucketNameField.getType().equals(String.class))</span>
+            {
+<span class="fc" id="L267">                setFieldValue(riakBucketNameField, obj, bucketName.toString());</span>
+            }
+            else
+            {
+<span class="fc" id="L271">                setFieldValue(riakBucketNameField, obj, bucketName.unsafeGetValue());</span>
+            }
+        }
+<span class="fc" id="L274">    }</span>
+
+    // TODO: charset in annotation
+    public &lt;T&gt; BinaryValue getRiakBucketType(T obj)
+    {
+<span class="fc" id="L279">        BinaryValue bucketType = null;</span>
+
+<span class="fc bfc" id="L281" title="All 2 branches covered.">        if (riakBucketTypeGetter != null)</span>
+        {
+<span class="fc bfc" id="L283" title="All 2 branches covered.">            if (riakBucketTypeGetter.getReturnType().isArray())</span>
+            {
+<span class="fc" id="L285">                Object o = getMethodValue(riakBucketTypeGetter, obj);</span>
+<span class="pc bpc" id="L286" title="1 of 2 branches missed.">                if (o != null)</span>
+                {
+<span class="fc" id="L288">                    bucketType = BinaryValue.create((byte[]) o);</span>
+                }
+<span class="fc" id="L290">            }</span>
+            else
+            {
+<span class="fc" id="L293">                Object o = getMethodValue(riakBucketTypeGetter, obj);</span>
+<span class="fc bfc" id="L294" title="All 2 branches covered.">                if (o != null)</span>
+                {
+<span class="fc" id="L296">                    bucketType = BinaryValue.create((String) o);</span>
+                }
+<span class="fc" id="L298">            }</span>
+        }
+<span class="fc bfc" id="L300" title="All 2 branches covered.">        else if (riakBucketTypeField != null)</span>
+        {
+<span class="fc bfc" id="L302" title="All 2 branches covered.">            if (riakBucketTypeField.getType().equals(String.class))</span>
+            {
+<span class="fc" id="L304">                Object o = getFieldValue(riakBucketTypeField, obj);</span>
+<span class="fc bfc" id="L305" title="All 2 branches covered.">                if (o != null)</span>
+                {
+<span class="fc" id="L307">                    bucketType = BinaryValue.create((String) o);</span>
+                }
+<span class="fc" id="L309">            }</span>
+            else
+            {
+<span class="fc" id="L312">                Object o = getFieldValue(riakBucketTypeField, obj);</span>
+<span class="pc bpc" id="L313" title="1 of 2 branches missed.">                if (o != null)</span>
+                {
+<span class="fc" id="L315">                    bucketType = BinaryValue.create((byte[]) o);</span>
+                }
+            }
+        }
+<span class="fc" id="L319">        return bucketType;</span>
+    }
+
+    // TODO: charset in annotation
+    public &lt;T&gt; void setRiakBucketType(T obj, BinaryValue bucketType)
+    {
+<span class="fc bfc" id="L325" title="All 2 branches covered.">        if (riakBucketTypeSetter != null)</span>
+        {
+<span class="fc bfc" id="L327" title="All 2 branches covered.">            if (riakBucketTypeSetter.getParameterTypes()[0].isArray())</span>
+            {
+<span class="fc" id="L329">                setMethodValue(riakBucketTypeSetter, obj, bucketType.unsafeGetValue());</span>
+            }
+            else
+            {
+<span class="fc" id="L333">                setMethodValue(riakBucketTypeSetter, obj, bucketType.toString());</span>
+            }
+        }
+<span class="fc bfc" id="L336" title="All 2 branches covered.">        else if (riakBucketTypeField != null)</span>
+        {
+<span class="fc bfc" id="L338" title="All 2 branches covered.">            if (riakBucketTypeField.getType().equals(String.class))</span>
+            {
+<span class="fc" id="L340">                setFieldValue(riakBucketTypeField, obj, bucketType.toString());</span>
+            }
+            else
+            {
+<span class="fc" id="L344">                setFieldValue(riakBucketTypeField, obj, bucketType.unsafeGetValue());</span>
+            }
+        }
+<span class="fc" id="L347">    }</span>
+
+    public boolean hasRiakVClock()
+    {
+<span class="nc bnc" id="L351" title="All 4 branches missed.">        return riakVClockField != null || riakVClockSetter != null;</span>
+    }
+
+    public &lt;T&gt; VClock getRiakVClock(T obj)
+    {
+<span class="fc" id="L356">        VClock vclock = null;</span>
+
+        // We allow the annotated field to be either an actual VClock, or
+        // a byte array.
+<span class="fc bfc" id="L360" title="All 2 branches covered.">        if (riakVClockGetter != null)</span>
+        {
+<span class="fc bfc" id="L362" title="All 2 branches covered.">            if (riakVClockGetter.getReturnType().isArray())</span>
+            {
+<span class="fc" id="L364">                vclock = new BasicVClock((byte[]) getMethodValue(riakVClockGetter, obj));</span>
+            }
+            else
+            {
+<span class="fc" id="L368">                vclock = (VClock) getMethodValue(riakVClockGetter, obj);</span>
+            }
+        }
+<span class="fc bfc" id="L371" title="All 2 branches covered.">        else if (riakVClockField != null)</span>
+        {
+<span class="fc bfc" id="L373" title="All 2 branches covered.">            if (riakVClockField.getType().isAssignableFrom(VClock.class))</span>
+            {
+<span class="fc" id="L375">                vclock = (VClock) getFieldValue(riakVClockField, obj);</span>
+            }
+            else
+            {
+<span class="fc" id="L379">                vclock = new BasicVClock((byte[]) getFieldValue(riakVClockField, obj));</span>
+            }
+        }
+
+<span class="fc" id="L383">        return vclock;</span>
+    }
+
+    public &lt;T&gt; void setRiakVClock(T obj, VClock vclock)
+    {
+        // We allow the annotated field to be either an actual VClock, or
+        // a byte array. This is enforced in the AnnotationScanner
+<span class="fc bfc" id="L390" title="All 2 branches covered.">        if (riakVClockSetter != null)</span>
+        {
+<span class="fc" id="L392">            Class&lt;?&gt; pType = riakVClockSetter.getParameterTypes()[0];</span>
+<span class="fc bfc" id="L393" title="All 2 branches covered.">            if (pType.isArray())</span>
+            {
+<span class="fc" id="L395">                setMethodValue(riakVClockSetter, obj, vclock.getBytes());</span>
+            }
+            else
+            {
+<span class="fc" id="L399">                setMethodValue(riakVClockSetter, obj, vclock);</span>
+            }
+<span class="fc" id="L401">        }</span>
+<span class="fc bfc" id="L402" title="All 2 branches covered.">        else if (riakVClockField != null)</span>
+        {
+<span class="fc bfc" id="L404" title="All 2 branches covered.">            if (riakVClockField.getType().isAssignableFrom(VClock.class))</span>
+            {
+<span class="fc" id="L406">                setFieldValue(riakVClockField, obj, vclock);</span>
+            }
+            else
+            {
+<span class="fc" id="L410">                setFieldValue(riakVClockField, obj, vclock.getBytes());</span>
+            }
+        }
+<span class="fc" id="L413">    }</span>
+
+    public &lt;T&gt; Boolean getRiakTombstone(T obj)
+    {
+<span class="fc" id="L417">        Boolean tombstone = null;</span>
+<span class="fc bfc" id="L418" title="All 2 branches covered.">        if (riakTombstoneGetter != null)</span>
+        {
+<span class="fc" id="L420">            tombstone = (Boolean) getMethodValue(riakTombstoneGetter, obj);</span>
+        }
+<span class="fc bfc" id="L422" title="All 2 branches covered.">        else if (riakTombstoneField != null)</span>
+        {
+<span class="fc" id="L424">            tombstone = (Boolean) getFieldValue(riakTombstoneField, obj);</span>
+        }
+
+<span class="fc" id="L427">        return tombstone;</span>
+    }
+
+    public &lt;T&gt; void setRiakTombstone(T obj, Boolean isDeleted)
+    {
+<span class="fc bfc" id="L432" title="All 2 branches covered.">        if (riakTombstoneSetter != null)</span>
+        {
+<span class="fc" id="L434">            setMethodValue(riakTombstoneSetter, obj, isDeleted);</span>
+        }
+<span class="fc bfc" id="L436" title="All 2 branches covered.">        else if (riakTombstoneField != null)</span>
+        {
+<span class="fc" id="L438">            setFieldValue(riakTombstoneField, obj, isDeleted);</span>
+        }
+<span class="fc" id="L440">    }</span>
+
+    public &lt;T&gt; String getRiakContentType(T obj)
+    {
+<span class="fc" id="L444">        String contentType = null;</span>
+<span class="fc bfc" id="L445" title="All 2 branches covered.">        if (riakContentTypeGetter != null)</span>
+        {
+<span class="fc" id="L447">            contentType = (String) getMethodValue(riakContentTypeGetter, obj);</span>
+        }
+<span class="fc bfc" id="L449" title="All 2 branches covered.">        else if (riakContentTypeField != null)</span>
+        {
+<span class="fc" id="L451">            contentType = (String) getFieldValue(riakContentTypeField, obj);</span>
+        }
+<span class="fc" id="L453">        return contentType;</span>
+    }
+
+    public &lt;T&gt; void setRiakContentType(T obj, String contentType)
+    {
+<span class="fc bfc" id="L458" title="All 2 branches covered.">        if (riakContentTypeSetter != null)</span>
+        {
+<span class="fc" id="L460">            setMethodValue(riakContentTypeSetter, obj, contentType);</span>
+        }
+<span class="fc bfc" id="L462" title="All 2 branches covered.">        else if (riakContentTypeField != null)</span>
+        {
+<span class="fc" id="L464">            setFieldValue(riakContentTypeField, obj, contentType);</span>
+        }
+<span class="fc" id="L466">    }</span>
+
+    public &lt;T&gt; void setRiakLastModified(T obj, Long lastModified)
+    {
+<span class="pc bpc" id="L470" title="1 of 2 branches missed.">        if (riakLastModifiedSetter != null)</span>
+        {
+<span class="nc" id="L472">            setMethodValue(riakLastModifiedSetter, obj, lastModified);</span>
+        }
+<span class="fc bfc" id="L474" title="All 2 branches covered.">        else if (riakLastModifiedField != null)</span>
+        {
+<span class="fc" id="L476">            setFieldValue(riakLastModifiedField, obj, lastModified);</span>
+        }
+<span class="fc" id="L478">    }</span>
+
+    public &lt;T&gt; void setRiakVTag(T obj, String vtag)
+    {
+<span class="fc bfc" id="L482" title="All 2 branches covered.">        if (riakVTagSetter != null)</span>
+        {
+<span class="fc" id="L484">            setMethodValue(riakVTagSetter, obj, vtag);</span>
+        }
+<span class="fc bfc" id="L486" title="All 2 branches covered.">        else if (riakVTagField != null)</span>
+        {
+<span class="fc" id="L488">            setFieldValue(riakVTagField, obj, vtag);</span>
+        }
+<span class="fc" id="L490">    }</span>
+
+    public &lt;T&gt; RiakUserMetadata getUsermetaData(RiakUserMetadata container, T obj)
+    {
+<span class="fc bfc" id="L494" title="All 2 branches covered.">        for (UsermetaField uf : usermetaFields)</span>
+        {
+<span class="pc bpc" id="L496" title="1 of 3 branches missed.">            switch (uf.getFieldType())</span>
+            {
+                case MAP:
+                    @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L500">                    Map&lt;String, String&gt; map = (Map&lt;String, String&gt;) getFieldValue(uf.getField(), obj);</span>
+<span class="fc bfc" id="L501" title="All 2 branches covered.">                    if (map != null)</span>
+                    {
+<span class="fc" id="L503">                        container.put(map);</span>
+                    }
+                    break;
+                case STRING:
+<span class="fc" id="L507">                    Object o = getFieldValue(uf.getField(), obj);</span>
+<span class="fc bfc" id="L508" title="All 2 branches covered.">                    String val = o == null ? null : o.toString();</span>
+<span class="fc" id="L509">                    String key = uf.getUsermetaDataKey();</span>
+                    // null is not a user meta datum
+<span class="fc bfc" id="L511" title="All 2 branches covered.">                    if (o != null)</span>
+                    {
+<span class="fc" id="L513">                        container.put(key, val);</span>
+                    }
+                    break;
+                default:
+                    break;
+            }
+<span class="fc" id="L519">        }</span>
+
+<span class="fc bfc" id="L521" title="All 2 branches covered.">        for (UsermetaMethod um : usermetaMethods)</span>
+        {
+<span class="pc bfc" id="L523" title="All 3 branches covered.">            switch (um.getMethodType())</span>
+            {
+                case MAP_GETTER:
+                    @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L527">                    Map&lt;String, String&gt; map = (Map&lt;String, String&gt;) getMethodValue(um.getMethod(), obj);</span>
+<span class="fc bfc" id="L528" title="All 2 branches covered.">                    if (map != null)</span>
+                    {
+<span class="fc" id="L530">                        container.put(map);</span>
+                    }
+                    break;
+                case STRING_GETTER:
+<span class="fc" id="L534">                    Object o = getMethodValue(um.getMethod(), obj);</span>
+<span class="fc bfc" id="L535" title="All 2 branches covered.">                    String val = o == null ? null : o.toString();</span>
+<span class="fc" id="L536">                    String key = um.getUsermetaDataKey();</span>
+<span class="fc bfc" id="L537" title="All 2 branches covered.">                    if (o != null)</span>
+                    {
+<span class="fc" id="L539">                        container.put(key, val);</span>
+                    }
+                    break;
+                default:
+                    break;
+            }
+<span class="fc" id="L545">        }</span>
+
+<span class="fc" id="L547">        return container;</span>
+    }
+
+    /**
+     * Populates an @RiakUsermeta annotated domain object with the User metadata.
+     * @param &lt;T&gt;
+     * @param userMetadata
+     * @param obj
+     */
+    public &lt;T&gt; void setUsermetaData(RiakUserMetadata userMetadata, T obj)
+    {
+<span class="fc" id="L558">        Field mapField = null;</span>
+<span class="fc bfc" id="L559" title="All 2 branches covered.">        for (UsermetaField uf : usermetaFields)</span>
+        {
+<span class="pc bpc" id="L561" title="1 of 3 branches missed.">            switch (uf.getFieldType())</span>
+            {
+                case STRING:
+<span class="fc bfc" id="L564" title="All 2 branches covered.">                    if (userMetadata.containsKey(uf.getUsermetaDataKey()))</span>
+                    {
+<span class="fc" id="L566">                        setFieldValue(uf.getField(), obj, userMetadata.get(uf.getUsermetaDataKey()));</span>
+<span class="fc" id="L567">                        userMetadata.remove(uf.getUsermetaDataKey());</span>
+                    }
+                    break;
+                case MAP:
+<span class="fc" id="L571">                    mapField = uf.getField();</span>
+<span class="fc" id="L572">                    break;</span>
+                default:
+                    break;
+            }
+<span class="fc" id="L576">        }</span>
+
+<span class="fc" id="L578">        Method mapSetter = null;</span>
+<span class="fc bfc" id="L579" title="All 2 branches covered.">        for (UsermetaMethod um : usermetaMethods)</span>
+        {
+<span class="fc bfc" id="L581" title="All 3 branches covered.">            switch (um.getMethodType())</span>
+            {
+                case STRING_SETTER:
+<span class="fc bfc" id="L584" title="All 2 branches covered.">                    if (userMetadata.containsKey(um.getUsermetaDataKey()))</span>
+                    {
+<span class="fc" id="L586">                        setMethodValue(um.getMethod(), obj, userMetadata.get(um.getUsermetaDataKey()));</span>
+<span class="fc" id="L587">                        userMetadata.remove(um.getUsermetaDataKey());</span>
+                    }
+                    break;
+                case MAP_SETTER:
+<span class="fc" id="L591">                    mapSetter = um.getMethod();</span>
+<span class="fc" id="L592">                    break;</span>
+                default:
+                    break;
+            }
+<span class="fc" id="L596">        }</span>
+
+<span class="fc bfc" id="L598" title="All 4 branches covered.">        if (mapSetter != null || mapField != null)</span>
+        {
+<span class="fc" id="L600">            Map&lt;String,String&gt; mapCopy = new HashMap&lt;&gt;(userMetadata.size());</span>
+<span class="fc bfc" id="L601" title="All 2 branches covered.">            for (Map.Entry&lt;BinaryValue,BinaryValue&gt; entry : userMetadata.getUserMetadata())</span>
+            {
+<span class="fc" id="L603">                mapCopy.put(entry.getKey().toString(), entry.getValue().toString());</span>
+<span class="fc" id="L604">            }</span>
+
+<span class="fc bfc" id="L606" title="All 2 branches covered.">            if (mapSetter != null)</span>
+            {
+<span class="fc" id="L608">                setMethodValue(mapSetter, obj, mapCopy);</span>
+            }
+
+<span class="fc bfc" id="L611" title="All 2 branches covered.">            if (mapField != null)</span>
+            {
+<span class="fc" id="L613">                setFieldValue(mapField, obj, mapCopy);</span>
+            }
+        }
+<span class="fc" id="L616">    }</span>
+
+    /**
+     * @param &lt;T&gt; The domain object type
+     * @param obj the domain object
+     * @return a {@link RiakIndexes} made of the values of the RiakIndex
+     * annotated fields and methods.
+     */
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public &lt;T&gt; RiakIndexes getIndexes(RiakIndexes container, T obj)
+    {
+<span class="fc bfc" id="L627" title="All 2 branches covered.">        for (RiakIndexField f : indexFields)</span>
+        {
+<span class="fc" id="L629">            final Object val = getFieldValue(f.getField(), obj);</span>
+<span class="pc bpc" id="L630" title="2 of 5 branches missed.">            switch (f.getFieldType())</span>
+            {
+                case SET_LONG:
+                case LONG:
+                    // We want to create the index regardless
+<span class="fc" id="L635">                    LongIntIndex longIndex = container.getIndex(LongIntIndex.named(f.getIndexName()));</span>
+<span class="fc bfc" id="L636" title="All 2 branches covered.">                    if (val != null)</span>
+                    {
+<span class="fc bfc" id="L638" title="All 2 branches covered.">                        if (f.getFieldType() == RiakIndexField.FieldType.SET_LONG)</span>
+                        {
+<span class="fc" id="L640">                            longIndex.add((Set&lt;Long&gt;) val);</span>
+                        }
+                        else
+                        {
+<span class="fc" id="L644">                            longIndex.add((Long) val);</span>
+                        }
+                    }
+                    break;
+                case SET_STRING:
+                case STRING:
+                    // We want to create the index regardless
+<span class="fc" id="L651">                    StringBinIndex stringBinIndex = container.getIndex(StringBinIndex.named(f.getIndexName()));</span>
+<span class="fc bfc" id="L652" title="All 2 branches covered.">                    if (val != null)</span>
+                    {
+<span class="fc bfc" id="L654" title="All 2 branches covered.">                        if (f.getFieldType() == RiakIndexField.FieldType.SET_STRING)</span>
+                        {
+<span class="fc" id="L656">                            stringBinIndex.add((Set&lt;String&gt;) val);</span>
+                        }
+                        else
+                        {
+<span class="fc" id="L660">                            stringBinIndex.add((String) val);</span>
+                        }
+                    }
+                    break;
+                case SET_BIG_INT:
+                case BIG_INT:
+<span class="nc" id="L666">                    BigIntIndex bigIntIndex = container.getIndex(BigIntIndex.named(f.getIndexName()));</span>
+<span class="nc bnc" id="L667" title="All 2 branches missed.">                    if (val != null)</span>
+                    {
+<span class="nc bnc" id="L669" title="All 2 branches missed.">                        if (f.getFieldType() == RiakIndexField.FieldType.SET_BIG_INT)</span>
+                        {
+<span class="nc" id="L671">                            bigIntIndex.add((Set&lt;BigInteger&gt;) val);</span>
+                        }
+                        else
+                        {
+<span class="nc" id="L675">                            bigIntIndex.add((BigInteger) val);</span>
+                        }
+                    }
+                    break;
+                case SET_RAW:
+                case RAW:
+                {
+                    // We want to create the index regardless
+<span class="fc" id="L683">                    IndexType iType = IndexType.typeFromFullname(f.getIndexName());</span>
+<span class="fc" id="L684">                    RawIndex rawIndex = container.getIndex(RawIndex.named(f.getIndexName(), iType));</span>
+<span class="fc bfc" id="L685" title="All 2 branches covered.">                    if (val != null)</span>
+                    {
+<span class="fc bfc" id="L687" title="All 2 branches covered.">                        if (f.getFieldType() == RiakIndexField.FieldType.SET_RAW)</span>
+                        {
+<span class="fc bfc" id="L689" title="All 2 branches covered.">                            for (byte[] bytes : (Set&lt;byte[]&gt;) val)</span>
+                            {
+<span class="fc" id="L691">                                rawIndex.add(BinaryValue.create(bytes));</span>
+<span class="fc" id="L692">                            }</span>
+                        }
+                        else
+                        {
+<span class="fc" id="L696">                            rawIndex.add(BinaryValue.create((byte[])val));</span>
+                        }
+                    }
+                }
+                default:
+                    break;
+            }
+<span class="fc" id="L703">        }</span>
+
+<span class="fc bfc" id="L705" title="All 2 branches covered.">        for (RiakIndexMethod m : indexMethods)</span>
+        {
+            Object val;
+
+<span class="pc bpc" id="L709" title="1 of 5 branches missed.">            switch (m.getMethodType())</span>
+            {
+                case SET_LONG_GETTER:
+                case LONG_GETTER:
+<span class="fc" id="L713">                    val = getMethodValue(m.getMethod(), obj);</span>
+                    // We want to create the index regardless
+<span class="fc" id="L715">                    LongIntIndex index = container.getIndex(LongIntIndex.named(m.getIndexName()));</span>
+<span class="fc bfc" id="L716" title="All 2 branches covered.">                    if (val != null)</span>
+                    {
+<span class="fc bfc" id="L718" title="All 2 branches covered.">                        if (m.getMethodType() == RiakIndexMethod.MethodType.SET_LONG_GETTER)</span>
+                        {
+<span class="fc" id="L720">                            index.add((Set&lt;Long&gt;) val);</span>
+                        }
+                        else
+                        {
+<span class="fc" id="L724">                            index.add((Long) val);</span>
+                        }
+                    }
+                    break;
+                case SET_STRING_GETTER:
+                case STRING_GETTER:
+<span class="fc" id="L730">                    val = getMethodValue(m.getMethod(), obj);</span>
+                    // We want to create the index regardless
+<span class="fc" id="L732">                    StringBinIndex stringBinIndex = container.getIndex(StringBinIndex.named(m.getIndexName()));</span>
+<span class="fc bfc" id="L733" title="All 2 branches covered.">                    if (val != null)</span>
+                    {
+<span class="fc bfc" id="L735" title="All 2 branches covered.">                        if (m.getMethodType() == RiakIndexMethod.MethodType.SET_STRING_GETTER)</span>
+                        {
+<span class="fc" id="L737">                            stringBinIndex.add((Set&lt;String&gt;) val);</span>
+                        }
+                        else
+                        {
+<span class="fc" id="L741">                            stringBinIndex.add((String) val);</span>
+                        }
+                    }
+                    break;
+                case SET_BIG_INT_GETTER:
+                case BIG_INT_GETTER:
+<span class="nc" id="L747">                    val = getMethodValue(m.getMethod(), obj);</span>
+                    // We want to create the index regardless
+<span class="nc" id="L749">                    BigIntIndex bigIntIndex = container.getIndex(BigIntIndex.named(m.getIndexName()));</span>
+<span class="nc bnc" id="L750" title="All 2 branches missed.">                    if (val != null)</span>
+                    {
+<span class="nc bnc" id="L752" title="All 2 branches missed.">                        if (m.getMethodType() == RiakIndexMethod.MethodType.SET_BIG_INT_GETTER)</span>
+                        {
+<span class="nc" id="L754">                            bigIntIndex.add((Set&lt;BigInteger&gt;) val);</span>
+                        }
+                        else
+                        {
+<span class="nc" id="L758">                            bigIntIndex.add((BigInteger) val);</span>
+                        }
+                    }
+                    break;
+                case SET_RAW_GETTER:
+                case RAW_GETTER:
+<span class="fc" id="L764">                    val = getMethodValue(m.getMethod(), obj);</span>
+<span class="fc" id="L765">                    IndexType iType = IndexType.typeFromFullname(m.getIndexName());</span>
+<span class="fc" id="L766">                    RawIndex rawIndex = container.getIndex(RawIndex.named(m.getIndexName(), iType));</span>
+<span class="fc bfc" id="L767" title="All 2 branches covered.">                    if (val != null)</span>
+                    {
+<span class="fc bfc" id="L769" title="All 2 branches covered.">                        if (m.getMethodType() == RiakIndexMethod.MethodType.SET_RAW_GETTER)</span>
+                        {
+<span class="fc bfc" id="L771" title="All 2 branches covered.">                            for (byte[] bytes : (Set&lt;byte[]&gt;) val)</span>
+                            {
+<span class="fc" id="L773">                                rawIndex.add(BinaryValue.create(bytes));</span>
+<span class="fc" id="L774">                            }</span>
+                        }
+                        else
+                        {
+<span class="fc" id="L778">                            rawIndex.add(BinaryValue.create((byte[]) val));</span>
+                        }
+                    }
+                default:
+                    break;
+            }
+<span class="fc" id="L784">        }</span>
+
+<span class="fc" id="L786">        return container;</span>
+    }
+
+    /**
+     * @param &lt;T&gt;
+     * @param indexes the RiakIndexes to copy to the domain object
+     * @param obj the domain object to set indexes on
+     */
+    public &lt;T&gt; void setIndexes(RiakIndexes indexes, T obj)
+    {
+        // copy the index values to the correct fields
+<span class="fc bfc" id="L797" title="All 2 branches covered.">        for (RiakIndexField f : indexFields)</span>
+        {
+<span class="fc" id="L799">            Set&lt;?&gt; val = null;</span>
+<span class="pc bpc" id="L800" title="2 of 5 branches missed.">            switch (f.getFieldType())</span>
+            {
+                case SET_LONG:
+                case LONG:
+<span class="fc" id="L804">                    LongIntIndex longIndex = indexes.getIndex(LongIntIndex.named(f.getIndexName()));</span>
+<span class="fc" id="L805">                    val = longIndex.values();</span>
+<span class="fc" id="L806">                    break;</span>
+                case SET_STRING:
+                case STRING:
+<span class="fc" id="L809">                    StringBinIndex stringIndex = indexes.getIndex(StringBinIndex.named(f.getIndexName()));</span>
+<span class="fc" id="L810">                    val = stringIndex.values();</span>
+<span class="fc" id="L811">                    break;</span>
+                case SET_BIG_INT:
+                case BIG_INT:
+<span class="nc" id="L814">                    BigIntIndex bigIntIndex = indexes.getIndex(BigIntIndex.named(f.getIndexName()));</span>
+<span class="nc" id="L815">                    val = bigIntIndex.values();</span>
+<span class="nc" id="L816">                    break;</span>
+                case SET_RAW:
+                case RAW:
+<span class="fc" id="L819">                    IndexType iType = IndexType.typeFromFullname(f.getIndexName());</span>
+<span class="fc" id="L820">                    RawIndex rawIndex = indexes.getIndex((RawIndex.named(f.getIndexName(), iType)));</span>
+                    // Convert from BinaryValue to bytes
+<span class="fc" id="L822">                    Set&lt;byte[]&gt; byteSet = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L823" title="All 2 branches covered.">                    for (BinaryValue bv : rawIndex.values())</span>
+                    {
+<span class="fc" id="L825">                        byteSet.add(bv.unsafeGetValue());</span>
+<span class="fc" id="L826">                    }</span>
+<span class="fc" id="L827">                    val = byteSet;</span>
+<span class="fc" id="L828">                    break;</span>
+                default:
+                    break;
+            }
+
+<span class="pc bpc" id="L833" title="1 of 2 branches missed.">            if (val != null)</span>
+            {
+<span class="fc bfc" id="L835" title="All 2 branches covered.">                if (f.getFieldType() == RiakIndexField.FieldType.LONG ||</span>
+<span class="fc bfc" id="L836" title="All 2 branches covered.">                      f.getFieldType() == RiakIndexField.FieldType.STRING ||</span>
+<span class="pc bpc" id="L837" title="1 of 2 branches missed.">                      f.getFieldType() == RiakIndexField.FieldType.BIG_INT ||</span>
+<span class="fc bfc" id="L838" title="All 2 branches covered.">                      f.getFieldType() == RiakIndexField.FieldType.RAW)</span>
+                {
+<span class="fc bfc" id="L840" title="All 2 branches covered.">                    if (!val.isEmpty())</span>
+                    {
+<span class="fc" id="L842">                        setFieldValue(f.getField(), obj, val.iterator().next()); // take the first value</span>
+                    }
+                }
+                else
+                {
+<span class="fc" id="L847">                    setFieldValue(f.getField(), obj, val);</span>
+                }
+            }
+<span class="fc" id="L850">        }</span>
+
+<span class="fc bfc" id="L852" title="All 2 branches covered.">        for (RiakIndexMethod m : indexMethods)</span>
+        {
+<span class="fc" id="L854">            Set&lt;?&gt; val = null;</span>
+
+<span class="pc bpc" id="L856" title="1 of 5 branches missed.">            switch (m.getMethodType())</span>
+            {
+                case SET_LONG_SETTER:
+                case LONG_SETTER:
+<span class="fc" id="L860">                    LongIntIndex longIndex = indexes.getIndex(LongIntIndex.named(m.getIndexName()));</span>
+<span class="fc" id="L861">                    val = longIndex.values();</span>
+<span class="fc" id="L862">                    break;</span>
+                case SET_STRING_SETTER:
+                case STRING_SETTER:
+<span class="fc" id="L865">                    StringBinIndex stringIndex = indexes.getIndex(StringBinIndex.named(m.getIndexName()));</span>
+<span class="fc" id="L866">                    val = stringIndex.values();</span>
+<span class="fc" id="L867">                    break;</span>
+                case SET_BIG_INT_SETTER:
+                case BIG_INT_SETTER:
+<span class="nc" id="L870">                    BigIntIndex bigIntIndex = indexes.getIndex(BigIntIndex.named(m.getIndexName()));</span>
+<span class="nc" id="L871">                    val = bigIntIndex.values();</span>
+<span class="nc" id="L872">                    break;</span>
+                case SET_RAW_SETTER:
+                case RAW_SETTER:
+<span class="fc" id="L875">                    IndexType iType = IndexType.typeFromFullname(m.getIndexName());</span>
+<span class="fc" id="L876">                    RawIndex rawIndex = indexes.getIndex(RawIndex.named(m.getIndexName(), iType));</span>
+                    // Convert from BinaryValue to bytes
+<span class="fc" id="L878">                    Set&lt;byte[]&gt; byteSet = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L879" title="All 2 branches covered.">                    for (BinaryValue bv : rawIndex.values())</span>
+                    {
+<span class="fc" id="L881">                        byteSet.add(bv.unsafeGetValue());</span>
+<span class="fc" id="L882">                    }</span>
+<span class="fc" id="L883">                    val = byteSet;</span>
+<span class="fc" id="L884">                    break;</span>
+                default:
+                    break;
+            }
+
+<span class="fc bfc" id="L889" title="All 2 branches covered.">            if (val != null)</span>
+            {
+<span class="fc bfc" id="L891" title="All 2 branches covered.">                if (m.getMethodType() == RiakIndexMethod.MethodType.LONG_SETTER ||</span>
+<span class="fc bfc" id="L892" title="All 2 branches covered.">                      m.getMethodType() == RiakIndexMethod.MethodType.STRING_SETTER ||</span>
+<span class="pc bpc" id="L893" title="1 of 2 branches missed.">                      m.getMethodType() == RiakIndexMethod.MethodType.BIG_INT_SETTER ||</span>
+<span class="fc bfc" id="L894" title="All 2 branches covered.">                      m.getMethodType() == RiakIndexMethod.MethodType.RAW_SETTER)</span>
+                {
+<span class="fc bfc" id="L896" title="All 2 branches covered.">                    if (!val.isEmpty())</span>
+                    {
+<span class="fc" id="L898">                        setMethodValue(m.getMethod(), obj, val.iterator().next()); // take the first value</span>
+                    }
+                }
+                else
+                {
+<span class="fc" id="L903">                    setMethodValue(m.getMethod(), obj, val);</span>
+                }
+            }
+<span class="fc" id="L906">        }</span>
+<span class="fc" id="L907">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public &lt;T&gt; RiakLinks getLinks(RiakLinks container, T obj)
+    {
+<span class="fc" id="L912">        Object o = null;</span>
+<span class="fc bfc" id="L913" title="All 2 branches covered.">        if (riakLinksGetter != null)</span>
+        {
+<span class="fc" id="L915">            o = getMethodValue(riakLinksGetter, obj);</span>
+        }
+<span class="fc bfc" id="L917" title="All 2 branches covered.">        else if (riakLinksField != null)</span>
+        {
+<span class="fc" id="L919">            o = getFieldValue(riakLinksField, obj);</span>
+        }
+
+<span class="fc bfc" id="L922" title="All 2 branches covered.">        if (o != null)</span>
+        {
+<span class="fc" id="L924">            container.addLinks((Collection&lt;RiakLink&gt;) o);</span>
+        }
+
+<span class="fc" id="L927">        return container;</span>
+    }
+
+    public &lt;T&gt; void setLinks(RiakLinks links, T obj)
+    {
+<span class="fc bfc" id="L932" title="All 2 branches covered.">        if (riakLinksSetter != null)</span>
+        {
+<span class="fc" id="L934">            setMethodValue(riakLinksSetter, obj, links.getLinks());</span>
+        }
+<span class="fc bfc" id="L936" title="All 2 branches covered.">        else if (riakLinksField != null)</span>
+        {
+<span class="fc" id="L938">            setFieldValue(riakLinksField, obj, links.getLinks());</span>
+        }
+<span class="fc" id="L940">    }</span>
+
+    public static class Builder
+    {
+        private Field riakKeyField;
+        private Method riakKeySetter;
+        private Method riakKeyGetter;
+        private Field riakLinksField;
+        private Method riakLinksGetter;
+        private Method riakLinksSetter;
+        private Field riakVClockField;
+        private Method riakVClockSetter;
+        private Method riakVClockGetter;
+        private Field riakTombstoneField;
+        private Method riakTombstoneSetter;
+        private Method riakTombstoneGetter;
+        private Field riakContentTypeField;
+        private Method riakContentTypeGetter;
+        private Method riakContentTypeSetter;
+        private Field riakLastModifiedField;
+        private Method riakLastModified;
+        private Field riakVTagField;
+        private Method riakVTagSetter;
+        private Field riakBucketNameField;
+        private Method riakBucketNameSetter;
+        private Method riakBucketNameGetter;
+        private Field riakBucketTypeField;
+        private Method riakBucketTypeSetter;
+        private Method riakBucketTypeGetter;
+        private final List&lt;UsermetaField&gt; usermetaFields;
+        private final List&lt;UsermetaMethod&gt; usermetaMethods;
+        private final List&lt;RiakIndexField&gt; indexFields;
+        private final List&lt;RiakIndexMethod&gt; indexMethods;
+
+        /**
+         * Constructs a builder for a new AnnotationInfo
+         */
+        public Builder()
+<span class="fc" id="L978">        {</span>
+<span class="fc" id="L979">        }</span>
+
+        {
+<span class="fc" id="L982">            usermetaFields = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L983">            usermetaMethods = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L984">            indexFields = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L985">            indexMethods = new LinkedList&lt;&gt;();</span>
+        }
+
+        /**
+         * Set the @RiakKey annotated field.
+         *
+         * @param f the annotated field
+         * @return a reference to this object
+         */
+        public Builder withRiakKeyField(Field f)
+        {
+<span class="fc" id="L996">            validateStringOrByteField(f, &quot;@RiakKey&quot;);</span>
+<span class="fc" id="L997">            this.riakKeyField = ClassUtil.checkAndFixAccess(f);</span>
+<span class="fc" id="L998">            return this;</span>
+        }
+
+        /**
+         * Set the @RiakKey annotated getter.
+         *
+         * @param m the annotated method
+         * @return a reference to this object
+         */
+        public Builder withRiakKeyGetter(Method m)
+        {
+<span class="fc" id="L1009">            validateStringOrByteMethod(m, &quot;@RiakKey&quot;);</span>
+<span class="fc" id="L1010">            this.riakKeyGetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1011">            return this;</span>
+        }
+
+        /**
+         * Set the @RiakKey annotated setter.
+         *
+         * @param m the annotated setter
+         * @return a reference to this object
+         */
+        public Builder withRiakKeySetter(Method m)
+        {
+<span class="fc" id="L1022">            validateStringOrByteMethod(m, &quot;@RiakKey&quot;);</span>
+<span class="fc" id="L1023">            this.riakKeySetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1024">            return this;</span>
+        }
+
+        /**
+         * Set the @RiakLinks annotated field.
+         *
+         * @param f the annotated field
+         * @return a reference to this object
+         */
+        public Builder withRiakLinksField(Field f)
+        {
+<span class="fc" id="L1035">            validateRiakLinksField(f);</span>
+<span class="fc" id="L1036">            this.riakLinksField = ClassUtil.checkAndFixAccess(f);</span>
+<span class="fc" id="L1037">            return this;</span>
+        }
+
+        /**
+         * Set the @RiakLinks annotated getter.
+         *
+         * @param m the annotated method
+         * @return a reference to this object
+         */
+        public Builder withRiakLinksGetter(Method m)
+        {
+<span class="fc" id="L1048">            validateRiakLinksMethod(m);</span>
+<span class="fc" id="L1049">            this.riakLinksGetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1050">            return this;</span>
+        }
+
+        /**
+         * Set the @RiakLinks annotated setter.
+         *
+         * @param m the annotated method
+         * @return a reference to this object
+         *
+         */
+        public Builder withRiakLinksSetter(Method m)
+        {
+<span class="fc" id="L1062">            validateRiakLinksMethod(m);</span>
+<span class="fc" id="L1063">            this.riakLinksSetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1064">            return this;</span>
+        }
+
+        /**
+         * Add a @RiakUsermeta annotated field.
+         *
+         * @param f the annotated field.
+         * @return a reference to this object.
+         */
+        public Builder addRiakUsermetaField(Field f)
+        {
+<span class="fc" id="L1075">            this.usermetaFields.add(new UsermetaField(ClassUtil.checkAndFixAccess(f)));</span>
+<span class="fc" id="L1076">            return this;</span>
+        }
+
+        /**
+         * Add a @RiakUsermeta annotated method
+         *
+         * @param m the annotated method
+         * @return a reference to this object
+         */
+        public Builder addRiakUsermetaMethod(Method m)
+        {
+<span class="fc" id="L1087">            this.usermetaMethods.add(new UsermetaMethod(ClassUtil.checkAndFixAccess(m)));</span>
+<span class="fc" id="L1088">            return this;</span>
+        }
+
+        /**
+         * Add a @RiakIndex annotated method.
+         *
+         * @param m the annotated method
+         * @return a reference to this object
+         */
+        public Builder addRiakIndexMethod(Method m)
+        {
+<span class="fc" id="L1099">            this.indexMethods.add(new RiakIndexMethod(ClassUtil.checkAndFixAccess(m)));</span>
+<span class="fc" id="L1100">            return this;</span>
+        }
+
+        /**
+         * Add a @RiakIndex annotated field.
+         *
+         * @param f the annotated field
+         * @return a reference to this object
+         */
+        public Builder addRiakIndexField(Field f)
+        {
+<span class="fc" id="L1111">            this.indexFields.add(new RiakIndexField(ClassUtil.checkAndFixAccess(f)));</span>
+<span class="fc" id="L1112">            return this;</span>
+        }
+
+        /**
+         * Set the @RiakVClock annotated field.
+         *
+         * @param f the annotated field
+         * @return a reference to this object
+         */
+        public Builder withRiakVClockField(Field f)
+        {
+<span class="fc" id="L1123">            validateVClockField(f);</span>
+<span class="fc" id="L1124">            this.riakVClockField = ClassUtil.checkAndFixAccess(f);</span>
+<span class="fc" id="L1125">            return this;</span>
+        }
+
+        /**
+         * Set the @RiakVClock annotated setter method.
+         *
+         * @param m the annotated method.
+         * @return a reference to this object
+         */
+        public Builder withRiakVClockSetter(Method m)
+        {
+<span class="fc" id="L1136">            validateVClockMethod(m);</span>
+<span class="fc" id="L1137">            this.riakVClockSetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1138">            return this;</span>
+        }
+
+        /**
+         * Set the @RiakVClock annotated getter method.
+         *
+         * @param m the annotated method
+         * @return a reference to this object.
+         */
+        public Builder withRiakVClockGetter(Method m)
+        {
+<span class="fc" id="L1149">            validateVClockMethod(m);</span>
+<span class="fc" id="L1150">            this.riakVClockGetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1151">            return this;</span>
+        }
+
+        public Builder withRiakTombstoneField(Field f)
+        {
+<span class="fc" id="L1156">            validateTombstoneField(f);</span>
+<span class="fc" id="L1157">            this.riakTombstoneField = ClassUtil.checkAndFixAccess(f);</span>
+<span class="fc" id="L1158">            return this;</span>
+        }
+
+        public Builder withRiakTombstoneSetter(Method m)
+        {
+<span class="fc" id="L1163">            validateTombstoneMethod(m);</span>
+<span class="fc" id="L1164">            this.riakTombstoneSetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1165">            return this;</span>
+        }
+
+        public Builder withRiakTombstoneGetter(Method m)
+        {
+<span class="fc" id="L1170">            validateTombstoneMethod(m);</span>
+<span class="fc" id="L1171">            this.riakTombstoneGetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1172">            return this;</span>
+        }
+
+        public Builder withRiakContentTypeField(Field f)
+        {
+<span class="fc" id="L1177">            validateContentTypeField(f);</span>
+<span class="fc" id="L1178">            this.riakContentTypeField = ClassUtil.checkAndFixAccess(f);</span>
+<span class="fc" id="L1179">            return this;</span>
+        }
+
+        public Builder withRiakContentTypeSetter(Method m)
+        {
+<span class="fc" id="L1184">            validateContentTypeMethod(m);</span>
+<span class="fc" id="L1185">            this.riakContentTypeSetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1186">            return this;</span>
+        }
+
+        public Builder withRiakContentTypeGetter(Method m)
+        {
+<span class="fc" id="L1191">            validateContentTypeMethod(m);</span>
+<span class="fc" id="L1192">            this.riakContentTypeGetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1193">            return this;</span>
+        }
+
+        public Builder withRiakLastModifiedField(Field f)
+        {
+<span class="fc" id="L1198">            validateLastModifiedField(f);</span>
+<span class="fc" id="L1199">            this.riakLastModifiedField = ClassUtil.checkAndFixAccess(f);</span>
+<span class="fc" id="L1200">            return this;</span>
+        }
+
+        public Builder withRiakLastModifiedSetter(Method m)
+        {
+<span class="fc" id="L1205">            validateLastModifiedMethod(m);</span>
+<span class="fc" id="L1206">            this.riakLastModified = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1207">            return this;</span>
+        }
+
+        public Builder withRiakVTagField(Field f)
+        {
+<span class="fc" id="L1212">            validateVTagField(f);</span>
+<span class="fc" id="L1213">            this.riakVTagField = ClassUtil.checkAndFixAccess(f);</span>
+<span class="fc" id="L1214">            return this;</span>
+        }
+
+        public Builder withRiakVTagSetter(Method m)
+        {
+<span class="fc" id="L1219">            validateVTagMethod(m);</span>
+<span class="fc" id="L1220">            this.riakVTagSetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1221">            return this;</span>
+        }
+
+        public Builder withRiakBucketNameField(Field f)
+        {
+<span class="fc" id="L1226">            validateStringOrByteField(f, &quot;@RiakBucketName&quot;);</span>
+<span class="fc" id="L1227">            this.riakBucketNameField = ClassUtil.checkAndFixAccess(f);</span>
+<span class="fc" id="L1228">            return this;</span>
+        }
+
+        public Builder withRiakBucketNameSetter(Method m)
+        {
+<span class="fc" id="L1233">            validateStringOrByteMethod(m, &quot;@RiakBucketName&quot;);</span>
+<span class="fc" id="L1234">            this.riakBucketNameSetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1235">            return this;</span>
+        }
+
+        public Builder withRiakBucketNameGetter(Method m)
+        {
+<span class="fc" id="L1240">            validateStringOrByteMethod(m, &quot;@RiakBucketName&quot;);</span>
+<span class="fc" id="L1241">            this.riakBucketNameGetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1242">            return this;</span>
+        }
+
+        public Builder withRiakBucketTypeField(Field f)
+        {
+<span class="fc" id="L1247">            validateStringOrByteField(f, &quot;@RiakBucketType&quot;);</span>
+<span class="fc" id="L1248">            this.riakBucketTypeField = ClassUtil.checkAndFixAccess(f);</span>
+<span class="fc" id="L1249">            return this;</span>
+        }
+
+        public Builder withRiakBucketTypeSetter(Method m)
+        {
+<span class="fc" id="L1254">            validateStringOrByteMethod(m, &quot;@RiakBucketType&quot;);</span>
+<span class="fc" id="L1255">            this.riakBucketTypeSetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1256">            return this;</span>
+        }
+
+        public Builder withRiakBucketTypeGetter(Method m)
+        {
+<span class="fc" id="L1261">            validateStringOrByteMethod(m, &quot;@RiakBucketType&quot;);</span>
+<span class="fc" id="L1262">            this.riakBucketTypeGetter = ClassUtil.checkAndFixAccess(m);</span>
+<span class="fc" id="L1263">            return this;</span>
+        }
+
+        public AnnotationInfo build()
+        {
+<span class="fc" id="L1268">            return new AnnotationInfo(this);</span>
+        }
+
+        private void validateRiakLinksField(Field riakLinksField)
+        {
+<span class="fc bfc" id="L1273" title="All 2 branches covered.">            if (Collection.class.isAssignableFrom(riakLinksField.getType()))</span>
+            {
+<span class="fc" id="L1275">                Type t = riakLinksField.getGenericType();</span>
+<span class="pc bpc" id="L1276" title="1 of 2 branches missed.">                if (t instanceof ParameterizedType)</span>
+                {
+<span class="fc" id="L1278">                    ParameterizedType type = (ParameterizedType) t;</span>
+<span class="pc bpc" id="L1279" title="1 of 2 branches missed.">                    if (type.getRawType().equals(Collection.class))</span>
+                    {
+<span class="fc" id="L1281">                        Type[] genericParams = type.getActualTypeArguments();</span>
+<span class="pc bpc" id="L1282" title="1 of 4 branches missed.">                        if (genericParams.length == 1 &amp;&amp; genericParams[0].equals(RiakLink.class))</span>
+                        {
+<span class="fc" id="L1284">                            return;</span>
+                        }
+                    }
+                }
+<span class="fc" id="L1288">            }</span>
+<span class="pc bpc" id="L1289" title="1 of 2 branches missed.">            else if (riakLinksField.getType().equals(RiakLinks.class))</span>
+            {
+<span class="nc" id="L1291">                return;</span>
+            }
+<span class="fc" id="L1293">            throw new IllegalArgumentException(&quot;@RiakLinks field must be Collection&lt;RiakLink&gt;&quot;);</span>
+        }
+
+        private void validateRiakLinksMethod(Method m)
+        {
+<span class="fc bfc" id="L1298" title="All 2 branches covered.">            if (m.getParameterTypes().length == 1)</span>
+            {
+                // it's a setter, check the arg type
+<span class="fc" id="L1301">                Type[] genericParameterTypes = m.getGenericParameterTypes();</span>
+<span class="fc" id="L1302">                Type t = genericParameterTypes[0];</span>
+<span class="fc bfc" id="L1303" title="All 2 branches covered.">                if (t instanceof ParameterizedType)</span>
+                {
+<span class="fc" id="L1305">                    ParameterizedType pType = (ParameterizedType) t;</span>
+<span class="pc bpc" id="L1306" title="1 of 2 branches missed.">                    if (pType.getRawType().equals(Collection.class))</span>
+                    {
+<span class="fc" id="L1308">                        Class&lt;?&gt; genericType = (Class&lt;?&gt;) pType.getActualTypeArguments()[0];</span>
+<span class="fc bfc" id="L1309" title="All 2 branches covered.">                        if (RiakLink.class.equals(genericType))</span>
+                        {
+<span class="fc" id="L1311">                            return;</span>
+                        }
+                    }
+                }
+
+<span class="fc" id="L1316">                throw new IllegalArgumentException(&quot;@RiakLinks setter must take Collection&lt;RiakLink&gt;&quot;);</span>
+            }
+<span class="pc bpc" id="L1318" title="1 of 2 branches missed.">            else if (m.getParameterTypes().length == 0)</span>
+            {
+                // it's a getter, check return type
+<span class="fc" id="L1321">                Type t = m.getGenericReturnType();</span>
+<span class="fc bfc" id="L1322" title="All 2 branches covered.">                if (t instanceof ParameterizedType)</span>
+                {
+<span class="fc" id="L1324">                    ParameterizedType pType = (ParameterizedType) t;</span>
+<span class="pc bpc" id="L1325" title="1 of 2 branches missed.">                    if (pType.getRawType().equals(Collection.class))</span>
+                    {
+<span class="fc" id="L1327">                        Class&lt;?&gt; genericType = (Class&lt;?&gt;) pType.getActualTypeArguments()[0];</span>
+<span class="fc bfc" id="L1328" title="All 2 branches covered.">                        if (RiakLink.class.equals(genericType))</span>
+                        {
+<span class="fc" id="L1330">                            return;</span>
+                        }
+                    }
+                }
+<span class="fc" id="L1334">                throw new IllegalArgumentException(&quot;@RiakLinks getter must return Collection&lt;RiakLink&gt;&quot;);</span>
+            }
+<span class="nc" id="L1336">        }</span>
+
+        private void validateVClockField(Field f)
+        {
+<span class="pc bpc" id="L1340" title="1 of 4 branches missed.">            if (!(f.getType().isArray() &amp;&amp; f.getType().getComponentType().equals(byte.class))</span>
+<span class="fc bfc" id="L1341" title="All 2 branches covered.">                &amp;&amp; !f.getType().isAssignableFrom(VClock.class))</span>
+            {
+<span class="fc" id="L1343">                throw new IllegalArgumentException(&quot;@RiakVClock field must be a VClock or byte[]&quot;);</span>
+            }
+<span class="fc" id="L1345">        }</span>
+
+        private void validateVClockMethod(Method m)
+        {
+<span class="fc bfc" id="L1349" title="All 2 branches covered.">            if (m.getParameterTypes().length == 1)</span>
+            {
+                // It's a setter
+<span class="fc" id="L1352">                Class&lt;?&gt; pType = m.getParameterTypes()[0];</span>
+<span class="pc bpc" id="L1353" title="1 of 4 branches missed.">                if (!(pType.isArray() &amp;&amp; pType.getComponentType().equals(byte.class))</span>
+<span class="fc bfc" id="L1354" title="All 2 branches covered.">                    &amp;&amp; !pType.isAssignableFrom(VClock.class))</span>
+                {
+<span class="fc" id="L1356">                    throw new IllegalArgumentException(&quot;@RiakVClock setter must take VClock or byte[]&quot;);</span>
+                }
+<span class="fc" id="L1358">            }</span>
+<span class="pc bpc" id="L1359" title="1 of 2 branches missed.">            else if (m.getParameterTypes().length == 0)</span>
+            {
+<span class="fc" id="L1361">                Class&lt;?&gt; rType = m.getReturnType();</span>
+<span class="pc bpc" id="L1362" title="1 of 4 branches missed.">                if (!(rType.isArray() &amp;&amp; rType.getComponentType().equals(byte.class))</span>
+<span class="fc bfc" id="L1363" title="All 2 branches covered.">                    &amp;&amp; !rType.isAssignableFrom(VClock.class))</span>
+                {
+<span class="fc" id="L1365">                    throw new IllegalArgumentException(&quot;@RiakVClock getter must return VClock or byte[]&quot;);</span>
+                }
+            }
+<span class="fc" id="L1368">        }</span>
+
+        private void validateTombstoneField(Field f)
+        {
+<span class="fc bfc" id="L1372" title="All 4 branches covered.">            if (!f.getType().equals(Boolean.class) &amp;&amp; !f.getType().equals(boolean.class))</span>
+            {
+<span class="fc" id="L1374">                throw new IllegalArgumentException(&quot;@RiakTombstone field must be Boolean or boolean&quot;);</span>
+            }
+<span class="fc" id="L1376">        }</span>
+
+        private void validateTombstoneMethod(Method m)
+        {
+<span class="fc bfc" id="L1380" title="All 2 branches covered.">            if (m.getParameterTypes().length == 1)</span>
+            {
+<span class="fc" id="L1382">                Class&lt;?&gt; pType = m.getParameterTypes()[0];</span>
+<span class="pc bpc" id="L1383" title="1 of 4 branches missed.">                if (!pType.equals(Boolean.class) &amp;&amp; !pType.equals(boolean.class))</span>
+                {
+<span class="nc" id="L1385">                    throw new IllegalArgumentException(&quot;@RiakTombstone setter must take boolean or Boolean&quot;);</span>
+                }
+<span class="fc" id="L1387">            }</span>
+<span class="pc bpc" id="L1388" title="1 of 2 branches missed.">            else if (m.getParameterTypes().length == 0)</span>
+            {
+<span class="fc" id="L1390">                Class&lt;?&gt; rType = m.getReturnType();</span>
+<span class="pc bpc" id="L1391" title="1 of 4 branches missed.">                if (!rType.equals(Boolean.class) &amp;&amp; !rType.equals(boolean.class))</span>
+                {
+<span class="nc" id="L1393">                    throw new IllegalArgumentException(&quot;@RiakTombstone getter must return boolean or Boolean&quot;);</span>
+                }
+            }
+<span class="fc" id="L1396">        }</span>
+
+        private void validateContentTypeField(Field f)
+        {
+<span class="fc bfc" id="L1400" title="All 2 branches covered.">            if (!f.getType().equals(String.class))</span>
+            {
+<span class="fc" id="L1402">                throw new IllegalArgumentException(&quot;@RiakContentType field must be a String.&quot;);</span>
+            }
+<span class="fc" id="L1404">        }</span>
+
+        private void validateContentTypeMethod(Method m)
+        {
+<span class="fc bfc" id="L1408" title="All 2 branches covered.">            if (m.getParameterTypes().length == 1)</span>
+            {
+<span class="fc bfc" id="L1410" title="All 2 branches covered.">                if (!String.class.equals(m.getParameterTypes()[0]))</span>
+                {
+<span class="fc" id="L1412">                    throw new IllegalArgumentException(&quot;@RiakContentType setter must take a String.&quot;);</span>
+                }
+            }
+<span class="pc bpc" id="L1415" title="1 of 2 branches missed.">            else if (m.getParameterTypes().length == 0)</span>
+            {
+<span class="fc bfc" id="L1417" title="All 2 branches covered.">                if (!m.getReturnType().equals(String.class))</span>
+                {
+<span class="fc" id="L1419">                    throw new IllegalArgumentException(&quot;@RiakContentType getter must return a String.&quot;);</span>
+                }
+            }
+<span class="fc" id="L1422">        }</span>
+
+        private void validateLastModifiedField(Field f)
+        {
+<span class="pc bpc" id="L1426" title="3 of 4 branches missed.">            if (!f.getType().equals(Long.class) &amp;&amp; !f.getType().equals(long.class))</span>
+            {
+<span class="nc" id="L1428">                throw new IllegalArgumentException(&quot;@RiakLastModified field must be a Long or long.&quot;);</span>
+            }
+<span class="fc" id="L1430">        }</span>
+
+        private void validateLastModifiedMethod(Method m)
+        {
+<span class="pc bpc" id="L1434" title="1 of 2 branches missed.">            if (m.getParameterTypes().length == 0)</span>
+            {
+<span class="nc" id="L1436">                throw new IllegalArgumentException(&quot;@RiakLastModified can only be applied to a setter method.&quot;);</span>
+            }
+<span class="pc bpc" id="L1438" title="1 of 2 branches missed.">            else if (m.getParameterTypes().length == 1)</span>
+            {
+<span class="fc" id="L1440">                Class&lt;?&gt; pType = m.getParameterTypes()[0];</span>
+<span class="pc bpc" id="L1441" title="3 of 4 branches missed.">                if (!pType.equals(Long.class) &amp;&amp; !pType.equals(long.class))</span>
+                {
+<span class="nc" id="L1443">                    throw new IllegalArgumentException(&quot;@RiakLastModified setter must take a long or Long.&quot;);</span>
+                }
+            }
+<span class="fc" id="L1446">        }</span>
+
+        private void validateVTagField(Field f)
+        {
+<span class="fc bfc" id="L1450" title="All 2 branches covered.">            if (!f.getType().equals(String.class))</span>
+            {
+<span class="fc" id="L1452">                throw new IllegalArgumentException(&quot;@RiakVTag field must be a String.&quot;);</span>
+            }
+<span class="fc" id="L1454">        }</span>
+
+        private void validateVTagMethod(Method m)
+        {
+<span class="pc bpc" id="L1458" title="1 of 2 branches missed.">            if (m.getParameterTypes().length == 0)</span>
+            {
+<span class="nc" id="L1460">                throw new IllegalArgumentException(&quot;@RiakVTag can only be applied to a setter method.&quot;);</span>
+            }
+<span class="pc bpc" id="L1462" title="1 of 2 branches missed.">            else if (m.getParameterTypes().length == 1)</span>
+            {
+<span class="fc" id="L1464">                Class&lt;?&gt; pType = m.getParameterTypes()[0];</span>
+<span class="fc bfc" id="L1465" title="All 2 branches covered.">                if (!pType.equals(String.class))</span>
+                {
+<span class="fc" id="L1467">                    throw new IllegalArgumentException(&quot;@RiakVTag setter must take a String.&quot;);</span>
+                }
+            }
+<span class="fc" id="L1470">        }</span>
+
+        private void validateStringOrByteField(Field f, String annotation)
+        {
+<span class="pc bpc" id="L1474" title="1 of 4 branches missed.">            if (!(f.getType().isArray() &amp;&amp; f.getType().getComponentType().equals(byte.class))</span>
+<span class="fc bfc" id="L1475" title="All 2 branches covered.">                &amp;&amp; !f.getType().isAssignableFrom(String.class))</span>
+            {
+<span class="fc" id="L1477">                throw new IllegalArgumentException(annotation + &quot; field must be a String or byte[].&quot;);</span>
+            }
+<span class="fc" id="L1479">        }</span>
+
+        private void validateStringOrByteMethod(Method m, String annotation)
+        {
+<span class="fc bfc" id="L1483" title="All 2 branches covered.">            if (m.getParameterTypes().length == 1)</span>
+            {
+                // It's a setter
+<span class="fc" id="L1486">                Class&lt;?&gt; pType = m.getParameterTypes()[0];</span>
+<span class="pc bpc" id="L1487" title="1 of 4 branches missed.">                if (!(pType.isArray() &amp;&amp; pType.getComponentType().equals(byte.class))</span>
+<span class="fc bfc" id="L1488" title="All 2 branches covered.">                    &amp;&amp; !pType.isAssignableFrom(String.class))</span>
+                {
+<span class="fc" id="L1490">                    throw new IllegalArgumentException(annotation + &quot; setter must take String or byte[]&quot;);</span>
+                }
+<span class="fc" id="L1492">            }</span>
+<span class="pc bpc" id="L1493" title="1 of 2 branches missed.">            else if (m.getParameterTypes().length == 0)</span>
+            {
+<span class="fc" id="L1495">                Class&lt;?&gt; rType = m.getReturnType();</span>
+<span class="pc bpc" id="L1496" title="1 of 4 branches missed.">                if (!(rType.isArray() &amp;&amp; rType.getComponentType().equals(byte.class))</span>
+<span class="fc bfc" id="L1497" title="All 2 branches covered.">                    &amp;&amp; !rType.isAssignableFrom(String.class))</span>
+                {
+<span class="fc" id="L1499">                    throw new IllegalArgumentException(annotation + &quot; getter must return String or byte[]&quot;);</span>
+                }
+            }
+<span class="fc" id="L1502">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

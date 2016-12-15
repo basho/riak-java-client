@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RiakDatatype.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.query.crdt.types</a> &gt; <span class="el_source">RiakDatatype.java</span></div><h1>RiakDatatype.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.core.query.crdt.types;
+
+/**
+ * Base abstract class for all datatypes.
+ *
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+<span class="fc" id="L24">public abstract class RiakDatatype</span>
+{
+    public abstract Object view();
+
+    /**
+     * Determine if this datatype is a map.
+     *
+     * @return true if a map, false otherwise.
+     */
+    public boolean isMap()
+    {
+<span class="fc" id="L35">        return this instanceof RiakMap;</span>
+    }
+
+    /**
+     * Determine if this datatype is a set.
+     *
+     * @return true if a set, false otherwise.
+     */
+    public boolean isSet()
+    {
+<span class="fc" id="L45">        return this instanceof RiakSet;</span>
+    }
+
+    /**
+     * Determine if this datatype is a counter.
+     *
+     * @return true if a counter, false otherwise.
+     */
+    public boolean isCounter()
+    {
+<span class="fc" id="L55">        return this instanceof RiakCounter;</span>
+    }
+
+    /**
+     * Determine if this datatype is a register.
+     *
+     * @return true if a register, false otherwise.
+     */
+    public boolean isRegister()
+    {
+<span class="fc" id="L65">        return this instanceof RiakRegister;</span>
+    }
+
+    /**
+     * Determine if this datatype is a flag.
+     *
+     * @return true if a flag, false otherwise.
+     */
+    public boolean isFlag()
+    {
+<span class="fc" id="L75">        return this instanceof RiakFlag;</span>
+    }
+
+    /**
+     * Determine if this datatype is a HyperLogLog.
+     *
+     * @return true if a flag, false otherwise.
+     */
+    public boolean isHll()
+    {
+<span class="nc" id="L85">        return this instanceof RiakHll;</span>
+    }
+
+    /**
+     * Get this datatype as a map.
+     *
+     * @return a RiakMap
+     * @throws IllegalStateException if this is not a map.
+     */
+    public RiakMap getAsMap()
+    {
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        if (!isMap())</span>
+        {
+<span class="nc" id="L98">            throw new IllegalStateException(&quot;This is not an instance of a CrdtMap&quot;);</span>
+        }
+<span class="fc" id="L100">        return (RiakMap) this;</span>
+    }
+
+    /**
+     * Get this datatype as a set.
+     *
+     * @return a RiakSet
+     * @throws IllegalStateException if this is not a set.
+     */
+    public RiakSet getAsSet()
+    {
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">        if (!isSet())</span>
+        {
+<span class="nc" id="L113">            throw new IllegalStateException(&quot;This is not an instance of a CrdtSet&quot;);</span>
+        }
+<span class="fc" id="L115">        return (RiakSet) this;</span>
+    }
+
+    /**
+     * Get this datatype as a counter.
+     *
+     * @return a RiakCounter
+     * @throws IllegalStateException if this is not a counter.
+     */
+    public RiakCounter getAsCounter()
+    {
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (!isCounter())</span>
+        {
+<span class="nc" id="L128">            throw new IllegalStateException(&quot;This is not an instance of a CrdtCounter&quot;);</span>
+        }
+<span class="fc" id="L130">        return (RiakCounter) this;</span>
+    }
+
+    /**
+     * Get this datatype as a register.
+     *
+     * @return a RiakRegister
+     * @throws IllegalStateException if this is not a register.
+     */
+    public RiakRegister getAsRegister()
+    {
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">        if (!isRegister())</span>
+        {
+<span class="nc" id="L143">            throw new IllegalStateException(&quot;This is not an instance of a CrdtRegister&quot;);</span>
+        }
+<span class="fc" id="L145">        return (RiakRegister) this;</span>
+    }
+
+    /**
+     * Get this datatype as a flag.
+     *
+     * @return a RiakFlag
+     * @throws IllegalStateException if this is not a flag.
+     */
+    public RiakFlag getAsFlag()
+    {
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        if (!isFlag())</span>
+        {
+<span class="nc" id="L158">            throw new IllegalStateException(&quot;This is not an instance of a CrdtFlag&quot;);</span>
+        }
+<span class="fc" id="L160">        return (RiakFlag) this;</span>
+    }
+
+    /**
+     * Get this datatype as a flag.
+     *
+     * @return a RiakFlag
+     * @throws IllegalStateException if this is not a flag.
+     */
+    public RiakHll getAsHll()
+    {
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        if (!isHll())</span>
+        {
+<span class="nc" id="L173">            throw new IllegalStateException(&quot;This is not an instance of a RiakHll&quot;);</span>
+        }
+<span class="nc" id="L175">        return (RiakHll) this;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

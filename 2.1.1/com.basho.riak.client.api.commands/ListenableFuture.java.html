@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ListenableFuture.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands</a> &gt; <span class="el_source">ListenableFuture.java</span></div><h1>ListenableFuture.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2014 Brian Roach &lt;roach at basho dot com&gt;.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.commands;
+
+import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.RiakFutureListener;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * The base class for RiakFutures returned to users.
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+<span class="fc" id="L30">public abstract class ListenableFuture&lt;T,S&gt; implements RiakFuture&lt;T,S&gt;</span>
+{
+<span class="fc" id="L32">    private final Set&lt;RiakFutureListener&lt;T,S&gt;&gt; listeners = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L33">    private final ReentrantLock listenersLock = new ReentrantLock();</span>
+
+    @Override
+    public void addListener(RiakFutureListener&lt;T, S&gt; listener)
+    {
+<span class="fc" id="L38">        listenersLock.lock();</span>
+        try
+        {
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">            if (isDone())</span>
+            {
+<span class="fc" id="L43">                listener.handle(this);</span>
+            }
+            else
+            {
+<span class="nc" id="L47">                listeners.add(listener);</span>
+            }
+        }
+        finally
+        {
+<span class="pc" id="L52">            listenersLock.unlock();</span>
+<span class="fc" id="L53">        }</span>
+<span class="fc" id="L54">    }</span>
+
+    @Override
+    public void removeListener(RiakFutureListener&lt;T, S&gt; listener)
+    {
+<span class="nc" id="L59">        listenersLock.lock();</span>
+        try
+        {
+<span class="nc" id="L62">            listeners.remove(listener);</span>
+        }
+        finally
+        {
+<span class="nc" id="L66">            listenersLock.unlock();</span>
+<span class="nc" id="L67">        }</span>
+<span class="nc" id="L68">    }</span>
+
+    protected void notifyListeners()
+    {
+<span class="fc" id="L72">        listenersLock.lock();</span>
+        try
+        {
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">            for (RiakFutureListener&lt;T,S&gt; listener : listeners)</span>
+            {
+<span class="nc" id="L77">                listener.handle(this);</span>
+<span class="nc" id="L78">            }</span>
+        }
+        finally
+        {
+<span class="pc" id="L82">            listenersLock.unlock();</span>
+<span class="fc" id="L83">        }</span>
+<span class="fc" id="L84">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

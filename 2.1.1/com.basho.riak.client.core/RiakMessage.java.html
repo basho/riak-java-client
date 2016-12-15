@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RiakMessage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core</a> &gt; <span class="el_source">RiakMessage.java</span></div><h1>RiakMessage.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.core;
+
+import com.basho.riak.client.core.netty.RiakResponseException;
+import com.basho.riak.protobuf.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakPB;
+import com.ericsson.otp.erlang.OtpErlangDecodeException;
+import com.ericsson.otp.erlang.OtpExternal;
+import com.ericsson.otp.erlang.OtpInputStream;
+import com.google.protobuf.InvalidProtocolBufferException;
+import java.nio.charset.StandardCharsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Encapsulates the raw bytes sent to or received from Riak.
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @author Sergey Galkin &lt;sgalkin at basho dot com&gt;
+ * @since 2.0
+ */
+public final class RiakMessage
+{
+<span class="fc" id="L23">    private static final Logger logger = LoggerFactory.getLogger(RiakMessage.class);</span>
+    private final byte code;
+    private final byte[] data;
+    private final RiakResponseException riakError;
+    private static final String ERROR_RESP = &quot;rpberrorresp&quot;;
+
+    public RiakMessage(byte code, byte[] data)
+    {
+<span class="fc" id="L31">        this(code, data, true);</span>
+<span class="fc" id="L32">    }</span>
+
+    public RiakMessage(byte code, byte[] data, boolean doErrorCheck)
+<span class="fc" id="L35">    {</span>
+<span class="fc" id="L36">        this.code = code;</span>
+<span class="fc" id="L37">        this.data = data;</span>
+
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        if (doErrorCheck)</span>
+        {
+<span class="fc bfc" id="L41" title="All 3 branches covered.">            switch (this.code)</span>
+            {
+                case RiakMessageCodes.MSG_ErrorResp:
+<span class="fc" id="L44">                    this.riakError = getRiakErrorFromPbuf(this.data);</span>
+<span class="fc" id="L45">                    break;</span>
+                case RiakMessageCodes.MSG_TsTtbMsg:
+<span class="fc" id="L47">                    OtpInputStream ttbInputStream = new OtpInputStream(data);</span>
+<span class="fc" id="L48">                    this.riakError = getRiakErrorFromTtb(ttbInputStream);</span>
+<span class="fc" id="L49">                    break;</span>
+                default:
+<span class="fc" id="L51">                    this.riakError = null;</span>
+            }
+        }
+        else
+        {
+<span class="nc" id="L56">            this.riakError = null;</span>
+        }
+<span class="fc" id="L58">    }</span>
+
+    private static RiakResponseException getRiakErrorFromPbuf(byte[] data)
+    {
+        try
+        {
+<span class="fc" id="L64">            RiakPB.RpbErrorResp err = RiakPB.RpbErrorResp.parseFrom(data);</span>
+<span class="fc" id="L65">            return new RiakResponseException(err.getErrcode(), err.getErrmsg().toStringUtf8());</span>
+        }
+<span class="nc" id="L67">        catch (InvalidProtocolBufferException ex)</span>
+        {
+<span class="nc" id="L69">            logger.error(&quot;exception&quot;, ex);</span>
+<span class="nc" id="L70">            return new RiakResponseException(0, &quot;Could not parse protocol buffers error&quot;);</span>
+        }
+    }
+
+    public byte getCode()
+    {
+<span class="fc" id="L76">        return code;</span>
+    }
+
+    public byte[] getData()
+    {
+<span class="fc" id="L81">        return data;</span>
+    }
+
+    public boolean isRiakError()
+    {
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        return this.riakError != null;</span>
+    }
+
+    public RiakResponseException getRiakError()
+    {
+<span class="fc" id="L91">        return this.riakError;</span>
+    }
+
+    private RiakResponseException getRiakErrorFromTtb(OtpInputStream ttbInputStream)
+    {
+<span class="fc" id="L96">        final String decodeErrorMsg = &quot;Error decoding Riak TTB Response, unexpected format.&quot;;</span>
+        int ttbMsgArity;
+
+        try
+        {
+<span class="fc" id="L101">            int firstByte = ttbInputStream.read1skip_version();</span>
+
+<span class="pc bpc" id="L103" title="3 of 4 branches missed.">            if (firstByte != OtpExternal.smallTupleTag &amp;&amp; firstByte != OtpExternal.largeTupleTag)</span>
+            {
+<span class="nc" id="L105">                return null;</span>
+            }
+
+<span class="fc" id="L108">            ttbInputStream.reset();</span>
+
+<span class="fc" id="L110">            ttbMsgArity = ttbInputStream.read_tuple_head();</span>
+        }
+<span class="nc" id="L112">        catch (OtpErlangDecodeException ex)</span>
+        {
+<span class="nc" id="L114">            logger.error(decodeErrorMsg + &quot; Was expecting a tuple head.&quot;, ex);</span>
+<span class="nc" id="L115">            throw new IllegalArgumentException(decodeErrorMsg, ex);</span>
+<span class="fc" id="L116">        }</span>
+
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        if (ttbMsgArity == 3)</span>
+        {
+            // NB: may be an error response
+            String atom;
+            try
+            {
+<span class="fc" id="L124">                atom = ttbInputStream.read_atom();</span>
+            }
+<span class="nc" id="L126">            catch (OtpErlangDecodeException ex)</span>
+            {
+<span class="nc" id="L128">                logger.error(decodeErrorMsg + &quot; Was expecting an atom.&quot;, ex);</span>
+<span class="nc" id="L129">                throw new IllegalArgumentException(decodeErrorMsg, ex);</span>
+<span class="fc" id="L130">            }</span>
+
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">            if (ERROR_RESP.equals(atom))</span>
+            {
+                try
+                {
+<span class="fc" id="L136">                    String errMsg = new String(ttbInputStream.read_binary(), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L137">                    int errCode = ttbInputStream.read_int();</span>
+<span class="fc" id="L138">                    return new RiakResponseException(errCode, errMsg);</span>
+                }
+<span class="nc" id="L140">                catch (OtpErlangDecodeException ex)</span>
+                {
+<span class="nc" id="L142">                    logger.error(decodeErrorMsg, ex);</span>
+<span class="nc" id="L143">                    throw new IllegalArgumentException(decodeErrorMsg, ex);</span>
+                }
+            }
+        }
+
+<span class="nc" id="L148">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

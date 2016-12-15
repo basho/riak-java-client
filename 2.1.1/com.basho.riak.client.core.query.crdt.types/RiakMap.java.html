@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RiakMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.query.crdt.types</a> &gt; <span class="el_source">RiakMap.java</span></div><h1>RiakMap.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.core.query.crdt.types;
+
+import com.basho.riak.client.core.util.BinaryValue;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.Collections.unmodifiableMap;
+
+/**
+ * Representation of the Riak map datatype.
+ * &lt;p&gt;
+ * This is an immutable map returned when querying Riak for
+ * a map datatype.
+ * &lt;/p&gt;
+ *
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+public class RiakMap extends RiakDatatype
+{
+<span class="fc" id="L39">    private final Map&lt;BinaryValue, List&lt;RiakDatatype&gt;&gt; entries = new HashMap&lt;&gt;();</span>
+
+    public RiakMap(List&lt;MapEntry&gt; mapEntries)
+<span class="fc" id="L42">    {</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        for (MapEntry entry : mapEntries)</span>
+        {
+            List&lt;RiakDatatype&gt; datatypes;
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">            if ((datatypes = entries.get(entry.field)) == null)</span>
+            {
+<span class="fc" id="L48">                datatypes = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L49">                entries.put(entry.field, datatypes);</span>
+            }
+<span class="fc" id="L51">            datatypes.add(entry.element);</span>
+<span class="fc" id="L52">        }</span>
+<span class="fc" id="L53">    }</span>
+
+    /**
+     * Returns the value(s) to which the specified key is mapped, or {@literal null}
+     * if the map contains no mapping for the key.
+     *
+     * @param key key whose associated value(s) is to be returned.
+     * @return a List containing one or more datatypes, or null if this map contains no mapping for the key.
+     */
+    public List&lt;RiakDatatype&gt; get(BinaryValue key)
+    {
+<span class="fc" id="L64">        return entries.get(key);</span>
+    }
+
+    /**
+     * Returns a RiakMap to which the specified key is mapped, or {@literal null}
+     * if no RiakMap is present.
+     *
+     * @param key key whose associated RiakMap is to be returned.
+     * @return a RiakMap, or null if one is not present.
+     */
+    public RiakMap getMap(BinaryValue key)
+    {
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (entries.containsKey(key))</span>
+        {
+<span class="nc bnc" id="L78" title="All 2 branches missed.">            for (RiakDatatype dt : entries.get(key))</span>
+            {
+<span class="nc bnc" id="L80" title="All 2 branches missed.">                if (dt.isMap())</span>
+                {
+<span class="nc" id="L82">                    return dt.getAsMap();</span>
+                }
+<span class="nc" id="L84">            }</span>
+        }
+<span class="nc" id="L86">        return null;</span>
+    }
+
+    /**
+     * Returns a RiakMap to which the specified key is mapped, or {@literal null}
+     * if no RiakMap is present.
+     *
+     * @param key key whose associated RiakMap is to be returned.
+     * @return a RiakMap, or null if one is not present.
+     */
+    public RiakMap getMap(String key)
+    {
+<span class="nc" id="L98">        return getMap(BinaryValue.create(key));</span>
+    }
+
+    /**
+     * Returns a RiakSet to which the specified key is mapped, or {@literal null}
+     * if no RiakSet is present.
+     *
+     * @param key key whose associated RiakSet is to be returned.
+     * @return a RiakSet, or null if one is not present.
+     */
+    public RiakSet getSet(BinaryValue key)
+    {
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (entries.containsKey(key))</span>
+        {
+<span class="nc bnc" id="L112" title="All 2 branches missed.">            for (RiakDatatype dt : entries.get(key))</span>
+            {
+<span class="nc bnc" id="L114" title="All 2 branches missed.">                if (dt.isSet())</span>
+                {
+<span class="nc" id="L116">                    return dt.getAsSet();</span>
+                }
+<span class="nc" id="L118">            }</span>
+        }
+<span class="nc" id="L120">        return null;</span>
+    }
+
+    /**
+     * Returns a RiakSet to which the specified key is mapped, or {@literal null}
+     * if no RiakSet is present.
+     *
+     * @param key key whose associated RiakSet is to be returned.
+     * @return a RiakSet, or null if one is not present.
+     */
+    public RiakSet getSet(String key)
+    {
+<span class="nc" id="L132">        return getSet(BinaryValue.create(key));</span>
+    }
+
+    /**
+     * Returns a RiakCounter to which the specified key is mapped, or {@literal null}
+     * if no RiakCounter is present.
+     *
+     * @param key key whose associated RiakCounter is to be returned.
+     * @return a RiakCounter, or null if one is not present.
+     */
+    public RiakCounter getCounter(BinaryValue key)
+    {
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (entries.containsKey(key))</span>
+        {
+<span class="nc bnc" id="L146" title="All 2 branches missed.">            for (RiakDatatype dt : entries.get(key))</span>
+            {
+<span class="nc bnc" id="L148" title="All 2 branches missed.">                if (dt.isCounter())</span>
+                {
+<span class="nc" id="L150">                    return dt.getAsCounter();</span>
+                }
+<span class="nc" id="L152">            }</span>
+        }
+<span class="nc" id="L154">        return null;</span>
+    }
+
+    /**
+     * Returns a RiakCounter to which the specified key is mapped, or {@literal null}
+     * if no RiakCounter is present.
+     *
+     * @param key key whose associated RiakCounter is to be returned.
+     * @return a RiakCounter, or null if one is not present.
+     */
+    public RiakCounter getCounter(String key)
+    {
+<span class="nc" id="L166">        return getCounter(BinaryValue.create(key));</span>
+    }
+
+    /**
+     * Returns a RiakFlag to which the specified key is mapped, or {@literal null}
+     * if no RiakFlag is present.
+     *
+     * @param key key whose associated RiakFlag is to be returned.
+     * @return a RiakFlag, or null if one is not present.
+     */
+    public RiakFlag getFlag(BinaryValue key)
+    {
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (entries.containsKey(key))</span>
+        {
+<span class="nc bnc" id="L180" title="All 2 branches missed.">            for (RiakDatatype dt : entries.get(key))</span>
+            {
+<span class="nc bnc" id="L182" title="All 2 branches missed.">                if (dt.isFlag())</span>
+                {
+<span class="nc" id="L184">                    return dt.getAsFlag();</span>
+                }
+<span class="nc" id="L186">            }</span>
+        }
+<span class="nc" id="L188">        return null;</span>
+    }
+
+    /**
+     * Returns a RiakFlag to which the specified key is mapped, or {@literal null}
+     * if no RiakFlag is present.
+     *
+     * @param key key whose associated RiakFlag is to be returned.
+     * @return a RiakFlag, or null if one is not present.
+     */
+    public RiakFlag getFlag(String key)
+    {
+<span class="nc" id="L200">        return getFlag(BinaryValue.create(key));</span>
+    }
+
+    /**
+     * Returns a RiakRegister to which the specified key is mapped, or {@literal null}
+     * if no RiakRegister is present.
+     *
+     * @param key key whose associated RiakRegister is to be returned.
+     * @return a RiakRegister, or null if one is not present.
+     */
+    public RiakRegister getRegister(BinaryValue key)
+    {
+<span class="nc bnc" id="L212" title="All 2 branches missed.">        if (entries.containsKey(key))</span>
+        {
+<span class="nc bnc" id="L214" title="All 2 branches missed.">            for (RiakDatatype dt : entries.get(key))</span>
+            {
+<span class="nc bnc" id="L216" title="All 2 branches missed.">                if (dt.isRegister())</span>
+                {
+<span class="nc" id="L218">                    return dt.getAsRegister();</span>
+                }
+<span class="nc" id="L220">            }</span>
+        }
+<span class="nc" id="L222">        return null;</span>
+    }
+
+    /**
+     * Returns a RiakRegister to which the specified key is mapped, or {@literal null}
+     * if no RiakRegister is present.
+     *
+     * @param key key whose associated RiakRegister is to be returned.
+     * @return a RiakRegister, or null if one is not present.
+     */
+    public RiakRegister getRegister(String key)
+    {
+<span class="nc" id="L234">        return getRegister(BinaryValue.create(key));</span>
+    }
+
+    /**
+     * Get this RiakMap as a {@link Map}. The returned Map is unmodifiable.
+     *
+     * @return a read-only view of the RiakMap.
+     */
+    @Override
+    public Map&lt;BinaryValue, List&lt;RiakDatatype&gt;&gt; view()
+    {
+<span class="nc" id="L245">        return unmodifiableMap(entries);</span>
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (this == o)</span>
+        {
+<span class="nc" id="L253">            return true;</span>
+        }
+<span class="nc bnc" id="L255" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass())</span>
+        {
+<span class="nc" id="L257">            return false;</span>
+        }
+
+<span class="nc" id="L260">        RiakMap riakMap = (RiakMap) o;</span>
+
+<span class="nc bnc" id="L262" title="All 4 branches missed.">        return entries != null ? entries.equals(riakMap.entries) : riakMap.entries == null;</span>
+    }
+
+    @Override
+    public int hashCode()
+    {
+<span class="nc bnc" id="L268" title="All 2 branches missed.">        return entries != null ? entries.hashCode() : 0;</span>
+    }
+
+    /**
+     * A RiakMap entry (key/value pair).
+     */
+    public static final class MapEntry
+    {
+        private final BinaryValue field;
+        private final RiakDatatype element;
+
+        public MapEntry(BinaryValue field, RiakDatatype element)
+<span class="fc" id="L280">        {</span>
+<span class="fc" id="L281">            this.field = field;</span>
+<span class="fc" id="L282">            this.element = element;</span>
+<span class="fc" id="L283">        }</span>
+
+        public BinaryValue getField()
+        {
+<span class="nc" id="L287">            return field;</span>
+        }
+
+        public RiakDatatype getElement()
+        {
+<span class="nc" id="L292">            return element;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

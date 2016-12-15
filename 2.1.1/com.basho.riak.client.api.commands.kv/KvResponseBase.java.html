@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KvResponseBase.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.kv</a> &gt; <span class="el_source">KvResponseBase.java</span></div><h1>KvResponseBase.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2014 Brian Roach &lt;roach at basho dot com&gt;.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.commands.kv;
+
+import com.basho.riak.client.api.cap.ConflictResolver;
+import com.basho.riak.client.api.cap.ConflictResolverFactory;
+import com.basho.riak.client.api.cap.UnresolvedConflictException;
+import com.basho.riak.client.api.cap.VClock;
+import com.basho.riak.client.api.convert.Converter;
+import com.basho.riak.client.api.convert.ConverterFactory;
+import com.basho.riak.client.api.convert.reflection.AnnotationUtil;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.RiakObject;
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Base abstract class that KV responses extend.
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+abstract class KvResponseBase
+{
+    private final Location location;
+    private final List&lt;RiakObject&gt; values;
+
+    protected KvResponseBase(Init&lt;?&gt; builder)
+<span class="nc" id="L44">    {</span>
+<span class="nc" id="L45">        this.location = builder.location;</span>
+<span class="nc" id="L46">        this.values = builder.values;</span>
+<span class="nc" id="L47">    }</span>
+
+    /**
+     * Returns the {@link Location} affected by the operation that resulted in this response.
+     * @return the affected {@link Location}
+     */
+    public Location getLocation()
+    {
+<span class="nc" id="L55">        return location;</span>
+    }
+
+    /**
+     * Determine if this response contains any returned values.
+     * @return true if values are present, false otherwise.
+     */
+    public boolean hasValues()
+    {
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        return !values.isEmpty();</span>
+    }
+
+    /**
+     * Return the number of values contained in this response.
+     * &lt;p&gt;
+     * If siblings are present at the {@code Location}, all values
+     * are returned.
+     * &lt;p&gt;
+     * @return the number of values in this response.
+     */
+    public int getNumberOfValues()
+    {
+<span class="nc" id="L77">        return values.size();</span>
+    }
+
+    /**
+     * Get all the objects returned in this response.
+     * &lt;p&gt;
+     * If siblings were present in Riak for the object you were fetching,
+     * this method will return all of them to you.
+     * &lt;/p&gt;
+     * @return a list of values as RiakObjects
+     */
+    public List&lt;RiakObject&gt; getValues()
+    {
+<span class="nc" id="L90">        return values;</span>
+    }
+
+    /**
+     * Get the vector clock returned with this response.
+     * &lt;p&gt;
+     * When storing/retrieving core Java types ({@code HashMap},
+     * {@code ArrayList},{@code String}, etc) or non-annotated POJOs
+     * this method allows you to retrieve the vector clock.
+     * &lt;/p&gt;
+     * @return The vector clock or null if one is not present.
+     */
+    public VClock getVectorClock()
+    {
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (hasValues())</span>
+        {
+<span class="nc" id="L106">            return values.get(0).getVClock();</span>
+        }
+        else
+        {
+<span class="nc" id="L110">            return null;</span>
+        }
+    }
+
+    /**
+     * Get all the objects returned in this response.
+     * &lt;p&gt;
+     * If siblings were present in Riak for the object you were fetching,
+     * this method will return all of them to you.
+     * &lt;/p&gt;
+     * &lt;p&gt;
+     * The values will be converted to the supplied class using the
+     * {@link com.basho.riak.client.api.convert.Converter} returned from the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+     * By default this will be the {@link com.basho.riak.client.api.convert.JSONConverter},
+     * or no conversion at all if you pass in {@code RiakObject.class}.
+     * &lt;/p&gt;
+     * @param clazz the class to be converted to
+     * @return a list of values, converted to the supplied class.
+     * @see ConverterFactory
+     * @see Converter
+     */
+    public &lt;T&gt; List&lt;T&gt; getValues(Class&lt;T&gt; clazz)
+    {
+<span class="nc" id="L133">        Converter&lt;T&gt; converter = ConverterFactory.getInstance().getConverter(clazz);</span>
+<span class="nc" id="L134">        return convertValues(converter);</span>
+    }
+
+    /**
+     * Get all the objects returned in this response.
+     * &lt;p&gt;
+     * If siblings were present in Riak for the object you were fetching,
+     * this method will return all of them to you.
+     * &lt;/p&gt;
+     * &lt;p&gt;
+     * The values will be converted to an object using the supplied
+     * {@link com.basho.riak.client.api.convert.Converter} rather than one
+     * registered with the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+     * &lt;/p&gt;
+     * @param converter The converter to use.
+     * @return a list of values, converted to the supplied class.
+     * @see Converter
+     */
+    public &lt;T&gt; List&lt;T&gt; getValues(Converter&lt;T&gt; converter)
+    {
+<span class="nc" id="L154">        return convertValues(converter);</span>
+    }
+
+    /**
+     * Get a single, resolved object from this response.
+     * &lt;p&gt;
+     * The values will be converted to objects using the supplied
+     * {@link com.basho.riak.client.api.convert.Converter} rather than one registered
+     * with the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+     * &lt;/p&gt;
+     * &lt;p&gt;If there are multiple
+     * values present (siblings), they will then be resolved using the supplied
+     * {@link com.basho.riak.client.api.cap.ConflictResolver} rather than one
+     * registered with the {@link com.basho.riak.client.api.cap.ConflictResolverFactory}.
+     * &lt;/p&gt;
+     * @param converter The converter to use.
+     * @param resolver The conflict resolver to use.
+     * @return the single, resolved value.
+     * @throws UnresolvedConflictException if the resolver fails to resolve siblings.
+     * @see Converter
+     * @see ConflictResolver
+     */
+    public &lt;T&gt; T getValue(Converter&lt;T&gt; converter, ConflictResolver&lt;T&gt; resolver) throws UnresolvedConflictException
+    {
+<span class="nc" id="L178">        List&lt;T&gt; convertedValues = convertValues(converter);</span>
+<span class="nc" id="L179">        T resolved = resolver.resolve(convertedValues);</span>
+
+<span class="nc bnc" id="L181" title="All 4 branches missed.">        if (hasValues() &amp;&amp; resolved != null)</span>
+        {
+<span class="nc" id="L183">            VClock vclock = values.get(0).getVClock();</span>
+<span class="nc" id="L184">            AnnotationUtil.setVClock(resolved, vclock);</span>
+        }
+
+<span class="nc" id="L187">        return resolved;</span>
+    }
+
+    /**
+     * Get a single, resolved object from this response.
+     * &lt;p&gt;
+     * The values will be converted to the supplied class using the
+     * {@link com.basho.riak.client.api.convert.Converter} returned from the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+     * By default this will be the {@link com.basho.riak.client.api.convert.JSONConverter},
+     * or no conversion at all if you pass in {@code RiakObject.class}. If there are multiple
+     * values present (siblings), they will then be resolved using the
+     * {@link com.basho.riak.client.api.cap.ConflictResolver} returned by the {@link com.basho.riak.client.api.cap.ConflictResolverFactory}.
+     * &lt;/p&gt;
+     * @param clazz the class to be converted to.
+     * @return the single, resolved value converted to the supplied class.
+     * @throws UnresolvedConflictException
+     * @see ConverterFactory
+     * @see Converter
+     * @see ConflictResolverFactory
+     * @see ConflictResolver
+     */
+    public &lt;T&gt; T getValue(Class&lt;T&gt; clazz) throws UnresolvedConflictException
+    {
+<span class="nc" id="L210">        Converter&lt;T&gt; converter = ConverterFactory.getInstance().getConverter(clazz);</span>
+<span class="nc" id="L211">        List&lt;T&gt; convertedValues = convertValues(converter);</span>
+
+        ConflictResolver&lt;T&gt; resolver =
+<span class="nc" id="L214">            ConflictResolverFactory.getInstance().getConflictResolver(clazz);</span>
+
+<span class="nc" id="L216">        T resolved = resolver.resolve(convertedValues);</span>
+
+<span class="nc bnc" id="L218" title="All 4 branches missed.">        if (hasValues() &amp;&amp; resolved != null)</span>
+        {
+<span class="nc" id="L220">            VClock vclock = values.get(0).getVClock();</span>
+<span class="nc" id="L221">            AnnotationUtil.setVClock(resolved, vclock);</span>
+        }
+
+<span class="nc" id="L224">        return resolved;</span>
+    }
+
+    /**
+     * Get a single, resolved object from this response.
+     * &lt;p&gt;
+     * The values will be converted to the supplied class using the
+     * {@link com.basho.riak.client.api.convert.Converter} returned from the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+     * By default this will be the {@link com.basho.riak.client.api.convert.JSONConverter},
+     * or no conversion at all if you pass in {@code RiakObject.class}. If there are multiple
+     * values present (siblings), they will then be resolved using the
+     * {@link com.basho.riak.client.api.cap.ConflictResolver} returned by the {@link com.basho.riak.client.api.cap.ConflictResolverFactory}.
+     * &lt;/p&gt;
+     * &lt;p&gt;
+     * This version should only be used if you're converting to a parameterized
+     * generic domain object. For example:
+     * &lt;pre&gt;
+     * {@literal TypeReference&lt;MyPojo&lt;String&gt;&gt;} tr = new {@literal TypeReference&lt;MyPojo&lt;String&gt;&gt;}() {};
+     * {@literal MyPojo&lt;String&gt;} myPojo = response.getValue(tr);
+     * &lt;/pre&gt;
+     * &lt;/p&gt;
+     * @param typeReference The TypeReference of the class to be converted to.
+     * @return the single, resolved value converted to the supplied class.
+     * @throws UnresolvedConflictException
+     * @see ConverterFactory
+     * @see Converter
+     * @see ConflictResolverFactory
+     * @see ConflictResolver
+     */
+    public &lt;T&gt; T getValue(TypeReference&lt;T&gt; typeReference) throws UnresolvedConflictException
+    {
+<span class="nc" id="L255">        Converter&lt;T&gt; converter = ConverterFactory.getInstance().getConverter(typeReference);</span>
+<span class="nc" id="L256">        List&lt;T&gt; convertedValues = convertValues(converter);</span>
+
+        ConflictResolver&lt;T&gt; resolver =
+<span class="nc" id="L259">            ConflictResolverFactory.getInstance().getConflictResolver(typeReference);</span>
+
+<span class="nc" id="L261">        T resolved = resolver.resolve(convertedValues);</span>
+<span class="nc bnc" id="L262" title="All 4 branches missed.">        if (hasValues() &amp;&amp; resolved != null)</span>
+        {
+<span class="nc" id="L264">            VClock vclock = values.get(0).getVClock();</span>
+<span class="nc" id="L265">            AnnotationUtil.setVClock(resolved, vclock);</span>
+        }
+
+<span class="nc" id="L268">        return resolved;</span>
+    }
+
+    /**
+     * Get the objects returned in this response.
+     * &lt;p&gt;
+     * If siblings were present in Riak for the object you were fetching,
+     * this method will return all of them to you.
+     * &lt;/p&gt;
+     * &lt;p&gt;
+     * The values will be converted to the supplied class using the
+     * {@link com.basho.riak.client.api.convert.Converter} returned from the {@link com.basho.riak.client.api.convert.ConverterFactory}.
+     * By default this will be the {@link com.basho.riak.client.api.convert.JSONConverter},
+     * or no conversion at all if you pass in a TypeReference for {@code RiakObject.class}.
+     * &lt;/p&gt;
+     * &lt;p&gt;
+     * This version should only be used if you're converting to a parameterized
+     * generic domain object. For example:
+     * &lt;pre&gt;
+     * {@literal TypeReference&lt;MyPojo&lt;String&gt;&gt;} tr = new {@literal TypeReference&lt;MyPojo&lt;String&gt;&gt;}() {};
+     * {@literal List&lt;MyPojo&lt;String&gt;&gt;} list = response.getValues(tr);
+     * &lt;/pre&gt;
+     * &lt;/p&gt;
+     * @param typeReference the TypeReference for the class to be converted to
+     * @return a list of values, converted to the supplied class.
+     * @see ConverterFactory
+     * @see Converter
+     */
+    public &lt;T&gt; List&lt;T&gt; getValues(TypeReference&lt;T&gt; typeReference)
+    {
+<span class="nc" id="L298">        Converter&lt;T&gt; converter = ConverterFactory.getInstance().getConverter(typeReference);</span>
+<span class="nc" id="L299">        return convertValues(converter);</span>
+    }
+
+    private &lt;T&gt; List&lt;T&gt; convertValues(Converter&lt;T&gt; converter)
+    {
+<span class="nc" id="L304">        List&lt;T&gt; convertedValues = new ArrayList&lt;&gt;(values.size());</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">        for (RiakObject ro : values)</span>
+        {
+<span class="nc" id="L307">            convertedValues.add(converter.toDomain(ro, location));</span>
+<span class="nc" id="L308">        }</span>
+
+<span class="nc" id="L310">        return convertedValues;</span>
+    }
+
+<span class="nc" id="L313">    protected static abstract class Init&lt;T extends Init&lt;T&gt;&gt;</span>
+    {
+        private Location location;
+<span class="nc" id="L316">        private List&lt;RiakObject&gt; values = new ArrayList&lt;&gt;();</span>
+
+        protected abstract T self();
+        abstract KvResponseBase build();
+
+        T withLocation(Location location)
+        {
+<span class="nc" id="L323">            this.location = location;</span>
+<span class="nc" id="L324">            return self();</span>
+        }
+
+        T withValues(List&lt;RiakObject&gt; values)
+        {
+<span class="nc" id="L329">            this.values.addAll(values);</span>
+<span class="nc" id="L330">            return self();</span>
+        }
+    }
+
+    @Override
+    public int hashCode()
+    {
+<span class="nc" id="L337">        final int prime = 31;</span>
+<span class="nc" id="L338">        int result = 1;</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">        result = prime * result + (location != null ? location.hashCode() : 0);</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">        result = prime * result + (values != null ? values.hashCode() : 0);</span>
+<span class="nc" id="L341">        return result;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+<span class="nc bnc" id="L347" title="All 2 branches missed.">        if (this == obj)</span>
+        {
+<span class="nc" id="L349">            return true;</span>
+        }
+<span class="nc bnc" id="L351" title="All 2 branches missed.">        if (obj == null)</span>
+        {
+<span class="nc" id="L353">            return false;</span>
+        }
+<span class="nc bnc" id="L355" title="All 2 branches missed.">        if (!(obj instanceof KvResponseBase))</span>
+        {
+<span class="nc" id="L357">            return false;</span>
+        }
+
+<span class="nc" id="L360">        final KvResponseBase other = (KvResponseBase) obj;</span>
+<span class="nc bnc" id="L361" title="All 6 branches missed.">        if (this.location != other.location &amp;&amp; (this.location == null || !this.location.equals(other.location)))</span>
+        {
+<span class="nc" id="L363">            return false;</span>
+        }
+<span class="nc bnc" id="L365" title="All 6 branches missed.">        if (this.values != other.values &amp;&amp; (this.values == null || !this.values.equals(other.values)))</span>
+        {
+<span class="nc" id="L367">            return false;</span>
+        }
+<span class="nc" id="L369">        return true;</span>
+    }
+
+    @Override
+    public String toString()
+    {
+<span class="nc" id="L375">        return String.format(&quot;{location: %s, values: %s}&quot;, location, values);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

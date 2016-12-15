@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UpdateDatatype.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.datatypes</a> &gt; <span class="el_source">UpdateDatatype.java</span></div><h1>UpdateDatatype.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.commands.datatypes;
+
+import com.basho.riak.client.api.GenericRiakCommand;
+import com.basho.riak.client.api.cap.Quorum;
+import com.basho.riak.client.api.commands.RiakOption;
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.operations.DtUpdateOperation;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
+import com.basho.riak.client.core.util.BinaryValue;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Base abstract class used for all datatype updates.
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+public abstract class UpdateDatatype&lt;T extends RiakDatatype,S&gt;
+        extends GenericRiakCommand.GenericRiakCommandWithSameInfo&lt;S,Location, DtUpdateOperation.Response&gt;
+{
+    protected final Namespace namespace;
+    protected final BinaryValue key;
+    private final Context ctx;
+<span class="fc" id="L44">    private final Map&lt;Option&lt;?&gt;, Object&gt; options = new HashMap&lt;&gt;();</span>
+    private final DatatypeUpdate update;
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    UpdateDatatype(Builder builder)
+<span class="fc" id="L49">    {</span>
+<span class="fc" id="L50">        this.namespace = builder.namespace;</span>
+<span class="fc" id="L51">        this.update = builder.update;</span>
+<span class="fc" id="L52">        this.key = builder.key;</span>
+<span class="fc" id="L53">        this.ctx = builder.ctx;</span>
+<span class="fc" id="L54">        this.options.putAll(builder.options);</span>
+<span class="fc" id="L55">    }</span>
+
+    @Override
+    protected FutureOperation&lt;DtUpdateOperation.Response, ?, Location&gt; buildCoreOperation()
+    {
+        DtUpdateOperation.Builder builder;
+
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">        if (key != null)</span>
+        {
+<span class="fc" id="L64">            Location loc = new Location(namespace, key);</span>
+<span class="fc" id="L65">            builder = new DtUpdateOperation.Builder(loc);</span>
+<span class="fc" id="L66">        }</span>
+        else
+        {
+<span class="nc" id="L69">            builder = new DtUpdateOperation.Builder(namespace);</span>
+        }
+
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (ctx != null)</span>
+        {
+<span class="fc" id="L74">            builder.withContext(ctx.getValue());</span>
+        }
+
+<span class="fc" id="L77">        builder.withOp(update.getOp());</span>
+
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        for (Map.Entry&lt;Option&lt;?&gt;, Object&gt; entry : options.entrySet())</span>
+        {
+<span class="fc bfc" id="L81" title="All 2 branches covered.">            if (entry.getKey() == Option.DW)</span>
+            {
+<span class="fc" id="L83">                builder.withDw(((Quorum) entry.getValue()).getIntValue());</span>
+            }
+<span class="fc bfc" id="L85" title="All 2 branches covered.">            else if (entry.getKey() == Option.N_VAL)</span>
+            {
+<span class="fc" id="L87">                builder.withNVal((Integer) entry.getValue());</span>
+            }
+<span class="fc bfc" id="L89" title="All 2 branches covered.">            else if (entry.getKey() == Option.PW)</span>
+            {
+<span class="fc" id="L91">                builder.withPw(((Quorum) entry.getValue()).getIntValue());</span>
+            }
+<span class="fc bfc" id="L93" title="All 2 branches covered.">            else if (entry.getKey() == Option.RETURN_BODY)</span>
+            {
+<span class="fc" id="L95">                builder.withReturnBody((Boolean) entry.getValue());</span>
+            }
+<span class="fc bfc" id="L97" title="All 2 branches covered.">            else if (entry.getKey() == Option.SLOPPY_QUORUM)</span>
+            {
+<span class="fc" id="L99">                builder.withSloppyQuorum((Boolean) entry.getValue());</span>
+            }
+<span class="fc bfc" id="L101" title="All 2 branches covered.">            else if (entry.getKey() == Option.TIMEOUT)</span>
+            {
+<span class="fc" id="L103">                builder.withTimeout((Integer) entry.getValue());</span>
+            }
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">            else if (entry.getKey() == Option.W)</span>
+            {
+<span class="fc" id="L107">                builder.withW(((Quorum) entry.getValue()).getIntValue());</span>
+            }
+<span class="fc" id="L109">        }</span>
+
+<span class="fc" id="L111">        return builder.build();</span>
+    }
+
+    /**
+    * Tuning parameters for all datatype fetch commands.
+    * @author Dave Rusek &lt;drusek at basho dot com&gt;
+    * @since 2.0
+    */
+   public static final class Option&lt;T&gt; extends RiakOption&lt;T&gt;
+   {
+       /**
+        * Durable Write Quorum.
+        * How many replicas to commit to durable storage before returning a successful response.
+        */
+<span class="fc" id="L125">       public static final Option&lt;Quorum&gt; DW = new Option&lt;&gt;(&quot;DW&quot;);</span>
+<span class="fc" id="L126">       public static final Option&lt;Integer&gt; N_VAL = new Option&lt;&gt;(&quot;N_VAL&quot;);</span>
+       /**
+        * Primary Write Quorum.
+        * How many primary nodes must be up when the write is attempted.
+        */
+<span class="fc" id="L131">       public static final Option&lt;Quorum&gt; PW = new Option&lt;&gt;(&quot;PW&quot;);</span>
+       /**
+        * Return Body.
+        * Return the object stored in Riak. Note this will return all siblings.
+        */
+<span class="fc" id="L136">       public static final Option&lt;Boolean&gt; RETURN_BODY = new Option&lt;&gt;(&quot;RETURN_BODY&quot;);</span>
+<span class="fc" id="L137">       public static final Option&lt;Boolean&gt; SLOPPY_QUORUM = new Option&lt;&gt;(&quot;SLOPPY_QUORUM&quot;);</span>
+       /**
+        * Timeout.
+        * Sets the server-side timeout for this operation. The default in Riak is 60 seconds.
+        */
+<span class="fc" id="L142">       public static final Option&lt;Integer&gt; TIMEOUT = new Option&lt;&gt;(&quot;TIMEOUT&quot;);</span>
+       /**
+        * Write Quorum.
+        * How many replicas to write to before returning a successful response.
+        */
+<span class="fc" id="L147">       public static final Option&lt;Quorum&gt; W = new Option&lt;&gt;(&quot;W&quot;);</span>
+
+       public Option(String name)
+       {
+<span class="fc" id="L151">           super(name);</span>
+<span class="fc" id="L152">       }</span>
+   }
+
+   /**
+    * Base abstract builder for all datatype update builders.
+    */
+    public static abstract class Builder&lt;T extends Builder&lt;T&gt;&gt;
+    {
+        private final DatatypeUpdate update;
+        private final Namespace namespace;
+        private BinaryValue key;
+        private Context ctx;
+<span class="pc" id="L164">        private Map&lt;Option&lt;?&gt;, Object&gt; options = new HashMap&lt;&gt;();</span>
+
+        /**
+         * Constructs a builder for a datatype update.
+         * @param location the location of the datatype object in Riak.
+         */
+        Builder(Location location, DatatypeUpdate update)
+<span class="fc" id="L171">        {</span>
+<span class="pc bpc" id="L172" title="1 of 2 branches missed.">            if (location == null)</span>
+            {
+<span class="nc" id="L174">                throw new IllegalArgumentException(&quot;Location cannot be null.&quot;);</span>
+            }
+<span class="fc" id="L176">            this.namespace = location.getNamespace();</span>
+<span class="fc" id="L177">            this.key = location.getKey();</span>
+
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">            if (update == null)</span>
+            {
+<span class="nc" id="L181">                throw new IllegalArgumentException(&quot;Update cannot be null.&quot;);</span>
+            }
+<span class="fc" id="L183">            this.update = update;</span>
+<span class="fc" id="L184">        }</span>
+
+        /**
+         * Constructs a builder for a datatype update with only a Namespace.
+         * &lt;p&gt;
+         * By providing only a Namespace with the update, Riak will create the
+         * datatype object, generate the key,
+         * and return it in the response.
+         * &lt;/p&gt;
+         * @param namespace the namespace to create the datatype.
+         * @see Response#getGeneratedKey()
+         */
+        Builder(Namespace namespace, DatatypeUpdate update)
+<span class="nc" id="L197">        {</span>
+<span class="nc bnc" id="L198" title="All 2 branches missed.">            if (namespace == null)</span>
+            {
+<span class="nc" id="L200">                throw new IllegalArgumentException(&quot;Namespace cannot be null.&quot;);</span>
+            }
+<span class="nc" id="L202">            this.namespace = namespace;</span>
+
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            if (update == null)</span>
+            {
+<span class="nc" id="L206">                throw new IllegalArgumentException(&quot;Update cannot be null.&quot;);</span>
+            }
+<span class="nc" id="L208">            this.update = update;</span>
+<span class="nc" id="L209">        }</span>
+
+        /**
+         * Include the context from a previous fetch.
+         * &lt;p&gt;
+         * When updating a previously fetched set or map you generally
+         * want to include the context returned from that query with the update.
+         * &lt;/p&gt;
+         * @param context the Context from a previous fetch.
+         * @return a reference to this object.
+         */
+        public T withContext(Context context)
+        {
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">            if (context == null)</span>
+            {
+<span class="nc" id="L224">                throw new IllegalArgumentException(&quot;Context cannot be null.&quot;);</span>
+            }
+<span class="fc" id="L226">            this.ctx = context;</span>
+<span class="fc" id="L227">            return self();</span>
+        }
+
+        /**
+         * Add an optional setting for this command.
+         * This will be passed along with the request to Riak to tell it how
+         * to behave when servicing the request.
+         *
+         * @param option the option
+         * @param value the value for the option
+         * @return a reference to this object.
+         * @see Option
+         */
+        public &lt;U&gt; T withOption(Option&lt;U&gt; option, U value)
+        {
+<span class="fc" id="L242">            this.options.put(option, value);</span>
+<span class="fc" id="L243">            return self();</span>
+        }
+
+        /**
+         * Set the Riak-side timeout value.
+         * &lt;p&gt;
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * &lt;/p&gt;
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
+        public T withTimeout(int timeout)
+        {
+<span class="nc" id="L257">            withOption(Option.TIMEOUT, timeout);</span>
+<span class="nc" id="L258">            return self();</span>
+        }
+
+        /**
+         * Return the updated datatype.
+         * &lt;p&gt;
+         * By default the datatype update commands are &quot;fire and forget&quot; in that
+         * the modified datatype in Riak is not returned. Setting this to true
+         * returns the modified datatype in the response.
+         * &lt;/p&gt;
+         * @param returnDatatype true to return the modified datatype.
+         * @return a reference to this object.
+         */
+        public T withReturnDatatype(boolean returnDatatype)
+        {
+<span class="nc" id="L273">            withOption(Option.RETURN_BODY, true);</span>
+<span class="nc" id="L274">            return self();</span>
+        }
+
+        protected abstract T self();
+        protected abstract UpdateDatatype build();
+    }
+
+    /**
+     * Base abstract class used for all datatype update responses.
+     */
+    public static abstract class Response&lt;T&gt;
+    {
+        private final T datatype;
+        private final Context context;
+        private final BinaryValue generatedKey;
+
+        Response(Context context, T datatype, BinaryValue generatedKey)
+<span class="fc" id="L291">        {</span>
+<span class="fc" id="L292">            this.datatype = datatype;</span>
+<span class="fc" id="L293">            this.context = context;</span>
+<span class="fc" id="L294">            this.generatedKey = generatedKey;</span>
+<span class="fc" id="L295">        }</span>
+
+        /**
+         * Check to see if this response includes a Context.
+         * @return true if Context is present, false otherwise.
+         */
+        public boolean hasContext()
+        {
+<span class="nc bnc" id="L303" title="All 2 branches missed.">            return context != null;</span>
+        }
+
+        /**
+         * Get the returned context.
+         * @return the Context, or null if not present.
+         */
+        public Context getContext()
+        {
+<span class="nc" id="L312">            return context;</span>
+        }
+
+        /**
+         * Check to see if this resposne includes the updated datatype.
+         * @return true if datatype is present, false otherwise.
+         * @see Builder#withReturnDatatype(boolean)
+         */
+        public boolean hasDatatype()
+        {
+<span class="nc bnc" id="L322" title="All 2 branches missed.">            return datatype != null;</span>
+        }
+
+        /**
+         * Get the returned datatype.
+         * @return the updated datatype, or null if not present.
+         * @see Builder#withReturnDatatype(boolean)
+         */
+        public T getDatatype()
+        {
+<span class="nc" id="L332">            return datatype;</span>
+        }
+
+        /**
+         * Check to see if the response includes a generated key.
+         * &lt;p&gt;This will only be true if the datatype update was sent with
+         * only a Namespace&lt;/p&gt;
+         * @return true if key is present, false otherwise.
+         */
+        public boolean hasGeneratedKey()
+        {
+<span class="nc bnc" id="L343" title="All 2 branches missed.">            return generatedKey != null;</span>
+        }
+
+        /**
+         * Get the returned generated key.
+         * @return the key, or null if not present.
+         * @see #hasGeneratedKey()
+         */
+        public BinaryValue getGeneratedKey()
+        {
+<span class="nc" id="L353">            return generatedKey;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

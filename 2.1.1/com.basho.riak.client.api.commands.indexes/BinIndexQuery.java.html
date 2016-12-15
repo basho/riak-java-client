@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BinIndexQuery.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.indexes</a> &gt; <span class="el_source">BinIndexQuery.java</span></div><h1>BinIndexQuery.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2014 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.commands.indexes;
+
+import com.basho.riak.client.core.StreamingRiakFuture;
+import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.indexes.IndexNames;
+import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.client.core.util.DefaultCharset;
+
+import java.nio.charset.Charset;
+
+/**
+ * Performs a 2i query where the 2i index keys are strings.
+ * &lt;script src=&quot;https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js&quot;&gt;&lt;/script&gt;
+ * &lt;p&gt;
+ * A RawIndexQuery is used when you are using strings for your 2i keys. The
+ * parameters are provided as String objects.
+ * &lt;/p&gt;
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ * String key = &quot;some_key&quot;;
+ * BinIndexQuery q = new BinIndexQuery.Builder(ns, &quot;my_index&quot;, key).build();
+ * BinIndexQuery.Response resp = client.execute(q);}&lt;/pre&gt;
+ *
+ * &lt;p&gt;
+ * You can also stream the results back before the operation is fully complete.
+ * This reduces the time between executing the operation and seeing a result,
+ * and reduces overall memory usage if the iterator is consumed quickly enough.
+ * The result iterable can only be iterated once though.
+ * If the thread is interrupted while the iterator is polling for more results,
+ * a {@link RuntimeException} will be thrown.
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ * String key = &quot;some_key&quot;;
+ * BinIndexQuery q = new BinIndexQuery.Builder(ns, &quot;my_index&quot;, key).build();
+ * RiakFuture&lt;BinIndexQuery.StreamingResponse, BinIndexQuery&gt; streamingFuture =
+ *     client.executeAsyncStreaming(q, 200);
+ * BinIndexQuery.StreamingResponse streamingResponse = streamingFuture.get();
+ *
+ * for (BinIndexQuery.Response.Entry e : streamingResponse)
+ * {
+ *     System.out.println(e.getRiakObjectLocation().getKey().toString());
+ * }
+ * // Wait for the command to fully finish.
+ * streamingFuture.await();
+ * // The StreamingResponse will also contain the continuation, if the operation returned one.
+ * streamingResponse.getContinuation(); }&lt;/pre&gt;
+ * &lt;/p&gt;
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @author Alex Moore &lt;amoore at basho dot com&gt;
+ * @author Sergey Galkin &lt;srggal at gmail dot com&gt;
+ * @since 2.0
+ */
+public class BinIndexQuery extends SecondaryIndexQuery&lt;String, BinIndexQuery.Response, BinIndexQuery&gt;
+{
+    private final Charset charset;
+    private final IndexConverter&lt;String&gt; converter;
+
+    protected BinIndexQuery(Init&lt;String, ?&gt; builder)
+    {
+<span class="fc" id="L80">        super(builder, Response::new, Response::new);</span>
+<span class="fc" id="L81">        this.charset = builder.charset;</span>
+<span class="fc" id="L82">        this.converter = new StringIndexConverter();</span>
+<span class="fc" id="L83">    }</span>
+
+    @Override
+    protected IndexConverter&lt;String&gt; getConverter()
+    {
+<span class="fc" id="L88">        return converter;</span>
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (this == o)</span>
+        {
+<span class="nc" id="L96">            return true;</span>
+        }
+<span class="nc bnc" id="L98" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass())</span>
+        {
+<span class="nc" id="L100">            return false;</span>
+        }
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (!super.equals(o))</span>
+        {
+<span class="nc" id="L104">            return false;</span>
+        }
+
+<span class="nc" id="L107">        BinIndexQuery that = (BinIndexQuery) o;</span>
+
+<span class="nc bnc" id="L109" title="All 2 branches missed.">        if (!charset.equals(that.charset))</span>
+        {
+<span class="nc" id="L111">            return false;</span>
+        }
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (!converter.equals(that.converter))</span>
+        {
+<span class="nc" id="L115">            return false;</span>
+        }
+
+<span class="nc" id="L118">        return true;</span>
+    }
+
+    @Override
+    public int hashCode()
+    {
+<span class="nc" id="L124">        int result = super.hashCode();</span>
+<span class="nc" id="L125">        result = 31 * result + charset.hashCode();</span>
+<span class="nc" id="L126">        result = 31 * result + converter.hashCode();</span>
+<span class="nc" id="L127">        return result;</span>
+    }
+
+    protected static abstract class Init&lt;S, T extends Init&lt;S, T&gt;&gt; extends SecondaryIndexQuery.Init&lt;S, T&gt;
+    {
+<span class="pc" id="L132">        private Charset charset = DefaultCharset.get();</span>
+
+        public Init(Namespace namespace, String indexName, S start, S end)
+        {
+<span class="fc" id="L136">            super(namespace, generateIndexName(indexName), start, end);</span>
+<span class="fc" id="L137">        }</span>
+
+        public Init(Namespace namespace, String indexName, S match)
+        {
+<span class="fc" id="L141">            super(namespace, generateIndexName(indexName), match);</span>
+<span class="fc" id="L142">        }</span>
+
+        public Init(Namespace namespace, String indexName, byte[] coverContext)
+        {
+<span class="nc" id="L146">            super(namespace, generateIndexName(indexName), coverContext);</span>
+<span class="nc" id="L147">        }</span>
+
+        private static String generateIndexName(String baseIndexName)
+        {
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">            if (IndexNames.BUCKET.equalsIgnoreCase(baseIndexName) ||</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">               IndexNames.KEY.equalsIgnoreCase(baseIndexName))</span>
+            {
+<span class="nc" id="L154">                return baseIndexName;</span>
+            }
+
+<span class="fc" id="L157">            return baseIndexName + Type._BIN;</span>
+        }
+
+        T withCharacterSet(Charset charset)
+        {
+<span class="nc" id="L162">            this.charset = charset;</span>
+<span class="nc" id="L163">            return self();</span>
+        }
+    }
+
+    /**
+     * Builder used to construct a BinIndexQuery.
+     */
+    public static class Builder extends Init&lt;String, Builder&gt;
+    {
+        /**
+         * Construct a Builder for a BinIndexQuery with a cover context.
+         * &lt;p&gt;
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension.
+         * &lt;p&gt;
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The name of the index in Riak.
+         * @param coverContext cover context.
+         */
+        public Builder(Namespace namespace, String indexName, byte[] coverContext)
+        {
+<span class="nc" id="L184">            super(namespace, indexName, coverContext);</span>
+<span class="nc" id="L185">        }</span>
+
+        /**
+         * Construct a Builder for a BinIndexQuery with a range.
+         * &lt;p&gt;
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension.
+         * &lt;p&gt;
+         *
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The index name in Riak to query.
+         * @param start     The start of the 2i range.
+         * @param end       The end of the 2i range.
+         */
+        public Builder(Namespace namespace, String indexName, String start, String end)
+        {
+<span class="fc" id="L201">            super(namespace, indexName, start, end);</span>
+<span class="fc" id="L202">        }</span>
+
+        /**
+         * Construct a Builder for a BinIndexQuery with a single 2i key.
+         * &lt;p&gt;
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension.
+         * &lt;p&gt;
+         *
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The name of the index in Riak.
+         * @param match     the 2i key.
+         */
+        public Builder(Namespace namespace, String indexName, String match)
+        {
+<span class="fc" id="L217">            super(namespace, indexName, match);</span>
+<span class="fc" id="L218">        }</span>
+
+        @Override
+        protected Builder self()
+        {
+<span class="fc" id="L223">            return this;</span>
+        }
+
+        /**
+         * Construct the query.
+         *
+         * @return a new BinIndexQuery
+         */
+        public BinIndexQuery build()
+        {
+<span class="fc" id="L233">            return new BinIndexQuery(this);</span>
+        }
+    }
+
+    public static class Response extends SecondaryIndexQuery.Response&lt;String, SecondaryIndexQuery.Response.Entry&lt;String&gt;&gt;
+    {
+        Response(Namespace queryLocation, IndexConverter&lt;String&gt; converter, int timeout, StreamingRiakFuture&lt;SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query&gt; coreFuture)
+        {
+<span class="nc" id="L241">            super(queryLocation, converter, timeout, coreFuture);</span>
+<span class="nc" id="L242">        }</span>
+
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter&lt;String&gt; converter)
+        {
+<span class="nc" id="L246">            super(queryLocation, coreResponse, converter);</span>
+<span class="nc" id="L247">        }</span>
+    }
+
+<span class="fc" id="L250">    private class StringIndexConverter implements IndexConverter&lt;String&gt;</span>
+    {
+        @Override
+        public String convert(BinaryValue input)
+        {
+<span class="nc" id="L255">            return input.toString(charset);</span>
+        }
+
+        @Override
+        public BinaryValue convert(String input)
+        {
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">            if (input == null )</span>
+            {
+<span class="nc" id="L263">                return null;</span>
+            }
+<span class="fc" id="L265">            return BinaryValue.create(input, charset);</span>
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+<span class="nc bnc" id="L271" title="All 2 branches missed.">            if (this == o)</span>
+            {
+<span class="nc" id="L273">                return true;</span>
+            }
+<span class="nc bnc" id="L275" title="All 4 branches missed.">            if (o == null || getClass() != o.getClass())</span>
+            {
+<span class="nc" id="L277">                return false;</span>
+            }
+<span class="nc" id="L279">            return true;</span>
+        }
+
+        @Override
+        public int hashCode()
+        {
+<span class="nc" id="L285">            return 0;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

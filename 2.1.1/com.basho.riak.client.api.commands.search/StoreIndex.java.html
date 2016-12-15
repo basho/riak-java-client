@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StoreIndex.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.search</a> &gt; <span class="el_source">StoreIndex.java</span></div><h1>StoreIndex.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.api.commands.search;
+
+import com.basho.riak.client.api.AsIsRiakCommand;
+import com.basho.riak.client.core.operations.YzPutIndexOperation;
+import com.basho.riak.client.core.query.search.YokozunaIndex;
+
+/**
+ * Command used to store a search index in Riak.
+ * &lt;p&gt;
+ * To store/create an index for Solr/Yokozuna in Riak, you must supply a
+ * {@link com.basho.riak.client.core.query.search.YokozunaIndex} that defines the index and it's properties.
+ * &lt;/p&gt;
+ *
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+public final class StoreIndex extends AsIsRiakCommand&lt;Void, YokozunaIndex&gt;
+{
+    private final Builder cmdBuilder;
+
+    StoreIndex(Builder builder)
+<span class="nc" id="L22">    {</span>
+<span class="nc" id="L23">        this.cmdBuilder = builder;</span>
+<span class="nc" id="L24">    }</span>
+
+    @Override
+    protected YzPutIndexOperation buildCoreOperation()
+    {
+<span class="nc" id="L29">        final YzPutIndexOperation.Builder opBuilder = new YzPutIndexOperation.Builder(cmdBuilder.index);</span>
+
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        if (cmdBuilder.timeout != null)</span>
+        {
+<span class="nc" id="L33">            opBuilder.withTimeout(cmdBuilder.timeout);</span>
+        }
+
+<span class="nc" id="L36">        return opBuilder.build();</span>
+    }
+
+    /**
+     * Builder for a StoreIndex command.
+     */
+    public static class Builder
+    {
+        private final YokozunaIndex index;
+        private Integer timeout;
+
+        /**
+         * Construct a Builder for a StoreIndex command.
+         *
+         * @param index The index to create or edit in Riak.
+         */
+        public Builder(YokozunaIndex index)
+<span class="nc" id="L53">        {</span>
+<span class="nc" id="L54">            this.index = index;</span>
+<span class="nc" id="L55">        }</span>
+
+        /**
+         * Set the Riak-side timeout value, available in &lt;b&gt;Riak 2.1&lt;/b&gt; and later.
+         * &lt;p&gt;
+         * By default, riak has a 45s timeout for Yokozuna index creation.
+         * Setting this value will override that default for this operation.
+         * &lt;/p&gt;
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
+        public Builder withTimeout(int timeout)
+        {
+<span class="nc" id="L68">            this.timeout = timeout;</span>
+<span class="nc" id="L69">            return this;</span>
+        }
+
+        /**
+         * Construct the StoreIndex command.
+         *
+         * @return the new StoreIndex command.
+         */
+        public StoreIndex build()
+        {
+<span class="nc" id="L79">            return new StoreIndex(this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

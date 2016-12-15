@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FetchSet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.datatypes</a> &gt; <span class="el_source">FetchSet.java</span></div><h1>FetchSet.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.commands.datatypes;
+
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.operations.DtFetchOperation;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
+import com.basho.riak.client.core.query.crdt.types.RiakSet;
+
+/**
+ * Command used to fetch a set datatype from Riak.
+ * &lt;script src=&quot;https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js&quot;&gt;&lt;/script&gt;
+ * &lt;p&gt;
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ * Location loc = new Location(ns, &quot;my_key&quot;);
+ * FetchSet fs = new FetchSet.Builder(loc).build();
+ * FetchSet.Response resp = client.execute(fs);
+ * RiakSet rSet = resp.getDatatype();
+ * Set&lt;BinaryValue&gt; set = rSet.view();
+ * }
+ * &lt;/pre&gt;
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+public final class FetchSet extends FetchDatatype&lt;RiakSet, FetchSet.Response&gt;
+{
+    private FetchSet(Builder builder)
+    {
+<span class="nc" id="L46">        super(builder);</span>
+<span class="nc" id="L47">    }</span>
+
+    @Override
+    protected Response convertResponse(FutureOperation&lt;DtFetchOperation.Response, ?, Location&gt; request, DtFetchOperation.Response coreResponse)
+    {
+<span class="nc" id="L52">        RiakDatatype element = coreResponse.getCrdtElement();</span>
+
+<span class="nc" id="L54">        Context context = null;</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (coreResponse.hasContext())</span>
+        {
+<span class="nc" id="L57">            context = new Context(coreResponse.getContext());</span>
+        }
+
+<span class="nc" id="L60">        RiakSet datatype = extractDatatype(element);</span>
+
+<span class="nc" id="L62">        return new Response(datatype, context);</span>
+    }
+
+    @Override
+    public RiakSet extractDatatype(RiakDatatype element)
+    {
+<span class="nc" id="L68">        return element.getAsSet();</span>
+    }
+
+    /**
+     * Builder used to construct a FetchSet command.
+     */
+    public static class Builder extends FetchDatatype.Builder&lt;Builder&gt;
+    {
+        /**
+         * Construct a builder for a FetchSet command.
+         * @param location the location of the set in Riak.
+         */
+        public Builder(Location location)
+        {
+<span class="nc" id="L82">            super(location);</span>
+<span class="nc" id="L83">        }</span>
+
+        @Override
+        protected Builder self()
+        {
+<span class="nc" id="L88">            return this;</span>
+        }
+
+        /**
+         * Construct a FetchSet command.
+         * @return a new FetchSet Command.
+         */
+        public FetchSet build()
+        {
+<span class="nc" id="L97">            return new FetchSet(this);</span>
+        }
+    }
+
+    /**
+     * Response from a FetchSet command.
+     * &lt;p&gt;
+     * Encapsulates a RiakSet returned from the FetchSet command.
+     * &lt;pre&gt;
+     * {@code
+     * ...
+     * RiakSet rSet = response.getDatatype();
+     * Set&lt;BinaryValue&gt; set = rSet.view();
+     * }
+     * &lt;/pre&gt;
+     * &lt;/p&gt;
+     */
+    public static class Response extends FetchDatatype.Response&lt;RiakSet&gt;
+    {
+        Response(RiakSet set, Context context)
+        {
+<span class="nc" id="L118">            super(set,context);</span>
+<span class="nc" id="L119">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

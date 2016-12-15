@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RiakObjectConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.converters</a> &gt; <span class="el_source">RiakObjectConverter.java</span></div><h1>RiakObjectConverter.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.core.converters;
+
+import com.basho.riak.client.api.cap.BasicVClock;
+import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.query.UserMetadata.RiakUserMetadata;
+import com.basho.riak.client.core.query.indexes.IndexType;
+import com.basho.riak.client.core.query.indexes.RawIndex;
+import com.basho.riak.client.core.query.indexes.RiakIndex;
+import com.basho.riak.client.core.query.indexes.RiakIndexes;
+import com.basho.riak.client.core.query.links.RiakLink;
+import com.basho.riak.client.core.query.links.RiakLinks;
+import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.protobuf.RiakKvPB;
+import com.basho.riak.protobuf.RiakKvPB.RpbContent;
+import com.basho.riak.protobuf.RiakPB;
+import com.google.protobuf.ByteString;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Utility class for converting to/from RiakKvPB.RpbContent and RiakObject
+ *
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+public class RiakObjectConverter
+{
+<span class="fc" id="L47">    private final static Logger logger = LoggerFactory.getLogger(RiakObjectConverter.class);</span>
+
+<span class="nc" id="L49">    private RiakObjectConverter() {}</span>
+
+    public static List&lt;RiakObject&gt; convert(List&lt;RpbContent&gt; contentList, ByteString contentVClock)
+    {
+<span class="fc" id="L53">        List&lt;RiakObject&gt; roList = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L54">        BasicVClock vclock = new BasicVClock(contentVClock.toByteArray());</span>
+
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        for (RpbContent content : contentList)</span>
+        {
+<span class="fc" id="L58">            RiakObject ro = new RiakObject();</span>
+
+<span class="fc" id="L60">            ro.setVClock(vclock);</span>
+
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">            if (content.hasDeleted())</span>
+            {
+<span class="nc" id="L64">                ro.setDeleted(content.getDeleted());</span>
+            }
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            if (content.hasContentType())</span>
+            {
+<span class="fc" id="L69">                ro.setContentType(content.getContentType().toStringUtf8());</span>
+            }
+
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            if (content.hasCharset())</span>
+            {
+<span class="fc" id="L74">                ro.setCharset(content.getCharset().toStringUtf8());</span>
+            }
+
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">            if (content.hasLastMod())</span>
+            {
+<span class="nc" id="L79">                int lastMod = content.getLastMod();</span>
+<span class="nc" id="L80">                int lastModUsec = content.getLastModUsecs();</span>
+<span class="nc" id="L81">                ro.setLastModified((lastMod * 1000L) + (lastModUsec / 1000L));</span>
+            }
+
+<span class="pc bpc" id="L84" title="2 of 4 branches missed.">            if (content.hasValue() &amp;&amp; !content.getValue().isEmpty())</span>
+            {
+<span class="fc" id="L86">                ro.setValue(BinaryValue.unsafeCreate(content.getValue().toByteArray()));</span>
+            }
+
+<span class="fc bfc" id="L89" title="All 2 branches covered.">            if (content.hasVtag())</span>
+            {
+<span class="fc" id="L91">                ro.setVTag(content.getVtag().toStringUtf8());</span>
+            }
+
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">            if (content.getLinksCount() &gt; 0)</span>
+            {
+<span class="nc" id="L96">                List&lt;RiakKvPB.RpbLink&gt; pbLinkList = content.getLinksList();</span>
+<span class="nc" id="L97">                RiakLinks riakLinks = ro.getLinks();</span>
+
+<span class="nc bnc" id="L99" title="All 2 branches missed.">                for (RiakKvPB.RpbLink pbLink : pbLinkList)</span>
+                {
+<span class="nc" id="L101">                    RiakLink link = new RiakLink(pbLink.getBucket().toStringUtf8(),</span>
+<span class="nc" id="L102">                        pbLink.getKey().toStringUtf8(),</span>
+<span class="nc" id="L103">                        pbLink.getTag().toStringUtf8());</span>
+<span class="nc" id="L104">                    riakLinks.addLink(link);</span>
+<span class="nc" id="L105">                }</span>
+            }
+
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">            if (content.getIndexesCount() &gt; 0)</span>
+            {
+<span class="nc" id="L110">                RiakIndexes indexes = ro.getIndexes();</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">                for (RiakPB.RpbPair p : content.getIndexesList())</span>
+                {
+<span class="nc" id="L113">                    String name = p.getKey().toStringUtf8();</span>
+                    try
+                    {
+<span class="nc" id="L116">                        IndexType type = IndexType.typeFromFullname(name);</span>
+<span class="nc" id="L117">                        indexes.getIndex(RawIndex.named(name, type))</span>
+<span class="nc" id="L118">                            .add(BinaryValue.unsafeCreate(p.getValue().toByteArray()));</span>
+                    }
+<span class="nc" id="L120">                    catch (IllegalArgumentException e)</span>
+                    {
+<span class="nc" id="L122">                        logger.error(&quot;Unknown index type during conversion: {};{}&quot;, name, e);</span>
+<span class="nc" id="L123">                    }</span>
+<span class="nc" id="L124">                }</span>
+            }
+
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">            if (content.getUsermetaCount() &gt; 0)</span>
+            {
+<span class="nc" id="L129">                RiakUserMetadata userMeta = ro.getUserMeta();</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">                for (int j = 0; j &lt; content.getUsermetaCount(); j++)</span>
+                {
+<span class="nc" id="L132">                    RiakPB.RpbPair pair = content.getUsermeta(j);</span>
+<span class="nc" id="L133">                    userMeta.put(BinaryValue.unsafeCreate(pair.getKey().toByteArray()),</span>
+<span class="nc" id="L134">                        BinaryValue.unsafeCreate(pair.getValue().toByteArray()));</span>
+                }
+            }
+
+<span class="fc" id="L138">            roList.add(ro);</span>
+<span class="fc" id="L139">        }</span>
+
+<span class="fc" id="L141">        return roList;</span>
+    }
+
+    public static RpbContent convert(RiakObject ro)
+    {
+<span class="fc" id="L146">        RpbContent.Builder builder = RpbContent.newBuilder();</span>
+
+<span class="fc" id="L148">        builder.setContentType(ByteString.copyFromUtf8(ro.getContentType()));</span>
+
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        if (ro.hasCharset())</span>
+        {
+<span class="fc" id="L152">            builder.setCharset(ByteString.copyFromUtf8(ro.getCharset()));</span>
+        }
+
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        if (ro.hasValue())</span>
+        {
+<span class="fc" id="L157">            builder.setValue(ByteString.copyFrom(ro.getValue().unsafeGetValue()));</span>
+        }
+
+<span class="fc bfc" id="L160" title="All 2 branches covered.">        if (ro.hasLinks())</span>
+        {
+<span class="fc bfc" id="L162" title="All 2 branches covered.">            for (RiakLink link : ro.getLinks())</span>
+            {
+<span class="fc" id="L164">                builder.addLinks(</span>
+<span class="fc" id="L165">                    RiakKvPB.RpbLink.newBuilder()</span>
+<span class="fc" id="L166">                        .setBucket(ByteString.copyFrom(link.getBucketAsBytes().unsafeGetValue()))</span>
+<span class="fc" id="L167">                        .setTag(ByteString.copyFrom(link.getTagAsBytes().unsafeGetValue()))</span>
+<span class="fc" id="L168">                        .setKey(ByteString.copyFrom(link.getKeyAsBytes().unsafeGetValue())));</span>
+<span class="fc" id="L169">            }</span>
+        }
+
+<span class="fc bfc" id="L172" title="All 2 branches covered.">        if (ro.hasIndexes())</span>
+        {
+<span class="fc bfc" id="L174" title="All 2 branches covered.">            for (RiakIndex&lt;?&gt; index : ro.getIndexes())</span>
+            {
+<span class="fc bfc" id="L176" title="All 2 branches covered.">                for (BinaryValue value : index.rawValues())</span>
+                {
+<span class="fc" id="L178">                    RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder();</span>
+<span class="fc" id="L179">                    pair.setKey(ByteString.copyFrom(index.getFullname().getBytes()));</span>
+<span class="fc" id="L180">                    pair.setValue(ByteString.copyFrom(value.unsafeGetValue()));</span>
+<span class="fc" id="L181">                    builder.addIndexes(pair);</span>
+<span class="fc" id="L182">                }</span>
+<span class="fc" id="L183">            }</span>
+        }
+
+<span class="pc bpc" id="L186" title="1 of 2 branches missed.">        if (ro.hasUserMeta())</span>
+        {
+            for (Map.Entry&lt;BinaryValue,BinaryValue&gt; entry
+<span class="nc bnc" id="L189" title="All 2 branches missed.">                 : ro.getUserMeta().getUserMetadata())</span>
+            {
+<span class="nc" id="L191">                RiakPB.RpbPair.Builder pair = RiakPB.RpbPair.newBuilder();</span>
+<span class="nc" id="L192">                pair.setKey(ByteString.copyFrom(entry.getKey().unsafeGetValue()));</span>
+<span class="nc" id="L193">                pair.setValue(ByteString.copyFrom(entry.getValue().unsafeGetValue()));</span>
+<span class="nc" id="L194">                builder.addUsermeta(pair);</span>
+<span class="nc" id="L195">            }</span>
+        }
+
+<span class="fc" id="L198">        return builder.build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

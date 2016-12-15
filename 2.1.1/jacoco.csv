@@ -1,0 +1,784 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateMap.Builder,17,15,3,1,5,5,3,3,1,3
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,RegisterUpdate,33,0,0,0,12,0,6,0,6,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateDatatype,6,160,3,17,1,32,3,9,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchDatatype.Builder,11,22,1,1,2,7,2,2,1,2
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateSet.Response,6,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchSet.Response,5,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateDatatype.Builder,61,40,7,3,15,13,8,3,3,3
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FlagUpdate,24,0,0,0,8,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateCounter.Builder,32,0,4,0,10,0,6,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,HllUpdate,93,0,8,0,22,0,12,0,8,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchDatatype.Response,13,9,2,0,3,4,4,1,3,1
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateDatatype.Option,0,40,0,0,0,9,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchCounter,31,0,2,0,9,0,4,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchDatatype.Option,0,45,0,0,0,10,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchCounter.Builder,12,0,0,0,4,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,SetUpdate,72,0,0,0,16,0,9,0,9,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateMap.Response,0,6,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateDatatype.Response,30,12,6,0,6,5,9,1,6,1
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,Context,9,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateHll.Builder,34,0,4,0,11,0,7,0,5,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,CounterUpdate,24,0,0,0,8,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchMap.Response,0,5,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateCounter,42,0,6,0,12,0,5,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchMap,6,25,1,1,1,8,1,3,0,3
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchHll.Builder,12,0,0,0,4,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,MapUpdate,165,21,0,0,30,5,10,2,10,2
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateSet.Builder,32,0,4,0,10,0,6,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchCounter.Response,5,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchSet.Builder,12,0,0,0,4,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateCounter.Response,6,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateMap,15,27,3,3,3,9,3,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateHll,42,0,6,0,12,0,5,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchSet,31,0,2,0,9,0,4,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchDatatype,8,137,1,17,2,26,2,11,1,3
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchHll,16,0,0,0,6,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateSet,42,0,6,0,12,0,5,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,UpdateHll.Response,10,0,0,0,4,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.datatypes,FetchMap.Builder,0,12,0,0,0,4,0,3,0,3
+Riak Client for Java,com.basho.riak.client.core.netty,RiakSecurityDecoder.SslListener,61,0,2,0,15,0,3,0,2,0
+Riak Client for Java,com.basho.riak.client.core.netty,RiakOperationEncoder,0,9,0,0,0,3,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core.netty,RiakResponseException,0,10,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core.netty,StoreValueHealthCheck,35,0,0,0,8,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.core.netty,RiakMessageCodec,4,59,2,2,2,15,2,3,0,3
+Riak Client for Java,com.basho.riak.client.core.netty,RiakResponseHandler,0,37,0,2,0,11,0,4,0,3
+Riak Client for Java,com.basho.riak.client.core.netty,HealthCheckDecoder,31,123,3,5,9,30,5,8,2,7
+Riak Client for Java,com.basho.riak.client.core.netty,RiakSecurityDecoder.new Object() {...},19,0,0,0,1,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.core.netty,RiakSecurityDecoder,281,0,17,0,69,0,19,0,9,0
+Riak Client for Java,com.basho.riak.client.core.netty,RiakSecurityDecoder.State,58,0,0,0,1,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.core.netty,RiakChannelInitializer,0,33,0,0,0,8,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core.netty,PingHealthCheck,0,11,0,0,0,3,0,3,0,3
+Riak Client for Java,com.basho.riak.client.core.netty,HealthCheckDecoder.HealthCheckFuture,65,49,8,4,17,13,14,8,9,7
+Riak Client for Java,com.basho.riak.protobuf.util,TemplateController,92,0,4,0,20,0,4,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,MapPhase,12,13,0,0,4,4,2,2,2,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,PhaseFunctionSerializer,16,62,3,9,3,16,3,5,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,MapReducePhase.PhaseType,9,48,0,0,0,6,2,3,2,3
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,FunctionPhase,0,26,0,0,0,7,0,4,0,4
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,ReducePhase,12,13,0,0,4,4,2,2,2,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,SearchMapReduce,5,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,MapReduceSpec,0,21,0,0,0,8,0,4,0,4
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,SearchInput,0,15,0,0,0,6,0,3,0,3
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,SearchMapReduce.Builder,43,0,4,0,11,0,7,0,5,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,BinaryValueSerializer,0,8,0,0,0,3,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,MapReduce,90,68,0,0,23,12,5,2,5,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,IndexInput.RangeCriteria,0,15,0,0,0,6,0,3,0,3
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,MapReducePhase,8,9,0,0,3,4,2,2,2,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,IndexMapReduce.Builder,90,0,6,0,21,0,12,0,9,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,SearchInputSerializer,0,29,0,0,0,10,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,BucketKeyMapReduce.Builder,49,0,2,0,10,0,6,0,5,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,IndexInput.MatchCriteria,0,9,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,MapReduce.Builder,267,0,0,0,44,0,12,0,12,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,BucketMapReduce,5,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,BucketKeyInput.IndividualInput,16,20,5,1,2,9,4,2,1,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,IndexInputSerializer,0,72,1,5,0,19,1,4,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,FunctionPhaseSerializer,42,56,9,3,9,16,6,3,0,3
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,LinkPhase,3,27,0,0,1,10,1,5,1,5
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,IndexMapReduce,5,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,LinkPhaseSerializer,0,27,0,0,0,9,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,BucketKeyMapReduce,5,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,MapReduce.Response,108,0,6,0,27,0,12,0,9,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,BucketKeyInput,0,9,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,PhaseFunction,0,15,0,0,0,6,0,3,0,3
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,BucketKeyInputSerializer,0,51,0,4,0,14,0,4,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,BucketInputSerializer,0,73,0,6,0,18,0,5,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,BucketMapReduce.Builder,42,0,2,0,10,0,6,0,5,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,MapReduce.Response.MapReduceResponseIterator,84,0,14,0,23,0,11,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,IndexInput,0,21,0,0,0,8,0,4,0,4
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce,BucketInput,0,26,0,4,0,7,0,6,0,4
+Riak Client for Java,com.basho.riak.client.core.util,CharsetUtils,206,42,27,5,47,14,25,4,10,3
+Riak Client for Java,com.basho.riak.client.core.util,BinaryValue,4,99,4,6,2,26,4,16,0,15
+Riak Client for Java,com.basho.riak.client.core.util,HostAndPort,85,122,14,8,13,32,12,12,3,10
+Riak Client for Java,com.basho.riak.client.core.util,DefaultCharset,0,78,1,3,0,24,1,6,0,5
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,RiakIndexMethod.MethodType,5,173,0,0,0,4,1,3,1,3
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,RiakIndexField.FieldType,5,93,0,0,0,1,1,3,1,3
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,AnnotationScanner,10,351,2,68,2,77,2,36,0,3
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,AnnotationUtil,7,145,0,10,2,35,2,30,2,25
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,AnnotationInfo.new Object() {...},30,197,0,0,0,4,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,AnnotationHelper,9,243,0,0,2,56,1,23,1,23
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,ClassUtil,31,42,0,0,9,16,1,5,1,5
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,UsermetaField,5,101,3,13,1,22,3,10,0,5
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,UsermetaField.FieldType,5,33,0,0,0,3,1,3,1,3
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,RiakIndexMethod,13,264,11,59,5,60,11,29,0,5
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,UsermetaMethod,5,169,5,25,1,37,5,15,0,5
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,AnnotationInfo,93,1440,30,234,19,337,25,137,1,21
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,AnnotationInfo.Builder,41,776,29,89,8,189,27,77,0,45
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,AnnotationCache,8,53,1,3,3,13,1,3,0,2
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,RiakIndexField,9,153,6,32,3,36,6,18,0,5
+Riak Client for Java,com.basho.riak.client.api.convert.reflection,UsermetaMethod.MethodType,5,53,0,0,0,1,1,3,1,3
+Riak Client for Java,com.basho.riak.client.api.cap,ConflictResolverFactory,43,65,4,4,8,15,8,8,5,7
+Riak Client for Java,com.basho.riak.client.api.cap,UnresolvedConflictException,18,0,0,0,7,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.cap,Quorum,87,33,15,6,29,11,19,3,7,3
+Riak Client for Java,com.basho.riak.client.api.cap,BasicVClock,48,32,5,3,13,9,7,3,3,3
+Riak Client for Java,com.basho.riak.client.api.cap,DefaultResolver,8,15,2,2,2,4,2,2,0,2
+Riak Client for Java,com.basho.riak.client.core.operations,DtUpdateOperation.Builder,133,383,21,29,29,93,21,31,4,19
+Riak Client for Java,com.basho.riak.client.core.operations,FetchBucketPropsOperation,52,0,0,0,13,0,5,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,SecondaryIndexQueryOperation.Response.Builder,33,0,0,0,9,0,5,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,DtUpdateOperation.Response.Builder,11,0,0,0,3,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations,ListKeysOperation.Response,14,0,0,0,5,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations,YzPutIndexOperation,32,0,0,0,10,0,5,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,FetchOperation.Builder,76,43,1,1,21,10,11,2,10,2
+Riak Client for Java,com.basho.riak.client.core.operations,DtFetchOperation.Builder,5,99,1,1,1,25,1,10,0,10
+Riak Client for Java,com.basho.riak.client.core.operations,DtFetchOperation.Response,38,0,4,0,10,0,8,0,6,0
+Riak Client for Java,com.basho.riak.client.core.operations,DeleteOperation.Builder,5,115,1,1,1,29,1,12,0,12
+Riak Client for Java,com.basho.riak.client.core.operations,CoveragePlanOperation.AbstractBuilder,97,33,7,1,18,8,11,2,7,2
+Riak Client for Java,com.basho.riak.client.core.operations,DtFetchOperation.Response.Init,31,0,4,0,10,0,6,0,4,0
+Riak Client for Java,com.basho.riak.client.core.operations,CoveragePlanOperation.Response.CoverageEntry,78,6,8,0,14,2,10,2,6,2
+Riak Client for Java,com.basho.riak.client.core.operations,StoreBucketPropsOperation.Builder,46,0,2,0,12,0,4,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations,YzGetSchemaOperation,59,0,0,0,14,0,5,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,DtUpdateOperation.Response.Init,10,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations,MapReduceOperation,141,0,10,0,35,0,11,0,6,0
+Riak Client for Java,com.basho.riak.client.core.operations,SecondaryIndexQueryOperation.Builder,46,148,12,16,9,34,9,9,0,4
+Riak Client for Java,com.basho.riak.client.core.operations,CoveragePlanOperation.Response,78,8,4,0,19,3,9,1,7,1
+Riak Client for Java,com.basho.riak.client.core.operations,ListKeysOperation.Builder,57,0,4,0,16,0,6,0,4,0
+Riak Client for Java,com.basho.riak.client.core.operations,YzFetchIndexOperation,82,0,2,0,19,0,6,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,SecondaryIndexQueryOperation,309,33,43,1,70,9,33,3,11,3
+Riak Client for Java,com.basho.riak.client.core.operations,FetchOperation.Response.Init,7,10,0,0,2,3,1,2,1,2
+Riak Client for Java,com.basho.riak.client.core.operations,DeleteOperation,19,11,0,0,5,4,4,1,4,1
+Riak Client for Java,com.basho.riak.client.core.operations,CoveragePlanOperation.Response.new Iterator() {...},73,0,14,0,13,0,12,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,YzDeleteIndexOperation.Builder,32,0,4,0,9,0,4,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations,YzPutSchemaOperation,32,0,0,0,10,0,5,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,StoreBucketPropsOperation.PropsBuilder,323,0,26,0,77,0,40,0,27,0
+Riak Client for Java,com.basho.riak.client.core.operations,PingOperation,6,14,0,0,3,3,3,2,3,2
+Riak Client for Java,com.basho.riak.client.core.operations,StoreBucketPropsOperation,32,0,0,0,10,0,5,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,FetchBucketPropsOperation.Builder,37,0,2,0,10,0,3,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations,YzFetchIndexOperation.Builder,37,0,4,0,10,0,5,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations,ListBucketsOperation.Response,19,0,0,0,7,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.core.operations,YzGetSchemaOperation.Response,9,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations,StoreOperation.Response.Builder,11,0,0,0,3,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations,YzPutSchemaOperation.Builder,34,0,0,0,10,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations,YzPutIndexOperation.Builder,61,0,6,0,17,0,6,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations,FetchBucketPropsOperation.Response,9,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations,StoreOperation.Response,18,0,2,0,5,0,4,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations,FetchOperation,50,78,5,5,12,20,6,5,1,5
+Riak Client for Java,com.basho.riak.client.core.operations,YzGetSchemaOperation.Builder,32,0,4,0,9,0,4,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations,DtUpdateOperation,92,11,6,0,21,4,7,1,4,1
+Riak Client for Java,com.basho.riak.client.core.operations,SecondaryIndexQueryOperation.Response.Entry,52,0,4,0,16,0,11,0,9,0
+Riak Client for Java,com.basho.riak.client.core.operations,FetchOperation.Response,3,15,0,0,1,5,1,2,1,2
+Riak Client for Java,com.basho.riak.client.core.operations,SearchOperation.Builder,170,0,18,0,44,0,20,0,11,0
+Riak Client for Java,com.basho.riak.client.core.operations,CoveragePlanOperation,33,79,3,3,10,16,6,2,3,2
+Riak Client for Java,com.basho.riak.client.core.operations,ResetBucketPropsOperation.Builder,38,0,2,0,10,0,3,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations,StoreOperation,73,26,6,0,15,7,6,2,3,2
+Riak Client for Java,com.basho.riak.client.core.operations,SearchOperation,132,0,6,0,27,0,8,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,FetchOperation.Response.Builder,0,11,0,0,0,3,0,3,0,3
+Riak Client for Java,com.basho.riak.client.core.operations,ListKeysOperation,79,0,4,0,18,0,8,0,6,0
+Riak Client for Java,com.basho.riak.client.core.operations,YzFetchIndexOperation.Response,9,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations,DtFetchOperation,86,11,6,0,19,4,7,1,4,1
+Riak Client for Java,com.basho.riak.client.core.operations,ListKeysOperation.Response.Builder,28,0,0,0,7,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.core.operations,StoreOperation.Response.Init,10,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations,ListBucketsOperation.Builder,19,44,4,2,5,12,4,4,1,4
+Riak Client for Java,com.basho.riak.client.core.operations,MapReduceOperation.Builder,41,0,4,0,12,0,5,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations,FetchOperation.KvResponseBase,0,10,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core.operations,FetchOperation.KvResponseBase.Init,8,16,0,0,2,4,1,2,1,2
+Riak Client for Java,com.basho.riak.client.core.operations,ListBucketsOperation,73,14,4,0,14,5,7,1,5,1
+Riak Client for Java,com.basho.riak.client.core.operations,TTBFutureOperation,22,15,2,0,6,6,3,1,2,1
+Riak Client for Java,com.basho.riak.client.core.operations,DtFetchOperation.Response.Builder,10,0,0,0,3,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations,SecondaryIndexQueryOperation.Query.Builder,43,122,13,23,9,32,13,18,1,12
+Riak Client for Java,com.basho.riak.client.core.operations,DtUpdateOperation.Response,18,0,2,0,5,0,4,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations,PBFutureOperation,45,15,2,0,10,6,3,1,2,1
+Riak Client for Java,com.basho.riak.client.core.operations,YzDeleteIndexOperation,32,0,0,0,10,0,5,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,SecondaryIndexQueryOperation.Response,28,0,2,0,8,0,6,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,Operations,3,36,0,2,1,7,1,4,1,3
+Riak Client for Java,com.basho.riak.client.core.operations,ResetBucketPropsOperation,32,0,0,0,11,0,5,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,SearchOperation.Response,25,0,0,0,9,0,5,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations,SecondaryIndexQueryOperation.Query,9,87,0,0,3,25,3,11,3,11
+Riak Client for Java,com.basho.riak.client.core.operations,StoreOperation.Builder,131,57,5,3,32,13,16,3,12,3
+Riak Client for Java,com.basho.riak.client.core.operations,MapReduceOperation.Response,9,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations,DtUpdateOperation.new Object() {...},5,35,0,0,0,1,0,1,0,1
+Riak Client for Java,com.basho.riak.client.core.query,BucketProperties,1097,0,234,0,146,0,167,0,50,0
+Riak Client for Java,com.basho.riak.client.core.query,RiakObject,275,256,67,47,29,56,51,32,3,23
+Riak Client for Java,com.basho.riak.client.core.query,BucketProperties.Builder,267,0,24,0,77,0,43,0,31,0
+Riak Client for Java,com.basho.riak.client.core.query,Location,103,74,23,11,15,24,20,7,3,7
+Riak Client for Java,com.basho.riak.client.core.query,ConvertibleIterator,4,16,0,0,1,5,1,3,1,3
+Riak Client for Java,com.basho.riak.client.core.query,Namespace,108,107,25,13,16,32,23,12,4,12
+Riak Client for Java,com.basho.riak.client.core.query.crdt.types,RiakHll,62,0,8,0,13,0,10,0,6,0
+Riak Client for Java,com.basho.riak.client.core.query.crdt.types,RiakSet,57,17,12,0,10,5,11,2,5,2
+Riak Client for Java,com.basho.riak.client.core.query.crdt.types,RiakMap,211,50,43,3,43,10,35,3,13,2
+Riak Client for Java,com.basho.riak.client.core.query.crdt.types,RiakCounter,36,13,8,0,7,5,6,2,2,2
+Riak Client for Java,com.basho.riak.client.core.query.crdt.types,RiakRegister,49,9,12,0,9,4,10,2,4,2
+Riak Client for Java,com.basho.riak.client.core.query.crdt.types,RiakDatatype,39,48,7,5,9,16,8,11,2,11
+Riak Client for Java,com.basho.riak.client.core.query.crdt.types,RiakMap.MapEntry,6,9,0,0,2,4,2,1,2,1
+Riak Client for Java,com.basho.riak.client.core.query.crdt.types,RiakFlag,37,12,10,0,8,5,8,2,3,2
+Riak Client for Java,com.basho.riak.client.core.operations.ts,CreateTableOperation,5,12,0,0,2,4,2,1,2,1
+Riak Client for Java,com.basho.riak.client.core.operations.ts,FetchOperation.Builder,22,36,2,8,7,9,5,6,4,2
+Riak Client for Java,com.basho.riak.client.core.operations.ts,TTBConverters.FetchEncoder,33,4,2,0,5,2,2,1,1,1
+Riak Client for Java,com.basho.riak.client.core.operations.ts,QueryOperation.Builder,48,0,6,0,14,0,8,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,StoreOperation.Builder,66,0,6,0,18,0,11,0,8,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,QueryOperation,28,0,0,0,6,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,StoreOperation,40,0,2,0,9,0,5,0,4,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,TTBConverters.VoidDecoder,5,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,DeleteOperation.Builder,15,51,2,8,4,12,2,6,1,2
+Riak Client for Java,com.basho.riak.client.core.operations.ts,ListKeysOperation.Builder,43,0,4,0,13,0,5,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,TTBConverters.BuilderTTBEncoder,4,6,0,0,1,3,1,1,1,1
+Riak Client for Java,com.basho.riak.client.core.operations.ts,FetchOperation,11,72,1,7,2,14,2,6,1,3
+Riak Client for Java,com.basho.riak.client.core.operations.ts,TTBConverters.StoreEncoder,18,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,DeleteOperation,6,70,1,7,2,15,2,6,1,3
+Riak Client for Java,com.basho.riak.client.core.operations.ts,ListKeysOperation,37,0,2,0,12,0,6,0,5,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,CoveragePlanOperation.AbstractBuilder,134,0,14,0,26,0,14,0,7,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,CreateTableOperation.AbstractBuilder,25,242,7,25,5,62,7,15,0,6
+Riak Client for Java,com.basho.riak.client.core.operations.ts,DescribeTableOperation.Builder,42,0,4,0,9,0,4,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,CoveragePlanOperation,29,0,0,0,8,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,TTBConverters.QueryResultDecoder,19,3,0,0,7,1,1,1,1,1
+Riak Client for Java,com.basho.riak.client.core.operations.ts,TTBConverters,7,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,DescribeTableOperation,38,0,0,0,10,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.core.operations.ts,TTBConverters.QueryEncoder,14,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.codec,TermToBinaryCodec.new Object() {...},4,29,0,0,0,1,0,1,0,1
+Riak Client for Java,com.basho.riak.client.core.codec,InvalidTermToBinaryException,9,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.codec,TermToBinaryCodec,145,546,32,65,21,135,31,34,2,13
+Riak Client for Java,com.basho.riak.client.core.query.search,YokozunaIndex,55,0,8,0,16,0,11,0,7,0
+Riak Client for Java,com.basho.riak.client.core.query.search,YokozunaSchema,32,0,8,0,9,0,7,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,StoreValue.Response.Init,10,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,MultiCommand.Builder,33,34,2,0,8,8,4,3,3,3
+Riak Client for Java,com.basho.riak.client.api.commands.kv,ListKeys.Response.new ConvertibleIterator() {...},15,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,StoreValue,405,94,71,13,66,20,47,2,5,2
+Riak Client for Java,com.basho.riak.client.api.commands.kv,DeleteValue.Builder,8,27,0,0,2,8,1,4,1,4
+Riak Client for Java,com.basho.riak.client.api.commands.kv,KvResponseBase.Init,22,0,0,0,6,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,MultiCommand.MultiFuture,100,25,11,1,28,6,20,1,14,1
+Riak Client for Java,com.basho.riak.client.api.commands.kv,MultiDelete.Response,4,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,UpdateValue.Response.Builder,10,0,0,0,3,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,FullBucketRead.Response,54,0,2,0,16,0,4,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,StoreValue.Response.Builder,10,0,0,0,3,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,CoveragePlan.Builder,11,4,0,0,2,2,2,1,2,1
+Riak Client for Java,com.basho.riak.client.api.commands.kv,UpdateValue.Response.Init,10,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,CoveragePlan.Response,4,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,CoveragePlan,16,0,0,0,5,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,MultiFetch,18,0,0,0,5,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,StoreValue.Option,0,60,0,0,0,13,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.kv,FullBucketRead.Builder.BuilderFullBucketRead2i,20,0,0,0,6,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,MultiCommand.Submitter,34,62,2,2,11,16,2,3,1,2
+Riak Client for Java,com.basho.riak.client.api.commands.kv,UpdateValue.UpdateValueFuture,106,48,11,3,32,13,16,6,9,6
+Riak Client for Java,com.basho.riak.client.api.commands.kv,KvResponseBase,282,0,40,0,61,0,36,0,16,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,FullBucketRead.Builder,55,0,0,0,16,0,8,0,8,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,FetchValue.Option,55,0,0,0,12,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,MultiDelete,5,13,0,0,1,4,1,3,1,3
+Riak Client for Java,com.basho.riak.client.api.commands.kv,FetchValue.Response.Builder,10,0,0,0,3,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,FetchValue.Response.Init,17,0,0,0,5,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,UpdateValue,326,80,54,2,63,19,31,3,3,3
+Riak Client for Java,com.basho.riak.client.api.commands.kv,MultiCommand.Response,14,0,0,0,5,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,MultiCommand,86,100,10,4,16,22,8,5,3,3
+Riak Client for Java,com.basho.riak.client.api.commands.kv,FullBucketRead.new SecondaryIndexQuery.IndexConverter() {...},8,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,ListKeys.Builder,23,0,2,0,8,0,4,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,ListKeys,132,0,18,0,29,0,16,0,7,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,ListKeys.Response,67,0,8,0,15,0,10,0,6,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,StoreValue.Response,18,0,2,0,5,0,4,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,DeleteValue,127,157,29,21,21,32,18,13,3,3
+Riak Client for Java,com.basho.riak.client.api.commands.kv,UpdateValue.Response,11,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,UpdateValue.Update,7,6,0,0,3,2,2,1,2,1
+Riak Client for Java,com.basho.riak.client.api.commands.kv,DeleteValue.Option,0,50,0,0,0,11,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.kv,StoreValue.Builder,32,34,0,0,10,10,4,4,4,4
+Riak Client for Java,com.basho.riak.client.api.commands.kv,FetchValue.Builder,14,9,0,0,4,3,2,2,2,2
+Riak Client for Java,com.basho.riak.client.api.commands.kv,MultiFetch.Response,4,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,MultiFetch.Builder,19,0,0,0,5,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,MultiDelete.Builder,0,19,0,0,0,5,0,4,0,4
+Riak Client for Java,com.basho.riak.client.api.commands.kv,FullBucketRead.Response.Entry,41,0,2,0,10,0,6,0,5,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,KvBuilderBase,5,20,1,1,1,7,1,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.kv,FullBucketRead,16,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.kv,UpdateValue.Builder,38,26,0,0,10,8,4,3,4,3
+Riak Client for Java,com.basho.riak.client.api.commands.kv,FetchValue,234,38,41,1,46,9,25,3,4,3
+Riak Client for Java,com.basho.riak.client.api.commands.kv,FetchValue.Response,18,0,0,0,6,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api,StreamableRiakCommand,26,7,0,0,6,2,1,2,1,2
+Riak Client for Java,com.basho.riak.client.api,GenericRiakCommand.new CoreFutureAdapter() {...},5,17,0,0,1,2,1,2,1,2
+Riak Client for Java,com.basho.riak.client.api,StreamableRiakCommand.new ImmediateCoreFutureAdapter() {...},24,0,0,0,3,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api,GenericRiakCommand.GenericRiakCommandWithSameInfo,2,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.client.api,RiakCommand,0,21,0,0,0,6,0,3,0,3
+Riak Client for Java,com.basho.riak.client.api,RiakClient,118,51,2,0,23,14,13,7,12,7
+Riak Client for Java,com.basho.riak.client.api,AsIsRiakCommand,0,10,0,0,0,3,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api,GenericRiakCommand,10,36,5,5,0,8,5,3,0,3
+Riak Client for Java,com.basho.riak.client.api,StreamableRiakCommand.StreamableResponse,35,9,9,1,8,3,8,2,3,2
+Riak Client for Java,com.basho.riak.client.api,RiakException,16,0,0,0,8,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.api,StreamableRiakCommand.StreamableRiakCommandWithSameInfo,2,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.client.api.commands,ListenableFuture,44,43,2,2,8,14,3,3,1,3
+Riak Client for Java,com.basho.riak.client.api.commands,ChunkedResponseIterator,23,154,9,23,3,41,8,19,2,9
+Riak Client for Java,com.basho.riak.client.api.commands,CoreFutureAdapter,43,31,2,0,9,11,7,7,6,7
+Riak Client for Java,com.basho.riak.client.api.commands,RiakOption,6,6,0,0,2,3,2,1,2,1
+Riak Client for Java,com.basho.riak.client.api.commands,ImmediateCoreFutureAdapter,18,0,0,0,7,0,5,0,5,0
+Riak Client for Java,com.basho.riak.client.api.commands,ImmediateCoreFutureAdapter.SameQueryInfo,7,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.query.links,RiakLink,95,128,18,12,26,30,21,10,6,10
+Riak Client for Java,com.basho.riak.client.core.query.links,RiakLinks,30,64,3,3,6,16,7,9,4,9
+Riak Client for Java,com.basho.riak.client.api.commands.search,FetchIndex,15,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,Search.Presort,43,0,0,0,5,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,DeleteIndex,14,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,DeleteIndex.Builder,11,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,Search.Option.Operation,43,0,0,0,5,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,Search,143,0,18,0,33,0,11,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,StoreSchema,14,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,FetchIndex.Builder,11,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,StoreSchema.Builder,11,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,Search.Option,15,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,StoreIndex.Builder,17,0,0,0,6,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,StoreIndex,27,0,2,0,7,0,3,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,FetchSchema.Builder,11,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,FetchSchema,14,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.search,Search.Builder,88,0,2,0,27,0,11,0,10,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbModFun,363,0,30,0,98,0,50,0,34,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapEntry,592,131,65,9,132,36,70,17,32,15
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbGetBucketResp,343,0,27,0,95,0,47,0,33,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCounterGetResp,296,0,19,0,81,0,42,0,32,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndexGetResp,367,0,27,0,92,0,49,0,35,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCoverageReq,521,42,53,0,122,14,66,4,37,4
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCoverageResp.Builder,512,99,67,7,136,30,66,7,29,7
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbListKeysResp,402,0,30,0,100,0,51,0,35,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetBucketKeyPreflistReq,414,0,37,0,109,0,56,0,36,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCounterGetResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetClientIdResp.Builder,218,0,22,0,65,0,31,0,20,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsGetResp.Builder,1083,0,132,0,288,0,122,0,56,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsColumnDescription,289,90,26,6,78,25,41,10,24,10
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB,481,0,0,0,36,0,4,0,4,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtValue.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbPutResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbSetBucketReq,452,0,43,0,119,0,60,0,37,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbBucketKeyPreflistItem,422,0,39,0,112,0,57,0,36,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.SetOp.Builder,287,153,27,9,81,42,39,11,22,10
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbBucketProps.Builder,3399,0,362,0,856,0,355,0,174,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsRange,599,0,66,0,154,0,78,0,42,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndexDeleteReq.Builder,218,0,22,0,65,0,31,0,20,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCSBucketResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbGetServerInfoResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetBucketKeyPreflistReq.Builder,389,0,40,0,107,0,48,0,28,0
+Riak Client for Java,com.basho.riak.protobuf,RiakSearchPB.RpbSearchQueryResp,469,0,41,0,114,0,61,0,39,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsCell,371,129,37,10,93,32,48,18,25,15
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCounterGetResp.Builder,200,0,18,0,60,0,29,0,20,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbGetServerInfoResp,347,0,26,0,92,0,48,0,34,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbMapRedResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCoverageEntry,357,116,37,9,92,31,49,14,25,13
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.GSetOp,321,30,23,0,79,10,41,4,29,4
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbListBucketsResp.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsPutReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetResp.new AbstractParser() {...},0,10,0,0,0,2,0,2,0,2
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbMapRedReq,363,0,30,0,98,0,50,0,34,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsDelResp.Builder,121,0,12,0,40,0,22,0,16,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbGetServerInfoResp.Builder,296,0,28,0,83,0,38,0,24,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.HllOp.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsInterpolation.Builder,616,89,78,6,161,29,76,6,34,6
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtUpdateResp,662,121,70,7,141,33,76,15,36,13
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbDelReq.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbLink,164,234,17,16,35,68,39,15,26,10
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapUpdate.FlagOp.new Internal.EnumLiteMap() {...},3,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCoverageEntry.Builder,302,162,39,9,77,49,47,9,23,9
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsListKeysResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaSchemaGetResp,343,0,27,0,95,0,47,0,33,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsDelReq.Builder,773,70,90,4,200,24,89,6,42,6
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbGetBucketResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsListKeysReq.Builder,288,0,28,0,82,0,38,0,24,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtValue.Builder,1073,0,110,0,284,0,115,0,60,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetReq.Builder,864,238,84,18,217,63,111,8,60,8
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbPutReq,614,501,84,50,139,123,118,20,49,14
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.HllOp.Builder,282,0,24,0,82,0,36,0,24,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapEntry.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCounterUpdateReq.Builder,661,0,64,0,174,0,76,0,44,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCoverageResp.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCoverageEntry.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakSearchPB,124,0,0,0,16,0,4,0,4,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbMapRedReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapField.MapFieldType.new Internal.EnumLiteMap() {...},3,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbListKeysReq.Builder,371,0,36,0,102,0,46,0,28,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtOp.Builder,1182,147,152,14,304,42,138,6,55,6
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsPutResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbBucketProps.RpbReplMode.new Internal.EnumLiteMap() {...},6,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbErrorResp.Builder,195,98,25,5,53,31,32,7,17,7
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsCoverageEntry.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndexGetResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaSchemaPutReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.CounterOp,234,62,17,2,61,20,34,8,24,8
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexBodyResp.Builder,770,0,88,0,205,0,88,0,44,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetBucketKeyPreflistResp.Builder,611,0,74,0,166,0,73,0,36,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsCoverageReq,553,0,54,0,136,0,69,0,40,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbContent.Builder,1848,358,225,29,471,97,217,18,95,13
+Riak Client for Java,com.basho.riak.protobuf,RiakPB,4,408,0,0,2,32,2,2,2,2
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsRow.Builder,500,96,64,6,134,29,64,7,29,7
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsColumnType.new Internal.EnumLiteMap() {...},3,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtOp,568,90,66,5,138,27,74,9,36,9
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbListKeysReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtUpdateReq,904,66,115,0,210,22,117,4,53,4
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsGetResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapOp,392,97,35,7,88,26,50,12,30,10
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.SetOp.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCounterUpdateReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakSearchPB.RpbSearchQueryReq,826,0,90,0,194,0,101,0,51,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB,4,459,0,0,2,44,2,2,2,2
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexReq.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbGetBucketTypeReq,304,0,21,0,84,0,43,0,32,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbDelReq,858,66,107,0,197,22,112,4,52,4
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndexGetReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetResp.Builder,623,147,78,10,162,43,80,8,36,8
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbAuthReq,363,0,30,0,98,0,50,0,34,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapOp.Builder,975,123,125,11,255,36,114,10,48,8
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexObject,402,0,36,0,109,0,54,0,35,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsCell.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexResp.Builder,928,0,100,0,246,0,102,0,52,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCSBucketReq,771,0,86,0,186,0,98,0,50,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbSetBucketTypeReq,402,0,36,0,109,0,54,0,35,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetClientIdResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsDelReq.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapUpdate.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCounterGetReq.Builder,586,0,56,0,155,0,68,0,40,0
+Riak Client for Java,com.basho.riak.protobuf,RiakSearchPB.RpbSearchQueryResp.Builder,757,0,86,0,202,0,87,0,44,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsCoverageEntry,515,0,54,0,135,0,68,0,39,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbListKeysReq,406,0,35,0,106,0,55,0,36,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbLink.new AbstractParser() {...},0,10,0,0,0,2,0,2,0,2
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndexDeleteReq,304,0,21,0,84,0,43,0,32,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbSetClientIdReq,304,0,21,0,84,0,43,0,32,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbPair.new AbstractParser() {...},0,10,0,0,0,2,0,2,0,2
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsColumnType,47,105,9,0,15,14,13,5,6,5
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbResetBucketReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexReq.IndexQueryType,47,49,5,0,12,9,11,3,8,3
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtFetchResp.DataType,53,85,8,0,15,12,14,3,8,3
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.SetOp,383,74,32,2,86,22,45,9,27,9
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbCommitHook,388,0,34,0,103,0,53,0,35,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsPutReq,530,0,47,0,124,0,67,0,42,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexBodyResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbBucketProps.RpbReplMode,124,0,7,0,25,0,16,0,11,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsRange.Builder,606,0,64,0,163,0,72,0,40,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsListKeysReq,355,0,28,0,95,0,49,0,34,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsRow.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapEntry.Builder,963,284,120,20,250,77,117,18,52,13
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbPair.Builder,198,103,24,6,52,33,32,7,17,7
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsInterpolation,339,87,31,5,81,25,46,10,27,10
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.CounterOp.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaSchemaGetReq,304,0,21,0,84,0,43,0,32,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbResetBucketReq.Builder,301,0,30,0,85,0,39,0,24,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbPair,145,210,12,16,34,61,33,16,23,11
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapField,285,94,25,7,77,26,39,12,23,11
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapOp.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCounterGetReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbGetBucketReq,355,0,28,0,95,0,49,0,34,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsQueryReq.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtValue,681,0,63,0,152,0,79,0,45,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetReq.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsGetResp,471,0,38,0,110,0,60,0,40,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbSetClientIdReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexResp,575,0,52,0,133,0,70,0,42,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbAuthReq.Builder,306,0,32,0,87,0,40,0,24,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexBodyResp,469,0,41,0,114,0,61,0,39,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtUpdateResp.Builder,1003,236,109,17,262,62,117,14,58,10
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbErrorResp.new AbstractParser() {...},0,10,0,0,0,2,0,2,0,2
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsListKeysResp,400,0,30,0,99,0,53,0,37,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapField.Builder,202,103,26,6,54,33,33,7,17,7
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapUpdate.FlagOp,47,49,5,0,12,9,11,3,8,3
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsDelReq,471,39,46,0,111,13,62,4,37,4
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbErrorResp,120,243,10,20,28,70,27,23,18,16
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsListKeysResp.Builder,672,0,76,0,182,0,78,0,40,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsCoverageEntry.Builder,628,0,74,0,169,0,74,0,37,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsGetReq.Builder,760,0,86,0,204,0,87,0,44,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbCommitHook.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetBucketKeyPreflistReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtFetchResp.Builder,547,0,64,0,148,0,65,0,33,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.new Descriptors.FileDescriptor.InternalDescriptorAssigner() {...},8,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbLink.Builder,244,135,28,8,61,42,38,8,20,8
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbSetBucketTypeReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaSchemaPutReq,343,0,27,0,95,0,47,0,33,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB,196,0,0,0,26,0,4,0,4,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndexGetReq.Builder,213,0,20,0,63,0,30,0,20,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndexPutReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbAuthReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCounterUpdateResp.Builder,200,0,18,0,60,0,29,0,20,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbListBucketsResp.Builder,358,0,30,0,101,0,43,0,28,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsQueryResp,488,34,45,0,110,11,63,3,39,3
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbCommitHook.Builder,460,0,54,0,126,0,56,0,29,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtFetchReq.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsPutResp,243,0,12,0,70,0,36,0,30,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsCoverageReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCoverageReq.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtOp.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbListBucketsReq.Builder,307,46,30,2,80,17,38,6,22,6
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsRange.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbGetBucketResp.Builder,379,0,46,0,107,0,48,0,25,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaSchemaGetReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsCoverageResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetClientIdResp,304,0,21,0,84,0,43,0,32,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsDelResp.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtFetchResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbContent.new AbstractParser() {...},0,10,0,0,0,2,0,2,0,2
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.GSetOp.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.new Descriptors.FileDescriptor.InternalDescriptorAssigner() {...},8,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbGetBucketReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCSBucketResp,469,0,41,0,114,0,61,0,39,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaSchemaGetReq.Builder,218,0,22,0,65,0,31,0,20,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbBucketKeyPreflistItem.Builder,368,0,38,0,103,0,47,0,28,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndexPutReq,393,0,34,0,105,0,53,0,35,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtUpdateReq.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsColumnDescription.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsGetReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbListBucketsResp,371,31,30,0,90,10,48,3,32,3
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbDelReq.Builder,865,237,96,6,204,76,93,26,42,26
+Riak Client for Java,com.basho.riak.protobuf,RiakSearchPB.RpbSearchQueryReq.Builder,1019,0,96,0,262,0,108,0,60,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsListKeysReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaSchemaPutReq.Builder,379,0,46,0,107,0,48,0,25,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsInterpolation.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.CounterOp.Builder,134,66,15,3,38,22,23,6,14,6
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsGetReq,459,0,39,0,113,0,60,0,39,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbResetBucketReq,355,0,28,0,95,0,49,0,34,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCounterUpdateResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexReq.Builder,892,502,100,34,210,141,120,27,60,20
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexReq.IndexQueryType.new Internal.EnumLiteMap() {...},3,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtFetchReq.Builder,757,203,86,4,179,67,81,24,36,24
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaSchema.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.new Descriptors.FileDescriptor.InternalDescriptorAssigner() {...},0,8,0,0,0,3,0,2,0,2
+Riak Client for Java,com.basho.riak.protobuf,RiakSearchPB.RpbSearchDoc.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaSchema,355,0,28,0,95,0,49,0,34,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetResp,181,288,18,23,39,75,38,23,23,16
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbGetBucketTypeReq.Builder,218,0,22,0,65,0,31,0,20,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndexDeleteReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndexGetResp.Builder,611,0,74,0,166,0,73,0,36,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsCoverageResp.Builder,611,0,74,0,166,0,73,0,36,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB,1060,0,0,0,72,0,4,0,4,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtUpdateResp.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsCoverageResp,367,0,27,0,92,0,49,0,35,0
+Riak Client for Java,com.basho.riak.protobuf,RiakMessageCodes,3,0,0,0,1,0,1,0,1,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbListBucketsReq.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbSetBucketReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsQueryReq,403,36,41,0,102,12,55,4,33,4
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbPutResp.Builder,783,0,90,0,208,0,89,0,44,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsCoverageReq.Builder,706,0,76,0,189,0,79,0,41,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCSBucketReq.Builder,924,0,88,0,236,0,100,0,56,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtFetchReq,770,60,95,0,180,20,101,4,48,4
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndex.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtFetchResp,463,0,45,0,122,0,61,0,37,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbPutResp,469,0,41,0,114,0,61,0,39,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.HllOp,321,30,23,0,79,10,41,4,29,4
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCoverageResp,284,83,22,5,69,23,39,10,26,9
+Riak Client for Java,com.basho.riak.protobuf,RiakSearchPB.RpbSearchQueryResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndexPutReq.Builder,449,0,52,0,124,0,55,0,29,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCoverageReq.Builder,558,54,53,3,143,20,63,5,35,5
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsQueryResp.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCSBucketResp.Builder,770,0,88,0,205,0,88,0,44,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.GSetOp.Builder,282,0,24,0,82,0,36,0,24,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapField.new AbstractParser() {...},7,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapUpdate,587,125,68,12,146,33,74,15,34,12
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbModFun.Builder,306,0,32,0,87,0,40,0,24,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexObject.Builder,467,0,56,0,129,0,57,0,29,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaSchemaGetResp.Builder,379,0,46,0,107,0,48,0,25,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCounterUpdateReq,626,0,67,0,156,0,81,0,44,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbListKeysResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapUpdate.Builder,1004,263,129,27,253,77,122,16,49,11
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsColumnDescription.Builder,202,103,26,6,54,33,33,7,17,7
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbModFun.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsPutReq.Builder,1177,0,142,0,312,0,131,0,60,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbGetBucketTypeReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbBucketProps.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtUpdateReq.Builder,1067,220,124,6,256,72,116,22,51,22
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCSBucketReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsCell.Builder,348,145,33,11,89,42,47,11,28,8
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbGetBucketReq.Builder,301,0,30,0,85,0,39,0,24,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbBucketProps,1963,0,249,0,437,0,235,0,96,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCounterUpdateResp,296,0,19,0,81,0,42,0,32,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbMapRedResp.Builder,353,0,32,0,97,0,44,0,28,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbPutReq.new AbstractParser() {...},0,10,0,0,0,2,0,2,0,2
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbPutReq.Builder,1188,298,122,24,298,78,149,9,76,9
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbMapRedResp,398,0,33,0,103,0,54,0,36,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetBucketKeyPreflistResp,367,0,27,0,92,0,49,0,35,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexObject.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbSetBucketReq.Builder,550,0,64,0,149,0,65,0,33,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.DtFetchResp.DataType.new Internal.EnumLiteMap() {...},3,3,0,0,1,1,1,1,1,1
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbContent,422,587,47,64,90,133,75,47,36,25
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbBucketKeyPreflistItem.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndex,406,0,35,0,106,0,55,0,36,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsDelResp,218,25,12,0,62,8,33,3,27,3
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbCounterGetReq,567,0,58,0,142,0,74,0,42,0
+Riak Client for Java,com.basho.riak.protobuf,RiakDtPB.MapField.MapFieldType,53,85,8,0,15,12,14,3,8,3
+Riak Client for Java,com.basho.riak.protobuf,RiakSearchPB.RpbSearchDoc.Builder,611,0,74,0,166,0,73,0,36,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsQueryReq.Builder,488,42,57,3,128,15,58,5,28,5
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaSchemaGetResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetBucketKeyPreflistResp.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbListKeysResp.Builder,358,0,30,0,101,0,43,0,28,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsRow,285,64,21,2,68,20,39,8,27,8
+Riak Client for Java,com.basho.riak.protobuf,RiakPB.RpbSetBucketTypeReq.Builder,467,0,56,0,129,0,57,0,29,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaSchema.Builder,301,0,30,0,85,0,39,0,24,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbGetReq,583,341,73,34,140,79,104,12,45,11
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbSetClientIdReq.Builder,218,0,22,0,65,0,31,0,20,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.new Descriptors.FileDescriptor.InternalDescriptorAssigner() {...},8,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakSearchPB.RpbSearchDoc,367,0,27,0,92,0,49,0,35,0
+Riak Client for Java,com.basho.riak.protobuf,RiakSearchPB.RpbSearchQueryReq.new AbstractParser() {...},10,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbMapRedReq.Builder,306,0,32,0,87,0,40,0,24,0
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndexGetReq,296,0,19,0,81,0,42,0,32,0
+Riak Client for Java,com.basho.riak.protobuf,RiakSearchPB.new Descriptors.FileDescriptor.InternalDescriptorAssigner() {...},8,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsQueryResp.Builder,1165,0,138,0,308,0,129,0,60,0
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.TsPutResp.Builder,121,0,12,0,40,0,22,0,16,0
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbIndexReq,962,138,124,8,220,39,127,9,53,9
+Riak Client for Java,com.basho.riak.protobuf,RiakKvPB.RpbListBucketsReq,362,36,33,0,91,12,50,4,32,4
+Riak Client for Java,com.basho.riak.protobuf,RiakTsPB.new Descriptors.FileDescriptor.InternalDescriptorAssigner() {...},0,8,0,0,0,3,0,2,0,2
+Riak Client for Java,com.basho.riak.protobuf,RiakYokozunaPB.RpbYokozunaIndex.Builder,371,0,36,0,102,0,46,0,28,0
+Riak Client for Java,com.basho.riak.client.core.query.functions,Function.Builder.Type,5,63,0,0,0,6,1,3,1,3
+Riak Client for Java,com.basho.riak.client.core.query.functions,Function,213,96,56,6,27,23,34,14,5,12
+Riak Client for Java,com.basho.riak.client.core.query.functions,Function.new Object() {...},5,35,0,0,0,1,0,1,0,1
+Riak Client for Java,com.basho.riak.client.core.query.functions,Function.Builder,142,105,18,10,23,32,16,8,2,7
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,RawIndexQuery.Builder,2,32,0,0,1,5,1,3,1,3
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,BucketIndexQuery,4,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,BigIntIndexQuery.new SecondaryIndexQuery.IndexConverter() {...},20,0,2,0,5,0,4,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,BigIntIndexQuery.Init,45,0,0,0,7,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,IntIndexQuery.Init,13,32,0,0,2,5,1,3,1,3
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,IntIndexQuery.Response,13,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,SecondaryIndexQuery.Type,9,59,0,0,0,9,2,3,2,3
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,BigIntIndexQuery.Builder,26,0,0,0,8,0,5,0,5,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,BinIndexQuery.Builder,6,20,0,0,2,6,1,4,1,4
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,IntIndexQuery.Builder,6,20,0,0,2,6,1,4,1,4
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,BinIndexQuery,62,20,12,0,16,5,8,2,2,2
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,BigIntIndexQuery.Response,13,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,SecondaryIndexQuery.Init,24,64,0,0,9,23,3,8,3,8
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,SecondaryIndexQuery.Response,154,0,14,0,35,0,16,0,9,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,IntIndexQuery.new SecondaryIndexQuery.IndexConverter() {...},6,12,1,1,2,3,2,2,1,2
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,KeyIndexQuery,4,0,0,0,2,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,SecondaryIndexQuery.Response.Entry,21,0,0,0,7,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,BinIndexQuery.StringIndexConverter,26,14,7,1,8,3,7,2,3,2
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,BinIndexQuery.Init,19,38,2,2,5,8,4,3,2,3
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,BigIntIndexQuery,15,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,RawIndexQuery,0,15,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,RawIndexQuery.Response,13,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,IntIndexQuery,0,15,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,SecondaryIndexQuery.Response.new ConvertibleIterator() {...},18,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,SecondaryIndexQuery.Response.new ChunkedResponseIterator() {...},29,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,SecondaryIndexQuery,424,147,85,9,54,36,60,6,17,2
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,KeyIndexQuery.Builder,27,0,0,0,8,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,BinIndexQuery.Response,13,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,RawIndexQuery.new SecondaryIndexQuery.IndexConverter() {...},0,8,0,0,0,2,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.indexes,BucketIndexQuery.Builder,22,0,0,0,6,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.core.query.UserMetadata,RiakUserMetadata,26,167,4,8,7,40,7,19,3,17
+Riak Client for Java,com.basho.riak.client.core,DefaultNodeManager.new Object() {...},4,29,0,0,0,1,0,1,0,1
+Riak Client for Java,com.basho.riak.client.core,RiakCluster.ShutdownTask,0,69,1,5,0,13,1,4,0,2
+Riak Client for Java,com.basho.riak.client.core,RiakNode.new Object() {...},4,29,0,0,0,1,0,1,0,1
+Riak Client for Java,com.basho.riak.client.core,RiakNode.new ChannelFutureListener() {...},5,70,2,2,1,10,2,2,0,2
+Riak Client for Java,com.basho.riak.client.core,RiakNode.new Future() {...},23,13,2,0,4,3,5,2,4,2
+Riak Client for Java,com.basho.riak.client.core,RiakNode.new ChannelFutureListener() {...},68,18,3,1,10,4,2,2,0,2
+Riak Client for Java,com.basho.riak.client.core,RiakNode.new ChannelFutureListener() {...},0,46,0,0,0,5,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core,RiakCluster.RetryTask,0,20,1,1,0,8,1,2,0,2
+Riak Client for Java,com.basho.riak.client.core,RiakNode.IdleReaper,0,10,0,0,0,3,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core,RiakNode.ChannelWithIdleTime,0,18,0,0,0,6,0,3,0,3
+Riak Client for Java,com.basho.riak.client.core,PBStreamingFutureOperation,52,21,16,2,10,5,11,2,2,2
+Riak Client for Java,com.basho.riak.client.core,RiakCluster.new Future() {...},23,13,2,0,4,3,5,2,4,2
+Riak Client for Java,com.basho.riak.client.core,RiakCluster.QueueDrainTask,0,20,1,1,0,8,1,2,0,2
+Riak Client for Java,com.basho.riak.client.core,RiakNode.ShutdownTask,0,55,1,5,0,11,1,4,0,2
+Riak Client for Java,com.basho.riak.client.core,DefaultNodeManager,54,262,4,20,1,70,4,15,0,6
+Riak Client for Java,com.basho.riak.client.core,RiakNode.HealthMonitorTask,12,59,1,13,2,12,1,8,0,2
+Riak Client for Java,com.basho.riak.client.core,RiakNode.Builder,65,171,5,9,18,48,8,19,4,16
+Riak Client for Java,com.basho.riak.client.core,FutureOperation.State,9,69,0,0,0,3,2,2,2,2
+Riak Client for Java,com.basho.riak.client.core,RiakMessage,54,114,6,9,15,34,5,12,0,9
+Riak Client for Java,com.basho.riak.client.core,RiakNode.Sync,14,27,4,2,6,10,4,3,1,3
+Riak Client for Java,com.basho.riak.client.core,RiakCluster.State,9,59,0,0,0,1,2,2,2,2
+Riak Client for Java,com.basho.riak.client.core,RiakCluster,138,869,10,60,20,185,11,50,3,23
+Riak Client for Java,com.basho.riak.client.core,ConnectionFailedException,5,4,0,0,2,2,1,1,1,1
+Riak Client for Java,com.basho.riak.client.core,RiakNode,512,1269,38,68,93,265,37,55,6,33
+Riak Client for Java,com.basho.riak.client.core,NoNodesAvailableException,0,7,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core,RiakCluster.Builder,19,89,0,0,5,24,2,9,2,9
+Riak Client for Java,com.basho.riak.client.core,FutureOperation,153,322,26,22,35,90,25,27,6,22
+Riak Client for Java,com.basho.riak.client.core,RiakNode.State,5,63,0,0,0,2,1,3,1,3
+Riak Client for Java,com.basho.riak.client.core.query.crdt.ops,MapOp.FieldType,5,63,0,0,0,2,1,3,1,3
+Riak Client for Java,com.basho.riak.client.core.query.crdt.ops,MapOp.MapUpdate,0,9,0,0,0,4,0,1,0,1
+Riak Client for Java,com.basho.riak.client.core.query.crdt.ops,SetOp,40,33,0,0,5,9,2,5,2,5
+Riak Client for Java,com.basho.riak.client.core.query.crdt.ops,CounterOp,12,9,0,0,1,4,1,2,1,2
+Riak Client for Java,com.basho.riak.client.core.query.crdt.ops,FlagOp,0,9,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core.query.crdt.ops,RegisterOp,0,9,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core.query.crdt.ops,HllOp,50,0,0,0,11,0,6,0,6,0
+Riak Client for Java,com.basho.riak.client.core.query.crdt.ops,MapOp,13,79,0,0,3,19,1,10,1,10
+Riak Client for Java,com.basho.riak.client.core.query.crdt.ops,MapOp.MapField,0,9,0,0,0,4,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.buckets,FetchBucketProperties.Builder,18,0,2,0,6,0,3,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.buckets,StoreBucketProperties.Builder,200,0,22,0,62,0,36,0,25,0
+Riak Client for Java,com.basho.riak.client.api.commands.buckets,ListBuckets,13,41,2,2,2,11,3,3,1,3
+Riak Client for Java,com.basho.riak.client.api.commands.buckets,ListBuckets.Builder,12,11,0,0,5,4,2,2,2,2
+Riak Client for Java,com.basho.riak.client.api.commands.buckets,ListBuckets.Response,52,15,7,1,10,5,8,2,4,2
+Riak Client for Java,com.basho.riak.client.api.commands.buckets,ResetBucketProperties,16,0,0,0,5,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.buckets,ListBuckets.Response.new ConvertibleIterator() {...},15,0,0,0,2,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.buckets,ResetBucketProperties.Builder,18,0,2,0,6,0,3,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.buckets,FetchBucketProperties,14,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.buckets,StoreBucketProperties,305,0,46,0,74,0,25,0,2,0
+Riak Client for Java,com.basho.riak.client.core.query.indexes,RawIndex,0,12,0,0,0,4,0,3,0,3
+Riak Client for Java,com.basho.riak.client.core.query.indexes,LongIntIndex,0,22,0,0,0,5,0,4,0,4
+Riak Client for Java,com.basho.riak.client.core.query.indexes,IndexNames,3,0,0,0,1,0,1,0,1,0
+Riak Client for Java,com.basho.riak.client.core.query.indexes,StringBinIndex.Name,5,14,0,0,2,4,1,2,1,2
+Riak Client for Java,com.basho.riak.client.core.query.indexes,RawIndex.Name,0,11,0,0,0,3,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core.query.indexes,RiakIndex,62,166,9,13,13,39,10,19,3,15
+Riak Client for Java,com.basho.riak.client.core.query.indexes,RiakIndexes,26,95,5,7,6,24,7,10,2,9
+Riak Client for Java,com.basho.riak.client.core.query.indexes,RiakIndex.Name,6,73,0,4,2,16,2,7,2,5
+Riak Client for Java,com.basho.riak.client.core.query.indexes,BigIntIndex.Name,11,0,0,0,3,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.query.indexes,RiakIndex.new Iterator() {...},0,28,0,0,0,6,0,4,0,4
+Riak Client for Java,com.basho.riak.client.core.query.indexes,IndexType,5,114,0,10,0,20,1,10,1,5
+Riak Client for Java,com.basho.riak.client.core.query.indexes,StringBinIndex,0,29,0,0,0,7,0,5,0,5
+Riak Client for Java,com.basho.riak.client.core.query.indexes,BigIntIndex,24,0,0,0,5,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.core.query.indexes,LongIntIndex.Name,0,11,0,0,0,3,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,TableDefinition,16,156,5,25,3,37,6,17,1,7
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,ConvertibleIteratorUtils.ImmutableRowIterator,0,14,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,CollectionConverters,47,44,3,3,11,10,5,3,3,2
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,PbResultFactory,180,0,22,0,43,0,18,0,7,0
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,ConvertibleIterable,0,11,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,FullColumnDescription.KeyOrder,38,0,0,0,3,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,ColumnDescription.ColumnType,5,73,0,0,0,7,1,3,1,3
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,DescribeQueryResultParser,335,0,74,0,66,0,48,0,11,0
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,FlatteningIterable,18,0,0,0,5,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,ConvertibleIteratorUtils.ImmutablePBCellIterator,0,11,0,2,0,5,0,3,0,2
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,ConvertibleIterable.ImmutableIterablePBCell,0,9,0,0,0,3,0,2,0,2
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,ColumnDescription,29,51,7,9,7,14,8,5,1,4
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,Quantum,58,52,23,8,10,11,19,7,2,4
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,Row,78,127,15,13,18,33,14,10,2,8
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,TableDefinition.LocalKeyComparator,12,28,8,4,3,6,6,3,0,3
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,QueryResult,41,76,1,3,15,22,4,8,3,7
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,CoveragePlanResult,85,0,4,0,22,0,10,0,8,0
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,ConvertibleIteratorUtils.ImmutableCellIterator,1,39,1,3,0,8,1,5,0,4
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,Quantum.new Object() {...},4,29,0,0,0,1,0,1,0,1
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,TableDefinition.PartitionKeyComparator,35,6,12,0,8,1,8,1,2,1
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,FlatteningIterable.FlatteningIterator,95,0,20,0,28,0,17,0,7,0
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,ConvertibleIteratorUtils,3,21,0,0,1,4,1,4,1,4
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,CoverageEntry,335,0,46,0,76,0,45,0,22,0
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,ConvertibleIteratorUtils.ConvertibleZipperator,25,9,4,0,3,4,5,1,3,1
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,Cell,197,625,35,46,35,131,33,44,1,35
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,Cell.new Object() {...},2,17,0,0,0,1,0,1,0,1
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,CoveragePlanResult.new Iterator() {...},73,0,14,0,13,0,12,0,5,0
+Riak Client for Java,com.basho.riak.client.core.query.timeseries,FullColumnDescription,42,119,3,11,8,30,6,19,3,15
+Riak Client for Java,com.basho.riak.client.api.convert,ConverterFactory,41,67,2,4,8,15,7,8,5,7
+Riak Client for Java,com.basho.riak.client.api.convert,RiakJacksonModule,0,14,0,0,0,7,0,5,0,5
+Riak Client for Java,com.basho.riak.client.api.convert,ConverterFactory.new ConcurrentHashMap() {...},0,42,0,0,0,6,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.convert,ConversionException,16,0,0,0,8,0,4,0,4,0
+Riak Client for Java,com.basho.riak.client.api.convert,Converter.OrmExtracted,7,21,2,0,1,8,2,4,1,4
+Riak Client for Java,com.basho.riak.client.api.convert,StringConverter,10,24,0,0,2,7,2,3,2,3
+Riak Client for Java,com.basho.riak.client.api.convert,ConverterFactory.1.new TypeReference() {...},0,6,0,0,0,1,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.convert,ConverterFactory.1.new TypeReference() {...},0,6,0,0,0,1,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.convert,JSONConverter,24,67,1,3,7,16,3,6,2,5
+Riak Client for Java,com.basho.riak.client.api.convert,PassThroughConverter,10,13,0,0,2,4,2,3,2,3
+Riak Client for Java,com.basho.riak.client.api.convert,RiakBeanSerializerModifier,0,108,0,10,0,30,0,10,0,5
+Riak Client for Java,com.basho.riak.client.api.convert,Converter.ContentAndType,0,12,0,0,0,4,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.convert,Converter,40,173,5,9,8,40,5,6,1,3
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,ListKeys.Builder,25,0,2,0,8,0,4,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,CreateTable,0,10,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,Fetch,29,0,2,0,8,0,3,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,CreateTable.Builder,0,10,0,0,0,3,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,CoveragePlan.Builder,17,0,0,0,4,0,3,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,DescribeTable,22,0,4,0,6,0,4,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,ListKeys,28,0,2,0,8,0,3,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,Store,18,0,0,0,6,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,CoveragePlan,10,0,0,0,4,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,Query,18,0,0,0,6,0,2,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,Store.Builder,52,0,4,0,13,0,6,0,4,0
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,Fetch.Builder,49,0,10,0,13,0,8,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,Delete.Builder,49,0,10,0,13,0,8,0,3,0
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,Delete,29,0,2,0,8,0,3,0,2,0
+Riak Client for Java,com.basho.riak.client.api.commands.timeseries,Query.Builder,121,0,10,0,32,0,12,0,7,0
+Riak Client for Java,com.basho.riak.client.core.converters,CrdtResponseConverter.new Object() {...},9,63,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.core.converters,RiakObjectConverter,161,208,17,29,34,47,14,13,1,3
+Riak Client for Java,com.basho.riak.client.core.converters,CrdtResponseConverter,60,143,9,14,15,32,9,12,2,4
+Riak Client for Java,com.basho.riak.client.core.converters,BucketPropertiesConverter,501,0,70,0,123,0,41,0,6,0
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,StartsWithFilter,0,10,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,SetMemberSerializer,0,26,0,2,0,8,0,3,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,BetweenFilter,0,16,0,0,0,6,0,3,0,3
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,ToUpperFilter,0,4,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,EndsWithFilter,0,10,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,GreaterThanOrEqualFilter,0,10,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,LogicalFilterSerializer,0,31,0,2,0,10,0,3,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,StringToFloatFilter,0,4,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,GreaterThanFilter,0,10,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,IntToStringFilter,0,4,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,LogicalOrFilter,0,5,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,LogicalNotFilter,0,5,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,LessThanFilter,0,10,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,TokenizeFilter,0,16,0,0,0,6,0,3,0,3
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,LessThanOrEqualFilter,0,10,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,NotEqualToFilter,0,10,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,KeyFilter,0,9,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,LogicalFilter,0,18,0,0,0,5,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,MatchFilter,0,10,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,FloatToStringFilter,0,4,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,LogicalAndFilter,0,5,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,EqualToFilter,0,10,0,0,0,4,0,2,0,2
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,ToLowerFilter,0,4,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,UrlDecodeFilter,0,4,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,StringToIntFilter,0,4,0,0,0,2,0,1,0,1
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,SimilarToFilter,0,16,0,0,0,6,0,3,0,3
+Riak Client for Java,com.basho.riak.client.api.commands.mapreduce.filters,SetMemberFilter,14,17,0,0,3,5,1,2,1,2

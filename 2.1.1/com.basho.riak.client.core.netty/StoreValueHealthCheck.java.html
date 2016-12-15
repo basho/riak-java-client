@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StoreValueHealthCheck.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.netty</a> &gt; <span class="el_source">StoreValueHealthCheck.java</span></div><h1>StoreValueHealthCheck.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2014 Brian Roach &lt;roach at basho dot com&gt;.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.core.netty;
+
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.HealthCheckFactory;
+import com.basho.riak.client.core.operations.StoreOperation;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.util.BinaryValue;
+
+/**
+ * A health check that attempts to store a value in Riak.
+ * &lt;p&gt;
+ * &lt;b&gt;Important note when using this HealthCheckDecoder:&lt;/b&gt;
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * If security is enabled in Riak, the user the client is configured
+ * for must have access rights to the supplied location.
+ * &lt;/p&gt;
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+public class StoreValueHealthCheck extends HealthCheckDecoder implements HealthCheckFactory
+{
+    private final Location location;
+    private final BinaryValue value;
+
+    public StoreValueHealthCheck(Location location, BinaryValue value)
+<span class="nc" id="L44">    {</span>
+<span class="nc" id="L45">        this.location = location;</span>
+<span class="nc" id="L46">        this.value = value;</span>
+<span class="nc" id="L47">    }</span>
+
+    @Override
+    protected FutureOperation&lt;?, ?, ?&gt; buildOperation()
+    {
+<span class="nc" id="L52">        RiakObject ro = new RiakObject().setValue(value);</span>
+<span class="nc" id="L53">        StoreOperation op = new StoreOperation.Builder(location).withContent(ro).build();</span>
+<span class="nc" id="L54">        return op;</span>
+    }
+
+    @Override
+    public HealthCheckDecoder makeDecoder()
+    {
+<span class="nc" id="L60">        return new StoreValueHealthCheck(location, value);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

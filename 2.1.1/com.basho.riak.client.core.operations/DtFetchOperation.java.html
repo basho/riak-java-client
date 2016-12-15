@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DtFetchOperation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.operations</a> &gt; <span class="el_source">DtFetchOperation.java</span></div><h1>DtFetchOperation.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.core.operations;
+
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.converters.CrdtResponseConverter;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
+import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.protobuf.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakDtPB;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import java.util.List;
+
+public class DtFetchOperation extends FutureOperation&lt;DtFetchOperation.Response, RiakDtPB.DtFetchResp, Location&gt;
+{
+    private final Location location;
+    private final RiakDtPB.DtFetchReq.Builder reqBuilder;
+
+    private DtFetchOperation(Builder builder)
+<span class="fc" id="L37">    {</span>
+<span class="fc" id="L38">        this.reqBuilder = builder.reqBuilder;</span>
+<span class="fc" id="L39">        this.location = builder.location;</span>
+<span class="fc" id="L40">    }</span>
+
+    @Override
+    protected Response convert(List&lt;RiakDtPB.DtFetchResp&gt; rawResponse)
+    {
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (rawResponse.size() != 1)</span>
+        {
+<span class="nc" id="L47">            throw new IllegalStateException(&quot;Expecting exactly one response, instead received &quot; + rawResponse.size());</span>
+        }
+
+<span class="nc" id="L50">        RiakDtPB.DtFetchResp response = rawResponse.iterator().next();</span>
+
+<span class="nc" id="L52">        CrdtResponseConverter converter = new CrdtResponseConverter();</span>
+<span class="nc" id="L53">        RiakDatatype element = converter.convert(response);</span>
+
+<span class="nc" id="L55">        Response.Builder responseBuilder = new Response.Builder()</span>
+<span class="nc" id="L56">            .withCrdtElement(element);</span>
+
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (response.hasContext())</span>
+        {
+<span class="nc" id="L60">            BinaryValue ctxWrapper = BinaryValue.create(response.getContext().toByteArray());</span>
+<span class="nc" id="L61">            responseBuilder.withContext(ctxWrapper);</span>
+        }
+
+        // If we don't have a value set, then the Data Type is considered &quot;New&quot; or &quot;Not Found&quot;
+        // A null context could be misleading, since the request might specify to not return a context.
+        // See riak_dt.proto#DtFetchResp L113-132
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (!response.hasValue())</span>
+        {
+<span class="nc" id="L69">            responseBuilder.withNotFound(true);</span>
+        }
+
+<span class="nc" id="L72">        return responseBuilder.build();</span>
+    }
+
+    @Override
+    protected RiakMessage createChannelMessage()
+    {
+<span class="nc" id="L78">        return new RiakMessage(RiakMessageCodes.MSG_DtFetchReq, reqBuilder.build().toByteArray());</span>
+    }
+
+    @Override
+    protected RiakDtPB.DtFetchResp decode(RiakMessage rawMessage)
+    {
+<span class="nc" id="L84">        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_DtFetchResp);</span>
+        try
+        {
+<span class="nc" id="L87">            return RiakDtPB.DtFetchResp.parseFrom(rawMessage.getData());</span>
+        }
+<span class="nc" id="L89">        catch (InvalidProtocolBufferException ex)</span>
+        {
+<span class="nc" id="L91">            throw new IllegalArgumentException(&quot;Invalid message received&quot;, ex);</span>
+        }
+    }
+
+    @Override
+    public Location getQueryInfo()
+    {
+<span class="nc" id="L98">        return location;</span>
+    }
+
+    public static class Builder
+    {
+<span class="fc" id="L103">        private final RiakDtPB.DtFetchReq.Builder reqBuilder = RiakDtPB.DtFetchReq.newBuilder();</span>
+        private final Location location;
+
+        /**
+         * Construct a Builder for a DtFetchOperation
+         * @param location the location of the object in Riak.
+         */
+        public Builder(Location location)
+<span class="fc" id="L111">        {</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">            if (location == null)</span>
+            {
+<span class="nc" id="L114">                throw new IllegalArgumentException(&quot;Location can not be null&quot;);</span>
+            }
+
+<span class="fc" id="L117">            reqBuilder.setBucket(ByteString.copyFrom(location.getNamespace().getBucketName().unsafeGetValue()));</span>
+<span class="fc" id="L118">            reqBuilder.setKey(ByteString.copyFrom(location.getKey().unsafeGetValue()));</span>
+<span class="fc" id="L119">            reqBuilder.setType(ByteString.copyFrom(location.getNamespace().getBucketType().unsafeGetValue()));</span>
+<span class="fc" id="L120">            this.location = location;</span>
+<span class="fc" id="L121">        }</span>
+
+        /**
+         * Set whether a context should be returned.
+         * Defaults to true.
+         *
+         * @param context return context
+         * @return a reference to this object.
+         */
+        public Builder includeContext(boolean context)
+        {
+<span class="fc" id="L132">            reqBuilder.setIncludeContext(context);</span>
+<span class="fc" id="L133">            return this;</span>
+        }
+
+        /**
+         * Set the R value for this FetchOperation.
+         * If not asSet the bucket default is used.
+         *
+         * @param r the R value.
+         * @return a reference to this object.
+         */
+        public Builder withR(int r)
+        {
+<span class="fc" id="L145">            reqBuilder.setR(r);</span>
+<span class="fc" id="L146">            return this;</span>
+        }
+
+        /**
+         * Set the PR value for this query.
+         * If not asSet the bucket default is used.
+         *
+         * @param pr the PR value.
+         * @return a reference to this object.
+         */
+        public Builder withPr(int pr)
+        {
+<span class="fc" id="L158">            reqBuilder.setPr(pr);</span>
+<span class="fc" id="L159">            return this;</span>
+        }
+
+        /**
+         * Set the not_found_ok value.
+         * &lt;p&gt;
+         * If true a vnode returning notfound for a key increments the r tally.
+         * False is higher consistency, true is higher availability.
+         * &lt;/p&gt;
+         * &lt;p&gt;
+         * If not asSet the bucket default is used.
+         * &lt;/p&gt;
+         *
+         * @param notFoundOK the not_found_ok value.
+         * @return a reference to this object.
+         */
+        public Builder withNotFoundOK(boolean notFoundOK)
+        {
+<span class="fc" id="L177">            reqBuilder.setNotfoundOk(notFoundOK);</span>
+<span class="fc" id="L178">            return this;</span>
+        }
+
+        /**
+         * Set the basic_quorum value.
+         * &lt;p&gt;
+         * The parameter controls whether a read request should return early in
+         * some fail cases.
+         * E.g. If a quorum of nodes has already
+         * returned notfound/error, don't wait around for the rest.
+         * &lt;/p&gt;
+         *
+         * @param useBasicQuorum the basic_quorum value.
+         * @return a reference to this object.
+         */
+        public Builder withBasicQuorum(boolean useBasicQuorum)
+        {
+<span class="fc" id="L195">            reqBuilder.setBasicQuorum(useBasicQuorum);</span>
+<span class="fc" id="L196">            return this;</span>
+        }
+
+        /**
+         * Set a timeout for this operation.
+         *
+         * @param timeout a timeout in milliseconds.
+         * @return a reference to this object.
+         */
+        public Builder withTimeout(int timeout)
+        {
+<span class="fc" id="L207">            reqBuilder.setTimeout(timeout);</span>
+<span class="fc" id="L208">            return this;</span>
+        }
+
+        /**
+         * Set the n_val for this operation.
+         * &lt;p&gt;
+         * &lt;b&gt;Do not use this unless you understand the ramifications&lt;/b&gt;
+         * &lt;/p&gt;
+         *
+         * @param nval the n_val value
+         * @return a reference to this object.
+         */
+        public Builder withNVal(int nval)
+        {
+<span class="fc" id="L222">            reqBuilder.setNVal(nval);</span>
+<span class="fc" id="L223">            return this;</span>
+        }
+
+        /**
+         * Set whether to use sloppy_quorum.
+         * &lt;p&gt;
+         * &lt;b&gt;Do not use this unless you understand the ramifications&lt;/b&gt;
+         * &lt;/p&gt;
+         *
+         * @param sloppyQuorum true to use sloppy_quorum
+         * @return a reference to this object.
+         */
+        public Builder withSloppyQuorum(boolean sloppyQuorum)
+        {
+<span class="fc" id="L237">            reqBuilder.setSloppyQuorum(sloppyQuorum);</span>
+<span class="fc" id="L238">            return this;</span>
+        }
+
+        public DtFetchOperation build()
+        {
+<span class="fc" id="L243">            return new DtFetchOperation(this);</span>
+        }
+    }
+
+    public static class Response
+    {
+        private final BinaryValue context;
+        private final RiakDatatype crdtElement;
+        private final boolean isNotFound;
+
+        protected Response(Init&lt;?&gt; builder)
+<span class="nc" id="L254">        {</span>
+<span class="nc" id="L255">            this.context = builder.context;</span>
+<span class="nc" id="L256">            this.crdtElement = builder.crdtElement;</span>
+<span class="nc" id="L257">            this.isNotFound = builder.isNotFound;</span>
+<span class="nc" id="L258">        }</span>
+
+        public boolean hasContext()
+        {
+<span class="nc bnc" id="L262" title="All 2 branches missed.">            return context != null;</span>
+        }
+
+        public BinaryValue getContext()
+        {
+<span class="nc" id="L267">            return context;</span>
+        }
+
+        public boolean hasCrdtElement()
+        {
+<span class="nc bnc" id="L272" title="All 2 branches missed.">            return crdtElement != null;</span>
+        }
+
+        public RiakDatatype getCrdtElement()
+        {
+<span class="nc" id="L277">            return crdtElement;</span>
+        }
+
+        public boolean isNotFound()
+        {
+<span class="nc" id="L282">            return this.isNotFound;</span>
+        }
+
+<span class="nc" id="L285">        protected static abstract class Init&lt;T extends Init&lt;T&gt;&gt;</span>
+        {
+            private BinaryValue context;
+            private RiakDatatype crdtElement;
+            private boolean isNotFound;
+
+            protected abstract T self();
+            protected abstract Response build();
+
+            T withContext(BinaryValue context)
+            {
+<span class="nc bnc" id="L296" title="All 2 branches missed.">                if (context != null)</span>
+                {
+<span class="nc bnc" id="L298" title="All 2 branches missed.">                    if (context.length() == 0)</span>
+                    {
+<span class="nc" id="L300">                        throw new IllegalArgumentException(&quot;Context cannot be null or zero length&quot;);</span>
+                    }
+                    else
+                    {
+<span class="nc" id="L304">                        this.context = context;</span>
+                    }
+                }
+<span class="nc" id="L307">                return self();</span>
+            }
+
+            T withCrdtElement(RiakDatatype crdtElement)
+            {
+<span class="nc" id="L312">                this.crdtElement = crdtElement;</span>
+<span class="nc" id="L313">                return self();</span>
+            }
+
+            T withNotFound(boolean notFound)
+            {
+<span class="nc" id="L318">                this.isNotFound = notFound;</span>
+<span class="nc" id="L319">                return self();</span>
+            }
+        }
+
+<span class="nc" id="L323">        private static class Builder extends Init&lt;Builder&gt;</span>
+        {
+            @Override
+            protected Builder self()
+            {
+<span class="nc" id="L328">                return this;</span>
+            }
+
+            @Override
+            protected Response build()
+            {
+<span class="nc" id="L334">                return new Response(this);</span>
+            }
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

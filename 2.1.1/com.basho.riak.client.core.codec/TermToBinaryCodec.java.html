@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TermToBinaryCodec.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.codec</a> &gt; <span class="el_source">TermToBinaryCodec.java</span></div><h1>TermToBinaryCodec.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.core.codec;
+
+import com.basho.riak.client.core.query.timeseries.Cell;
+import com.basho.riak.client.core.query.timeseries.QueryResult;
+import com.basho.riak.client.core.query.timeseries.Row;
+import com.basho.riak.client.core.util.CharsetUtils;
+import com.basho.riak.protobuf.RiakTsPB;
+import com.ericsson.otp.erlang.*;
+import com.google.protobuf.ByteString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+
+<span class="pc bpc" id="L16" title="1 of 2 branches missed.">public class TermToBinaryCodec</span>
+{
+    private static final String TS_GET_REQ = &quot;tsgetreq&quot;;
+    private static final String TS_GET_RESP = &quot;tsgetresp&quot;;
+    private static final String TS_QUERY_REQ = &quot;tsqueryreq&quot;;
+    private static final String TS_QUERY_RESP = &quot;tsqueryresp&quot;;
+    private static final String TS_INTERPOLATION = &quot;tsinterpolation&quot;;
+    private static final String TS_PUT_REQ = &quot;tsputreq&quot;;
+    private static final String UNDEFINED = &quot;undefined&quot;;
+<span class="fc" id="L25">    private static final Logger logger = LoggerFactory.getLogger(TermToBinaryCodec.class);</span>
+
+    public static OtpOutputStream encodeTsGetRequest(String tableName, Collection&lt;Cell&gt; keyValues, int timeout)
+    {
+<span class="fc" id="L29">        final OtpOutputStream os = new OtpOutputStream();</span>
+<span class="fc" id="L30">        os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value</span>
+
+        // NB: TsGetReq is a 4-tuple: tsgetreq, tableName, [key values], timeout
+<span class="fc" id="L33">        os.write_tuple_head(4);</span>
+<span class="fc" id="L34">        os.write_atom(TS_GET_REQ);</span>
+<span class="fc" id="L35">        os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));</span>
+
+<span class="fc" id="L37">        os.write_list_head(keyValues.size());</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        for (Cell cell : keyValues)</span>
+        {
+<span class="fc" id="L40">            writeTsCellToStream(os, cell);</span>
+<span class="fc" id="L41">        }</span>
+<span class="fc" id="L42">        os.write_nil(); // NB: finishes the list</span>
+
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        if (timeout != 0)</span>
+        {
+<span class="fc" id="L46">            os.write_long(timeout);</span>
+        }
+        else
+        {
+<span class="nc" id="L50">            os.write_atom(UNDEFINED);</span>
+        }
+
+<span class="fc" id="L53">        return os;</span>
+    }
+
+    public static QueryResult decodeTsResultResponse(byte[] response)
+            throws OtpErlangDecodeException, InvalidTermToBinaryException
+    {
+<span class="fc" id="L59">        return decodeTsResponse(response);</span>
+    }
+
+    public static OtpOutputStream encodeTsQueryRequest(String queryText, byte[] coverageContext)
+    {
+<span class="fc" id="L64">        final OtpOutputStream os = new OtpOutputStream();</span>
+<span class="fc" id="L65">        os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value</span>
+
+        // TsQueryReq is a 4-tuple: {'tsqueryreq', TsInterpolation, boolIsStreaming, bytesCoverContext}
+<span class="fc" id="L68">        os.write_tuple_head(4);</span>
+<span class="fc" id="L69">        os.write_atom(TS_QUERY_REQ);</span>
+
+        // TsInterpolation is a 3-tuple
+        // {'tsinterpolation', query, []} empty list is interpolations
+<span class="fc" id="L73">        os.write_tuple_head(3);</span>
+<span class="fc" id="L74">        os.write_atom(TS_INTERPOLATION);</span>
+<span class="fc" id="L75">        os.write_binary(queryText.getBytes(StandardCharsets.UTF_8));</span>
+        // interpolations is an empty list
+<span class="fc" id="L77">        os.write_nil();</span>
+
+        // streaming is false for now
+<span class="fc" id="L80">        os.write_boolean(false);</span>
+
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (coverageContext == null)</span>
+        {
+            // cover_context is an undefined atom
+<span class="fc" id="L85">            os.write_atom(UNDEFINED);</span>
+        }
+        else
+        {
+<span class="fc" id="L89">            os.write_binary(coverageContext);</span>
+        }
+
+<span class="fc" id="L92">        return os;</span>
+    }
+
+    public static OtpOutputStream encodeTsPutRequest(String tableName, Collection&lt;Row&gt; rows)
+    {
+<span class="fc" id="L97">        return encodeTsPutRequest(tableName, Collections.&lt;String&gt;emptyList(), rows);</span>
+    }
+
+    public static OtpOutputStream encodeTsPutRequest(String tableName,
+                                                     Collection&lt;String&gt; columns,
+                                                     Collection&lt;Row&gt; rows)
+    {
+<span class="fc" id="L104">        final OtpOutputStream os = new OtpOutputStream();</span>
+<span class="fc" id="L105">        os.write(OtpExternal.versionTag); // NB: this is the reqired 0x83 (131) value</span>
+
+        // TsPutReq is a 4-tuple: {'tsputreq', tableName, [columns], [rows]}
+<span class="fc" id="L108">        os.write_tuple_head(4);</span>
+
+        // tsputreq Atom
+<span class="fc" id="L111">        os.write_atom(TS_PUT_REQ);</span>
+
+        // Table Name Binary
+<span class="fc" id="L114">        os.write_binary(tableName.getBytes(StandardCharsets.UTF_8));</span>
+
+        // Columns List
+<span class="pc bpc" id="L117" title="1 of 4 branches missed.">        if (columns != null &amp;&amp; !columns.isEmpty())</span>
+        {
+<span class="fc" id="L119">            os.write_list_head(columns.size());</span>
+
+<span class="fc bfc" id="L121" title="All 2 branches covered.">            for (String column : columns)</span>
+            {
+<span class="fc" id="L123">                os.write_binary(column.getBytes(StandardCharsets.UTF_8));</span>
+<span class="fc" id="L124">            }</span>
+        }
+<span class="fc" id="L126">        os.write_nil();</span>
+
+        // Rows List
+        // each row is a tuple of cells
+<span class="fc" id="L130">        os.write_list_head(rows.size());</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        for (Row row : rows)</span>
+        {
+<span class="fc" id="L133">            os.write_tuple_head(row.getCellsCount());</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">            for (Cell cell : row)</span>
+            {
+<span class="fc bfc" id="L136" title="All 2 branches covered.">                if (cell == null)</span>
+                {
+                    // NB: Null cells are represented as empty lists
+<span class="fc" id="L139">                    os.write_nil();</span>
+                }
+                else
+                {
+<span class="fc" id="L143">                    writeTsCellToStream(os, cell);</span>
+                }
+<span class="fc" id="L145">            }</span>
+<span class="fc" id="L146">        }</span>
+<span class="fc" id="L147">        os.write_nil();</span>
+
+<span class="fc" id="L149">        return os;</span>
+    }
+
+    private static void writeTsCellToStream(OtpOutputStream stream, Cell cell)
+    {
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        if (cell.hasVarcharValue())</span>
+        {
+<span class="fc" id="L156">            stream.write_binary(cell.getVarcharAsUTF8String().getBytes(CharsetUtils.UTF_8));</span>
+        }
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        else if (cell.hasLong())</span>
+        {
+<span class="fc" id="L160">            stream.write_long(cell.getLong());</span>
+        }
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        else if (cell.hasTimestamp())</span>
+        {
+<span class="fc" id="L164">            stream.write_long(cell.getTimestamp());</span>
+        }
+<span class="fc bfc" id="L166" title="All 2 branches covered.">        else if (cell.hasBoolean())</span>
+        {
+<span class="fc" id="L168">            stream.write_boolean(cell.getBoolean());</span>
+        }
+<span class="fc bfc" id="L170" title="All 2 branches covered.">        else if (cell.hasDouble())</span>
+        {
+<span class="fc" id="L172">            stream.write_double(cell.getDouble());</span>
+        }
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">        else if(cell.hasBlob())</span>
+        {
+<span class="fc" id="L176">            stream.write_binary(cell.getBlob());</span>
+        }
+        else
+        {
+<span class="nc" id="L180">            logger.error(&quot;Unknown TS cell type encountered.&quot;);</span>
+<span class="nc" id="L181">            throw new IllegalArgumentException(&quot;Unknown TS cell type encountered.&quot;);</span>
+        }
+<span class="fc" id="L183">    }</span>
+
+    private static QueryResult decodeTsResponse(byte[] response)
+            throws OtpErlangDecodeException, InvalidTermToBinaryException
+    {
+<span class="fc" id="L188">        final OtpInputStream is = new OtpInputStream(response);</span>
+
+<span class="fc" id="L190">        final int firstByte = is.read1skip_version();</span>
+<span class="fc" id="L191">        is.reset();</span>
+
+<span class="pc bpc" id="L193" title="3 of 4 branches missed.">        if (firstByte != OtpExternal.smallTupleTag &amp;&amp; firstByte != OtpExternal.largeTupleTag)</span>
+        {
+<span class="nc" id="L195">            return parseAtomResult(is);</span>
+        }
+
+<span class="fc" id="L198">        return parseTupleResult(is);</span>
+    }
+
+    private static QueryResult parseAtomResult(OtpInputStream is)
+            throws OtpErlangDecodeException, InvalidTermToBinaryException
+    {
+<span class="nc" id="L204">        final String responseAtom = is.read_atom();</span>
+
+<span class="nc bnc" id="L206" title="All 2 branches missed.">        if (Objects.equals(responseAtom, TS_QUERY_RESP))</span>
+        {
+<span class="nc" id="L208">            return QueryResult.EMPTY;</span>
+        }
+
+<span class="nc" id="L211">        throw new InvalidTermToBinaryException(&quot;Invalid Response atom encountered: &quot; +</span>
+                                                       responseAtom + &quot;. Was expecting tsqueryresp&quot;);
+    }
+
+    private static QueryResult parseTupleResult(OtpInputStream is)
+            throws OtpErlangDecodeException, InvalidTermToBinaryException
+    {
+        final QueryResult result;
+<span class="fc" id="L219">        final int msgArity = is.read_tuple_head();</span>
+        // Response is:
+        // {'rpberrorresp', ErrMsg, ErrCode}
+        // {'tsgetresp', {ColNames, ColTypes, Rows}}
+        // {'tsqueryresp', {ColNames, ColTypes, Rows}}
+<span class="fc" id="L224">        final String respAtom = is.read_atom();</span>
+<span class="pc bpc" id="L225" title="6 of 9 branches missed.">        switch (respAtom)</span>
+        {
+            case TS_GET_RESP:
+            case TS_QUERY_RESP:
+<span class="pc bpc" id="L229" title="2 of 4 branches missed.">                assert (msgArity == 2);</span>
+
+<span class="fc" id="L231">                final int dataArity = is.read_tuple_head();</span>
+<span class="pc bpc" id="L232" title="2 of 4 branches missed.">                assert (dataArity == 3);</span>
+
+<span class="fc" id="L234">                final ArrayList&lt;RiakTsPB.TsColumnDescription&gt; columnDescriptions = parseColumnDescriptions(is);</span>
+
+<span class="fc" id="L236">                final ArrayList&lt;RiakTsPB.TsRow&gt; rows = parseRows(is, columnDescriptions);</span>
+
+<span class="fc" id="L238">                result = new QueryResult(columnDescriptions, rows);</span>
+
+<span class="fc" id="L240">                break;</span>
+            default:
+<span class="nc" id="L242">                final String errorMsg = &quot;Unsupported response message received: &quot; + respAtom;</span>
+<span class="nc" id="L243">                logger.error(errorMsg);</span>
+<span class="nc" id="L244">                throw new IllegalArgumentException(errorMsg);</span>
+        }
+<span class="fc" id="L246">        return result;</span>
+    }
+
+    private static ArrayList&lt;RiakTsPB.TsColumnDescription&gt; parseColumnDescriptions(OtpInputStream is)
+            throws OtpErlangDecodeException
+    {
+<span class="fc" id="L252">        final int colNameCount = is.read_list_head();</span>
+<span class="fc" id="L253">        final String[] columnNames = new String[colNameCount];</span>
+<span class="fc bfc" id="L254" title="All 2 branches covered.">        for (int colNameIdx = 0; colNameIdx &lt; colNameCount; colNameIdx++)</span>
+        {
+<span class="fc" id="L256">            final String colName = new String(is.read_binary(), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L257">            columnNames[colNameIdx] = colName;</span>
+        }
+
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">        if (colNameCount &gt; 0)</span>
+        {
+<span class="fc" id="L262">            is.read_nil();</span>
+        }
+
+<span class="fc" id="L265">        final int colTypeCount = is.read_list_head();</span>
+<span class="pc bpc" id="L266" title="2 of 4 branches missed.">        assert (colNameCount == colTypeCount);</span>
+<span class="fc" id="L267">        final String[] columnTypes = new String[colTypeCount];</span>
+<span class="fc bfc" id="L268" title="All 2 branches covered.">        for (int colTypeIdx = 0; colTypeIdx &lt; colTypeCount; colTypeIdx++)</span>
+        {
+<span class="fc" id="L270">            final String colType = is.read_atom();</span>
+<span class="fc" id="L271">            columnTypes[colTypeIdx] = colType;</span>
+        }
+
+<span class="pc bpc" id="L274" title="1 of 2 branches missed.">        if (colTypeCount &gt; 0)</span>
+        {
+<span class="fc" id="L276">            is.read_nil();</span>
+        }
+
+<span class="fc" id="L279">        final ArrayList&lt;RiakTsPB.TsColumnDescription&gt; columnDescriptions = new ArrayList&lt;&gt;(colNameCount);</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">        for (int colDescIdx = 0; colDescIdx &lt; colNameCount; colDescIdx++)</span>
+        {
+<span class="fc" id="L282">            final RiakTsPB.TsColumnDescription.Builder descBuilder = RiakTsPB.TsColumnDescription.newBuilder();</span>
+
+<span class="fc" id="L284">            descBuilder.setName(ByteString.copyFromUtf8(columnNames[colDescIdx]));</span>
+<span class="fc" id="L285">            descBuilder.setType(RiakTsPB.TsColumnType.valueOf(columnTypes[colDescIdx].toUpperCase(Locale.US)));</span>
+
+<span class="fc" id="L287">            columnDescriptions.add(descBuilder.build());</span>
+        }
+<span class="fc" id="L289">        return columnDescriptions;</span>
+    }
+
+    private static ArrayList&lt;RiakTsPB.TsRow&gt; parseRows(OtpInputStream is,
+                                                       List&lt;RiakTsPB.TsColumnDescription&gt; columnDescriptions)
+            throws OtpErlangDecodeException, InvalidTermToBinaryException
+    {
+<span class="fc" id="L296">        final int rowCount = is.read_list_head();</span>
+<span class="fc" id="L297">        final ArrayList&lt;RiakTsPB.TsRow&gt; rows = new ArrayList&lt;&gt;(rowCount);</span>
+
+<span class="fc bfc" id="L299" title="All 2 branches covered.">        for (int rowIdx = 0; rowIdx &lt; rowCount; rowIdx++)</span>
+        {
+<span class="fc" id="L301">            rows.add(parseRow(is, columnDescriptions));</span>
+        }
+<span class="fc" id="L303">        return rows;</span>
+    }
+
+    private static RiakTsPB.TsRow parseRow(OtpInputStream is, List&lt;RiakTsPB.TsColumnDescription&gt; columnDescriptions)
+            throws OtpErlangDecodeException, InvalidTermToBinaryException
+    {
+<span class="fc" id="L309">        final int rowDataCount = is.read_tuple_head();</span>
+<span class="pc bpc" id="L310" title="2 of 4 branches missed.">        assert (columnDescriptions.size() == rowDataCount);</span>
+
+<span class="fc" id="L312">        final Cell[] cells = new Cell[rowDataCount];</span>
+<span class="fc bfc" id="L313" title="All 2 branches covered.">        for (int j = 0; j &lt; rowDataCount; j++)</span>
+        {
+<span class="fc" id="L315">            final OtpErlangObject cell = is.read_any();</span>
+<span class="fc" id="L316">            cells[j] = parseCell(columnDescriptions, j, cell);</span>
+        }
+
+<span class="fc" id="L319">        return new Row(cells).getPbRow();</span>
+    }
+
+    private static Cell parseCell(List&lt;RiakTsPB.TsColumnDescription&gt; columnDescriptions, int j, OtpErlangObject cell)
+            throws InvalidTermToBinaryException
+    {
+<span class="fc bfc" id="L325" title="All 2 branches covered.">        if (cell instanceof OtpErlangBinary)</span>
+        {
+<span class="fc" id="L327">            final OtpErlangBinary v = (OtpErlangBinary) cell;</span>
+<span class="fc" id="L328">            final RiakTsPB.TsColumnType type = columnDescriptions.get(j).getType();</span>
+<span class="pc bpc" id="L329" title="1 of 3 branches missed.">            switch (type)</span>
+            {
+                case VARCHAR:
+<span class="fc" id="L332">                    final String s = new String(v.binaryValue(), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L333">                    return new Cell(s);</span>
+
+                case BLOB:
+<span class="fc" id="L336">                    return new Cell(v.binaryValue());</span>
+
+                default:
+<span class="nc" id="L339">                    throw new IllegalStateException(</span>
+<span class="nc" id="L340">                            String.format(</span>
+                                    &quot;Type '%s' from the provided ColumnDescription contradicts to the actual OtpErlangBinary value&quot;,
+<span class="nc" id="L342">                                    type.name()</span>
+                            )
+                    );
+            }
+        }
+<span class="fc bfc" id="L347" title="All 2 branches covered.">        else if (cell instanceof OtpErlangLong)</span>
+        {
+<span class="fc" id="L349">            final OtpErlangLong v = (OtpErlangLong) cell;</span>
+<span class="fc" id="L350">            final RiakTsPB.TsColumnType type = columnDescriptions.get(j).getType();</span>
+<span class="pc bpc" id="L351" title="2 of 3 branches missed.">            switch (type)</span>
+            {
+                case TIMESTAMP:
+<span class="fc" id="L354">                    return Cell.newTimestamp(v.longValue());</span>
+
+                case SINT64:
+<span class="nc" id="L357">                    return new Cell(v.longValue());</span>
+
+                default:
+<span class="nc" id="L360">                    throw new IllegalStateException(</span>
+<span class="nc" id="L361">                            String.format(</span>
+                                    &quot;Type '%s' from the provided ColumnDescription contradicts to the actual OtpErlangLong value&quot;,
+<span class="nc" id="L363">                                    type.name()</span>
+                            )
+                    );
+            }
+        }
+<span class="pc bpc" id="L368" title="1 of 2 branches missed.">        else if (cell instanceof OtpErlangDouble)</span>
+        {
+<span class="nc" id="L370">            final OtpErlangDouble v = (OtpErlangDouble) cell;</span>
+<span class="nc" id="L371">            return new Cell(v.doubleValue());</span>
+        }
+<span class="fc bfc" id="L373" title="All 2 branches covered.">        else if (cell instanceof OtpErlangAtom)</span>
+        {
+<span class="fc" id="L375">            final OtpErlangAtom v = (OtpErlangAtom) cell;</span>
+<span class="fc" id="L376">            return new Cell(v.booleanValue());</span>
+        }
+<span class="pc bpc" id="L378" title="1 of 2 branches missed.">        else if (cell instanceof OtpErlangList)</span>
+        {
+<span class="fc" id="L380">            final OtpErlangList l = (OtpErlangList) cell;</span>
+<span class="pc bpc" id="L381" title="2 of 4 branches missed.">            assert (l.arity() == 0);</span>
+<span class="fc" id="L382">            return null;</span>
+        }
+
+<span class="nc" id="L385">        throw new InvalidTermToBinaryException(&quot;Unknown cell type encountered: &quot; + cell.toString() +</span>
+                                               &quot;, unable to continue parsing.&quot;);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

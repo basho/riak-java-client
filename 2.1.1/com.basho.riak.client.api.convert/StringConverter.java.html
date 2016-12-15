@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StringConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.convert</a> &gt; <span class="el_source">StringConverter.java</span></div><h1>StringConverter.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2014 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.convert;
+
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.RiakObject;
+import com.basho.riak.client.core.util.BinaryValue;
+
+/**
+ * Converter that passes Strings through unmodified.
+ *
+ * Worth noting is that when using String directly with StoreValue
+ * there's no way to determine the character set. This converter uses the
+ * default character set for conversion.
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+public class StringConverter extends Converter&lt;String&gt;
+{
+    public StringConverter()
+    {
+<span class="fc" id="L38">        super(String.class);</span>
+<span class="fc" id="L39">    }</span>
+
+    @Override
+    public String toDomain(RiakObject obj, Location location)
+    {
+<span class="fc" id="L44">        return obj.getValue().toString();</span>
+    }
+
+    @Override
+    public Converter.OrmExtracted fromDomain(String domainObject, Namespace namespace, BinaryValue key)
+    {
+<span class="fc" id="L50">        RiakObject obj = new RiakObject()</span>
+<span class="fc" id="L51">                        .setValue(BinaryValue.create(domainObject))</span>
+<span class="fc" id="L52">                        .setContentType(&quot;text/plain&quot;);</span>
+<span class="fc" id="L53">        return new Converter.OrmExtracted(obj, namespace, key);</span>
+    }
+
+    @Override
+    public String toDomain(BinaryValue value, String contentType) throws ConversionException
+    {
+<span class="nc" id="L59">        throw new UnsupportedOperationException(&quot;Not supported yet.&quot;); //To change body of generated methods, choose Tools | Templates.</span>
+    }
+
+    @Override
+    public ContentAndType fromDomain(String domainObject) throws ConversionException
+    {
+<span class="nc" id="L65">        throw new UnsupportedOperationException(&quot;Not supported yet.&quot;); //To change body of generated methods, choose Tools | Templates.</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

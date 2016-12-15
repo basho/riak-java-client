@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Location.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.query</a> &gt; <span class="el_source">Location.java</span></div><h1>Location.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2014 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.core.query;
+
+import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.client.core.util.DefaultCharset;
+
+import java.nio.charset.Charset;
+
+/**
+ * Encapsulates a key and Namespace.
+ * &lt;p&gt;
+ * Many client operations locate a piece of information in Riak via a
+ * bucket type, bucket name, and  a key. This class encapsulates these
+ * three items by combining a {@link Namespace} with a key and is
+ * used with most client operations.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * Riak itself is character set agnostic; everything is stored as bytes. The
+ * convenience methods in this class rely on either the default Charset or a
+ * supplied one to convert Strings to a byte[].
+ * &lt;p&gt;
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+public final class Location
+{
+    private final Namespace namespace;
+    private final BinaryValue key;
+
+    /**
+     * Construct a new Location with the provided Namespace and key.
+     * @param namespace The namespace for this location.
+     * @param key The key for this location.
+     */
+    public Location(Namespace namespace, BinaryValue key)
+<span class="fc" id="L52">    {</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (namespace == null)</span>
+        {
+<span class="nc" id="L55">            throw new IllegalArgumentException(&quot;Namespace cannot be null&quot;);</span>
+        }
+<span class="pc bpc" id="L57" title="2 of 4 branches missed.">        else if (key == null || key.length() == 0)</span>
+        {
+<span class="nc" id="L59">            throw new IllegalArgumentException(&quot;Key cannot be null or zero length&quot;);</span>
+        }
+<span class="fc" id="L61">        this.namespace = namespace;</span>
+<span class="fc" id="L62">        this.key = key;</span>
+<span class="fc" id="L63">    }</span>
+
+    /**
+     * Construct a new Location with the provided Namespace and key.
+     * &lt;p&gt;
+     * The supplied string is converted to bytes using the supplied charset.
+     * &lt;/p&gt;
+     * @param namespace The namespace for this location.
+     * @param key The key for this location.
+     * @param charset the charset for the key
+     */
+    public Location(Namespace namespace, String key, Charset charset)
+<span class="fc" id="L75">    {</span>
+<span class="pc bpc" id="L76" title="2 of 4 branches missed.">        if (key == null || key.length() == 0)</span>
+        {
+<span class="nc" id="L78">            throw new IllegalArgumentException(&quot;Key cannot be null or zero length&quot;);</span>
+        }
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        else if (namespace == null)</span>
+        {
+<span class="nc" id="L82">            throw new IllegalArgumentException(&quot;Namespace cannot be null&quot;);</span>
+        }
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">        else if (charset == null)</span>
+        {
+<span class="nc" id="L86">            throw new IllegalArgumentException(&quot;Charset cannot be null&quot;);</span>
+        }
+<span class="fc" id="L88">        this.namespace = namespace;</span>
+<span class="fc" id="L89">        this.key = BinaryValue.create(key, charset);</span>
+<span class="fc" id="L90">    }</span>
+
+    /**
+     * Construct a new Location with the provided namespace and key.
+     * &lt;p&gt;
+     * The supplied string is converted to bytes using the default charset.
+     * &lt;/p&gt;
+     * @param namespace The namespace for this location.
+     * @param key The key for this location.
+     */
+    public Location(Namespace namespace, String key)
+    {
+<span class="fc" id="L102">        this(namespace, key, DefaultCharset.get());</span>
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Returns the key for this location.
+     * @return the Riak Key.
+     */
+    public BinaryValue getKey()
+    {
+<span class="fc" id="L111">        return key;</span>
+    }
+
+    /**
+     * Get the key for this location as a String.
+     * &lt;p&gt;
+     * The default character set is used.
+     * &lt;p&gt;
+     * @return the key for this location as a String
+     */
+    public String getKeyAsString()
+    {
+<span class="fc" id="L123">        return key.toString();</span>
+    }
+
+    /**
+     * Get the key for this location as a String.
+     * &lt;p&gt;
+     * The supplied character set is used.
+     * &lt;p&gt;
+     * @param charset The Charset used to convert to a String.
+     * @return the key for this Location as a String.
+     */
+    public String getKeyAsString(Charset charset)
+    {
+<span class="nc" id="L136">        return key.toString(charset);</span>
+    }
+
+    /**
+     * Return the Namespace for this location.
+     * @return the namespace.
+     */
+    public Namespace getNamespace()
+    {
+<span class="fc" id="L145">        return namespace;</span>
+    }
+
+    @Override
+    public int hashCode()
+    {
+<span class="nc" id="L151">        int hash = 7;</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        hash = 79 * hash + (this.namespace != null ? this.namespace.hashCode() : 0);</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        hash = 79 * hash + (this.key != null ? this.key.hashCode() : 0);</span>
+<span class="nc" id="L154">        return hash;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (obj == null)</span>
+        {
+<span class="nc" id="L162">            return false;</span>
+        }
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">        if (getClass() != obj.getClass())</span>
+        {
+<span class="nc" id="L166">            return false;</span>
+        }
+<span class="fc" id="L168">        final Location other = (Location) obj;</span>
+<span class="pc bpc" id="L169" title="5 of 6 branches missed.">        if (this.namespace != other.namespace &amp;&amp; (this.namespace == null || !this.namespace.equals(other.namespace)))</span>
+        {
+<span class="nc" id="L171">            return false;</span>
+        }
+<span class="pc bpc" id="L173" title="5 of 6 branches missed.">        if (this.key != other.key &amp;&amp; (this.key == null || !this.key.equals(other.key)))</span>
+        {
+<span class="nc" id="L175">            return false;</span>
+        }
+<span class="fc" id="L177">        return true;</span>
+    }
+
+    @Override
+    public String toString()
+    {
+<span class="nc" id="L183">        return &quot;{namespace: &quot; + namespace + &quot;, key: &quot; + key + &quot;}&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

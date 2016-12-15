@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RiakLink.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.query.links</a> &gt; <span class="el_source">RiakLink.java</span></div><h1>RiakLink.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho TEchnologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.core.query.links;
+
+import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.client.core.util.DefaultCharset;
+
+import java.nio.charset.Charset;
+
+/**
+ * Models a link from one object to another in Riak.
+ * &lt;p&gt;
+ * Links are metadata that establish one-way relationships between objects in Riak.
+ * They can be used to loosely model graph like relationships between objects in Riak.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * Data in Riak is character asSet agnostic; it's simply raw bytes. Methods are provided here
+ * to either use your default character asSet or supply a specific one to convert to and
+ * from {@code String}s.
+ * &lt;p&gt;
+ *
+ * @author Russel Brown &lt;russelldb at basho dot com&gt;
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 1.0
+ */
+public class RiakLink
+{
+    private final BinaryValue bucket;
+    private final BinaryValue key;
+    private final BinaryValue tag;
+
+    /**
+     * Create a RiakLink from the specified parameters.
+     * &lt;p&gt;
+     * The values are stored internally as bytes. The default {@code Charset} will
+     * be used to convert the supplied {@code String}s
+     * &lt;p&gt;
+     *
+     * @param bucket the bucket name
+     * @param key    the key
+     * @param tag    the link tag
+     */
+    public RiakLink(String bucket, String key, String tag)
+    {
+<span class="fc" id="L58">        this(bucket, key, tag, DefaultCharset.get());</span>
+<span class="fc" id="L59">    }</span>
+
+    /**
+     * Create a RiakLink from the specified parameters.
+     * &lt;p&gt;
+     * The values are stored internally as bytes. The supplied {@code Charset} will
+     * be used to convert the supplied {@code String}s
+     * &lt;/p&gt;
+     *
+     * @param bucket  the bucket
+     * @param key     the key
+     * @param tag     the link tag
+     * @param charset the character asSet for the supplied {@code String}s
+     */
+    public RiakLink(String bucket, String key, String tag, Charset charset)
+<span class="fc" id="L74">    {</span>
+<span class="fc" id="L75">        this.bucket = BinaryValue.unsafeCreate(bucket.getBytes(charset));</span>
+<span class="fc" id="L76">        this.key = BinaryValue.unsafeCreate(key.getBytes(charset));</span>
+<span class="fc" id="L77">        this.tag = BinaryValue.unsafeCreate(tag.getBytes(charset));</span>
+<span class="fc" id="L78">    }</span>
+
+    /**
+     * Create a RiakLink from the specified parameters.
+     *
+     * @param bucket the bucket name
+     * @param key    the key
+     * @param tag    the link tag
+     */
+    public RiakLink(BinaryValue bucket, BinaryValue key, BinaryValue tag)
+<span class="nc" id="L88">    {</span>
+<span class="nc" id="L89">        this.bucket = bucket;</span>
+<span class="nc" id="L90">        this.key = key;</span>
+<span class="nc" id="L91">        this.tag = tag;</span>
+<span class="nc" id="L92">    }</span>
+
+    /**
+     * Create a RiakLink that is a copy of another RiakLink.
+     *
+     * @param riakLink the RiakLink to copy
+     */
+    public RiakLink(final RiakLink riakLink)
+<span class="nc" id="L100">    {</span>
+<span class="nc" id="L101">        this.bucket = riakLink.bucket;</span>
+<span class="nc" id="L102">        this.key = riakLink.key;</span>
+<span class="nc" id="L103">        this.tag = riakLink.tag;</span>
+<span class="nc" id="L104">    }</span>
+
+    /**
+     * Get the bucket for this RiakLink as a String
+     * &lt;/p&gt;
+     * The bucket is stored internally as bytes. The default {@code Charset}
+     * is used to convert to a {@code String}
+     * &lt;/p&gt;
+     *
+     * @return the bucket as a {@code String} encoded using the default {@code Charset}
+     */
+    public String getBucket()
+    {
+<span class="fc" id="L117">        return bucket.toString();</span>
+    }
+
+    /**
+     * Get the bucket for this RiakLink as a String
+     * &lt;/p&gt;
+     * The bucket is stored internally as bytes. The supplied {@code Charset}
+     * is used to convert to a {@code String}
+     * &lt;/p&gt;
+     *
+     * @return the bucket as a {@code String} encoded using the supplied {@code Charset}
+     */
+    public String getBucket(Charset charset)
+    {
+<span class="nc" id="L131">        return bucket.toString(charset);</span>
+    }
+
+    /**
+     * Get the bucket as a wrapped byte array
+     *
+     * @return the bucket name in a {@link BinaryValue}
+     */
+    public BinaryValue getBucketAsBytes()
+    {
+<span class="fc" id="L141">        return bucket;</span>
+    }
+
+    /**
+     * Get the key for this RiakLink as a String
+     * &lt;/p&gt;
+     * The key is stored internally as bytes. The default {@code Charset}
+     * is used to convert to a {@code String}
+     * &lt;/p&gt;
+     *
+     * @return the key as a {@code String} encoded using the default {@code Charset}
+     */
+    public String getKey()
+    {
+<span class="fc" id="L155">        return key.toString();</span>
+    }
+
+    /**
+     * Get the key for this RiakLink as a String
+     * &lt;/p&gt;
+     * The key is stored internally as bytes. The supplied {@code Charset}
+     * is used to convert to a {@code String}
+     * &lt;/p&gt;
+     *
+     * @return the key as a {@code String} encoded using the supplied {@code Charset}
+     */
+    public String getKey(Charset charset)
+    {
+<span class="nc" id="L169">        return key.toString(charset);</span>
+    }
+
+    /**
+     * Return the key as a wrapped byte array
+     *
+     * @return the key in a {@link BinaryValue}
+     */
+    public BinaryValue getKeyAsBytes()
+    {
+<span class="fc" id="L179">        return key;</span>
+    }
+
+    /**
+     * Get the tag for this RiakLink as a String
+     * &lt;/p&gt;
+     * The tag is stored internally as bytes. The default {@code Charset}
+     * is used to convert to a {@code String}
+     * &lt;/p&gt;
+     *
+     * @return the tag as a {@code String} encoded using the default {@code Charset}
+     */
+    public String getTag()
+    {
+<span class="fc" id="L193">        return tag.toString();</span>
+    }
+
+    /**
+     * Get the tag for this RiakLink as a String
+     * &lt;/p&gt;
+     * The tag is stored internally as bytes. The supplied {@code Charset}
+     * is used to convert to a {@code String}
+     * &lt;/p&gt;
+     *
+     * @return the tag as a {@code String} encoded using the supplied {@code Charset}
+     */
+    public String getTag(Charset charset)
+    {
+<span class="nc" id="L207">        return tag.toString(charset);</span>
+    }
+
+    /**
+     * Get the tag as bytes
+     *
+     * @return the tag in a {@link BinaryValue}
+     */
+    public BinaryValue getTagAsBytes()
+    {
+<span class="fc" id="L217">        return tag;</span>
+    }
+
+    @Override
+    public int hashCode()
+    {
+<span class="fc" id="L223">        final int prime = 31;</span>
+<span class="fc" id="L224">        int result = 1;</span>
+<span class="pc bpc" id="L225" title="1 of 2 branches missed.">        result = prime * result + ((bucket == null) ? 0 : bucket.hashCode());</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">        result = prime * result + ((key == null) ? 0 : key.hashCode());</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">        result = prime * result + ((tag == null) ? 0 : tag.hashCode());</span>
+<span class="fc" id="L228">        return result;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+<span class="pc bpc" id="L234" title="1 of 2 branches missed.">        if (this == obj)</span>
+        {
+<span class="nc" id="L236">            return true;</span>
+        }
+<span class="pc bpc" id="L238" title="1 of 2 branches missed.">        if (obj == null)</span>
+        {
+<span class="nc" id="L240">            return false;</span>
+        }
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">        if (!(obj instanceof RiakLink))</span>
+        {
+<span class="nc" id="L244">            return false;</span>
+        }
+<span class="fc" id="L246">        RiakLink other = (RiakLink) obj;</span>
+<span class="pc bpc" id="L247" title="1 of 2 branches missed.">        if (bucket == null)</span>
+        {
+<span class="nc bnc" id="L249" title="All 2 branches missed.">            if (other.bucket != null)</span>
+            {
+<span class="nc" id="L251">                return false;</span>
+            }
+        }
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">        else if (!bucket.equals(other.bucket))</span>
+        {
+<span class="nc" id="L256">            return false;</span>
+        }
+<span class="pc bpc" id="L258" title="1 of 2 branches missed.">        if (key == null)</span>
+        {
+<span class="nc bnc" id="L260" title="All 2 branches missed.">            if (other.key != null)</span>
+            {
+<span class="nc" id="L262">                return false;</span>
+            }
+        }
+<span class="pc bpc" id="L265" title="1 of 2 branches missed.">        else if (!key.equals(other.key))</span>
+        {
+<span class="nc" id="L267">            return false;</span>
+        }
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">        if (tag == null)</span>
+        {
+<span class="nc bnc" id="L271" title="All 2 branches missed.">            if (other.tag != null)</span>
+            {
+<span class="nc" id="L273">                return false;</span>
+            }
+        }
+<span class="pc bpc" id="L276" title="1 of 2 branches missed.">        else if (!tag.equals(other.tag))</span>
+        {
+<span class="nc" id="L278">            return false;</span>
+        }
+<span class="fc" id="L280">        return true;</span>
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+<span class="nc" id="L291">        return String.format(&quot;RiakLink [tag=%s, bucket=%s, key=%s]&quot;, tag, bucket, key);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

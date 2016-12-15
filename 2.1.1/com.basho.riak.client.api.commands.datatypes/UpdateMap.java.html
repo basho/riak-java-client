@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UpdateMap.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.datatypes</a> &gt; <span class="el_source">UpdateMap.java</span></div><h1>UpdateMap.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.commands.datatypes;
+
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.operations.DtUpdateOperation;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
+import com.basho.riak.client.core.query.crdt.types.RiakMap;
+import com.basho.riak.client.core.util.BinaryValue;
+
+/**
+ * Command used to update or create a map datatype in Riak.
+ * &lt;script src=&quot;https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js&quot;&gt;&lt;/script&gt;
+ * &lt;p&gt;
+ * To update or create a map in Riak you construct a {@link MapUpdate} and use
+ * this command to send it to Riak.
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ * Location loc = new Location(ns, &quot;my_key&quot;);
+ *
+ * CounterUpdate cUpdate = new CounterUpdate(10L);
+ * MapUpdate update = new MapUpdate().update(&quot;my_key&quot;, cUpdate);
+ *
+ * UpdateMap um = new UpdateMap.Builder(loc, update).withReturnDatatype(true).build();
+ * UpdateMap.Response resp = client.execute(um);
+ * RiakMap map = resp.getDatatype();
+ *
+ * }
+ * &lt;/pre&gt;
+ * &lt;/p&gt;
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+public class UpdateMap extends UpdateDatatype&lt;RiakMap, UpdateMap.Response&gt;
+{
+    private UpdateMap(Builder builder)
+    {
+<span class="fc" id="L55">        super(builder);</span>
+<span class="fc" id="L56">    }</span>
+
+    @Override
+    protected Response convertResponse(FutureOperation&lt;DtUpdateOperation.Response, ?, Location&gt; request,
+                                       DtUpdateOperation.Response coreResponse)
+    {
+<span class="fc" id="L62">        RiakMap map = null;</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        if (coreResponse.hasCrdtElement())</span>
+        {
+<span class="nc" id="L65">            RiakDatatype element = coreResponse.getCrdtElement();</span>
+<span class="nc" id="L66">            map = element.getAsMap();</span>
+        }
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">        BinaryValue returnedKey = coreResponse.hasGeneratedKey()</span>
+<span class="pc" id="L69">            ? coreResponse.getGeneratedKey()</span>
+            : null;
+
+<span class="fc" id="L72">        Context returnedCtx = null;</span>
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">        if (coreResponse.hasContext())</span>
+        {
+<span class="nc" id="L75">            returnedCtx = new Context(coreResponse.getContext());</span>
+        }
+
+<span class="fc" id="L78">        return new Response(returnedCtx, map, returnedKey);</span>
+    }
+
+    public static final class Response extends UpdateDatatype.Response&lt;RiakMap&gt;
+    {
+        private Response(Context context, RiakMap datatype, BinaryValue generatedKey)
+        {
+<span class="fc" id="L85">            super(context, datatype, generatedKey);</span>
+<span class="fc" id="L86">        }</span>
+    }
+
+    /**
+     * Builder used to construct an UpdateMap command.
+     */
+    public static final class Builder extends UpdateDatatype.Builder&lt;Builder&gt;
+    {
+        /**
+         * Construct a Builder for an UpdateMap command.
+         * @param location the location of the map in Riak.
+         * @param update the update to apply to the map.
+         */
+        public Builder(Location location, MapUpdate update)
+        {
+<span class="fc" id="L101">            super(location, update);</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">            if (update == null)</span>
+            {
+<span class="nc" id="L104">                throw new IllegalArgumentException(&quot;Update cannot be null&quot;);</span>
+            }
+<span class="fc" id="L106">        }</span>
+
+        /**
+         * Constructs a builder for an UpdateMap command with only a Namespace.
+         * &lt;p&gt;
+         * By providing only a Namespace with the update, Riak will create the
+         * map, generate the key,
+         * and return it in the response.
+         * &lt;/p&gt;
+         * @param namespace the namespace to create the datatype.
+         * @param update the update to apply
+         * @see Response#getGeneratedKey()
+         */
+        public Builder(Namespace namespace, MapUpdate update)
+        {
+<span class="nc" id="L121">            super(namespace, update);</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">            if (update == null)</span>
+            {
+<span class="nc" id="L124">                throw new IllegalArgumentException(&quot;Update cannot be null&quot;);</span>
+            }
+<span class="nc" id="L126">        }</span>
+
+        @Override
+        protected Builder self()
+        {
+<span class="fc" id="L131">            return this;</span>
+        }
+
+        /**
+         * Construct a new UpdateMap command.
+         * @return a new UpdateMap command.
+         */
+        @Override
+        public UpdateMap build()
+        {
+<span class="fc" id="L141">            return new UpdateMap(this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

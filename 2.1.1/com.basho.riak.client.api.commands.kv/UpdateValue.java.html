@@ -1,0 +1,633 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UpdateValue.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.kv</a> &gt; <span class="el_source">UpdateValue.java</span></div><h1>UpdateValue.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.api.commands.kv;
+
+import com.basho.riak.client.api.RiakCommand;
+import com.basho.riak.client.api.cap.VClock;
+import com.basho.riak.client.api.commands.ListenableFuture;
+import com.basho.riak.client.api.convert.ConversionException;
+import com.basho.riak.client.api.convert.reflection.AnnotationUtil;
+import com.basho.riak.client.core.RiakCluster;
+import com.basho.riak.client.core.RiakFuture;
+import com.basho.riak.client.core.RiakFutureListener;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.RiakObject;
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+/**
+ * Perform an full cycle update of a Riak value: fetch, resolve, modify, store.
+ * &lt;script src=&quot;https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js&quot;&gt;&lt;/script&gt;
+ * &lt;p&gt;
+ * The UpdateValue command completely encapsulates the typical read/modify/write
+ * cycle used with data in Riak.
+ * &lt;/p&gt;
+ * &lt;p&gt;The object specified by the given {@link com.basho.riak.client.core.query.Location}
+ * will be fetched from Riak and have the {@link com.basho.riak.client.api.cap.ConflictResolver} stored in
+ * the {@link com.basho.riak.client.api.cap.ConflictResolverFactory} applied. The resolved
+ * object is then passed to your {@link com.basho.riak.client.api.commands.kv.UpdateValue.Update}
+ * and the result stored back into Riak.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * To create the mutation you wish to perform, you extend the
+ * {@link com.basho.riak.client.api.commands.kv.UpdateValue.Update} class:
+ * &lt;/p&gt;
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * class AppendUpdate extends UpdateValue.Update&lt;MyPojo&gt;
+ * {
+ *     private final String update;
+ *
+ *     public AppendUpdate(String update)
+ *     {
+ *         this.update = update;
+ *     }
+ *
+ *     {@literal @Override}
+ *     public MyPojo apply(MyPojo original)
+ *     {
+ *         if (original == null)
+ *         {
+ *             original = new MyPojo();
+ *         }
+ *
+ *         original.value += update;
+ *         return original;
+ *     }
+ * }
+ *
+ * Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ * Location loc = new Location(ns, &quot;my_key&quot;);
+ * AppendUpdate update = new AppendUpdate(&quot;append this string&quot;);
+ *
+ * UpdateValue uv =
+ *     new UpdateValue.Builder(loc).withUpdate(update).build();
+ *
+ * UpdateValue.Response response = client.execute(uv);}&lt;/pre&gt;
+ *
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+public final class UpdateValue extends RiakCommand&lt;UpdateValue.Response, Location&gt;
+{
+    private final Location location;
+    private final Update&lt;?&gt; update;
+    private final TypeReference&lt;?&gt; typeReference;
+<span class="fc" id="L97">    private final Map&lt;FetchValue.Option&lt;?&gt;, Object&gt; fetchOptions = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L98">    private final Map&lt;StoreValue.Option&lt;?&gt;, Object&gt; storeOptions = new HashMap&lt;&gt;();</span>
+
+    UpdateValue(Builder builder)
+<span class="fc" id="L101">    {</span>
+<span class="fc" id="L102">        this.location = builder.location;</span>
+<span class="fc" id="L103">        this.update = builder.update;</span>
+<span class="fc" id="L104">        this.typeReference = builder.typeReference;</span>
+<span class="fc" id="L105">        this.fetchOptions.putAll(builder.fetchOptions);</span>
+<span class="fc" id="L106">        this.storeOptions.putAll(builder.storeOptions);</span>
+<span class="fc" id="L107">    }</span>
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    @Override
+    protected RiakFuture&lt;Response, Location&gt; executeAsync(final RiakCluster cluster)
+    {
+<span class="fc" id="L113">        final UpdateValueFuture updateFuture = new UpdateValueFuture(location);</span>
+
+<span class="fc" id="L115">        FetchValue.Builder fetchBuilder = new FetchValue.Builder(location);</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">        for (Map.Entry&lt;FetchValue.Option&lt;?&gt;, Object&gt; optPair : fetchOptions.entrySet())</span>
+        {
+<span class="nc" id="L118">            fetchBuilder.withOption((FetchValue.Option&lt;Object&gt;) optPair.getKey(), optPair.getValue());</span>
+<span class="nc" id="L119">        }</span>
+
+<span class="fc" id="L121">        RiakFuture&lt;FetchValue.Response, Location&gt; fetchFuture = fetchBuilder.build().executeAsync(cluster);</span>
+
+        // Anonymous listener that will do the work
+<span class="fc" id="L124">        RiakFutureListener&lt;FetchValue.Response, Location&gt; fetchListener = f -&gt;</span>
+        {
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">            if (!f.isSuccess())</span>
+            {
+<span class="fc" id="L128">                updateFuture.setException(f.cause());</span>
+<span class="fc" id="L129">                return;</span>
+            }
+
+            FetchValue.Response fetchResponse;
+            try
+            {
+<span class="nc" id="L135">                fetchResponse = f.get();</span>
+<span class="nc" id="L136">                Object resolved = null;</span>
+<span class="nc" id="L137">                VClock vclock = null;</span>
+
+<span class="nc bnc" id="L139" title="All 2 branches missed.">                if (!fetchResponse.isNotFound())</span>
+                {
+<span class="nc bnc" id="L141" title="All 2 branches missed.">                    if (typeReference == null)</span>
+                    {
+                        // Steal the type from the Update. Yes, Really.
+<span class="nc" id="L144">                        ParameterizedType pType =</span>
+<span class="nc" id="L145">                                (ParameterizedType) update.getClass().getGenericSuperclass();</span>
+<span class="nc" id="L146">                        Type t = pType.getActualTypeArguments()[0];</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">                        if (t instanceof ParameterizedType)</span>
+                        {
+<span class="nc" id="L149">                            t = ((ParameterizedType) t).getRawType();</span>
+                        }
+
+<span class="nc" id="L152">                        resolved = fetchResponse.getValue((Class&lt;?&gt;) t);</span>
+<span class="nc" id="L153">                    }</span>
+                    else
+                    {
+<span class="nc" id="L156">                        resolved = fetchResponse.getValue(typeReference);</span>
+                    }
+
+                    // We get the vclock so we can inject it into the updated object.
+                    // This is so the end user doesn't have to worry about vclocks
+                    // in the Update.
+<span class="nc" id="L162">                    vclock = fetchResponse.getVectorClock();</span>
+                }
+
+<span class="nc" id="L165">                Object updated = ((Update&lt;Object&gt;) update).apply(resolved);</span>
+
+<span class="nc bnc" id="L167" title="All 2 branches missed.">                if (update.isModified())</span>
+                {
+<span class="nc" id="L169">                    AnnotationUtil.setVClock(updated, vclock);</span>
+
+<span class="nc" id="L171">                    StoreValue.Builder store = new StoreValue.Builder(updated, typeReference).withLocation(</span>
+<span class="nc" id="L172">                            location).withVectorClock(vclock);</span>
+
+<span class="nc bnc" id="L174" title="All 2 branches missed.">                    for (Map.Entry&lt;StoreValue.Option&lt;?&gt;, Object&gt; optPair : storeOptions.entrySet())</span>
+                    {
+<span class="nc" id="L176">                        store.withOption((StoreValue.Option&lt;Object&gt;) optPair.getKey(), optPair.getValue());</span>
+<span class="nc" id="L177">                    }</span>
+
+<span class="nc" id="L179">                    RiakFuture&lt;StoreValue.Response, Location&gt; storeFuture = store.build().executeAsync(</span>
+                            cluster);
+<span class="nc" id="L181">                    storeFuture.addListener(updateFuture);</span>
+<span class="nc" id="L182">                }</span>
+                else
+                {
+<span class="nc" id="L185">                    Response updateResponse = new Response.Builder().withLocation(f.getQueryInfo())</span>
+<span class="nc" id="L186">                                                                    .withUpdated(false)</span>
+<span class="nc" id="L187">                                                                    .build();</span>
+<span class="nc" id="L188">                    updateFuture.setResponse(updateResponse);</span>
+                }
+            }
+<span class="nc" id="L191">            catch (InterruptedException | ConversionException | ExecutionException ex)</span>
+            {
+<span class="nc" id="L193">                updateFuture.setException(ex);</span>
+<span class="nc" id="L194">            }</span>
+<span class="nc" id="L195">        };</span>
+
+<span class="fc" id="L197">        fetchFuture.addListener(fetchListener);</span>
+<span class="fc" id="L198">        return updateFuture;</span>
+    }
+
+    @Override
+    public int hashCode()
+    {
+<span class="nc" id="L204">        final int prime = 31;</span>
+<span class="nc" id="L205">        int result = 1;</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">        result = prime * result + (location != null ? location.hashCode() : 0);</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">        result = prime * result + (update != null ? update.hashCode() : 0);</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        result = prime * result + (typeReference != null ? typeReference.hashCode() : 0);</span>
+<span class="nc" id="L209">        result = prime * result + fetchOptions.hashCode();</span>
+<span class="nc" id="L210">        result = prime * result + storeOptions.hashCode();</span>
+<span class="nc" id="L211">        return result;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        if (this == obj)</span>
+        {
+<span class="nc" id="L219">            return true;</span>
+        }
+<span class="nc bnc" id="L221" title="All 2 branches missed.">        if (obj == null)</span>
+        {
+<span class="nc" id="L223">            return false;</span>
+        }
+<span class="nc bnc" id="L225" title="All 2 branches missed.">        if (!(obj instanceof UpdateValue))</span>
+        {
+<span class="nc" id="L227">            return false;</span>
+        }
+
+<span class="nc" id="L230">        final UpdateValue other = (UpdateValue) obj;</span>
+<span class="nc bnc" id="L231" title="All 6 branches missed.">        if (this.location != other.location &amp;&amp; (this.location == null || !this.location.equals(other.location)))</span>
+        {
+<span class="nc" id="L233">            return false;</span>
+        }
+<span class="nc bnc" id="L235" title="All 6 branches missed.">        if (this.update != other.update &amp;&amp; (this.update == null || !this.update.equals(other.update)))</span>
+        {
+<span class="nc" id="L237">            return false;</span>
+        }
+<span class="nc bnc" id="L239" title="All 4 branches missed.">        if (this.typeReference != other.typeReference &amp;&amp; (this.typeReference == null || !this.typeReference.equals</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">                (other.typeReference)))</span>
+        {
+<span class="nc" id="L242">            return false;</span>
+        }
+<span class="nc bnc" id="L244" title="All 6 branches missed.">        if (this.fetchOptions != other.fetchOptions &amp;&amp; (this.fetchOptions == null || !this.fetchOptions.equals(other.fetchOptions)))</span>
+        {
+<span class="nc" id="L246">            return false;</span>
+        }
+<span class="nc bnc" id="L248" title="All 6 branches missed.">        if (this.storeOptions != other.storeOptions &amp;&amp; (this.storeOptions == null || !this.storeOptions.equals(other.storeOptions)))</span>
+        {
+<span class="nc" id="L250">            return false;</span>
+        }
+<span class="nc" id="L252">        return true;</span>
+    }
+
+    @Override
+    public String toString()
+    {
+<span class="nc" id="L258">        return String.format(&quot;{location: %s, update: %s, typeReference: %s,&quot; + &quot; fetchOptions: %s, storeOptions: %s}&quot;,</span>
+                             location,
+                             update,
+                             typeReference,
+                             fetchOptions,
+                             storeOptions);
+    }
+
+    /**
+     *
+     */
+    public static class Response extends KvResponseBase
+    {
+        private final boolean wasUpdated;
+
+        Response(Init&lt;?&gt; builder)
+        {
+<span class="nc" id="L275">            super(builder);</span>
+<span class="nc" id="L276">            this.wasUpdated = builder.wasUpdated;</span>
+<span class="nc" id="L277">        }</span>
+
+        /**
+         * Determine if an update occurred.
+         * &lt;p&gt;
+         * The supplied {@code Update} indicates if a modification was made. If
+         * no modification was made, no store operation is performed and this
+         * will return false.
+         * &lt;p&gt;
+         *
+         * @return true if the supplied {@code Update} modified the retrieved object,
+         * false otherwise.
+         */
+        public boolean wasUpdated()
+        {
+<span class="nc" id="L292">            return wasUpdated;</span>
+        }
+
+<span class="nc" id="L295">        protected static abstract class Init&lt;T extends Init&lt;T&gt;&gt; extends KvResponseBase.Init&lt;T&gt;</span>
+        {
+            private boolean wasUpdated;
+
+            T withUpdated(boolean updated)
+            {
+<span class="nc" id="L301">                this.wasUpdated = updated;</span>
+<span class="nc" id="L302">                return self();</span>
+            }
+        }
+
+<span class="nc" id="L306">        static class Builder extends Init&lt;Builder&gt;</span>
+        {
+            @Override
+            protected Builder self()
+            {
+<span class="nc" id="L311">                return this;</span>
+            }
+
+            @Override
+            Response build()
+            {
+<span class="nc" id="L317">                return new Response(this);</span>
+            }
+        }
+    }
+
+    /**
+     * An update on a Riak object
+     *
+     * @param &lt;T&gt;
+     */
+<span class="fc" id="L327">    public abstract static class Update&lt;T&gt;</span>
+    {
+<span class="fc" id="L329">        private boolean modified = true;</span>
+
+        /**
+         * Modify the input value and return the modification. It is OK to
+         * modify the input value in-place and return it.
+         *
+         * @param original the resolved value
+         * @return a modified value
+         */
+        public abstract T apply(T original);
+
+        /**
+         * true if this Update has modified the input value and requires a store,
+         * defaults to {@code true}
+         *
+         * @return true if modified
+         */
+        public boolean isModified()
+        {
+<span class="nc" id="L348">            return modified;</span>
+        }
+
+        /**
+         * Set the modification status of this update, defaults to {@code true}
+         *
+         * @param modified true if modified
+         */
+        protected void setModified(boolean modified)
+        {
+<span class="nc" id="L358">            this.modified = modified;</span>
+<span class="nc" id="L359">        }</span>
+    }
+
+    /**
+     * Used to construct an UpdateValue command.
+     */
+    public static class Builder
+    {
+        private final Location location;
+<span class="fc" id="L368">        private final Map&lt;FetchValue.Option&lt;?&gt;, Object&gt; fetchOptions = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L369">        private final Map&lt;StoreValue.Option&lt;?&gt;, Object&gt; storeOptions = new HashMap&lt;&gt;();</span>
+        private Update&lt;?&gt; update;
+        private TypeReference&lt;?&gt; typeReference;
+
+        /**
+         * Construct a Builder for an UpdateValue command.
+         *
+         * @param location the location of the object in Riak to update.
+         */
+        public Builder(Location location)
+<span class="fc" id="L379">        {</span>
+<span class="fc" id="L380">            this.location = location;</span>
+<span class="fc" id="L381">        }</span>
+
+        /**
+         * Add an option for the fetch phase of the update.
+         *
+         * @param option the option
+         * @param value  the option's value
+         * @param &lt;U&gt;    the type of the option's value
+         * @return this
+         */
+        public &lt;U&gt; Builder withFetchOption(FetchValue.Option&lt;U&gt; option, U value)
+        {
+<span class="nc" id="L393">            fetchOptions.put(option, value);</span>
+<span class="nc" id="L394">            return this;</span>
+        }
+
+        /**
+         * Add an option for the store phase of the update.
+         *
+         * @param option the option
+         * @param value  the option's value
+         * @param &lt;U&gt;    the type of the option's value
+         * @return this
+         */
+        public &lt;U&gt; Builder withStoreOption(StoreValue.Option&lt;U&gt; option, U value)
+        {
+<span class="nc" id="L407">            storeOptions.put(option, value);</span>
+<span class="nc" id="L408">            return this;</span>
+        }
+
+        /**
+         * Supply the Update.
+         * &lt;p&gt;
+         * During the update operation, the fetched value needs to be converted
+         * before being passed to the {@code ConflictResolver} and the {@code Update}
+         * method.
+         * &lt;p&gt;
+         * &lt;p&gt;
+         * Supplying only an {@code Update&lt;T&gt;} means the raw type of {@code T}
+         * will be used to retrieve the {@code Converter} and {@code ConflictResolver}
+         * to be used.
+         * &lt;/p&gt;
+         *
+         * @param update The {@code Update} instance
+         * @return a reference to this object.
+         * @see com.basho.riak.client.api.convert.Converter
+         * @see com.basho.riak.client.api.convert.ConverterFactory
+         * @see com.basho.riak.client.api.cap.ConflictResolver
+         * @see com.basho.riak.client.api.cap.ConflictResolverFactory
+         */
+        public Builder withUpdate(Update&lt;?&gt; update)
+        {
+<span class="fc" id="L433">            this.update = update;</span>
+<span class="fc" id="L434">            return this;</span>
+        }
+
+        /**
+         * Supply the Update with a TypeReference.
+         * &lt;p&gt;
+         * During the update operation, the fetched value needs to be converted
+         * before being passed to the {@code ConflictResolver} and the {@code Update}
+         * method. If your domain object is a parameterized type you will need to supply
+         * a {@code TypeReference} so the appropriate {@code ConflictResolver}
+         * and {@code Converter} can be found.
+         * &lt;p&gt;
+         *
+         * @param update        The {@code Update} instance
+         * @param typeReference the {@code TypeReference} for the class used for conversion.
+         * @return a reference to this object.
+         * @see com.basho.riak.client.api.convert.Converter
+         * @see com.basho.riak.client.api.convert.ConverterFactory
+         * @see com.basho.riak.client.api.cap.ConflictResolver
+         * @see com.basho.riak.client.api.cap.ConflictResolverFactory
+         */
+        public &lt;T&gt; Builder withUpdate(Update&lt;T&gt; update, TypeReference&lt;T&gt; typeReference)
+        {
+<span class="nc" id="L457">            this.update = update;</span>
+<span class="nc" id="L458">            this.typeReference = typeReference;</span>
+<span class="nc" id="L459">            return this;</span>
+        }
+
+        /**
+         * Set the Riak-side timeout value.
+         * &lt;p&gt;
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for both the
+         * fetch and store operation.
+         * &lt;/p&gt;
+         *
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
+        public Builder withTimeout(int timeout)
+        {
+<span class="nc" id="L475">            withFetchOption(FetchValue.Option.TIMEOUT, timeout);</span>
+<span class="nc" id="L476">            withStoreOption(StoreValue.Option.TIMEOUT, timeout);</span>
+<span class="nc" id="L477">            return this;</span>
+        }
+
+        /**
+         * Construct the UpdateValue command.
+         *
+         * @return a new UpdateValue command.
+         */
+        public UpdateValue build()
+        {
+<span class="fc" id="L487">            return new UpdateValue(this);</span>
+        }
+    }
+
+    private class UpdateValueFuture extends ListenableFuture&lt;UpdateValue.Response, Location&gt;
+            implements RiakFutureListener&lt;StoreValue.Response, Location&gt;
+    {
+        private final Location location;
+<span class="fc" id="L495">        private final CountDownLatch latch = new CountDownLatch(1);</span>
+        private volatile Throwable exception;
+        private volatile Response updateResponse;
+
+        private UpdateValueFuture(Location location)
+<span class="fc" id="L500">        {</span>
+<span class="fc" id="L501">            this.location = location;</span>
+<span class="fc" id="L502">        }</span>
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning)
+        {
+<span class="nc" id="L507">            return false;</span>
+        }
+
+        @Override
+        public Response get() throws InterruptedException, ExecutionException
+        {
+<span class="nc" id="L513">            latch.await();</span>
+
+<span class="nc bnc" id="L515" title="All 2 branches missed.">            if (exception != null)</span>
+            {
+<span class="nc" id="L517">                throw new ExecutionException(exception);</span>
+            }
+            else
+            {
+<span class="nc" id="L521">                return updateResponse;</span>
+            }
+        }
+
+        @Override
+        public Response get(long timeout, TimeUnit unit)
+                throws InterruptedException, ExecutionException, TimeoutException
+        {
+<span class="nc" id="L529">            boolean succeed = latch.await(timeout, unit);</span>
+
+<span class="nc bnc" id="L531" title="All 2 branches missed.">            if (!succeed)</span>
+            {
+<span class="nc" id="L533">                throw new TimeoutException();</span>
+            }
+<span class="nc bnc" id="L535" title="All 2 branches missed.">            else if (exception != null)</span>
+            {
+<span class="nc" id="L537">                throw new ExecutionException(exception);</span>
+            }
+            else
+            {
+<span class="nc" id="L541">                return updateResponse;</span>
+            }
+        }
+
+        @Override
+        public Response getNow()
+        {
+<span class="nc" id="L548">            return updateResponse;</span>
+        }
+
+        @Override
+        public boolean isCancelled()
+        {
+<span class="nc" id="L554">            return false;</span>
+        }
+
+        @Override
+        public boolean isDone()
+        {
+<span class="pc bpc" id="L560" title="1 of 2 branches missed.">            return latch.getCount() != 1;</span>
+        }
+
+        @Override
+        public void await() throws InterruptedException
+        {
+<span class="fc" id="L566">            latch.await();</span>
+<span class="fc" id="L567">        }</span>
+
+        @Override
+        public boolean await(long timeout, TimeUnit unit) throws InterruptedException
+        {
+<span class="nc" id="L572">            return latch.await(timeout, unit);</span>
+        }
+
+        @Override
+        public boolean isSuccess()
+        {
+<span class="pc bpc" id="L578" title="2 of 4 branches missed.">            return isDone() &amp;&amp; exception == null;</span>
+        }
+
+        @Override
+        public Throwable cause()
+        {
+<span class="fc" id="L584">            return exception;</span>
+        }
+
+        private void setResponse(Response response)
+        {
+<span class="nc" id="L589">            this.updateResponse = response;</span>
+<span class="nc" id="L590">            latch.countDown();</span>
+<span class="nc" id="L591">            notifyListeners();</span>
+<span class="nc" id="L592">        }</span>
+
+        private void setException(Throwable t)
+        {
+<span class="fc" id="L596">            this.exception = t;</span>
+<span class="fc" id="L597">            latch.countDown();</span>
+<span class="fc" id="L598">            notifyListeners();</span>
+<span class="fc" id="L599">        }</span>
+
+        @Override
+        public void handle(RiakFuture&lt;StoreValue.Response, Location&gt; f)
+        {
+<span class="nc bnc" id="L604" title="All 2 branches missed.">            if (!f.isSuccess())</span>
+            {
+<span class="nc" id="L606">                setException(f.cause());</span>
+<span class="nc" id="L607">                return;</span>
+            }
+
+            StoreValue.Response storeResponse;
+            try
+            {
+<span class="nc" id="L613">                storeResponse = f.get();</span>
+<span class="nc" id="L614">                Response response = new Response.Builder().withValues(storeResponse.getValues(RiakObject.class))</span>
+<span class="nc" id="L615">                                                          .withLocation(f.getQueryInfo())</span>
+<span class="nc" id="L616">                                                          .withUpdated(true)</span>
+<span class="nc" id="L617">                                                          .build();</span>
+<span class="nc" id="L618">                setResponse(response);</span>
+            }
+<span class="nc" id="L620">            catch (InterruptedException | ExecutionException ex)</span>
+            {
+<span class="nc" id="L622">                setException(ex);</span>
+<span class="nc" id="L623">            }</span>
+<span class="nc" id="L624">        }</span>
+
+        @Override
+        public Location getQueryInfo()
+        {
+<span class="nc" id="L629">            return location;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

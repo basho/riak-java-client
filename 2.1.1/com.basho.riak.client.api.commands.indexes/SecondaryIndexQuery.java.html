@@ -1,0 +1,785 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecondaryIndexQuery.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.indexes</a> &gt; <span class="el_source">SecondaryIndexQuery.java</span></div><h1>SecondaryIndexQuery.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2014 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.commands.indexes;
+
+import com.basho.riak.client.api.StreamableRiakCommand;
+import com.basho.riak.client.api.commands.ChunkedResponseIterator;
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.StreamingRiakFuture;
+import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
+import com.basho.riak.client.core.query.ConvertibleIterator;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.util.BinaryValue;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+/**
+ * A Secondary Index Query.
+ * &lt;p&gt;
+ * Serves as a base class for all 2i queries.
+ * &lt;p&gt;
+ *
+ * @param &lt;S&gt; the type being used for the query.
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @author Alex Moore &lt;amoore at basho dot com&gt;
+ * @author Sergey Galkin &lt;srggal at gmail dot com&gt;
+ * @since 2.0
+ */
+public abstract class SecondaryIndexQuery&lt;T, S extends SecondaryIndexQuery.Response&lt;T, ?&gt;, U extends SecondaryIndexQuery&gt;
+        extends StreamableRiakCommand&lt;S, U, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query&gt;
+{
+    @FunctionalInterface
+    public interface StreamableResponseCreator&lt;T, R extends Response&lt;T, ?&gt;&gt;
+    {
+        R createResponse(Namespace queryLocation,
+                         IndexConverter&lt;T&gt; converter,
+                         int timeout,
+                         StreamingRiakFuture&lt;SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query&gt; coreFuture);
+    }
+
+    @FunctionalInterface
+    public interface GatherableResponseCreator&lt;T, R extends Response&lt;T, ?&gt;&gt;
+    {
+        R createResponse(Namespace queryLocation,
+                         SecondaryIndexQueryOperation.Response coreResponse,
+                         IndexConverter&lt;T&gt; converter);
+    }
+
+    protected final Namespace namespace;
+    protected final String indexName;
+    protected final BinaryValue continuation;
+    protected final T match;
+    protected final T start;
+    protected final T end;
+    protected final Integer maxResults;
+    protected final boolean returnTerms;
+    protected final boolean paginationSort;
+    protected final String termFilter;
+    protected Integer timeout;
+    protected final byte[] coverageContext;
+    protected final boolean returnBody;
+    private final StreamableResponseCreator&lt;T, S&gt; streamableResponseCreator;
+    private final GatherableResponseCreator&lt;T, S&gt; gatherableResponseCreator;
+
+    protected SecondaryIndexQuery(Init&lt;T, ?&gt; builder, StreamableResponseCreator&lt;T,S&gt; streamableCreator,
+                                  GatherableResponseCreator&lt;T,S&gt; gatherableResponseCreator)
+<span class="fc" id="L83">    {</span>
+<span class="fc" id="L84">        this.namespace = builder.namespace;</span>
+<span class="fc" id="L85">        this.indexName = builder.indexName;</span>
+<span class="fc" id="L86">        this.continuation = builder.continuation;</span>
+<span class="fc" id="L87">        this.match = builder.match;</span>
+<span class="fc" id="L88">        this.start = builder.start;</span>
+<span class="fc" id="L89">        this.end = builder.end;</span>
+<span class="fc" id="L90">        this.maxResults = builder.maxResults;</span>
+<span class="fc" id="L91">        this.returnTerms = builder.returnTerms;</span>
+<span class="fc" id="L92">        this.paginationSort = builder.paginationSort;</span>
+<span class="fc" id="L93">        this.termFilter = builder.termFilter;</span>
+<span class="fc" id="L94">        this.timeout = builder.timeout;</span>
+<span class="fc" id="L95">        this.coverageContext = builder.coverageContext;</span>
+<span class="fc" id="L96">        this.returnBody = builder.returnBody;</span>
+<span class="fc" id="L97">        this.streamableResponseCreator = streamableCreator;</span>
+<span class="fc" id="L98">        this.gatherableResponseCreator = gatherableResponseCreator;</span>
+<span class="fc" id="L99">    }</span>
+
+    protected abstract IndexConverter&lt;T&gt; getConverter();
+
+    /**
+     * Get the location for this query.
+     *
+     * @return the location encompassing a bucket and bucket type.
+     */
+    public Namespace getNamespace()
+    {
+<span class="nc" id="L110">        return namespace;</span>
+    }
+
+    /**
+     * Get the full index name for this query.
+     *
+     * @return the index name including Riak suffix.
+     */
+    public String getIndexName()
+    {
+<span class="nc" id="L120">        return indexName;</span>
+    }
+
+    /**
+     * Get the match value supplied for this query.
+     *
+     * @return the single index key to match, or null if not present
+     */
+    public T getMatchValue()
+    {
+<span class="nc" id="L130">        return match;</span>
+    }
+
+    /**
+     * Get the range start value for this query.
+     *
+     * @return the range start, or null if not present.
+     */
+    public T getRangeStart()
+    {
+<span class="nc" id="L140">        return start;</span>
+    }
+
+    /**
+     * Get the range end value for this query.
+     *
+     * @return the range end value, or null if not present
+     */
+    public T getRangeEnd()
+    {
+<span class="nc" id="L150">        return end;</span>
+    }
+
+    /**
+     * Get the max number of results for this query.
+     *
+     * @return the max number of results, or null if not present.
+     */
+    public Integer getMaxResults()
+    {
+<span class="nc" id="L160">        return maxResults;</span>
+    }
+
+    /**
+     * Get whether this query will return both index keys and object keys.
+     *
+     * @return true if specified, false otherwise.
+     */
+    public boolean getReturnKeyAndIndex()
+    {
+<span class="nc" id="L170">        return returnTerms;</span>
+    }
+
+    /**
+     * Get the pagination sort setting.
+     *
+     * @return true if set, false otherwise.
+     */
+    public boolean getPaginationSort()
+    {
+<span class="nc" id="L180">        return paginationSort;</span>
+    }
+
+    /**
+     * Get the regex term filter for this query.
+     *
+     * @return the filter, or null if not set.
+     */
+    public String getTermFilter()
+    {
+<span class="nc" id="L190">        return termFilter;</span>
+    }
+
+    /**
+     * Get the continuation supplied for this query.
+     *
+     * @return the continuation, or null if not set.
+     */
+    public BinaryValue getContinuation()
+    {
+<span class="nc" id="L200">        return continuation;</span>
+    }
+
+    /**
+     * Get the timeout value for this query.
+     *
+     * @return the timeout value, or null if not set.
+     */
+    public Integer getTimeout()
+    {
+<span class="nc" id="L210">        return timeout;</span>
+    }
+
+    @Override
+    protected SecondaryIndexQueryOperation buildCoreOperation(boolean streamResults)
+    {
+<span class="fc" id="L216">        IndexConverter&lt;T&gt; converter = getConverter();</span>
+
+<span class="fc" id="L218">        SecondaryIndexQueryOperation.Query.Builder coreQueryBuilder =</span>
+<span class="fc" id="L219">                new SecondaryIndexQueryOperation.Query.Builder(namespace, BinaryValue.create(indexName))</span>
+<span class="fc" id="L220">                        .withContinuation(continuation)</span>
+<span class="fc" id="L221">                        .withReturnKeyAndIndex(returnTerms)</span>
+<span class="fc" id="L222">                        .withPaginationSort(paginationSort)</span>
+<span class="fc" id="L223">                        .withReturnBody(returnBody);</span>
+
+<span class="fc bfc" id="L225" title="All 2 branches covered.">        if (termFilter != null)</span>
+        {
+<span class="fc" id="L227">            coreQueryBuilder.withRegexTermFilter(BinaryValue.create(termFilter));</span>
+        }
+
+<span class="fc bfc" id="L230" title="All 2 branches covered.">        if (match != null)</span>
+        {
+<span class="fc" id="L232">            coreQueryBuilder.withIndexKey(converter.convert(match));</span>
+        }
+        else
+        {
+<span class="fc" id="L236">            coreQueryBuilder.withRangeStart(converter.convert(start))</span>
+<span class="fc" id="L237">                    .withRangeEnd(converter.convert(end));</span>
+        }
+
+<span class="fc bfc" id="L240" title="All 2 branches covered.">        if (maxResults != null)</span>
+        {
+<span class="fc" id="L242">            coreQueryBuilder.withMaxResults(maxResults);</span>
+        }
+
+<span class="fc bfc" id="L245" title="All 2 branches covered.">        if (timeout != null)</span>
+        {
+<span class="fc" id="L247">            coreQueryBuilder.withTimeout(timeout);</span>
+        }
+
+<span class="pc bpc" id="L250" title="1 of 2 branches missed.">        if (coverageContext != null)</span>
+        {
+<span class="nc" id="L252">            coreQueryBuilder.withCoverageContext(coverageContext);</span>
+        }
+
+<span class="fc" id="L255">        return new SecondaryIndexQueryOperation.Builder(coreQueryBuilder.build()).streamResults(streamResults).build();</span>
+    }
+
+    @Override
+    protected S convertResponse(FutureOperation&lt;SecondaryIndexQueryOperation.Response, ?,
+            SecondaryIndexQueryOperation.Query&gt; request, SecondaryIndexQueryOperation.Response coreResponse)
+    {
+<span class="nc" id="L262">        return gatherableResponseCreator.createResponse(namespace, coreResponse, getConverter());</span>
+    }
+
+    @Override
+    @SuppressWarnings(&quot;unchecked&quot;)
+    protected U convertInfo(SecondaryIndexQueryOperation.Query coreInfo)
+    {
+<span class="nc" id="L269">        return (U)SecondaryIndexQuery.this;</span>
+    }
+
+    @Override
+    protected S createResponse(int timeout, StreamingRiakFuture&lt;SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query&gt; coreFuture)
+    {
+<span class="nc" id="L275">        return streamableResponseCreator.createResponse(namespace, getConverter(), timeout, coreFuture);</span>
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+<span class="nc bnc" id="L281" title="All 2 branches missed.">        if (this == o)</span>
+        {
+<span class="nc" id="L283">            return true;</span>
+        }
+<span class="nc bnc" id="L285" title="All 2 branches missed.">        if (!(o instanceof SecondaryIndexQuery))</span>
+        {
+<span class="nc" id="L287">            return false;</span>
+        }
+
+<span class="nc" id="L290">        SecondaryIndexQuery&lt;?, ?, ?&gt; that = (SecondaryIndexQuery&lt;?, ?, ?&gt;) o;</span>
+
+<span class="nc bnc" id="L292" title="All 2 branches missed.">        if (returnTerms != that.returnTerms)</span>
+        {
+<span class="nc" id="L294">            return false;</span>
+        }
+<span class="nc bnc" id="L296" title="All 2 branches missed.">        if (paginationSort != that.paginationSort)</span>
+        {
+<span class="nc" id="L298">            return false;</span>
+        }
+<span class="nc bnc" id="L300" title="All 6 branches missed.">        if (namespace != null ? !namespace.equals(that.namespace) : that.namespace != null)</span>
+        {
+<span class="nc" id="L302">            return false;</span>
+        }
+<span class="nc bnc" id="L304" title="All 6 branches missed.">        if (indexName != null ? !indexName.equals(that.indexName) : that.indexName != null)</span>
+        {
+<span class="nc" id="L306">            return false;</span>
+        }
+<span class="nc bnc" id="L308" title="All 6 branches missed.">        if (continuation != null ? !continuation.equals(that.continuation) : that.continuation != null)</span>
+        {
+<span class="nc" id="L310">            return false;</span>
+        }
+<span class="nc bnc" id="L312" title="All 6 branches missed.">        if (match != null ? !match.equals(that.match) : that.match != null)</span>
+        {
+<span class="nc" id="L314">            return false;</span>
+        }
+<span class="nc bnc" id="L316" title="All 6 branches missed.">        if (start != null ? !start.equals(that.start) : that.start != null)</span>
+        {
+<span class="nc" id="L318">            return false;</span>
+        }
+<span class="nc bnc" id="L320" title="All 6 branches missed.">        if (end != null ? !end.equals(that.end) : that.end != null)</span>
+        {
+<span class="nc" id="L322">            return false;</span>
+        }
+<span class="nc bnc" id="L324" title="All 6 branches missed.">        if (maxResults != null ? !maxResults.equals(that.maxResults) : that.maxResults != null)</span>
+        {
+<span class="nc" id="L326">            return false;</span>
+        }
+<span class="nc bnc" id="L328" title="All 6 branches missed.">        if (termFilter != null ? !termFilter.equals(that.termFilter) : that.termFilter != null)</span>
+        {
+<span class="nc" id="L330">            return false;</span>
+        }
+<span class="nc bnc" id="L332" title="All 6 branches missed.">        return !(timeout != null ? !timeout.equals(that.timeout) : that.timeout != null);</span>
+    }
+
+    @Override
+    public int hashCode()
+    {
+<span class="nc bnc" id="L338" title="All 2 branches missed.">        int result = namespace != null ? namespace.hashCode() : 0;</span>
+<span class="nc bnc" id="L339" title="All 2 branches missed.">        result = 31 * result + (indexName != null ? indexName.hashCode() : 0);</span>
+<span class="nc bnc" id="L340" title="All 2 branches missed.">        result = 31 * result + (continuation != null ? continuation.hashCode() : 0);</span>
+<span class="nc bnc" id="L341" title="All 2 branches missed.">        result = 31 * result + (match != null ? match.hashCode() : 0);</span>
+<span class="nc bnc" id="L342" title="All 2 branches missed.">        result = 31 * result + (start != null ? start.hashCode() : 0);</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">        result = 31 * result + (end != null ? end.hashCode() : 0);</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">        result = 31 * result + (maxResults != null ? maxResults.hashCode() : 0);</span>
+<span class="nc bnc" id="L345" title="All 2 branches missed.">        result = 31 * result + (returnTerms ? 1 : 0);</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">        result = 31 * result + (paginationSort ? 1 : 0);</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">        result = 31 * result + (termFilter != null ? termFilter.hashCode() : 0);</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">        result = 31 * result + (timeout != null ? timeout.hashCode() : 0);</span>
+<span class="nc" id="L349">        return result;</span>
+    }
+
+    @Override
+    public String toString()
+    {
+<span class="nc" id="L355">        return &quot;SecondaryIndexQuery{&quot; +</span>
+                &quot;, continuation: &quot; + continuation +
+                &quot;, namespace: &quot; + namespace +
+                &quot;, indexName: &quot; + indexName +
+                &quot;, match: &quot; + match +
+                &quot;, start: &quot; + start +
+                &quot;, end: &quot; + end +
+                &quot;, maxResults: &quot; + maxResults +
+                &quot;, returnTerms: &quot; + returnTerms +
+                &quot;, paginationSort: &quot; + paginationSort +
+                &quot;, termFilter: '&quot; + termFilter + '\'' +
+                &quot;, timeout: &quot; + timeout +
+                '}';
+    }
+
+<span class="pc" id="L370">    public enum Type</span>
+    {
+<span class="fc" id="L372">        _INT(&quot;_int&quot;),</span>
+<span class="fc" id="L373">        _BIN(&quot;_bin&quot;),</span>
+<span class="fc" id="L374">        _BUCKET(&quot;&quot;),</span>
+<span class="fc" id="L375">        _KEY(&quot;&quot;);</span>
+
+        private String suffix;
+
+        Type(String suffix)
+<span class="fc" id="L380">        {</span>
+<span class="fc" id="L381">            this.suffix = suffix;</span>
+<span class="fc" id="L382">        }</span>
+
+        @Override
+        public String toString()
+        {
+<span class="fc" id="L387">            return suffix;</span>
+        }
+    }
+
+    protected interface IndexConverter&lt;T&gt;
+    {
+        T convert(BinaryValue input);
+
+        BinaryValue convert(T input);
+    }
+
+    public static abstract class Init&lt;S, T extends Init&lt;S, T&gt;&gt;
+    {
+        private final Namespace namespace;
+        private final String indexName;
+        private volatile BinaryValue continuation;
+        private volatile S match;
+        private volatile S start;
+        private volatile S end;
+        private volatile Integer maxResults;
+        private volatile boolean returnTerms;
+        private volatile boolean paginationSort;
+        private volatile String termFilter;
+        private volatile Integer timeout;
+        private volatile byte[] coverageContext;
+        private volatile boolean returnBody;
+
+        /**
+         * Build a range query.
+         * &lt;p&gt;
+         * Returns all objects in Riak that have an index value
+         * in the specified range.
+         * &lt;/p&gt;
+         *
+         * @param namespace the namespace for this query.
+         * @param indexName the indexname
+         * @param start     the start index value
+         * @param end       the end index value
+         */
+        public Init(Namespace namespace, String indexName, S start, S end)
+<span class="fc" id="L427">        {</span>
+<span class="fc" id="L428">            this.namespace = namespace;</span>
+<span class="fc" id="L429">            this.indexName = indexName;</span>
+<span class="fc" id="L430">            this.start = start;</span>
+<span class="fc" id="L431">            this.end = end;</span>
+<span class="fc" id="L432">        }</span>
+
+        /**
+         * Build a match query.
+         * &lt;p&gt;
+         * Returns all objects in Riak that have an index value matching the
+         * one supplied.
+         * &lt;/p&gt;
+         *
+         * @param namespace the namespace for this query
+         * @param indexName the index name
+         * @param match     the index value.
+         */
+        public Init(Namespace namespace, String indexName, S match)
+<span class="fc" id="L446">        {</span>
+<span class="fc" id="L447">            this.namespace = namespace;</span>
+<span class="fc" id="L448">            this.indexName = indexName;</span>
+<span class="fc" id="L449">            this.match = match;</span>
+<span class="fc" id="L450">        }</span>
+
+        protected abstract T self();
+
+        /**
+         * Build a cover query.
+         * &lt;p&gt;
+         * Returns all objects in Riak related to the provided coverageContext.
+         * &lt;/p&gt;
+         * @param namespace the namespace for this query
+         * @param indexName the index name
+         * @param coverageContext the cover context. An opaque binary received from coverage context entry
+         *                        to be sent back to Riak for receiving appropriate data.
+         */
+        public Init(Namespace namespace, String indexName, byte[] coverageContext)
+<span class="nc" id="L465">        {</span>
+<span class="nc" id="L466">            this.namespace = namespace;</span>
+<span class="nc" id="L467">            this.indexName = indexName;</span>
+<span class="nc" id="L468">            this.coverageContext = coverageContext;</span>
+<span class="nc" id="L469">        }</span>
+
+        /**
+         * Set the continuation for this query.
+         * &lt;p&gt;
+         * The continuation is returned by a previous paginated query.
+         * &lt;/p&gt;
+         *
+         * @param continuation
+         * @return a reference to this object.
+         */
+        public T withContinuation(BinaryValue continuation)
+        {
+<span class="fc" id="L482">            this.continuation = continuation;</span>
+<span class="fc" id="L483">            return self();</span>
+        }
+
+        /**
+         * Set the maximum number of results returned by the query.
+         *
+         * @param maxResults the number of results.
+         * @return a reference to this object.
+         */
+        public T withMaxResults(Integer maxResults)
+        {
+<span class="fc" id="L494">            this.maxResults = maxResults;</span>
+<span class="fc" id="L495">            return self();</span>
+        }
+
+        /**
+         * Set whether to return the index keys with the Riak object keys.
+         * Setting this to true will return both the index key and the Riak
+         * object's key. The default is false (only to return the Riak object keys).
+         *
+         * @param returnBoth true to return both index and object keys, false to return only object keys.
+         * @return a reference to this object.
+         */
+        public T withKeyAndIndex(boolean returnBoth)
+        {
+<span class="fc" id="L508">            this.returnTerms = returnBoth;</span>
+<span class="fc" id="L509">            return self();</span>
+        }
+
+        /**
+         * Set whether to sort the results of a non-paginated 2i query.
+         * &lt;p&gt;
+         * Setting this to true will sort the results in Riak before returning them.
+         * &lt;/p&gt;
+         * &lt;p&gt;
+         * Note that this is not recommended for queries that could return a large
+         * result set; the overhead in Riak is substantial.
+         * &lt;/p&gt;
+         *
+         * @param orderByKey true to sort the results, false to return as-is.
+         * @return a reference to this object.
+         */
+        public T withPaginationSort(boolean orderByKey)
+        {
+<span class="fc" id="L527">            this.paginationSort = orderByKey;</span>
+<span class="fc" id="L528">            return self();</span>
+        }
+
+        /**
+         * Set the regex to filter result terms by for this query.
+         *
+         * @param filter the regex to filter terms by.
+         * @return a reference to this object.
+         */
+        public T withRegexTermFilter(String filter)
+        {
+<span class="fc" id="L539">            this.termFilter = filter;</span>
+<span class="fc" id="L540">            return self();</span>
+        }
+
+        /**
+         * Set the Riak-side timeout value.
+         * &lt;p&gt;
+         * By default, riak has a 60s timeout for operations. Setting
+         * this value will override that default for both the
+         * fetch and store operation.
+         * &lt;/p&gt;
+         *
+         * @param timeout the timeout in milliseconds
+         * @return a reference to this object.
+         */
+        public T withTimeout(int timeout)
+        {
+<span class="fc" id="L556">            this.timeout = timeout;</span>
+<span class="fc" id="L557">            return self();</span>
+        }
+
+        /**
+         * Set the cover context for the local read
+         * @param coverageContext the cover context. An opaque binary received from coverage context entry
+         *                        to be sent back to Riak for receiving appropriate data.
+         * @return a reference to this object.
+         */
+        public T withCoverageContext(byte[] coverageContext)
+        {
+<span class="nc" id="L568">            this.coverageContext = coverageContext;</span>
+<span class="nc" id="L569">            return self();</span>
+        }
+
+        /**
+         * Set whether to return the object values with the Riak object keys.
+         *
+         * It has protected access since, due to performance reasons, it might be used only for the Full Bucket Read
+         * @param returnBody
+         * @return a reference to this object.
+         */
+        protected T withReturnBody(boolean returnBody)
+        {
+<span class="nc" id="L581">            this.returnBody = returnBody;</span>
+<span class="nc" id="L582">            return self();</span>
+        }
+    }
+
+    /**
+     * Base class for all 2i responses.
+     *
+     * @param &lt;T&gt; The type contained in the resposne.
+     */
+    public static class Response&lt;T, E extends Response.Entry&lt;T&gt;&gt;
+            extends StreamableResponse&lt;E, SecondaryIndexQueryOperation.Response.Entry&gt;
+    {
+        final protected IndexConverter&lt;T&gt; converter;
+        final protected SecondaryIndexQueryOperation.Response coreResponse;
+        final protected Namespace queryLocation;
+
+        protected Response(final Namespace queryLocation, IndexConverter&lt;T&gt; converter, final int timeout,
+                 final StreamingRiakFuture&lt;SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query&gt; coreFuture)
+<span class="nc" id="L600">        {</span>
+<span class="nc" id="L601">            this.queryLocation = queryLocation;</span>
+<span class="nc" id="L602">            this.converter = converter;</span>
+<span class="nc" id="L603">            this.coreResponse = null;</span>
+<span class="nc" id="L604">            chunkedResponseIterator = new ChunkedResponseIterator&lt;E, SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Response.Entry&gt;(</span>
+                    coreFuture, timeout, null,
+                    SecondaryIndexQueryOperation.Response::iterator,
+                    SecondaryIndexQueryOperation.Response::getContinuation)
+<span class="nc" id="L608">            {</span>
+                @SuppressWarnings(&quot;unchecked&quot;)
+                @Override
+                public E next()
+                {
+<span class="nc" id="L613">                    final SecondaryIndexQueryOperation.Response.Entry coreEntity = currentIterator.next();</span>
+<span class="nc" id="L614">                    return Response.this.createEntry(Response.this.queryLocation, coreEntity, converter);</span>
+                }
+            };
+<span class="nc" id="L617">        }</span>
+
+        protected Response(Namespace queryLocation,
+                           SecondaryIndexQueryOperation.Response coreResponse,
+                           IndexConverter&lt;T&gt; converter)
+<span class="nc" id="L622">        {</span>
+<span class="nc" id="L623">            this.queryLocation = queryLocation;</span>
+<span class="nc" id="L624">            this.converter = converter;</span>
+<span class="nc" id="L625">            this.coreResponse = coreResponse;</span>
+<span class="nc" id="L626">        }</span>
+
+        /**
+         * Get an iterator over the result data.
+         *
+         * If using the streaming API, this method will block
+         * and wait for more data if none is immediately available.
+         * It is also advisable to check {@link Thread#isInterrupted()}
+         * in environments where thread interrupts must be obeyed.
+         *
+         * @return an iterator over the result data.
+         */
+        public Iterator&lt;E&gt; iterator()
+        {
+<span class="nc bnc" id="L640" title="All 2 branches missed.">            if (isStreaming()) {</span>
+<span class="nc" id="L641">                return super.iterator();</span>
+            }
+
+<span class="nc" id="L644">            return new ConvertibleIterator&lt;SecondaryIndexQueryOperation.Response.Entry, E&gt;(coreResponse.getEntryList().iterator())</span>
+<span class="nc" id="L645">            {</span>
+                @Override
+                protected E convert(SecondaryIndexQueryOperation.Response.Entry e)
+                {
+<span class="nc" id="L649">                    return createEntry(queryLocation, e, converter);</span>
+                }
+            };
+        }
+
+        /**
+         * Check if this response has a continuation.
+         *
+         * If using the streaming API, this property's value
+         * may change while data is being received, therefore
+         * it is best to call it after the operation is complete.
+         *
+         * @return true if the response contains a continuation.
+         */
+        public boolean hasContinuation()
+        {
+<span class="nc bnc" id="L665" title="All 2 branches missed.">            if (isStreaming())</span>
+            {
+<span class="nc" id="L667">                return chunkedResponseIterator.hasContinuation();</span>
+            }
+
+<span class="nc" id="L670">            return coreResponse.hasContinuation();</span>
+        }
+
+        /**
+         * Get the continuation from this response.
+         *
+         * If using the streaming API, this property's value
+         * may change while data is being received, therefore
+         * it is best to call it after the operation is complete.
+         *
+         * @return the continuation, or null if none is present.
+         */
+        public BinaryValue getContinuation()
+        {
+<span class="nc bnc" id="L684" title="All 2 branches missed.">            if (isStreaming())</span>
+            {
+<span class="nc" id="L686">                return chunkedResponseIterator.getContinuation();</span>
+            }
+
+<span class="nc" id="L689">            return coreResponse.getContinuation();</span>
+        }
+
+        /**
+         * Check is this response contains any entries.
+         *
+         * If using the streaming API, this method will block
+         * and wait for more data if none is immediately available.
+         * It is also advisable to check {@link Thread#isInterrupted()}
+         * in environments where thread interrupts must be obeyed.
+         *
+         * @return true if entries are present, false otherwise.
+         */
+        public boolean hasEntries()
+        {
+<span class="nc bnc" id="L704" title="All 2 branches missed.">            if (isStreaming())</span>
+            {
+<span class="nc" id="L706">                return chunkedResponseIterator.hasNext();</span>
+            }
+
+<span class="nc bnc" id="L709" title="All 2 branches missed.">            return !coreResponse.getEntryList().isEmpty();</span>
+        }
+
+        /**
+         * Get a list of the result entries for this response.
+         *
+         * @return A list of result entries.
+         * @throws IllegalStateException when called while using the streaming API.
+         */
+        public final List&lt;E&gt; getEntries()
+        {
+<span class="nc bnc" id="L720" title="All 2 branches missed.">            if(isStreaming())</span>
+            {
+<span class="nc" id="L722">                throw new IllegalStateException(&quot;Use the iterator() while using the streaming API&quot;);</span>
+            }
+
+<span class="nc" id="L725">            final List&lt;SecondaryIndexQueryOperation.Response.Entry&gt; coreEntries = coreResponse.getEntryList();</span>
+<span class="nc" id="L726">            final List&lt;E&gt; convertedList = new ArrayList&lt;&gt;(coreEntries.size());</span>
+
+<span class="nc bnc" id="L728" title="All 2 branches missed.">            for (SecondaryIndexQueryOperation.Response.Entry e : coreEntries)</span>
+            {
+<span class="nc" id="L730">                final E ce = createEntry(queryLocation, e, converter);</span>
+<span class="nc" id="L731">                convertedList.add(ce);</span>
+<span class="nc" id="L732">            }</span>
+<span class="nc" id="L733">            return convertedList;</span>
+        }
+
+        @SuppressWarnings(&quot;unchecked&quot;)
+        protected E createEntry(Location location, SecondaryIndexQueryOperation.Response.Entry coreEntry, IndexConverter&lt;T&gt; converter)
+        {
+<span class="nc" id="L739">            return (E)new Entry(location, coreEntry.getIndexKey(), converter);</span>
+        }
+
+        protected final E createEntry(Namespace namespace, SecondaryIndexQueryOperation.Response.Entry coreEntry, IndexConverter&lt;T&gt; converter)
+        {
+<span class="nc" id="L744">            final Location loc = new Location(queryLocation, coreEntry.getObjectKey());</span>
+<span class="nc" id="L745">            return createEntry(loc, coreEntry, converter);</span>
+        }
+
+        public static class Entry&lt;T&gt;
+        {
+            private final Location riakObjectLocation;
+            private final BinaryValue indexKey;
+            private final IndexConverter&lt;T&gt; converter;
+
+            protected Entry(Location riakObjectLocation, BinaryValue indexKey, IndexConverter&lt;T&gt; converter)
+<span class="nc" id="L755">            {</span>
+<span class="nc" id="L756">                this.riakObjectLocation = riakObjectLocation;</span>
+<span class="nc" id="L757">                this.indexKey = indexKey;</span>
+<span class="nc" id="L758">                this.converter = converter;</span>
+<span class="nc" id="L759">            }</span>
+
+            /**
+             * Get the location for this entry.
+             *
+             * @return the location for this object in Riak.
+             */
+            public Location getRiakObjectLocation()
+            {
+<span class="nc" id="L768">                return riakObjectLocation;</span>
+            }
+
+            /**
+             * Get this 2i key for this entry.
+             * Note this will only be present if the {@literal withKeyAndIndex(true)}
+             * method was used when constructing the query.
+             *
+             * @return The 2i key for this entry or null if not present.
+             */
+            public T getIndexKey()
+            {
+<span class="nc" id="L780">                return converter.convert(indexKey);</span>
+            }
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

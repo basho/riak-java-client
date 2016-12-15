@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConflictResolverFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.cap</a> &gt; <span class="el_source">ConflictResolverFactory.java</span></div><h1>ConflictResolverFactory.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2014 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.cap;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Simple factory for ConflictResolver objects.
+ * &lt;p&gt;
+ * When you have multiple writers there may be multiple versions of the same
+ * object stored in Riak. When fetching all of these will be returned and you
+ * will need to resolve the conflict.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * To facilitate this, you can store an instance of the {@link ConflictResolver}
+ * in this factory for a class. It will then be used by the {@link com.basho.riak.client.api.commands.kv.FetchValue.Response}
+ * to resolve a set a of siblings to a single object.
+ * &lt;/p&gt;
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+<span class="pc" id="L40">public enum ConflictResolverFactory</span>
+{
+<span class="fc" id="L42">    INSTANCE;</span>
+
+<span class="fc" id="L44">    private final Map&lt;Type, ConflictResolver&lt;?&gt;&gt; resolverInstances = new ConcurrentHashMap&lt;&gt;();</span>
+
+    /**
+     * Returns the instance of the ConflictResolverFactory.
+     * @return The ConflictResolverFactory
+     */
+    public static ConflictResolverFactory getInstance()
+    {
+<span class="fc" id="L52">        return INSTANCE;</span>
+    }
+
+    public &lt;T&gt; ConflictResolver&lt;T&gt; getConflictResolver(Class&lt;T&gt; clazz)
+    {
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">        if (clazz == null)</span>
+        {
+<span class="nc" id="L59">            throw new IllegalArgumentException(&quot;clazz cannot be null&quot;);</span>
+        }
+<span class="fc" id="L61">        return getConflictResolver(clazz, null);</span>
+    }
+
+    public &lt;T&gt; ConflictResolver&lt;T&gt; getConflictResolver(TypeReference&lt;T&gt; typeReference)
+    {
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (typeReference == null)</span>
+        {
+<span class="nc" id="L68">            throw new IllegalArgumentException(&quot;typeReference cannot be null&quot;);</span>
+        }
+<span class="nc" id="L70">        return getConflictResolver(null, typeReference);</span>
+    }
+
+    /**
+     * Return the ConflictResolver for the given class.
+     * &lt;p&gt;
+     * If no ConflictResolver is registered for the provided class, an instance of the
+     * {@link com.basho.riak.client.cap.DefaultResolver} is returned.
+     * &lt;/p&gt;
+     * @param &lt;T&gt; The type being resolved
+     * @param clazz the class of the type being resolved
+     * @return The conflict resolver for the type.
+     * @throws UnresolvedConflictException
+     */
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private &lt;T&gt; ConflictResolver&lt;T&gt; getConflictResolver(Type type, TypeReference&lt;T&gt; typeReference)
+    {
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        type = type != null ? type : typeReference.getType();</span>
+
+<span class="fc" id="L89">        ConflictResolver&lt;T&gt; resolver = (ConflictResolver&lt;T&gt;) resolverInstances.get(type);</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (resolver == null)</span>
+        {
+            // Cache this?
+<span class="fc" id="L93">            resolver = (ConflictResolver&lt;T&gt;) new DefaultResolver&lt;T&gt;();</span>
+        }
+
+<span class="fc" id="L96">        return resolver;</span>
+    }
+
+    /**
+     * Register a ConflictResolver.
+     * &lt;p&gt;
+     * The instance provided will be used to resolve siblings for the given type.
+     * &lt;/p&gt;
+     *
+     * @param &lt;T&gt; The type being resolved
+     * @param clazz the class of the type being resolved
+     * @param resolver an instance of a class implementing ConflictResolver.
+     */
+    public &lt;T&gt; void registerConflictResolver(Class&lt;T&gt; clazz, ConflictResolver&lt;T&gt; resolver)
+    {
+<span class="fc" id="L111">        resolverInstances.put(clazz, resolver);</span>
+<span class="fc" id="L112">    }</span>
+
+    public &lt;T&gt; void registerConflictResolver(TypeReference&lt;T&gt; typeReference, ConflictResolver&lt;T&gt; resolver)
+    {
+<span class="nc" id="L116">        resolverInstances.put(typeReference.getType(), resolver);</span>
+<span class="nc" id="L117">    }</span>
+
+    /**
+     * Unregister a ConflictResolver.
+     * @param &lt;T&gt; The type being Resolved
+     * @param clazz the class of the type being resolved.
+     */
+    public &lt;T&gt; void unregisterConflictResolver(Class&lt;T&gt; clazz)
+    {
+<span class="fc" id="L126">        resolverInstances.remove(clazz);</span>
+<span class="fc" id="L127">    }</span>
+
+    public &lt;T&gt; void unregisterConflictResolver(TypeReference&lt;T&gt; typeReference)
+    {
+<span class="nc" id="L131">        resolverInstances.remove(typeReference.getType());</span>
+<span class="nc" id="L132">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

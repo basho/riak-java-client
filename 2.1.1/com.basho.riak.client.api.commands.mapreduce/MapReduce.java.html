@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapReduce.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.mapreduce</a> &gt; <span class="el_source">MapReduce.java</span></div><h1>MapReduce.java</h1><pre class="source lang-java linenums">/*
+ * This file is provided to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.basho.riak.client.api.commands.mapreduce;
+
+import com.basho.riak.client.api.RiakException;
+import com.basho.riak.client.api.StreamableRiakCommand;
+import com.basho.riak.client.api.convert.ConversionException;
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.StreamingRiakFuture;
+import com.basho.riak.client.core.operations.MapReduceOperation;
+import com.basho.riak.client.core.query.functions.Function;
+import com.basho.riak.client.core.util.BinaryValue;
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.TransferQueue;
+
+/**
+ * Base abstract class for all MapReduce commands.
+ * &lt;p&gt; See &lt;a
+ * href=&quot;http://wiki.basho.com/MapReduce.html&quot;&gt;Map/Reduce&lt;/a&gt; for details. &lt;/p&gt;
+ *
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+public abstract class MapReduce extends StreamableRiakCommand.StreamableRiakCommandWithSameInfo&lt;MapReduce.Response, BinaryValue,
+        MapReduceOperation.Response&gt;
+{
+    private final MapReduceSpec spec;
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    protected MapReduce(MapReduceInput input, Builder builder)
+<span class="nc" id="L53">    {</span>
+<span class="nc" id="L54">        this.spec = new MapReduceSpec(input, builder.phases, builder.timeout);</span>
+<span class="nc" id="L55">    }</span>
+
+    @Override
+    protected MapReduceOperation buildCoreOperation(boolean streamResults)
+    {
+        BinaryValue jobSpec;
+        try
+        {
+<span class="nc" id="L63">            String spec = writeSpec();</span>
+<span class="nc" id="L64">            jobSpec = BinaryValue.create(spec);</span>
+        }
+<span class="nc" id="L66">        catch (RiakException e)</span>
+        {
+<span class="nc" id="L68">            throw new RuntimeException(e);</span>
+<span class="nc" id="L69">        }</span>
+
+<span class="nc" id="L71">        return new MapReduceOperation.Builder(jobSpec)</span>
+<span class="nc" id="L72">                .streamResults(streamResults)</span>
+<span class="nc" id="L73">                .build();</span>
+    }
+
+    @Override
+    protected Response convertResponse(FutureOperation&lt;MapReduceOperation.Response, ?, BinaryValue&gt; request,
+                                       MapReduceOperation.Response coreResponse)
+    {
+<span class="nc" id="L80">        return new Response(coreResponse.getResults());</span>
+    }
+
+    @Override
+    protected Response createResponse(int timeout, StreamingRiakFuture&lt;MapReduceOperation.Response, BinaryValue&gt; coreFuture)
+    {
+<span class="nc" id="L86">        return new Response(coreFuture, timeout);</span>
+    }
+
+    /**
+     * Creates the JSON string of the M/R job for submitting to the client
+     * &lt;p/&gt;
+     * Uses Jackson to write out the JSON string. I'm not very happy with this method, it is a candidate for change.
+     * &lt;p/&gt;
+     * TODO re-evaluate this method, look for something smaller and more elegant.
+     *
+     * @return a String of JSON
+     * @throws RiakException if, for some reason, we can't create a JSON string.
+     */
+    String writeSpec() throws RiakException
+    {
+<span class="nc" id="L101">        final ByteArrayOutputStream out = new ByteArrayOutputStream();</span>
+
+        try
+        {
+<span class="nc" id="L105">            JsonGenerator jg = new JsonFactory().createGenerator(out, JsonEncoding.UTF8);</span>
+
+<span class="nc" id="L107">            jg.setCodec(mrObjectMapper);</span>
+
+<span class="nc" id="L109">            List&lt;MapReducePhase&gt; phases = spec.getPhases();</span>
+<span class="nc" id="L110">            phases.get(phases.size() - 1).setKeep(true);</span>
+<span class="nc" id="L111">            jg.writeObject(spec);</span>
+
+<span class="nc" id="L113">            jg.flush();</span>
+
+<span class="nc" id="L115">            return out.toString(&quot;UTF-8&quot;);</span>
+        }
+<span class="nc" id="L117">        catch (IOException e)</span>
+        {
+<span class="nc" id="L119">            throw new RiakException(e);</span>
+        }
+    }
+
+<span class="fc" id="L123">    static ObjectMapper mrObjectMapper = initializeMRObjectMapper();</span>
+
+    private static ObjectMapper initializeMRObjectMapper()
+    {
+<span class="fc" id="L127">        final ObjectMapper objectMapper = new ObjectMapper();</span>
+<span class="fc" id="L128">        final SimpleModule specModule = new SimpleModule(&quot;SpecModule&quot;, Version.unknownVersion());</span>
+<span class="fc" id="L129">        specModule.addSerializer(LinkPhase.class, new LinkPhaseSerializer());</span>
+<span class="fc" id="L130">        specModule.addSerializer(FunctionPhase.class, new FunctionPhaseSerializer());</span>
+<span class="fc" id="L131">        specModule.addSerializer(BucketInput.class, new BucketInputSerializer());</span>
+<span class="fc" id="L132">        specModule.addSerializer(SearchInput.class, new SearchInputSerializer());</span>
+<span class="fc" id="L133">        specModule.addSerializer(BucketKeyInput.class, new BucketKeyInputSerializer());</span>
+<span class="fc" id="L134">        specModule.addSerializer(IndexInput.class, new IndexInputSerializer());</span>
+<span class="fc" id="L135">        specModule.addSerializer(BinaryValue.class, new BinaryValueSerializer());</span>
+<span class="fc" id="L136">        objectMapper.registerModule(specModule);</span>
+
+<span class="fc" id="L138">        return objectMapper;</span>
+    }
+
+    /**
+     * Base abstract class for all MapReduce command builders.
+     */
+<span class="nc" id="L144">    protected static abstract class Builder&lt;T extends Builder&lt;T&gt;&gt;</span>
+    {
+<span class="nc" id="L146">        protected final List&lt;MapReducePhase&gt; phases = new LinkedList&lt;&gt;();</span>
+        protected Long timeout;
+
+        /**
+         * Set the operations timeout
+         *
+         * @param timeout
+         * @return this
+         */
+        public T timeout(long timeout)
+        {
+<span class="nc" id="L157">            this.timeout = timeout;</span>
+<span class="nc" id="L158">            return self();</span>
+        }
+
+        /**
+         * Add {@link MapPhase} to the query
+         *
+         * @param phaseFunction the {@link Function}
+         * @param keep          keep the results and return them with the query results?
+         * @return a reference to this object.
+         */
+        public T withMapPhase(Function phaseFunction, boolean keep)
+        {
+<span class="nc" id="L170">            synchronized (phases)</span>
+            {
+<span class="nc" id="L172">                phases.add(new MapPhase(phaseFunction, keep));</span>
+<span class="nc" id="L173">            }</span>
+
+<span class="nc" id="L175">            return self();</span>
+        }
+
+        /**
+         * Add a MapPhase
+         *
+         * @param phaseFunction the {@link Function}
+         * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
+         * @param keep          if the result should be returned or merely provide input for the next phase.
+         * @return a reference to this object.
+         */
+        public T withMapPhase(Function phaseFunction, Object arg, boolean keep)
+        {
+<span class="nc" id="L188">            synchronized (phases)</span>
+            {
+<span class="nc" id="L190">                phases.add(new MapPhase(phaseFunction, arg, keep));</span>
+<span class="nc" id="L191">            }</span>
+
+<span class="nc" id="L193">            return self();</span>
+        }
+
+        /**
+         * Add a MapPhase
+         *
+         * @param phaseFunction the {@link Function}
+         * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
+         * @return a reference to this object.
+         */
+        public T withMapPhase(Function phaseFunction, Object arg)
+        {
+<span class="nc" id="L205">            synchronized (phases)</span>
+            {
+<span class="nc" id="L207">                phases.add(new MapPhase(phaseFunction, arg));</span>
+<span class="nc" id="L208">            }</span>
+
+<span class="nc" id="L210">            return self();</span>
+        }
+
+        /**
+         * Add a MapPhase
+         *
+         * @param phaseFunction the {@link Function}
+         * @return a reference to this object.
+         */
+        public T withMapPhase(Function phaseFunction)
+        {
+<span class="nc" id="L221">            synchronized (phases)</span>
+            {
+<span class="nc" id="L223">                phases.add(new MapPhase(phaseFunction));</span>
+<span class="nc" id="L224">            }</span>
+
+<span class="nc" id="L226">            return self();</span>
+        }
+
+        /**
+         * Add {@link ReducePhase} to the query
+         *
+         * @param phaseFunction the {@link Function}
+         * @param keep          keep the results and return them with the query results?
+         * @return a reference to this object.
+         */
+        public T withReducePhase(Function phaseFunction, boolean keep)
+        {
+<span class="nc" id="L238">            synchronized (phases)</span>
+            {
+<span class="nc" id="L240">                phases.add(new ReducePhase(phaseFunction, keep));</span>
+<span class="nc" id="L241">            }</span>
+
+<span class="nc" id="L243">            return self();</span>
+        }
+
+        /**
+         * Add a {@link ReducePhase}
+         *
+         * @param phaseFunction the {@link Function}
+         * @param arg           an argument that will be passed to the phase verbatim (Object#toString)
+         * @param keep          if the result should be returned or merely provide input for the next phase.
+         * @return a reference to this object.
+         */
+        public T withReducePhase(Function phaseFunction, Object arg, boolean keep)
+        {
+<span class="nc" id="L256">            synchronized (phases)</span>
+            {
+<span class="nc" id="L258">                phases.add(new ReducePhase(phaseFunction, arg, keep));</span>
+<span class="nc" id="L259">            }</span>
+
+<span class="nc" id="L261">            return self();</span>
+        }
+
+        /**
+         * Add a {@link ReducePhase}
+         *
+         * @param phaseFunction the {@link Function}
+         * @param arg           an argument that will be passed to the phase verbatim
+         * @return a reference to this object.
+         */
+        public T withReducePhase(Function phaseFunction, Object arg)
+        {
+<span class="nc" id="L273">            synchronized (phases)</span>
+            {
+<span class="nc" id="L275">                phases.add(new ReducePhase(phaseFunction, arg));</span>
+<span class="nc" id="L276">            }</span>
+
+<span class="nc" id="L278">            return self();</span>
+        }
+
+        /**
+         * Add a {@link ReducePhase}
+         *
+         * @param phaseFunction
+         * @return a reference to this object.
+         */
+        public T withReducePhase(Function phaseFunction)
+        {
+<span class="nc" id="L289">            synchronized (phases)</span>
+            {
+<span class="nc" id="L291">                phases.add(new ReducePhase(phaseFunction));</span>
+<span class="nc" id="L292">            }</span>
+
+<span class="nc" id="L294">            return self();</span>
+        }
+
+        /**
+         * Add a Link Phase that points to &lt;code&gt;bucket&lt;/code&gt; / &lt;code&gt;tag&lt;/code&gt; .
+         *
+         * @param bucket the bucket at the end of the link (or &quot;_&quot; or &quot;&quot; for wildcard)
+         * @param tag    the tag (or (&quot;_&quot;, or &quot;&quot; for wildcard)
+         * @param keep   to keep the result of this phase and return it at the end of the operation
+         * @return a reference to this object.
+         */
+        public T withLinkPhase(String bucket, String tag, boolean keep)
+        {
+<span class="nc" id="L307">            synchronized (phases)</span>
+            {
+<span class="nc" id="L309">                phases.add(new LinkPhase(bucket, tag, keep));</span>
+<span class="nc" id="L310">            }</span>
+
+<span class="nc" id="L312">            return self();</span>
+        }
+
+        /**
+         * Create a Link Phase that points to &lt;code&gt;bucket&lt;/code&gt; / &lt;code&gt;tag&lt;/code&gt; &lt;code&gt;keep&lt;/code&gt; will be
+         * &lt;code&gt;false&lt;/code&gt;
+         *
+         * @param bucket the bucket at the end of the link (or &quot;_&quot; or &quot;&quot; for wildcard)
+         * @param tag    the tag (or (&quot;_&quot;, or &quot;&quot; for wildcard)
+         * @return a reference to this object.
+         */
+        public T withLinkPhase(String bucket, String tag)
+        {
+<span class="nc" id="L325">            synchronized (phases)</span>
+            {
+<span class="nc" id="L327">                phases.add(new LinkPhase(bucket, tag));</span>
+<span class="nc" id="L328">            }</span>
+
+<span class="nc" id="L330">            return self();</span>
+        }
+
+        protected abstract T self();
+    }
+
+    /**
+     * Response from a MapReduce command.
+     */
+    public static class Response extends StreamableRiakCommand.StreamableResponse&lt;Response, BinaryValue&gt;
+    {
+        private final Map&lt;Integer, ArrayNode&gt; results;
+        private final MapReduceResponseIterator responseIterator;
+
+        Response(StreamingRiakFuture&lt;MapReduceOperation.Response, BinaryValue&gt; coreFuture,
+                          int pollTimeout)
+<span class="nc" id="L346">        {</span>
+<span class="nc" id="L347">            responseIterator = new MapReduceResponseIterator(coreFuture, pollTimeout);</span>
+<span class="nc" id="L348">            results = null;</span>
+<span class="nc" id="L349">        }</span>
+
+        public Response(Map&lt;Integer, ArrayNode&gt; results)
+<span class="nc" id="L352">        {</span>
+<span class="nc" id="L353">            this.results = results;</span>
+<span class="nc" id="L354">            responseIterator = null;</span>
+<span class="nc" id="L355">        }</span>
+
+        @Override
+        public boolean isStreaming()
+        {
+<span class="nc bnc" id="L360" title="All 2 branches missed.">            return responseIterator != null;</span>
+        }
+
+        public boolean hasResultForPhase(int i)
+        {
+<span class="nc" id="L365">            return results.containsKey(i);</span>
+        }
+
+        public ArrayNode getResultForPhase(int i)
+        {
+<span class="nc" id="L370">            return results.get(i);</span>
+        }
+
+        public ArrayNode getResultsFromAllPhases()
+        {
+<span class="nc" id="L375">            return flattenResults();</span>
+        }
+
+        public &lt;T&gt; Collection&lt;T&gt; getResultsFromAllPhases(Class&lt;T&gt; resultType)
+        {
+<span class="nc" id="L380">            ArrayNode flat = flattenResults();</span>
+<span class="nc" id="L381">            ObjectMapper mapper = new ObjectMapper();</span>
+            try
+            {
+<span class="nc" id="L384">                return mapper.readValue(flat.toString(),</span>
+<span class="nc" id="L385">                                        mapper.getTypeFactory().constructCollectionType(Collection.class, resultType));</span>
+            }
+<span class="nc" id="L387">            catch (IOException ex)</span>
+            {
+<span class="nc" id="L389">                throw new ConversionException(&quot;Could not convert Mapreduce response&quot;, ex);</span>
+            }
+        }
+
+        private ArrayNode flattenResults()
+        {
+<span class="nc" id="L395">            final JsonNodeFactory factory = JsonNodeFactory.instance;</span>
+<span class="nc" id="L396">            ArrayNode flatArray = factory.arrayNode();</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">            for (Map.Entry&lt;Integer, ArrayNode&gt; entry : results.entrySet())</span>
+            {
+<span class="nc" id="L399">                flatArray.addAll(entry.getValue());</span>
+<span class="nc" id="L400">            }</span>
+<span class="nc" id="L401">            return flatArray;</span>
+        }
+
+        @Override
+        public Iterator&lt;Response&gt; iterator()
+        {
+<span class="nc bnc" id="L407" title="All 2 branches missed.">            if (isStreaming()) {</span>
+<span class="nc" id="L408">                return responseIterator;</span>
+            }
+
+            // TODO: add support for not streamable responses
+<span class="nc" id="L412">            throw new UnsupportedOperationException(&quot;Iterating is only supported for streamable response.&quot;);</span>
+        }
+
+        private class MapReduceResponseIterator implements Iterator&lt;Response&gt;
+        {
+            final StreamingRiakFuture&lt;MapReduceOperation.Response, BinaryValue&gt; coreFuture;
+            final TransferQueue&lt;MapReduceOperation.Response&gt; resultsQueue;
+            private final int pollTimeout;
+
+            MapReduceResponseIterator(StreamingRiakFuture&lt;MapReduceOperation.Response, BinaryValue&gt; coreFuture,
+                                      int pollTimeout)
+<span class="nc" id="L423">            {</span>
+<span class="nc" id="L424">                this.coreFuture = coreFuture;</span>
+<span class="nc" id="L425">                this.resultsQueue = coreFuture.getResultsQueue();</span>
+<span class="nc" id="L426">                this.pollTimeout = pollTimeout;</span>
+<span class="nc" id="L427">            }</span>
+
+            /**
+             * Returns {@code true} if the iteration has more elements.
+             * (In other words, returns {@code true} if {@link #next} would
+             * return an element rather than throwing an exception.)
+             *
+             * This method will block and wait for more data if none is immediately available.
+             *
+             * &lt;b&gt;Riak Java Client Note:&lt;/b&gt; Since this class polls for
+             * new &quot;streaming&quot; data, it is advisable to check {@link Thread#isInterrupted()}
+             * in environments where thread interrupts must be obeyed.
+             *
+             * @return {@code true} if the iteration has more elements
+             */
+            @Override
+            public boolean hasNext()
+            {
+                // Check &amp; clear interrupted flag so we don't get an
+                // InterruptedException every time if the user
+                // doesn't clear it / deal with it.
+<span class="nc" id="L448">                boolean interrupted = Thread.interrupted();</span>
+                try
+                {
+<span class="nc" id="L451">                    boolean foundEntry = false;</span>
+                    boolean interruptedLastLoop;
+
+                    do
+                    {
+<span class="nc" id="L456">                        interruptedLastLoop = false;</span>
+
+                        try
+                        {
+<span class="nc" id="L460">                            foundEntry = peekWaitForNextQueueEntry();</span>
+                        }
+<span class="nc" id="L462">                        catch (InterruptedException e)</span>
+                        {
+<span class="nc" id="L464">                            interrupted = true;</span>
+<span class="nc" id="L465">                            interruptedLastLoop = true;</span>
+<span class="nc" id="L466">                        }</span>
+<span class="nc bnc" id="L467" title="All 2 branches missed.">                    } while (interruptedLastLoop);</span>
+
+<span class="nc" id="L469">                    return foundEntry;</span>
+                }
+                finally
+                {
+<span class="nc bnc" id="L473" title="All 4 branches missed.">                    if (interrupted)</span>
+                    {
+                        // Reset interrupted flag if we came in with it
+                        // or we were interrupted while waiting.
+<span class="nc" id="L477">                        Thread.currentThread().interrupt();</span>
+                    }
+                }
+            }
+
+            private boolean peekWaitForNextQueueEntry() throws InterruptedException
+            {
+<span class="nc bnc" id="L484" title="All 4 branches missed.">                while (resultsQueue.isEmpty() &amp;&amp; !coreFuture.isDone())</span>
+                {
+<span class="nc bnc" id="L486" title="All 2 branches missed.">                    if (resultsQueue.isEmpty())</span>
+                    {
+<span class="nc" id="L488">                        Thread.sleep(pollTimeout);</span>
+                    }
+                }
+<span class="nc bnc" id="L491" title="All 2 branches missed.">                return !resultsQueue.isEmpty();</span>
+            }
+
+            /**
+             * Returns the next element in the iteration.
+             * This method will block and wait for more data if none is immediately available.
+             *
+             * &lt;b&gt;Riak Java Client Note:&lt;/b&gt; Since this class polls for
+             * new &quot;streaming&quot; data, it is advisable to check {@link Thread#isInterrupted()}
+             * in environments where thread interrupts must be obeyed.
+             *
+             * @return the next element in the iteration
+             * @throws NoSuchElementException if the iteration has no more elements
+             */
+            @Override
+            public Response next()
+            {
+<span class="nc" id="L508">                final MapReduceOperation.Response responseChunk = resultsQueue.remove();</span>
+<span class="nc" id="L509">                return new Response(responseChunk.getResults());</span>
+            }
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

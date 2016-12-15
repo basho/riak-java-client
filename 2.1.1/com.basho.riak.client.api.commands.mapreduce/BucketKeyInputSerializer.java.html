@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BucketKeyInputSerializer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.mapreduce</a> &gt; <span class="el_source">BucketKeyInputSerializer.java</span></div><h1>BucketKeyInputSerializer.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.api.commands.mapreduce;
+
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+
+import java.io.IOException;
+
+/**
+ * Serializes a {@link BucketKeyInput} to a Riak MapReduce JSON format.
+ */
+<span class="fc" id="L14">public class BucketKeyInputSerializer extends JsonSerializer&lt;BucketKeyInput&gt;</span>
+{
+    @Override
+    public void serialize(BucketKeyInput input, JsonGenerator jg, SerializerProvider sp) throws IOException
+    {
+<span class="fc" id="L19">        jg.writeStartArray();</span>
+
+<span class="fc bfc" id="L21" title="All 2 branches covered.">        for (BucketKeyInput.IndividualInput i : input.getInputs())</span>
+        {
+<span class="fc" id="L23">            jg.writeStartArray();</span>
+
+<span class="fc" id="L25">            Location loc = i.location;</span>
+<span class="fc" id="L26">            jg.writeString(loc.getNamespace().getBucketNameAsString());</span>
+<span class="fc" id="L27">            jg.writeString(loc.getKeyAsString());</span>
+<span class="fc" id="L28">            jg.writeObject(i.keyData);</span>
+
+          // TODO: Remove this when bug in Riak is fixed.
+          // There's a bug in Riak where if you explicitly specify
+            // &quot;default&quot; with the 4 argument version of input, it
+            // blows up.
+<span class="fc bfc" id="L34" title="All 2 branches covered.">            if (!loc.getNamespace().getBucketTypeAsString().equals(Namespace.DEFAULT_BUCKET_TYPE))</span>
+            {
+<span class="fc" id="L36">                jg.writeString(loc.getNamespace().getBucketTypeAsString());</span>
+            }
+<span class="fc" id="L38">            jg.writeEndArray();</span>
+<span class="fc" id="L39">        }</span>
+
+<span class="fc" id="L41">        jg.writeEndArray();</span>
+<span class="fc" id="L42">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

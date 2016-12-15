@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KeyIndexQuery.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.indexes</a> &gt; <span class="el_source">KeyIndexQuery.java</span></div><h1>KeyIndexQuery.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.api.commands.indexes;
+
+import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.indexes.IndexNames;
+import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.client.core.util.DefaultCharset;
+
+/**
+ * Performs a 2i query across the special $key index, for a known bucket &amp; range of keys,
+ * and returns the keys within that range in that bucket.
+ * &lt;script src=&quot;https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js&quot;&gt;&lt;/script&gt;
+ * &lt;p&gt;
+ * A KeyIndexQuery is used when you want to fetch a range of keys for a bucket. A namespace and a key range is needed.
+ * &lt;/p&gt;
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ * KeyIndexQuery q = new KeyIndexQuery.Builder(ns, &quot;foo10&quot;, &quot;foo19&quot;).build();
+ * RawIndexquery.Response resp = client.execute(q);}&lt;/pre&gt;
+ *
+ * &lt;p&gt;
+ * You can also stream the results back before the operation is fully complete.
+ * This reduces the time between executing the operation and seeing a result,
+ * and reduces overall memory usage if the iterator is consumed quickly enough.
+ * The result iterable can only be iterated once though.
+ * If the thread is interrupted while the iterator is polling for more results,
+ * a {@link RuntimeException} will be thrown.
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ * KeyIndexQuery q = new KeyIndexQuery.Builder(ns, &quot;foo10&quot;, &quot;foo19&quot;).build();
+ * RiakFuture&lt;RawIndexQuery.StreamingResponse, RawIndexQuery&gt; streamingFuture =
+ *     client.executeAsyncStreaming(q, 200);
+ * RawIndexQuery.StreamingResponse streamingResponse = streamingFuture.get();
+ *
+ * for (BinIndexQuery.Response.Entry e : streamingResponse)
+ * {
+ *     System.out.println(e.getRiakObjectLocation().getKeyAsString());
+ * }
+ * // Wait for the command to fully finish.
+ * streamingFuture.await();
+ * // The StreamingResponse will also contain the continuation, if the operation returned one.
+ * streamingResponse.getContinuation(); }&lt;/pre&gt;
+ * &lt;/p&gt;
+ *
+ * @author Alex Moore &lt;amoore at basho dot com&gt;
+ * @since 2.0.7
+ */
+public class KeyIndexQuery extends RawIndexQuery
+{
+    private KeyIndexQuery(Init&lt;BinaryValue, Builder&gt; builder)
+    {
+<span class="nc" id="L54">        super(builder);</span>
+<span class="nc" id="L55">    }</span>
+
+    public static class Builder extends Init&lt;BinaryValue, Builder&gt;
+    {
+        public Builder(Namespace namespace, String start, String end)
+        {
+<span class="nc" id="L61">            this(namespace,</span>
+<span class="nc" id="L62">                 BinaryValue.unsafeCreate(start.getBytes(DefaultCharset.get())),</span>
+<span class="nc" id="L63">                 BinaryValue.unsafeCreate(end.getBytes(DefaultCharset.get())));</span>
+<span class="nc" id="L64">        }</span>
+
+        public Builder(Namespace namespace, BinaryValue start, BinaryValue end)
+        {
+<span class="nc" id="L68">            super(namespace, IndexNames.KEY, start, end);</span>
+<span class="nc" id="L69">        }</span>
+
+        @Override
+        protected Builder self()
+        {
+<span class="nc" id="L74">            return this;</span>
+        }
+
+        public KeyIndexQuery build()
+        {
+<span class="nc" id="L79">            return new KeyIndexQuery(this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

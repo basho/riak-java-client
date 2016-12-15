@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapUpdate.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.datatypes</a> &gt; <span class="el_source">MapUpdate.java</span></div><h1>MapUpdate.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.api.commands.datatypes;
+
+import com.basho.riak.client.core.query.crdt.ops.MapOp;
+import com.basho.riak.client.core.util.BinaryValue;
+
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * An update to a Riak map datatype.
+ * &lt;p&gt;
+ * When building an {@link UpdateMap} command
+ * this class is used to encapsulate the update to be performed on a
+ * Riak map datatype. It is a composition of other updates.
+ * &lt;/p&gt;
+ *
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+public class MapUpdate implements DatatypeUpdate
+{
+<span class="fc" id="L37">    private final Set&lt;MapOp.MapField&gt; removes = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L38">    private final Set&lt;MapOp.MapUpdate&gt; updates = new HashSet&lt;&gt;();</span>
+
+    /**
+     * Construct an empty MapUpdate.
+     */
+    public MapUpdate()
+<span class="fc" id="L44">    {</span>
+<span class="fc" id="L45">    }</span>
+
+    /**
+     * Update the map in Riak by removing the counter mapped to the provided key.
+     * @param key the key the counter is mapped to.
+     * @return a reference to this object.
+     */
+    public MapUpdate removeCounter(String key)
+    {
+<span class="nc" id="L54">        BinaryValue k = BinaryValue.create(key);</span>
+<span class="nc" id="L55">        removes.add(new MapOp.MapField(MapOp.FieldType.COUNTER, k));</span>
+<span class="nc" id="L56">        return this;</span>
+    }
+
+    /**
+     * Update the map in Riak by removing the register mapped to the provided key.
+     * @param key the key the register is mapped to.
+     * @return a reference to this object.
+     */
+    public MapUpdate removeRegister(String key)
+    {
+<span class="nc" id="L66">        BinaryValue k = BinaryValue.create(key);</span>
+<span class="nc" id="L67">        removes.add(new MapOp.MapField(MapOp.FieldType.REGISTER, k));</span>
+<span class="nc" id="L68">        return this;</span>
+    }
+
+    /**
+     * Update the map in Riak by removing the flag mapped to the provided key.
+     * @param key the key the flag is mapped to.
+     * @return a reference to this object.
+     */
+    public MapUpdate removeFlag(String key)
+    {
+<span class="nc" id="L78">        BinaryValue k = BinaryValue.create(key);</span>
+<span class="nc" id="L79">        removes.add(new MapOp.MapField(MapOp.FieldType.FLAG, k));</span>
+<span class="nc" id="L80">        return this;</span>
+    }
+
+    /**
+     * Update the map in Riak by removing the set mapped to the provided key.
+     * @param key the key the set is mapped to.
+     * @return a reference to this object.
+     */
+    public MapUpdate removeSet(String key)
+    {
+<span class="nc" id="L90">        BinaryValue k = BinaryValue.create(key);</span>
+<span class="nc" id="L91">        removes.add(new MapOp.MapField(MapOp.FieldType.SET, k));</span>
+<span class="nc" id="L92">        return this;</span>
+    }
+
+    /**
+     * Update the map in Riak by removing the map mapped to the provided key.
+     * @param key the key the map is mapped to.
+     * @return a reference to this object.
+     */
+    public MapUpdate removeMap(String key)
+    {
+<span class="nc" id="L102">        BinaryValue k = BinaryValue.create(key);</span>
+<span class="nc" id="L103">        removes.add(new MapOp.MapField(MapOp.FieldType.MAP, k));</span>
+<span class="nc" id="L104">        return this;</span>
+    }
+
+    /**
+     * Update the map in Riak by adding/updating the map mapped to the provided key.
+     * &lt;p&gt;
+     * If there is no map referenced by the key, it is created
+     * &lt;p&gt;
+     *
+     * @param key the key the map is mapped to.
+     * @param builder the update to apply to the map the key is mapped to. If none exists it is created.
+     * @return a reference to this object.
+     */
+    public MapUpdate update(String key, MapUpdate builder)
+    {
+<span class="nc" id="L119">        BinaryValue k = BinaryValue.create(key);</span>
+<span class="nc" id="L120">        updates.add(new MapOp.MapUpdate(new MapOp.MapField(MapOp.FieldType.MAP, k), builder.getOp()));</span>
+<span class="nc" id="L121">        return this;</span>
+    }
+
+    /**
+     * Update the map in Riak by adding/updating the set mapped to the provided key.
+     * &lt;p&gt;
+     * If there is no set referenced by the key, it is created
+     * &lt;p&gt;
+     *
+     * @param key the key the set is mapped to.
+     * @param builder the update to apply to the set the key is mapped to. If none exists it is created.
+     * @return a reference to this object.
+     */
+    public MapUpdate update(String key, SetUpdate builder)
+    {
+<span class="nc" id="L136">        BinaryValue k = BinaryValue.create(key);</span>
+<span class="nc" id="L137">        updates.add(new MapOp.MapUpdate(new MapOp.MapField(MapOp.FieldType.SET, k), builder.getOp()));</span>
+<span class="nc" id="L138">        return this;</span>
+    }
+
+    /**
+     * Update the map in Riak by adding/updating the counter mapped to the provided key.
+     * &lt;p&gt;
+     * If there is no counter referenced by the key, it is created
+     * &lt;p&gt;
+     *
+     * @param key the key the set is mapped to.
+     * @param builder the update to apply to the counter the key is mapped to. If none exists it is created.
+     * @return a reference to this object.
+     */
+    public MapUpdate update(String key, CounterUpdate builder)
+    {
+<span class="nc" id="L153">        BinaryValue k = BinaryValue.create(key);</span>
+<span class="nc" id="L154">        updates.add(new MapOp.MapUpdate(new MapOp.MapField(MapOp.FieldType.COUNTER, k), builder.getOp()));</span>
+<span class="nc" id="L155">        return this;</span>
+    }
+
+     /**
+     * Update the map in Riak by adding/updating the register mapped to the provided key.
+     * &lt;p&gt;
+     * If there is no register referenced by the key, it is created
+     * &lt;p&gt;
+     *
+     * @param key the key the register is mapped to.
+     * @param builder the update to apply to the register the key is mapped to. If none exists it is created.
+     * @return a reference to this object.
+     */
+    public MapUpdate update(String key, RegisterUpdate builder)
+    {
+<span class="nc" id="L170">        BinaryValue k = BinaryValue.create(key);</span>
+<span class="nc" id="L171">        updates.add(new MapOp.MapUpdate(new MapOp.MapField(MapOp.FieldType.REGISTER, k), builder.getOp()));</span>
+<span class="nc" id="L172">        return this;</span>
+    }
+
+    /**
+     * Update the map in Riak by adding/updating the flag mapped to the provided key.
+     * &lt;p&gt;
+     * If there is no flag referenced by the key, it is created
+     * &lt;p&gt;
+     *
+     * @param key the key the register is mapped to.
+     * @param builder the update to apply to the flag the key is mapped to. If none exists it is created.
+     * @return a reference to this object.
+     */
+    public MapUpdate update(String key, FlagUpdate builder)
+    {
+<span class="nc" id="L187">        BinaryValue k = BinaryValue.create(key);</span>
+<span class="nc" id="L188">        updates.add(new MapOp.MapUpdate(new MapOp.MapField(MapOp.FieldType.FLAG, k), builder.getOp()));</span>
+<span class="nc" id="L189">        return this;</span>
+    }
+
+    /**
+     * Returns the core update.
+     * @return the update used by the client core.
+     */
+    @Override
+    public MapOp getOp()
+    {
+<span class="fc" id="L199">        return new MapOp(removes, updates);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

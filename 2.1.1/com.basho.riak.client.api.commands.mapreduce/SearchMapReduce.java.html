@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchMapReduce.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.mapreduce</a> &gt; <span class="el_source">SearchMapReduce.java</span></div><h1>SearchMapReduce.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.api.commands.mapreduce;
+
+/**
+ * Command used to perform a map reduce operation with a search query as input.
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+public class SearchMapReduce extends MapReduce
+{
+    protected SearchMapReduce(SearchInput input, Builder builder)
+    {
+<span class="nc" id="L12">        super(input, builder);</span>
+<span class="nc" id="L13">    }</span>
+
+    /**
+     * Builder for a SearchMapReduce command.
+     */
+<span class="nc" id="L18">    public static class Builder extends MapReduce.Builder&lt;Builder&gt;</span>
+    {
+        private String index;
+        private String query;
+
+        @Override
+        protected Builder self()
+        {
+<span class="nc" id="L26">            return this;</span>
+        }
+
+        /**
+         * Set the index to search.
+         * @param index The index to run the search on
+         * @return a reference to this object.
+         */
+        public Builder withIndex(String index)
+        {
+<span class="nc" id="L36">            this.index = index;</span>
+<span class="nc" id="L37">            return this;</span>
+        }
+
+        /**
+         * Set the query to run.
+         * @param query The query to run
+         * @return a reference to this object.
+         */
+        public Builder withQuery(String query)
+        {
+<span class="nc" id="L47">            this.query = query;</span>
+<span class="nc" id="L48">            return this;</span>
+        }
+
+        /**
+         * Construct a new SearchMapReduce operation.
+         * @return the new SearchMapReduce operation.
+         */
+        public SearchMapReduce build()
+        {
+<span class="nc bnc" id="L57" title="All 2 branches missed.">            if (index == null)</span>
+            {
+<span class="nc" id="L59">                throw new IllegalStateException(&quot;An index must be specified&quot;);</span>
+            }
+
+<span class="nc bnc" id="L62" title="All 2 branches missed.">            if (query == null)</span>
+            {
+<span class="nc" id="L64">                throw new IllegalStateException(&quot;A query must be specified&quot;);</span>
+            }
+
+<span class="nc" id="L67">            return new SearchMapReduce(new SearchInput(index, query), this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

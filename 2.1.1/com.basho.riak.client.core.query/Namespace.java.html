@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Namespace.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.query</a> &gt; <span class="el_source">Namespace.java</span></div><h1>Namespace.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2014 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.core.query;
+
+import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.client.core.util.DefaultCharset;
+
+import java.nio.charset.Charset;
+
+/**
+ * Encapsulates a Riak bucket type and bucket name.
+ * &lt;p&gt;
+ * Riak 2.0 introduced bucket types, which form a namespace in Riak when combined with
+ * a bucket name. This class encapsulates those two items for use with operations.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * Buckets in Riak are automatically created for a type if they do not yet exist.
+ * Bucket types, on the other hand, are not. Anything other than the {@literal default}
+ * bucket type must be explicitly created using the {@literal riak_admin} command line tool.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * Bucket types can only be in UTF-8. Bucket names have no restrictions.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * Buckets in the default bucket type can not hold CRDTs (e.g. Maps, Counters, Sets, etc).
+ * &lt;/p&gt;
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+public class Namespace
+{
+    /**
+     * The default bucket type in Riak.
+     * The Riak default bucket type.
+     * The type is {@value #DEFAULT_BUCKET_TYPE}
+     */
+    public static final String DEFAULT_BUCKET_TYPE = &quot;default&quot;;
+<span class="fc" id="L52">    private static final BinaryValue DEFAULT_TYPE = BinaryValue.createFromUtf8(DEFAULT_BUCKET_TYPE);</span>
+
+    private final BinaryValue type;
+    private final BinaryValue bucket;
+
+    /**
+     * Construct a new Namespace with the provided bucket type and name.
+     * @param bucketType The bucket type in Riak. This must be UTF-8 encoded.
+     * @param bucketName The bucket in Riak.
+     */
+    public Namespace(BinaryValue bucketType, BinaryValue bucketName)
+<span class="fc" id="L63">    {</span>
+<span class="pc bpc" id="L64" title="2 of 4 branches missed.">        if (null == bucketName || bucketName.length() == 0)</span>
+        {
+<span class="nc" id="L66">            throw new IllegalArgumentException(&quot;Bucket name cannot be null or zero length.&quot;);</span>
+        }
+<span class="pc bpc" id="L68" title="2 of 4 branches missed.">        else if (null == bucketType || bucketType.length() == 0)</span>
+        {
+<span class="nc" id="L70">            throw new IllegalArgumentException(&quot;Bucket type cannot be null or zero length.&quot;);</span>
+        }
+<span class="fc" id="L72">        this.bucket = bucketName;</span>
+<span class="fc" id="L73">        this.type = bucketType;</span>
+<span class="fc" id="L74">    }</span>
+
+    /**
+     * Construct a new Namespace with the provided bucket type and name.
+     * &lt;p&gt;
+     * The supplied bucket type will be converted to bytes using UTF-8.
+     * &lt;/p&gt;
+     * &lt;p&gt;
+     * The supplied bucket name is converted to bytes using the supplied charset.
+     * &lt;/p&gt;
+     * @param bucketType The bucket type in Riak. This must be a valid UTF-8 string.
+     * @param bucketName The name of the bucket in Riak.
+     * @param charset the charset used to convert the bucket name to bytes.
+     */
+    public Namespace(String bucketType, String bucketName, Charset charset)
+<span class="fc" id="L89">    {</span>
+<span class="pc bpc" id="L90" title="2 of 4 branches missed.">        if (bucketName == null || bucketName.isEmpty())</span>
+        {
+<span class="nc" id="L92">            throw new IllegalArgumentException(&quot;Bucket name cannot be null or zero length&quot;);</span>
+        }
+<span class="pc bpc" id="L94" title="2 of 4 branches missed.">        else if (bucketType == null || bucketType.isEmpty())</span>
+        {
+<span class="nc" id="L96">            throw new IllegalArgumentException(&quot;Bucket type cannot be null or zero length&quot;);</span>
+        }
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        else if (charset == null)</span>
+        {
+<span class="nc" id="L100">            throw new IllegalArgumentException(&quot;Charset cannot be null&quot;);</span>
+        }
+
+<span class="fc" id="L103">        this.bucket = BinaryValue.create(bucketName, charset);</span>
+<span class="fc" id="L104">        this.type = BinaryValue.createFromUtf8(bucketType);</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Construct a new Namespace with the provided bucket type and name.
+     * &lt;p&gt;
+     * The bucket type will be converted to bytes using UTF-8.
+     * &lt;/p&gt;
+     * &lt;p&gt;
+     * The supplied bucketName is converted to bytes using the default charset.
+     * &lt;/p&gt;
+     * @param bucketType The bucket type in Riak.
+     * @param bucketName The bucket in Riak
+     */
+    public Namespace(String bucketType, String bucketName)
+    {
+<span class="fc" id="L120">        this(bucketType, bucketName, DefaultCharset.get());</span>
+<span class="fc" id="L121">    }</span>
+
+    /**
+     * Construct a new Namespace with the provided bucket name and the default bucket type.
+     * &lt;p&gt;
+     * The Namespace will use the default bucket type and the bucket
+     * name provided.
+     * &lt;/p&gt;
+     * @param bucketName the bucket name in Riak.
+     * @see #DEFAULT_BUCKET_TYPE
+     */
+    public Namespace(BinaryValue bucketName)
+    {
+<span class="fc" id="L134">        this(DEFAULT_TYPE, bucketName);</span>
+<span class="fc" id="L135">    }</span>
+
+    /**
+     * Construct a Namespace with the provided bucket name and the default bucket type.
+     * &lt;p&gt;
+     * The Namespace will use the default bucket type and the bucket
+     * name provided.
+     * &lt;/p&gt;
+     * The supplied bucket name will be converted to bytes using the supplied charset.
+     * &lt;p&gt;
+     * &lt;/p&gt;
+     * @param bucketName the name of the bucket.
+     * @param charset the charset to use to convert the string to bytes.
+     * @see #DEFAULT_BUCKET_TYPE
+     */
+    public Namespace(String bucketName, Charset charset)
+    {
+<span class="fc" id="L152">        this(DEFAULT_BUCKET_TYPE, bucketName, charset);</span>
+<span class="fc" id="L153">    }</span>
+
+    /**
+     * Construct a Namespace with the provided bucket name and the default bucket type.
+     * &lt;p&gt;
+     * The Namespace will use the default bucket type and the bucket
+     * name provided.
+     * &lt;/p&gt;
+     * The supplied bucket name will be converted to bytes using the default charset.
+     * &lt;p&gt;
+     * &lt;/p&gt;
+     * @param bucketName the name of the bucket.
+     * @see #DEFAULT_BUCKET_TYPE
+     */
+    public Namespace(String bucketName)
+    {
+<span class="fc" id="L169">        this(bucketName, DefaultCharset.get());</span>
+<span class="fc" id="L170">    }</span>
+
+    /**
+     * Returns the bucket type for this Namespace.
+     * @return the Riak bucket type.
+     */
+    public BinaryValue getBucketType()
+    {
+<span class="fc" id="L178">        return type;</span>
+    }
+
+    /**
+     * Get the bucket type for this Namespace as a String.
+     * &lt;p&gt;
+     * The default Charset is used to convert to a String.
+     * &lt;/p&gt;
+     * @return The bucket type for this Namespace as a String.
+     */
+    public String getBucketTypeAsString()
+    {
+<span class="fc" id="L190">        return type.toString();</span>
+    }
+
+    /**
+     * Get the bucket type for this Namespace as a String.
+     * &lt;p&gt;
+     * The supplied Charset is used to convert to a String.
+     * &lt;/p&gt;
+     * @param charset The Charset used to convert to a String.
+     * @return The bucket type for this Namespace as a String.
+     */
+    public String getBucketTypeAsString(Charset charset)
+    {
+<span class="nc" id="L203">        return type.toString(charset);</span>
+    }
+
+    /**
+     * Returns the bucket name for this Namespace.
+     * @return the Riak bucket name.
+     */
+    public BinaryValue getBucketName()
+    {
+<span class="fc" id="L212">        return bucket;</span>
+    }
+
+    /**
+     * Get the bucket name for this Namespace as a String.
+     * &lt;p&gt;
+     * The default Charset is used.
+     * &lt;p&gt;
+     * @return the key for this Location as a String.
+     */
+    public String getBucketNameAsString()
+    {
+<span class="fc" id="L224">        return bucket.toString();</span>
+    }
+
+     /**
+     * Get the bucket name for this Namespace as a String.
+     * &lt;p&gt;
+     * The supplied Charset is used.
+     * &lt;p&gt;
+     * @param charset the Charset used to convert to a String.
+     * @return the key for this Location as a String.
+     */
+    public String getBucketNameAsString(Charset charset)
+    {
+<span class="nc" id="L237">        return bucket.toString(charset);</span>
+    }
+
+    @Override
+    public int hashCode()
+    {
+<span class="nc" id="L243">        int hash = 3;</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">        hash = 37 * hash + (this.type != null ? this.type.hashCode() : 0);</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">        hash = 37 * hash + (this.bucket != null ? this.bucket.hashCode() : 0);</span>
+<span class="nc" id="L246">        return hash;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        if (obj == null)</span>
+        {
+<span class="nc" id="L254">            return false;</span>
+        }
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">        if (getClass() != obj.getClass())</span>
+        {
+<span class="nc" id="L258">            return false;</span>
+        }
+<span class="fc" id="L260">        final Namespace other = (Namespace) obj;</span>
+<span class="pc bpc" id="L261" title="5 of 6 branches missed.">        if (this.type != other.type &amp;&amp; (this.type == null || !this.type.equals(other.type)))</span>
+        {
+<span class="nc" id="L263">            return false;</span>
+        }
+<span class="pc bpc" id="L265" title="5 of 6 branches missed.">        if (this.bucket != other.bucket &amp;&amp; (this.bucket == null || !this.bucket.equals(other.bucket)))</span>
+        {
+<span class="nc" id="L267">            return false;</span>
+        }
+<span class="fc" id="L269">        return true;</span>
+    }
+
+    @Override
+    public String toString()
+    {
+<span class="nc" id="L275">        return &quot;{type: &quot; + type + &quot;, bucket: &quot; + bucket + &quot;}&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

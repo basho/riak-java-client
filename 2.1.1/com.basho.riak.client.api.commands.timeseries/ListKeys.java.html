@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ListKeys.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.timeseries</a> &gt; <span class="el_source">ListKeys.java</span></div><h1>ListKeys.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.api.commands.timeseries;
+
+import com.basho.riak.client.api.AsIsRiakCommand;
+import com.basho.riak.client.core.operations.ts.ListKeysOperation;
+import com.basho.riak.client.core.query.timeseries.QueryResult;
+
+/**
+ * Time Series List Keys Command
+ * Allows you to List the Primary Keys in a Time Series Table.
+ *
+ * @author Alex Moore &lt;amoore at basho dot com&gt;
+ * @author Sergey Galkin &lt;srggal at gmail dot com&gt;
+ * @since 2.0.3
+ */
+public class ListKeys extends AsIsRiakCommand&lt;QueryResult, String&gt;
+{
+    private final String tableName;
+    private final int timeout;
+
+    private ListKeys(ListKeys.Builder builder)
+<span class="nc" id="L21">    {</span>
+<span class="nc" id="L22">        this.tableName = builder.tableName;</span>
+<span class="nc" id="L23">        this.timeout = builder.timeout;</span>
+<span class="nc" id="L24">    }</span>
+
+    @Override
+    protected ListKeysOperation buildCoreOperation()
+    {
+<span class="nc" id="L29">        ListKeysOperation.Builder builder = new ListKeysOperation.Builder(tableName);</span>
+
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        if (this.timeout &gt; 0)</span>
+        {
+<span class="nc" id="L33">            builder.withTimeout(this.timeout);</span>
+        }
+
+<span class="nc" id="L36">        return builder.build();</span>
+    }
+
+    /**
+     * Used to construct a Time Series ListKeys command.
+     */
+    public static class Builder
+    {
+        private final String tableName;
+        private int timeout;
+
+        /**
+         * Construct a Builder for a Time Series ListKeys command.
+         * @param tableName Required. The name of the table to list keys from.
+         */
+        public Builder(String tableName)
+<span class="nc" id="L52">        {</span>
+<span class="nc" id="L53">            this.tableName = tableName;</span>
+<span class="nc" id="L54">        }</span>
+
+        /**
+         * Set the Riak-side timeout value.
+         * &lt;p&gt;
+         * By default, Riak has a 60s timeout for operations. Setting
+         * this value will override that default for this operation.
+         * &lt;/p&gt;
+         * @param timeout the timeout in milliseconds to be sent to riak.
+         * @return a reference to this object.
+         */
+        public Builder withTimeout(int timeout)
+        {
+<span class="nc bnc" id="L67" title="All 2 branches missed.">            if (timeout &lt; 1)</span>
+            {
+<span class="nc" id="L69">                throw new IllegalArgumentException(&quot;Timeout must be a positive integer&quot;);</span>
+            }
+
+<span class="nc" id="L72">            this.timeout = timeout;</span>
+<span class="nc" id="L73">            return this;</span>
+        }
+
+        /**
+         * Construct a Time Series ListKeys object.
+         * @return a new Time Series ListKeys instance.
+         */
+        public ListKeys build()
+        {
+<span class="nc" id="L82">            return new ListKeys(this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

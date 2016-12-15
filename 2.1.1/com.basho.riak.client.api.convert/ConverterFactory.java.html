@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConverterFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.convert</a> &gt; <span class="el_source">ConverterFactory.java</span></div><h1>ConverterFactory.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2014 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.convert;
+
+import com.basho.riak.client.core.query.RiakObject;
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Holds instances of converters to be used for serialization / deserialization
+ * of objects stored and fetched from Riak.
+ * &lt;p&gt;
+ * When storing and retrieving your own domain objects to/from Riak, they
+ * need to be serialized / deserialized. By default the {@link JSONConverter}
+ * is provided. This uses the Jackson JSON library to translate your object to/from
+ * JSON. In many cases you will never need to create or register your own
+ * converter with the ConverterFactory.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * In the case you do need custom conversion, you would extend {@link Converter}
+ * and then register it with the ConverterFactory for your classes.
+ * &lt;/p&gt;
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since  2.0
+ */
+<span class="pc" id="L43">public enum ConverterFactory</span>
+{
+<span class="fc" id="L45">    INSTANCE;</span>
+
+<span class="fc" id="L47">    private final Map&lt;Type, Converter&lt;?&gt;&gt; converterInstances =</span>
+        new ConcurrentHashMap&lt;Type, Converter&lt;?&gt;&gt;()
+<span class="fc" id="L49">        {{</span>
+<span class="fc" id="L50">            put(new TypeReference&lt;RiakObject&gt;() {}.getType(), new PassThroughConverter());</span>
+<span class="fc" id="L51">            put(RiakObject.class, new PassThroughConverter());</span>
+<span class="fc" id="L52">            put (new TypeReference&lt;String&gt;() {}.getType(), new StringConverter());</span>
+<span class="fc" id="L53">            put(String.class, new StringConverter());</span>
+<span class="fc" id="L54">        }};</span>
+
+    /**
+     * Get the instance of the ConverterFactory.
+     * @return the ConverterFactory
+     */
+    public static ConverterFactory getInstance()
+    {
+<span class="fc" id="L62">        return INSTANCE;</span>
+    }
+
+    /**
+     * Returns a Converter&lt;T&gt; instance for the supplied class.
+     * &lt;p&gt;
+     * If no converter is registered, the default {@link JSONConverter} is returned.
+     * &lt;/p&gt;
+     * @param &lt;T&gt; The type for the converter
+     * @param type The type used to look up the converter
+     * @return an instance of the converter for this class
+     */
+    public &lt;T&gt; Converter&lt;T&gt; getConverter(Type type)
+    {
+<span class="fc" id="L76">        return getConverter(type, null);</span>
+    }
+
+    /**
+     * Returns a Converter instance for the supplied class.
+     * &lt;p&gt;
+     * If no converter is registered, the default {@link JSONConverter} is returned.
+     * &lt;/p&gt;
+     * @param &lt;T&gt; The type for the converter
+     * @param typeReference the TypeReference for the class being converted.
+     * @return an instance of the converter for this class
+     */
+    public &lt;T&gt; Converter&lt;T&gt; getConverter(TypeReference&lt;T&gt; typeReference)
+    {
+<span class="nc" id="L90">        return getConverter(null, typeReference);</span>
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private &lt;T&gt; Converter&lt;T&gt; getConverter(Type type, TypeReference&lt;T&gt; typeReference)
+    {
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        type = type != null ? type : typeReference.getType();</span>
+
+        Converter&lt;T&gt; converter;
+
+<span class="fc" id="L100">        converter = (Converter&lt;T&gt;) converterInstances.get(type);</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        if (converter == null)</span>
+        {
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">            if (typeReference != null)</span>
+            {
+                // Should we cache this?
+<span class="nc" id="L106">                converter = new JSONConverter&lt;&gt;(typeReference);</span>
+            }
+            else
+            {
+<span class="fc" id="L110">                converter = new JSONConverter&lt;&gt;(type);</span>
+            }
+        }
+
+<span class="fc" id="L114">        return converter;</span>
+    }
+
+    /**
+     * Register a converter for the supplied class.
+     * &lt;p&gt;
+     * This instance be re-used for every conversion.
+     * &lt;/p&gt;
+     * @param &lt;T&gt; The type being converted
+     * @param clazz the class for this converter.
+     * @param converter an instance of Converter
+     */
+    public &lt;T&gt; void registerConverterForClass(Class&lt;T&gt; clazz, Converter&lt;T&gt; converter)
+    {
+<span class="fc" id="L128">        converterInstances.put((Type)clazz, converter);</span>
+<span class="fc" id="L129">    }</span>
+
+    /**
+     * Register a converter for the supplied class.
+     * &lt;p&gt;
+     * This instance be re-used for every conversion.
+     * &lt;/p&gt;
+     * @param &lt;T&gt; The type being converted
+     * @param typeReference the TypeReference for the class being converted.
+     * @param converter an instance of Converter
+     */
+    public &lt;T&gt; void registerConverterForClass(TypeReference&lt;T&gt; typeReference, Converter&lt;T&gt; converter)
+    {
+<span class="nc" id="L142">        Type t = typeReference.getType();</span>
+<span class="nc" id="L143">        converterInstances.put(t, converter);</span>
+<span class="nc" id="L144">    }</span>
+
+    /**
+     * Unregister a converter.
+     * @param &lt;T&gt; The type
+     * @param clazz the class being converted
+     */
+    public &lt;T&gt; void unregisterConverterForClass(Class&lt;T&gt; clazz)
+    {
+<span class="fc" id="L153">        converterInstances.remove((Type)clazz);</span>
+<span class="fc" id="L154">    }</span>
+
+    /**
+     * Unregister a converter.
+     * @param &lt;T&gt; The type
+     * @param typeReference the TypeReference for the class being converted.
+     */
+    public &lt;T&gt; void unregisterConverterForClass(TypeReference&lt;T&gt; typeReference)
+    {
+<span class="nc" id="L163">        Type t = typeReference.getType();</span>
+<span class="nc" id="L164">        converterInstances.remove(t);</span>
+<span class="nc" id="L165">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

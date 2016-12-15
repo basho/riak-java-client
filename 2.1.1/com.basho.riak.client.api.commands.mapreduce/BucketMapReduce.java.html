@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BucketMapReduce.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.mapreduce</a> &gt; <span class="el_source">BucketMapReduce.java</span></div><h1>BucketMapReduce.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.api.commands.mapreduce;
+
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.api.commands.mapreduce.filters.KeyFilter;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Command used to perform a Map Reduce operation over a bucket in Riak.
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+public class BucketMapReduce extends MapReduce
+{
+    protected BucketMapReduce(BucketInput input, Builder builder)
+    {
+<span class="nc" id="L18">        super(input, builder);</span>
+<span class="nc" id="L19">    }</span>
+
+    /**
+     * Builder for a BucketMapReduce command.
+     */
+<span class="nc" id="L24">    public static class Builder extends MapReduce.Builder&lt;Builder&gt;</span>
+    {
+        private Namespace namespace;
+<span class="nc" id="L27">        private final List&lt;KeyFilter&gt; filters = new ArrayList&lt;&gt;();</span>
+
+        @Override
+        protected Builder self()
+        {
+<span class="nc" id="L32">            return this;</span>
+        }
+
+        public Builder withNamespace(Namespace namespace)
+        {
+<span class="nc" id="L37">            this.namespace = namespace;</span>
+<span class="nc" id="L38">            return this;</span>
+        }
+
+        public Builder withKeyFilter(KeyFilter filter)
+        {
+<span class="nc" id="L43">            filters.add(filter);</span>
+<span class="nc" id="L44">            return this;</span>
+        }
+
+        public BucketMapReduce build()
+        {
+<span class="nc bnc" id="L49" title="All 2 branches missed.">            if (namespace == null)</span>
+            {
+<span class="nc" id="L51">                throw new IllegalStateException(&quot;A Namespace must be specified&quot;);</span>
+            }
+
+<span class="nc" id="L54">            return new BucketMapReduce(new BucketInput(namespace, filters), this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

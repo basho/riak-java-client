@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StoreSchema.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.search</a> &gt; <span class="el_source">StoreSchema.java</span></div><h1>StoreSchema.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.api.commands.search;
+
+import com.basho.riak.client.api.AsIsRiakCommand;
+import com.basho.riak.client.core.operations.YzPutSchemaOperation;
+import com.basho.riak.client.core.query.search.YokozunaSchema;
+
+/**
+ * Command used to store a search schema in Riak.
+ * &lt;p&gt;
+ * To store a schema for Solr/Yokozuna in Riak, you must supply a
+ * {@link com.basho.riak.client.core.query.search.YokozunaSchema} that defines the schema.
+ * &lt;/p&gt;
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+public final class StoreSchema extends AsIsRiakCommand&lt;Void, YokozunaSchema&gt;
+{
+    private final YokozunaSchema schema;
+
+    StoreSchema(Builder builder)
+<span class="nc" id="L21">    {</span>
+<span class="nc" id="L22">        this.schema = builder.schema;</span>
+<span class="nc" id="L23">    }</span>
+
+    @Override
+    protected YzPutSchemaOperation buildCoreOperation()
+    {
+<span class="nc" id="L28">        return new YzPutSchemaOperation.Builder(schema).build();</span>
+    }
+
+    /**
+     * Builder for a StoreSchema command.
+     */
+    public static class Builder
+    {
+        private final YokozunaSchema schema;
+
+        /**
+         * Construct a Builder for a StoreSchema command.
+         *
+         * @param schema The schema to be stored to Riak.
+         */
+        public Builder(YokozunaSchema schema)
+<span class="nc" id="L44">        {</span>
+<span class="nc" id="L45">            this.schema = schema;</span>
+<span class="nc" id="L46">        }</span>
+
+        /**
+         * Construct the StoreSchema command.
+         * @return the new StoreSchema command.
+         */
+        public StoreSchema build()
+        {
+<span class="nc" id="L54">            return new StoreSchema(this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

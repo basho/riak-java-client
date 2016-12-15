@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FullBucketRead.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.kv</a> &gt; <span class="el_source">FullBucketRead.java</span></div><h1>FullBucketRead.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2015 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.api.commands.kv;
+
+import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery;
+import com.basho.riak.client.core.StreamingRiakFuture;
+import com.basho.riak.client.core.operations.FetchOperation;
+import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.indexes.IndexNames;
+import com.basho.riak.client.core.util.BinaryValue;
+
+import java.util.List;
+
+/**
+ * Command used to retrieve all values from  Riak bucket.
+ * &lt;p&gt;
+ * Command might be executed with or without
+ * {@link com.basho.riak.client.core.operations.CoveragePlanOperation.Response.CoverageEntry}.
+ * If coverage entry/context is provided, the only primary writes that
+ * related to the coverage context will be returned, otherwise all data will be returned.
+ * All execution options may be used in conjunction with a coverage context.
+ *
+ * Unlike 2i queries, FullBucketRead may return values/objects as part
+ * of the response and, as a result, it has better performance.
+ * To activate this option you need to set the
+ * {@link com.basho.riak.client.api.commands.kv.FullBucketRead.Builder#returnBody} parameter.
+ *
+ * Note that this command must not be used without coverage context
+ * for querying buckets that contain a big amount of data.
+ *
+ * @author Sergey Galkin &lt;srggal at gmail dot com&gt;
+ * @author Alex Moore &lt;amoore at basho dot com&gt;
+ * @see CoveragePlan
+ */
+public class FullBucketRead extends SecondaryIndexQuery&lt;BinaryValue, FullBucketRead.Response, FullBucketRead&gt;
+{
+    private final IndexConverter&lt;BinaryValue&gt; converter;
+
+    protected FullBucketRead(Builder builder)
+    {
+<span class="nc" id="L56">        super(builder.get2iBuilder(), Response::new, Response::new);</span>
+<span class="nc" id="L57">        this.converter = new IndexConverter&lt;BinaryValue&gt;()</span>
+<span class="nc" id="L58">        {</span>
+            @Override
+            public BinaryValue convert(BinaryValue input)
+            {
+<span class="nc" id="L62">                return input;</span>
+            }
+        };
+<span class="nc" id="L65">    }</span>
+
+    @Override
+    protected IndexConverter&lt;BinaryValue&gt; getConverter()
+    {
+<span class="nc" id="L70">        return converter;</span>
+    }
+
+    /**
+     * Builder used to construct a FullBucketRead command.
+     */
+    public static class Builder
+    {
+        private static class BuilderFullBucketRead2i
+                extends SecondaryIndexQuery.Init&lt;BinaryValue, BuilderFullBucketRead2i&gt;
+        {
+            public BuilderFullBucketRead2i(Namespace namespace)
+            {
+<span class="nc" id="L83">                super(namespace, IndexNames.BUCKET, namespace.getBucketName());</span>
+<span class="nc" id="L84">            }</span>
+
+            public BuilderFullBucketRead2i(Namespace namespace, byte[] coverageContext)
+            {
+<span class="nc" id="L88">                super(namespace, IndexNames.BUCKET, coverageContext);</span>
+<span class="nc" id="L89">            }</span>
+
+            @Override
+            protected BuilderFullBucketRead2i self()
+            {
+<span class="nc" id="L94">                return this;</span>
+            }
+
+            @Override
+            public BuilderFullBucketRead2i withReturnBody(boolean returnBody)
+            {
+<span class="nc" id="L100">                return super.withReturnBody(returnBody);</span>
+            }
+        }
+        private final BuilderFullBucketRead2i builder2i;
+
+        /**
+         * Construct a Builder for a FullBucketRead with a cover context.
+         *
+         * &lt;p&gt;
+         * Note that this command mustn't be used without coverage context for querying buckets
+         * that contain a big amount of data.
+         * &lt;p&gt;
+         */
+        public Builder(Namespace namespace)
+<span class="nc" id="L114">        {</span>
+<span class="nc" id="L115">            builder2i = new BuilderFullBucketRead2i(namespace);</span>
+<span class="nc" id="L116">        }</span>
+
+        /**
+         * Construct a Builder for a FullBucketRead with a cover context.
+         * &lt;p&gt;
+         * Note that in case when query executed on the Riak node other than the one specified by the coverage context,
+         * nothing will be returned.
+         * &lt;p&gt;
+         */
+        public Builder(Namespace namespace, byte[] coverageContext)
+<span class="nc" id="L126">        {</span>
+<span class="nc" id="L127">            builder2i = new BuilderFullBucketRead2i(namespace, coverageContext);</span>
+<span class="nc" id="L128">        }</span>
+
+        private BuilderFullBucketRead2i get2iBuilder()
+        {
+<span class="nc" id="L132">            return builder2i;</span>
+        }
+
+        /**
+         * Return the object (including any siblings).
+         * @param returnBody true to return the object.
+         * @return a reference to this object.
+         */
+        public Builder withReturnBody(boolean returnBody)
+        {
+<span class="nc" id="L142">            builder2i.withReturnBody(returnBody);</span>
+<span class="nc" id="L143">            return this;</span>
+        }
+
+        /**
+         * Set the continuation for this query.
+         * &lt;p&gt;
+         * The continuation is returned by a previous paginated query.
+         * &lt;/p&gt;
+         * @param continuation
+         * @return a reference to this object.
+         */
+        public Builder withContinuation(BinaryValue continuation)
+        {
+<span class="nc" id="L156">            builder2i.withContinuation(continuation);</span>
+<span class="nc" id="L157">            return this;</span>
+        }
+
+        /**
+         * Set the maximum number of results returned by the query.
+         * @param maxResults the number of results.
+         * @return a reference to this object.
+         */
+        public Builder withMaxResults(Integer maxResults)
+        {
+<span class="nc" id="L167">            builder2i.withMaxResults(maxResults);</span>
+<span class="nc" id="L168">            return this;</span>
+        }
+
+        /**
+         * Set whether to sort the results of a non-paginated 2i query.
+         * &lt;p&gt;
+         * Setting this to true will sort the results in Riak before returning them.
+         * &lt;/p&gt;
+         * &lt;p&gt;
+         * Note that this is not recommended for queries that could return a large
+         * result set; the overhead in Riak is substantial.
+         * &lt;/p&gt;
+         *
+         * @param orderByKey true to sort the results, false to return as-is.
+         * @return a reference to this object.
+         */
+        public Builder withPaginationSort(boolean orderByKey)
+        {
+<span class="nc" id="L186">            builder2i.withPaginationSort(orderByKey);</span>
+<span class="nc" id="L187">            return this;</span>
+        }
+
+        /**
+         * Construct the query.
+         * @return a new FullBucketRead
+         */
+        public FullBucketRead build()
+        {
+<span class="nc" id="L196">            return new FullBucketRead(this);</span>
+        }
+    }
+
+    public static class Response extends SecondaryIndexQuery.Response&lt;BinaryValue, Response.Entry&gt;
+    {
+<span class="nc" id="L202">        private transient List&lt;Entry&gt; convertedList = null;</span>
+
+        protected Response(Namespace queryLocation, IndexConverter&lt;BinaryValue&gt; converter, final int timeout, StreamingRiakFuture&lt;SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query&gt; coreFuture)
+        {
+<span class="nc" id="L206">            super(queryLocation, converter, timeout, coreFuture);</span>
+<span class="nc" id="L207">        }</span>
+
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter&lt;BinaryValue&gt; converter)
+        {
+<span class="nc" id="L211">            super(queryLocation, coreResponse, converter);</span>
+<span class="nc" id="L212">        }</span>
+
+        @Override
+        protected Entry createEntry(Location location, SecondaryIndexQueryOperation.Response.Entry coreEntry, IndexConverter&lt;BinaryValue&gt; converter)
+        {
+            final FetchValue.Response fr;
+<span class="nc bnc" id="L218" title="All 2 branches missed.">            if (coreEntry.hasBody())</span>
+            {
+<span class="nc" id="L220">                FetchOperation.Response resp = coreEntry.getBody();</span>
+
+                // The following code has been copied from the FetchValue.executeAsync - CoreFutureAdapter
+<span class="nc" id="L223">                fr = new FetchValue.Response.Builder()</span>
+<span class="nc" id="L224">                    .withNotFound(resp.isNotFound())</span>
+<span class="nc" id="L225">                    .withUnchanged(resp.isUnchanged())</span>
+<span class="nc" id="L226">                    .withValues(resp.getObjectList())</span>
+<span class="nc" id="L227">                    .withLocation(location) // for ORM</span>
+<span class="nc" id="L228">                    .build();</span>
+<span class="nc" id="L229">            }</span>
+            else
+            {
+<span class="nc" id="L232">                fr = null;</span>
+            }
+
+<span class="nc" id="L235">            return new Entry(location, fr);</span>
+        }
+
+        public static class Entry extends SecondaryIndexQuery.Response.Entry&lt;BinaryValue&gt;
+        {
+            private final FetchValue.Response fetchedValue;
+
+            public Entry(Location location)
+            {
+<span class="nc" id="L244">                this(location, null);</span>
+<span class="nc" id="L245">            }</span>
+
+            public Entry(Location location, FetchValue.Response fetchedResponse)
+            {
+<span class="nc" id="L249">                super(location, null, null);</span>
+<span class="nc" id="L250">                this.fetchedValue = fetchedResponse;</span>
+<span class="nc" id="L251">            }</span>
+
+            public boolean hasFetchedValue()
+            {
+<span class="nc bnc" id="L255" title="All 2 branches missed.">                return fetchedValue != null;</span>
+            }
+
+            public FetchValue.Response getFetchedValue()
+            {
+<span class="nc" id="L260">                return fetchedValue;</span>
+            }
+
+            @Override
+            public String toString()
+            {
+<span class="nc" id="L266">                return &quot;FullBucketRead.Response.Entry{&quot; +</span>
+<span class="nc" id="L267">                        &quot;location=&quot; + getRiakObjectLocation() +</span>
+<span class="nc" id="L268">                        &quot;, hasFetchedValue=&quot; + hasFetchedValue() +</span>
+                        '}';
+            }
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UpdateHll.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.datatypes</a> &gt; <span class="el_source">UpdateHll.java</span></div><h1>UpdateHll.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2016 Basho Technologies, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.commands.datatypes;
+
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.operations.DtUpdateOperation;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
+import com.basho.riak.client.core.query.crdt.types.RiakHll;
+import com.basho.riak.client.core.util.BinaryValue;
+
+/**
+ * Command used to update or create a HyperLogLog datatype in Riak.
+ * &lt;script src=&quot;https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js&quot;&gt;&lt;/script&gt;
+ * &lt;p&gt;
+ * To update or create a HyperLogLog in Riak you construct a {@link HllUpdate} and use
+ * this command to send it to Riak.
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ *     Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ *     Location loc = new Location(ns, &quot;my_key&quot;);
+ *     HllUpdate update = new HllUpdate().add(&quot;some_new_value&quot;);
+ *
+ *     UpdateHll us = new UpdateHll.Builder(loc, update).withReturnDatatype(true).build();
+ *     UpdateHll.Response resp = client.execute(us);
+ *     RiakHll = resp.getDatatype();
+ * }
+ * &lt;/pre&gt;
+ * &lt;/p&gt;
+ *
+ * @author Alex Moore &lt;amoore at basho dot com&gt;
+ * @since 2.1.0
+ */
+ 
+public class UpdateHll extends UpdateDatatype&lt;RiakHll, UpdateHll.Response&gt;
+{
+    private UpdateHll(Builder builder)
+    {
+<span class="nc" id="L54">        super(builder);</span>
+<span class="nc" id="L55">    }</span>
+
+    @Override
+    protected Response convertResponse(FutureOperation&lt;DtUpdateOperation.Response, ?, Location&gt; request,
+                                       DtUpdateOperation.Response coreResponse)
+    {
+<span class="nc" id="L61">        RiakHll hll = null;</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (coreResponse.hasCrdtElement())</span>
+        {
+<span class="nc" id="L64">            RiakDatatype element = coreResponse.getCrdtElement();</span>
+<span class="nc" id="L65">            hll = element.getAsHll();</span>
+        }
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        BinaryValue returnedKey = coreResponse.hasGeneratedKey()</span>
+<span class="nc" id="L68">            ? coreResponse.getGeneratedKey()</span>
+            : null;
+<span class="nc" id="L70">        Context returnedCtx = null;</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (coreResponse.hasContext())</span>
+        {
+<span class="nc" id="L73">            returnedCtx = new Context(coreResponse.getContext());</span>
+        }
+<span class="nc" id="L75">        return new Response(returnedCtx, hll, returnedKey);</span>
+    }
+
+    /**
+     * Builder used to construct an UpdateHll command.
+     */
+    public static class Builder extends UpdateDatatype.Builder&lt;Builder&gt;
+    {
+        /**
+         * Construct a Builder for an UpdateHll command.
+         * @param location the location of the HyperLogLog in Riak.
+         * @param update the update to apply to the HyperLogLog.
+         */
+        public Builder(Location location, HllUpdate update)
+        {
+<span class="nc" id="L90">            super(location, update);</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            if (update == null)</span>
+            {
+<span class="nc" id="L93">                throw new IllegalArgumentException(&quot;Update cannot be null&quot;);</span>
+            }
+<span class="nc" id="L95">        }</span>
+
+        /**
+         * Constructs a builder for an UpdateHll command with only a Namespace.
+         * &lt;p&gt;
+         * By providing only a Namespace with the update, Riak will create the
+         * HyperLogLog, generate the key, and return it in the response.
+         * &lt;/p&gt;
+         * @param namespace the namespace to create the datatype.
+         * @param update the update to apply
+         * @see Response#getGeneratedKey()
+         */
+        public Builder(Namespace namespace, HllUpdate update)
+        {
+<span class="nc" id="L109">            super(namespace, update);</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">            if (update == null)</span>
+            {
+<span class="nc" id="L112">                throw new IllegalArgumentException(&quot;Update cannot be null&quot;);</span>
+            }
+<span class="nc" id="L114">        }</span>
+
+        /**
+         * Contexts are not used with the Hyperloglog data type
+         * @param unused Unused parameter
+         * @return a copy of this object
+         */
+        @Override
+        public Builder withContext(Context unused)
+        {
+<span class="nc" id="L124">            return this;</span>
+        }
+
+        /**
+         * Construct a new UpdateHll command.
+         * @return a new UpdateHll command.
+         */
+        @Override
+        public UpdateHll build()
+        {
+<span class="nc" id="L134">            return new UpdateHll(this);</span>
+        }
+
+        @Override
+        protected Builder self()
+        {
+<span class="nc" id="L140">            return this;</span>
+        }
+    }
+
+    /**
+     * A response from an UpdateHll command.
+     */
+    public static class Response extends UpdateDatatype.Response&lt;RiakHll&gt;
+    {
+        private Response(Context context, RiakHll datatype, BinaryValue generatedKey)
+        {
+<span class="nc" id="L151">            super(context, datatype, generatedKey);</span>
+<span class="nc" id="L152">        }</span>
+
+        /**
+         * Contexts are not used with the Hyperloglog data type
+         * @return false
+         */
+        @Override
+        public boolean hasContext()
+        {
+<span class="nc" id="L161">            return false;</span>
+        }
+
+        /**
+         * Contexts are not used with the Hyperloglog data type
+         * @return null
+         */
+        @Override
+        public Context getContext()
+        {
+<span class="nc" id="L171">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FetchCounter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.datatypes</a> &gt; <span class="el_source">FetchCounter.java</span></div><h1>FetchCounter.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.commands.datatypes;
+
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.operations.DtFetchOperation;
+import com.basho.riak.client.core.query.Location;
+import com.basho.riak.client.core.query.crdt.types.RiakCounter;
+import com.basho.riak.client.core.query.crdt.types.RiakDatatype;
+
+ /**
+ * Command used to fetch a counter datatype from Riak.
+ * &lt;script src=&quot;https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js&quot;&gt;&lt;/script&gt;
+ * &lt;p&gt;
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ * Location loc = new Location(ns, &quot;my_key&quot;);
+ * FetchCounter fc = new FetchCounter.Builder(loc).build();
+ * FetchCounter.Response resp = client.execute(fc);
+ * Long counter = resp.getDatatype().view();}&lt;/pre&gt;
+ * &lt;/p&gt;
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+public final class FetchCounter extends FetchDatatype&lt;RiakCounter, FetchCounter.Response&gt;
+{
+    private FetchCounter(Builder builder)
+    {
+<span class="nc" id="L45">        super(builder);</span>
+<span class="nc" id="L46">    }</span>
+
+    @Override
+    protected Response convertResponse(FutureOperation&lt;DtFetchOperation.Response, ?, Location&gt; request,
+                                       DtFetchOperation.Response coreResponse)
+    {
+<span class="nc" id="L52">        RiakDatatype element = coreResponse.getCrdtElement();</span>
+
+<span class="nc" id="L54">        Context context = null;</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (coreResponse.hasContext())</span>
+        {
+<span class="nc" id="L57">            context = new Context(coreResponse.getContext());</span>
+        }
+
+<span class="nc" id="L60">        RiakCounter datatype = extractDatatype(element);</span>
+
+<span class="nc" id="L62">        return new Response(datatype, context);</span>
+    }
+
+    @Override
+    public RiakCounter extractDatatype(RiakDatatype element)
+    {
+<span class="nc" id="L68">        return element.getAsCounter();</span>
+    }
+
+    /**
+     * Builder used to construct a FetchCounter command.
+     */
+    public static class Builder extends FetchDatatype.Builder&lt;Builder&gt;
+    {
+        /**
+         * Construct a builder for a FetchCounter command.
+         * @param location the location of the counter in Riak.
+         */
+        public Builder(Location location)
+        {
+<span class="nc" id="L82">            super(location);</span>
+<span class="nc" id="L83">        }</span>
+
+        @Override
+        protected Builder self()
+        {
+<span class="nc" id="L88">            return this;</span>
+        }
+
+        /**
+         * Build a FetchCounter command.
+         * @return a new FetchCounter command.
+         */
+        public FetchCounter build()
+        {
+<span class="nc" id="L97">            return new FetchCounter(this);</span>
+        }
+    }
+
+    /**
+     * Response from a FetchCounter command.
+     * &lt;p&gt;
+     * Encapsulates a RiakCounter returned from the command.
+     * &lt;pre&gt;
+     * {@code
+     * ...
+     * RiakCounter counter = response.getDatatype();
+     * Long value = counter.view();
+     * }
+     * &lt;/pre&gt;
+     * &lt;/p&gt;
+     */
+    public static class Response extends FetchDatatype.Response&lt;RiakCounter&gt;
+    {
+        Response(RiakCounter counter, Context context)
+        {
+<span class="nc" id="L118">            super(counter, context);</span>
+<span class="nc" id="L119">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

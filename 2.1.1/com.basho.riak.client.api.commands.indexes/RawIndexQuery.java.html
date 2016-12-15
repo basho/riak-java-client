@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RawIndexQuery.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.indexes</a> &gt; <span class="el_source">RawIndexQuery.java</span></div><h1>RawIndexQuery.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2014 Brian Roach &lt;roach at basho dot com&gt;.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.basho.riak.client.api.commands.indexes;
+
+import com.basho.riak.client.core.StreamingRiakFuture;
+import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation;
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.util.BinaryValue;
+
+/**
+ * Performs a 2i query where the 2i index keys are raw bytes.
+ * &lt;script src=&quot;https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js&quot;&gt;&lt;/script&gt;
+ * &lt;p&gt;
+ * A RawIndexQuery is used when you are using raw bytes for your 2i keys. The
+ * parameters are provided as BinaryValue objects.
+ * &lt;/p&gt;
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * byte[] bytes = new byte[] { 1,2,3,4};
+ * BinaryValue key = BinaryValue.create(bytes);
+ * Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ * RawIndexQuery q = new RawIndexQuery.Builder(ns, &quot;my_index&quot;, Type._BIN, key).build();
+ * RawIndexquery.Response resp = client.execute(q);}&lt;/pre&gt;
+ *
+ * &lt;p&gt;
+ * You can also stream the results back before the operation is fully complete.
+ * This reduces the time between executing the operation and seeing a result,
+ * and reduces overall memory usage if the iterator is consumed quickly enough.
+ * The result iterable can only be iterated once though.
+ * If the thread is interrupted while the iterator is polling for more results,
+ * a {@link RuntimeException} will be thrown.
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * byte[] bytes = new byte[] { 1,2,3,4};
+ * BinaryValue key = BinaryValue.create(bytes);
+ * Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ * RawIndexQuery q = new RawIndexQuery.Builder(ns, &quot;my_index&quot;, Type._BIN, key).build();
+ * RiakFuture&lt;RawIndexQuery.StreamingResponse, RawIndexQuery&gt; streamingFuture =
+ *     client.executeAsyncStreaming(q, 200);
+ * RawIndexQuery.StreamingResponse streamingResponse = streamingFuture.get();
+ *
+ * for (RawIndexQuery.Response.Entry e : streamingResponse)
+ * {
+ *     System.out.println(e.getRiakObjectLocation().getKey().toString());
+ * }
+ * // Wait for the command to fully finish.
+ * streamingFuture.await();
+ * // The StreamingResponse will also contain the continuation, if the operation returned one.
+ * streamingResponse.getContinuation(); }&lt;/pre&gt;
+ * &lt;/p&gt;
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @author Alex Moore &lt;amoore at basho dot com&gt;
+ * @author Sergey Galkin &lt;srggal at gmail dot com&gt;
+ * @since 2.0
+ */
+public class RawIndexQuery extends SecondaryIndexQuery&lt;BinaryValue, RawIndexQuery.Response, RawIndexQuery&gt;
+{
+    private final IndexConverter&lt;BinaryValue&gt; converter;
+
+    protected RawIndexQuery(Init&lt;BinaryValue,?&gt; builder)
+    {
+<span class="fc" id="L77">        super(builder, Response::new, Response::new);</span>
+<span class="fc" id="L78">        this.converter = new IndexConverter&lt;BinaryValue&gt;()</span>
+<span class="fc" id="L79">        {</span>
+            @Override
+            public BinaryValue convert(BinaryValue input)
+            {
+<span class="fc" id="L83">                return input;</span>
+            }
+        };
+<span class="fc" id="L86">    }</span>
+
+    @Override
+    protected IndexConverter&lt;BinaryValue&gt; getConverter()
+    {
+<span class="fc" id="L91">        return converter;</span>
+    }
+
+    /**
+     * Builder used to construct a RawIndexQuery command.
+     */
+    public static class Builder extends SecondaryIndexQuery.Init&lt;BinaryValue, Builder&gt;
+    {
+        /**
+         * Construct a Builder for a RawIndexQuery with a range.
+         * &lt;p&gt;
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension as these are supplied by the type.
+         * &lt;p&gt;
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The index name in Riak to query.
+         * @param type The Riak index type.
+         * @param start The start of the 2i range.
+         * @param end The end of the 2i range.
+         */
+        public Builder(Namespace namespace, String indexName, Type type, BinaryValue start, BinaryValue end)
+        {
+<span class="fc" id="L113">            super(namespace, indexName + type, start, end);</span>
+<span class="fc" id="L114">        }</span>
+
+        /**
+         * Construct a Builder for a RawIndexQuery with a single 2i key.
+         * &lt;p&gt;
+         * Note that your index name should not include the Riak {@literal _int} or
+         * {@literal _bin} extension as these are supplied by the type.
+         * &lt;p&gt;
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The index name in Riak to query.
+         * @param type The Riak index type.
+         * @param match The 2i key to query.
+         */
+        public Builder(Namespace namespace, String indexName, Type type, BinaryValue match)
+        {
+<span class="fc" id="L129">            super(namespace, indexName + type, match);</span>
+<span class="fc" id="L130">        }</span>
+
+        @Override
+        protected Builder self()
+        {
+<span class="nc" id="L135">            return this;</span>
+        }
+
+        /**
+         * Construct the query.
+         * @return a new RawIndexQuery
+         */
+        public RawIndexQuery build()
+        {
+<span class="fc" id="L144">            return new RawIndexQuery(this);</span>
+        }
+    }
+
+    public static class Response extends SecondaryIndexQuery.Response&lt;BinaryValue, SecondaryIndexQuery.Response.Entry&lt;BinaryValue&gt;&gt;
+    {
+        Response(Namespace queryLocation, IndexConverter&lt;BinaryValue&gt; converter, int timeout, StreamingRiakFuture&lt;SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query&gt; coreFuture)
+        {
+<span class="nc" id="L152">            super(queryLocation, converter, timeout, coreFuture);</span>
+<span class="nc" id="L153">        }</span>
+
+        protected Response(Namespace queryLocation, SecondaryIndexQueryOperation.Response coreResponse, IndexConverter&lt;BinaryValue&gt; converter)
+        {
+<span class="nc" id="L157">            super(queryLocation, coreResponse, converter);</span>
+<span class="nc" id="L158">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

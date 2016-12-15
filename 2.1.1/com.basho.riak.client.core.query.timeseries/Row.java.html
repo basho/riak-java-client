@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Row.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.query.timeseries</a> &gt; <span class="el_source">Row.java</span></div><h1>Row.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.core.query.timeseries;
+
+import com.basho.riak.protobuf.RiakTsPB;
+
+import java.util.*;
+
+/**
+ * Holds a collection of Cells, grouped by a primary key in Riak.
+ * Immutable once created.
+ * @author Alex Moore &lt;amoore at basho dot com&gt;
+ * @author Sergey Galkin &lt;srggal at gmail dot com&gt;
+ * @since 2.0.3
+ */
+<span class="pc bpc" id="L14" title="1 of 2 branches missed.">public class Row implements Iterable&lt;Cell&gt;</span>
+{
+    private final RiakTsPB.TsRow pbRow;
+    private final Iterable&lt;RiakTsPB.TsColumnDescription&gt; pbColumnDescriptions;
+    private final Iterable&lt;Cell&gt; cells;
+    private final int cellCount;
+
+    /**
+     * Create a new row.
+     * @param cells the collection of cells that make up the row.
+     */
+    public Row(Iterable&lt;Cell&gt; cells)
+<span class="nc" id="L26">    {</span>
+<span class="nc" id="L27">        this.pbRow = null;</span>
+<span class="nc" id="L28">        this.pbColumnDescriptions = null;</span>
+<span class="nc" id="L29">        this.cells = cells;</span>
+<span class="nc" id="L30">        int cellCount = 0;</span>
+
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        for (Cell ignored : this.cells)</span>
+        {
+<span class="nc" id="L34">            cellCount++;</span>
+<span class="nc" id="L35">        }</span>
+
+<span class="nc" id="L37">        this.cellCount = cellCount;</span>
+<span class="nc" id="L38">    }</span>
+
+    /**
+     * Create a new row.
+     * @param cells the varargs collection of cells that make up the row.
+     */
+    public Row(Cell... cells)
+<span class="fc" id="L45">    {</span>
+<span class="fc" id="L46">        this.pbRow = null;</span>
+<span class="fc" id="L47">        this.pbColumnDescriptions = null;</span>
+<span class="fc" id="L48">        this.cells = Arrays.asList(cells);</span>
+<span class="fc" id="L49">        cellCount = cells.length;</span>
+<span class="fc" id="L50">    }</span>
+
+    Row(RiakTsPB.TsRow pbRow, Iterable&lt;RiakTsPB.TsColumnDescription&gt; pbColumnDescriptions)
+<span class="fc" id="L53">    {</span>
+<span class="fc" id="L54">        this.pbRow = pbRow;</span>
+<span class="fc" id="L55">        this.pbColumnDescriptions = pbColumnDescriptions;</span>
+<span class="fc" id="L56">        cells = null;</span>
+<span class="fc" id="L57">        cellCount = pbRow.getCellsCount();</span>
+<span class="fc" id="L58">    }</span>
+
+    /**
+     * Get the number of cells in this row.
+     * @return the count of cells in this row.
+     */
+    public int getCellsCount()
+    {
+<span class="fc" id="L66">        return cellCount;</span>
+    }
+
+    /**
+     * Get a shallow copy of the cells in this row.
+     * @return a List&amp;lt;Cell&amp;gt; shallow copy of the cells in this row.
+     */
+    public List&lt;Cell&gt; getCellsCopy()
+    {
+<span class="fc" id="L75">        final ArrayList&lt;Cell&gt; cells = new ArrayList&lt;&gt;(this.getCellsCount());</span>
+
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        for (Cell c: this)</span>
+        {
+<span class="fc" id="L79">            cells.add(c);</span>
+<span class="fc" id="L80">        }</span>
+<span class="fc" id="L81">        return cells;</span>
+    }
+
+    public RiakTsPB.TsRow getPbRow()
+    {
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        if (pbRow != null)</span>
+        {
+<span class="nc" id="L88">            return pbRow;</span>
+        }
+
+<span class="fc" id="L91">        RiakTsPB.TsRow.Builder builder = RiakTsPB.TsRow.newBuilder();</span>
+<span class="fc" id="L92">        builder.addAllCells(ConvertibleIterable.asIterablePbCell(cells));</span>
+<span class="fc" id="L93">        return builder.build();</span>
+    }
+
+    /**
+     * An iterator of the Cells in this row.
+     * @return an iterator.
+     */
+    @Override
+    public Iterator&lt;Cell&gt; iterator()
+    {
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        if (cells != null)</span>
+        {
+<span class="fc" id="L105">            return cells.iterator();</span>
+        }
+        else // if (pbRow != null)
+        {
+<span class="pc bpc" id="L109" title="2 of 4 branches missed.">            assert pbRow != null;</span>
+
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">            return ConvertibleIteratorUtils.iterateAsCell(pbRow.getCellsList().iterator(),</span>
+                    // if there is no ColumnDescription what else we could do with that?
+<span class="pc" id="L113">                    pbColumnDescriptions == null ?  Collections.emptyIterator() : pbColumnDescriptions.iterator());</span>
+        }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        if (this == o)</span>
+        {
+<span class="nc" id="L122">            return true;</span>
+        }
+<span class="pc bpc" id="L124" title="2 of 4 branches missed.">        if (o == null || getClass() != o.getClass())</span>
+        {
+<span class="nc" id="L126">            return false;</span>
+        }
+
+<span class="fc" id="L129">        Row cells1 = (Row) o;</span>
+
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        if (cellCount != cells1.cellCount)</span>
+        {
+<span class="nc" id="L133">            return false;</span>
+        }
+<span class="fc" id="L135">        return getCellsCopy().equals(cells1.getCellsCopy());</span>
+    }
+
+    @Override
+    public int hashCode()
+    {
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        int result = pbRow != null ? pbRow.hashCode() : 0;</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        result = 31 * result + (cells != null ? cells.hashCode() : 0);</span>
+<span class="nc" id="L143">        result = 31 * result + cellCount;</span>
+<span class="nc" id="L144">        return result;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

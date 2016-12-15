@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BucketIndexQuery.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.indexes</a> &gt; <span class="el_source">BucketIndexQuery.java</span></div><h1>BucketIndexQuery.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.api.commands.indexes;
+
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.core.query.indexes.IndexNames;
+
+/**
+ * Performs a 2i query across the special $bucket index, for a known bucket, and returns the keys in that bucket.
+ * &lt;script src=&quot;https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js&quot;&gt;&lt;/script&gt;
+ * &lt;p&gt;
+ * A BucketIndexQuery is used when you want to fetch all the keys for a bucket. Only a namespace is needed.
+ * &lt;/p&gt;
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ * BucketIndexQuery q = new BucketIndexQuery.Builder(ns).build();
+ * RawIndexquery.Response resp = client.execute(q);}&lt;/pre&gt;
+ *
+ * &lt;p&gt;
+ * You can also stream the results back before the operation is fully complete.
+ * This reduces the time between executing the operation and seeing a result,
+ * and reduces overall memory usage if the iterator is consumed quickly enough.
+ * The result iterable can only be iterated once though.
+ * If the thread is interrupted while the iterator is polling for more results,
+ * a {@link RuntimeException} will be thrown.
+ * &lt;pre class=&quot;prettyprint&quot;&gt;
+ * {@code
+ * Namespace ns = new Namespace(&quot;my_type&quot;, &quot;my_bucket&quot;);
+ * BucketIndexQuery q = new BucketIndexQuery.Builder(ns).build();
+ * RiakFuture&lt;BinIndexQuery.StreamingResponse, BinIndexQuery&gt; streamingFuture =
+ *     client.executeAsyncStreaming(q, 200);
+ * BinIndexQuery.StreamingResponse streamingResponse = streamingFuture.get();
+ *
+ * for (BinIndexQuery.Response.Entry e : streamingResponse)
+ * {
+ *     System.out.println(e.getRiakObjectLocation().getKey().toString());
+ * }
+ * // Wait for the command to fully finish.
+ * streamingFuture.await();
+ * // The StreamingResponse will also contain the continuation, if the operation returned one.
+ * streamingResponse.getContinuation(); }&lt;/pre&gt;
+ * &lt;/p&gt;
+ *
+ * @author Alex Moore &lt;amoore at basho dot com&gt;
+ * @since 2.0.7
+ */
+public class BucketIndexQuery extends BinIndexQuery
+{
+    private BucketIndexQuery(Init&lt;String, Builder&gt; builder)
+    {
+<span class="nc" id="L50">        super(builder);</span>
+<span class="nc" id="L51">    }</span>
+
+    public static class Builder extends BinIndexQuery.Init&lt;String, Builder&gt;
+    {
+        public Builder(Namespace namespace)
+        {
+<span class="nc" id="L57">            super(namespace, IndexNames.BUCKET, namespace.getBucketName().toStringUtf8());</span>
+<span class="nc" id="L58">        }</span>
+
+        public Builder(Namespace namespace, byte[] coverContext)
+        {
+<span class="nc" id="L62">            super(namespace, IndexNames.BUCKET, coverContext);</span>
+<span class="nc" id="L63">        }</span>
+
+        @Override
+        protected Builder self()
+        {
+<span class="nc" id="L68">            return this;</span>
+        }
+
+        public BucketIndexQuery build()
+        {
+<span class="nc" id="L73">            return new BucketIndexQuery(this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

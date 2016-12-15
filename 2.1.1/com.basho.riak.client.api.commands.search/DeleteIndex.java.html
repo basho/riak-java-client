@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DeleteIndex.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.search</a> &gt; <span class="el_source">DeleteIndex.java</span></div><h1>DeleteIndex.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.api.commands.search;
+
+import com.basho.riak.client.api.AsIsRiakCommand;
+import com.basho.riak.client.core.operations.YzDeleteIndexOperation;
+
+/**
+ * Command used to delete a search index in Riak.
+ * @author Dave Rusek &lt;drusek at basho dot com&gt;
+ * @since 2.0
+ */
+public final class DeleteIndex extends AsIsRiakCommand&lt;Void, String&gt;
+{
+    private final String index;
+
+    DeleteIndex(Builder builder)
+<span class="nc" id="L16">    {</span>
+<span class="nc" id="L17">        this.index = builder.index;</span>
+<span class="nc" id="L18">    }</span>
+
+    @Override
+    protected YzDeleteIndexOperation buildCoreOperation() {
+<span class="nc" id="L22">        return new YzDeleteIndexOperation.Builder(index).build();</span>
+    }
+
+    /**
+     * Builder for a DeleteIndex command.
+     */
+    public static class Builder
+    {
+        private final String index;
+
+        /**
+         * Construct a Builder for a DeleteIndex command.
+         *
+         * @param index The name of the search index to delete from Riak.
+         */
+        public Builder(String index)
+<span class="nc" id="L38">        {</span>
+<span class="nc" id="L39">            this.index = index;</span>
+<span class="nc" id="L40">        }</span>
+
+        /**
+         * Construct the DeleteIndex command.
+         * @return the new DeleteIndex command.
+         */
+        public DeleteIndex build()
+        {
+<span class="nc" id="L48">            return new DeleteIndex(this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

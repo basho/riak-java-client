@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RiakIndex.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.query.indexes</a> &gt; <span class="el_source">RiakIndex.java</span></div><h1>RiakIndex.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.core.query.indexes;
+
+import com.basho.riak.client.core.util.BinaryValue;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Abstract base class for modeling a Riak Secondary Index (2i).
+ *
+ * &lt;p&gt; Secondary Indexing (2i) in Riak gives developers the ability, at write
+ * time, to tag an object stored in Riak with one or more queryable values.
+ * Since the KV data is completely opaque to 2i, the user must tell 2i exactly
+ * what attribute to index on and what its index value should be, via key/value
+ * metadata. This is different from Search, which parses the data and builds
+ * indexes based on a schema. Riak 2i currently requires the LevelDB or Memory
+ * backend.
+ * &lt;/p&gt;
+ * &lt;p&gt; A {@code RiakIndex} is made up of the index name, a type,
+ * then one or more queryable index values.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * {@code RiakIndex} instances are created and managed via the {@link RiakIndexes}
+ * container.
+ * &lt;/p&gt;
+ * &lt;br/&gt;&lt;b&gt;Thread Safety:&lt;/b&gt;&lt;br/&gt; This class is designed to be thread safe.
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ * @see RiakIndexes
+ * @see &lt;a
+ * href=&quot;http://docs.basho.com/riak/latest/dev/using/2i/&quot;&gt;Using Secondary
+ * Indexes in Riak&lt;/a&gt;
+ */
+public abstract class RiakIndex&lt;T&gt; implements Iterable&lt;T&gt;
+{
+    private final Set&lt;BinaryValue&gt; values;
+    private final IndexType type;
+    private final String name;
+
+    /**
+     * Constructs a RiakIndex from the supplied RiakIndex.Name
+     * @param name A {@link Name} to build this RiakIndex from.
+     */
+    protected RiakIndex(Name&lt;?&gt; name)
+<span class="fc" id="L64">    {</span>
+<span class="fc" id="L65">        this.name = name.name;</span>
+<span class="fc" id="L66">        this.type = name.type;</span>
+
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (name.values != null)</span>
+        {
+<span class="fc" id="L70">            this.values = name.values;</span>
+        }
+        else
+        {
+<span class="fc" id="L74">            this.values = Collections.newSetFromMap(new ConcurrentHashMap&lt;BinaryValue, Boolean&gt;());</span>
+        }
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Add a value to this secondary index.
+     *
+     * @param value the value to add
+     * @return a reference to this object
+     */
+    public final RiakIndex&lt;T&gt; add(T value)
+    {
+<span class="fc" id="L86">        values.add(convert(value));</span>
+<span class="fc" id="L87">        return this;</span>
+    }
+
+    /**
+     * Add a asSet of values to this secondary index.
+     *
+     * @param values a collection of values to add
+     * @return a reference to this object
+     */
+    public final RiakIndex&lt;T&gt; add(Collection&lt;T&gt; values)
+    {
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        for (T value : values)</span>
+        {
+<span class="fc" id="L100">            add(value);</span>
+<span class="fc" id="L101">        }</span>
+
+<span class="fc" id="L103">        return this;</span>
+    }
+
+    /**
+     * Determine if this index contains a value
+     *
+     * @param value the value to check for
+     * @return {@code true} if this index contains the value, {@code false}
+     * otherwise.
+     */
+    public final boolean hasValue(T value)
+    {
+<span class="fc" id="L115">        return values.contains(convert(value));</span>
+    }
+
+    /**
+     * Remove a value from this index.
+     *
+     * @param value the value to remove
+     * @return a reference to this object
+     */
+    public final RiakIndex&lt;T&gt; remove(T value)
+    {
+<span class="fc" id="L126">        values.remove(convert(value));</span>
+<span class="fc" id="L127">        return this;</span>
+    }
+
+    /**
+     * Remove a asSet of values from this index
+     *
+     * @param values a collection of values to remove
+     * @return a reference to this object
+     */
+    public final RiakIndex&lt;T&gt; remove(Collection&lt;T&gt; values)
+    {
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        for (T value : values)</span>
+        {
+<span class="fc" id="L140">            remove(value);</span>
+<span class="fc" id="L141">        }</span>
+<span class="fc" id="L142">        return this;</span>
+    }
+
+    /**
+     * Remove all values from this index
+     * @return a reference to this object
+     */
+    public final RiakIndex&lt;T&gt; removeAll()
+    {
+<span class="nc" id="L151">        values.clear();</span>
+<span class="nc" id="L152">        return this;</span>
+    }
+
+    /**
+     * Returns an iterator over the asSet of values in this index.
+     * This iterator is a &quot;weakly consistent&quot; iterator that will never throw
+     * {@link ConcurrentModificationException}, and guarantees to traverse elements
+     * as they existed upon construction of the iterator, and may (but is not guaranteed to)
+     * reflect any modifications subsequent to construction.
+     * @return an Iterator.
+     */
+    @Override
+    public final Iterator&lt;T&gt; iterator()
+    {
+<span class="fc" id="L166">        return new Iterator&lt;T&gt;()</span>
+<span class="fc" id="L167">        {</span>
+<span class="fc" id="L168">            private Iterator&lt;BinaryValue&gt; i = values.iterator();</span>
+
+            @Override
+            public boolean hasNext()
+            {
+<span class="fc" id="L173">                return i.hasNext();</span>
+            }
+
+            @Override
+            public T next()
+            {
+<span class="fc" id="L179">                return convert(i.next());</span>
+            }
+
+            @Override
+            public void remove()
+            {
+<span class="fc" id="L185">                i.remove();</span>
+<span class="fc" id="L186">            }</span>
+        };
+    }
+
+    /**
+     * Return the number of values in this index.
+     * @return the number of values
+     */
+    public final int size()
+    {
+<span class="fc" id="L196">        return values.size();</span>
+    }
+
+    /**
+     * Determine if this index has any values.
+     * @return {@code true} if this index has no values, {@code false} otherwise.
+     */
+    public final boolean isEmpty()
+    {
+<span class="fc" id="L205">        return values.isEmpty();</span>
+    }
+
+    /**
+     * Return the values in this index as raw bytes.
+     *
+     * @return an unmodifiable view of the raw values in this index.
+     */
+    public final Set&lt;BinaryValue&gt; rawValues()
+    {
+<span class="fc" id="L215">        return Collections.unmodifiableSet(values);</span>
+    }
+
+    /**
+     * Return the values in this index.
+     * The returned {@code Set} is unmodifiable.
+     * @return an unmodifiable view of the values in this index.
+     */
+    public final Set&lt;T&gt; values()
+    {
+<span class="fc" id="L225">        Set&lt;T&gt; convertedValues = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">        for (BinaryValue baw : values)</span>
+        {
+<span class="fc" id="L228">            convertedValues.add(convert(baw));</span>
+<span class="fc" id="L229">        }</span>
+<span class="fc" id="L230">        return Collections.unmodifiableSet(convertedValues);</span>
+    }
+
+    /**
+     * Get the type of this index.
+     *
+     * @return the enum representing the type of this index
+     */
+    public final IndexType getType()
+    {
+<span class="fc" id="L240">        return type;</span>
+    }
+
+    /**
+     * Get the index's name.
+     *
+     * @return the name of this index without the type suffix
+     */
+    public final String getName()
+    {
+<span class="fc" id="L250">        return name;</span>
+    }
+
+    /**
+     * Get the fully qualified name of this index
+     *
+     * @return the name of this index including the type suffix
+     */
+    public final String getFullname()
+    {
+<span class="fc" id="L260">        return name + type.suffix();</span>
+    }
+
+    /**
+     * Convert a value to a BinaryValue.
+     * &lt;p&gt; Index values are stored
+     * internally as bytes. Concrete classes implement this method to convert
+     * values to bytes. &lt;/p&gt;
+     *
+     * @param value the value to convert
+     * @return a BinaryValue containing the converted bytes
+     */
+    protected abstract BinaryValue convert(T value);
+
+    /**
+     * Convert bytes to a value type.
+     * &lt;p&gt; Index values are stored internally as
+     * bytes. Concrete classes implement this method to convert bytes to values.
+     * &lt;/p&gt;
+     *
+     * @param value the value to convert
+     * @return a value of type T
+     */
+    protected abstract T convert(BinaryValue value);
+
+    /**
+     * Returns a hash code value for the object.
+     * This method is supported for the benefit of hash tables such as those provided by HashMap.
+     * @return a hash code value for this object.
+     * @see RiakIndex#equals(java.lang.Object)
+     */
+    @Override
+    public final int hashCode()
+    {
+<span class="nc" id="L294">        final int prime = 31;</span>
+<span class="nc" id="L295">        int result = 1;</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">        result = prime * result + ((getFullname() == null) ? 0 : getFullname().hashCode());</span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">        result = prime * result + ((getName() == null) ? 0 : getName().hashCode());</span>
+<span class="nc" id="L298">        return result;</span>
+    }
+
+    /**
+     * Indicates whether this RiakIndex is &quot;equal to&quot; another RiakIndex.
+     * &lt;p&gt;
+     * Only the name and index type of the RiakIndex are used to determine equality.
+     * &lt;p&gt;
+     *
+     * @param obj a RiakIndex
+     * @return true if this RiakIndex has the same name and type
+     */
+    @Override
+    public final boolean equals(Object obj)
+    {
+<span class="pc bpc" id="L313" title="1 of 2 branches missed.">        if (this == obj)</span>
+        {
+<span class="nc" id="L315">            return true;</span>
+        }
+<span class="pc bpc" id="L317" title="1 of 2 branches missed.">        if (obj == null)</span>
+        {
+<span class="nc" id="L319">            return false;</span>
+        }
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">        if (!(obj instanceof RiakIndex))</span>
+        {
+<span class="nc" id="L323">            return false;</span>
+        }
+
+<span class="fc" id="L326">        RiakIndex other = (RiakIndex) obj;</span>
+
+<span class="pc bpc" id="L328" title="1 of 2 branches missed.">        if (getType() != other.getType())</span>
+        {
+<span class="nc" id="L330">            return false;</span>
+        }
+<span class="pc bpc" id="L332" title="1 of 2 branches missed.">        else if (!getName().equals(other.getName()))</span>
+        {
+<span class="nc" id="L334">            return false;</span>
+        }
+
+<span class="fc" id="L337">        return true;</span>
+    }
+
+        @Override
+        public String toString()
+        {
+<span class="nc" id="L343">                return String.format(&quot;RiakIndex [name=%s, type=%s]&quot;, name, type);</span>
+        }
+
+    /**
+     * Abstract base class used to encapsulate a {@code RiakIndex} name and type.
+     *
+     * This class serves two purposes; encapsulating the name and type of an
+     * index as well as being a builder used with {@link RiakIndexes}.
+     *
+     * @param &lt;T&gt; the RiakIndex this Name encapsulates
+     * @see RiakIndexes
+     */
+    public static abstract class Name&lt;T extends RiakIndex&lt;?&gt;&gt;
+    {
+        protected final String name;
+        protected final IndexType type;
+        private volatile Set&lt;BinaryValue&gt; values;
+
+        protected Name(String name, IndexType type)
+<span class="fc" id="L362">        {</span>
+<span class="fc" id="L363">            name = name.toLowerCase();</span>
+<span class="fc" id="L364">            this.name = stripSuffix(name, type);</span>
+<span class="fc" id="L365">            this.type = type;</span>
+<span class="fc" id="L366">        }</span>
+
+        /**
+         * If the index name has the suffix, strip it
+         *
+         * @param name
+         * @return the name, stripped
+         */
+        private String stripSuffix(String name, IndexType type)
+        {
+<span class="fc bfc" id="L376" title="All 2 branches covered.">            if (name.endsWith(type.suffix()))</span>
+            {
+<span class="fc" id="L378">                return name.substring(0, name.indexOf(type.suffix()));</span>
+            }
+            else
+            {
+<span class="fc" id="L382">                return name;</span>
+            }
+        }
+
+        /**
+         * Get the short name of this index
+         *
+         * @return the name of this index without the type suffix
+         */
+        public final String getName()
+        {
+<span class="nc" id="L393">            return name;</span>
+        }
+
+        /**
+         * Get the fully qualified name of this index
+         *
+         * @return the name of this index including the type suffix
+         */
+        public final String getFullname()
+        {
+<span class="fc" id="L403">            return name + type.suffix();</span>
+        }
+
+        /**
+         * Get the type of this index
+         *
+         * @return the enum representing the type of this index
+         */
+        public final IndexType getType()
+        {
+<span class="nc" id="L413">            return type;</span>
+        }
+
+        /**
+         * Wrap an existing index
+         *
+         * @param otherIndex
+         * @return a reference to this object
+         */
+        final Name&lt;T&gt; wrap(RiakIndex&lt;?&gt; otherIndex)
+        {
+<span class="fc" id="L424">            values = otherIndex.values;</span>
+<span class="fc" id="L425">            return this;</span>
+        }
+
+        /**
+         * Copy the values from the supplied index into this one.
+         *
+         * @param otherIndex
+         * @return a reference to this object
+         */
+        final Name&lt;T&gt; copyFrom(RiakIndex&lt;?&gt; otherIndex)
+        {
+<span class="fc" id="L436">            values = Collections.newSetFromMap(new ConcurrentHashMap&lt;BinaryValue, Boolean&gt;());</span>
+<span class="fc bfc" id="L437" title="All 2 branches covered.">            for (BinaryValue baw : otherIndex.values)</span>
+            {
+<span class="fc" id="L439">                values.add(baw);</span>
+<span class="fc" id="L440">            }</span>
+<span class="fc" id="L441">            return this;</span>
+        }
+
+        abstract T createIndex();
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

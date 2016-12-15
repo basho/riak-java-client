@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CoverageEntry.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.query.timeseries</a> &gt; <span class="el_source">CoverageEntry.java</span></div><h1>CoverageEntry.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.core.query.timeseries;
+
+import java.io.Serializable;
+import java.util.Arrays;
+
+<span class="nc" id="L6">public class CoverageEntry implements Serializable</span>
+{
+    private static final long serialVersionUID = 0;
+    private String host;
+    private int port;
+    private String fieldName;
+    private long lowerBound;
+    private boolean lowerBoundInclusive;
+    private long upperBound;
+    private boolean upperBoundInclusive;
+    private String description;
+    private byte[] coverageContext;
+
+    public String getHost()
+    {
+<span class="nc" id="L21">        return host;</span>
+    }
+
+    public void setHost(String host)
+    {
+<span class="nc" id="L26">        this.host = host;</span>
+<span class="nc" id="L27">    }</span>
+
+    public int getPort()
+    {
+<span class="nc" id="L31">        return port;</span>
+    }
+
+    public void setPort(int port)
+    {
+<span class="nc" id="L36">        this.port = port;</span>
+<span class="nc" id="L37">    }</span>
+
+    public String getFieldName()
+    {
+<span class="nc" id="L41">        return fieldName;</span>
+    }
+
+    public void setFieldName(String fieldName)
+    {
+<span class="nc" id="L46">        this.fieldName = fieldName;</span>
+<span class="nc" id="L47">    }</span>
+
+    public long getLowerBound()
+    {
+<span class="nc" id="L51">        return lowerBound;</span>
+    }
+
+    public void setLowerBound(long lowerBound)
+    {
+<span class="nc" id="L56">        this.lowerBound = lowerBound;</span>
+<span class="nc" id="L57">    }</span>
+
+    public boolean isLowerBoundInclusive()
+    {
+<span class="nc" id="L61">        return lowerBoundInclusive;</span>
+    }
+
+    public void setLowerBoundInclusive(boolean lowerBoundInclusive)
+    {
+<span class="nc" id="L66">        this.lowerBoundInclusive = lowerBoundInclusive;</span>
+<span class="nc" id="L67">    }</span>
+
+    public long getUpperBound()
+    {
+<span class="nc" id="L71">        return upperBound;</span>
+    }
+
+    public void setUpperBound(long upperBound)
+    {
+<span class="nc" id="L76">        this.upperBound = upperBound;</span>
+<span class="nc" id="L77">    }</span>
+
+    public boolean isUpperBoundInclusive()
+    {
+<span class="nc" id="L81">        return upperBoundInclusive;</span>
+    }
+
+    public void setUpperBoundInclusive(boolean upperBoundInclusive)
+    {
+<span class="nc" id="L86">        this.upperBoundInclusive = upperBoundInclusive;</span>
+<span class="nc" id="L87">    }</span>
+
+    public String getDescription()
+    {
+<span class="nc" id="L91">        return description;</span>
+    }
+
+    public void setDescription(String description)
+    {
+<span class="nc" id="L96">        this.description = description;</span>
+<span class="nc" id="L97">    }</span>
+
+    public byte[] getCoverageContext()
+    {
+<span class="nc" id="L101">        return coverageContext;</span>
+    }
+
+    public void setCoverageContext(byte[] coverageContext)
+    {
+<span class="nc" id="L106">        this.coverageContext = coverageContext;</span>
+<span class="nc" id="L107">    }</span>
+
+    @Override
+    public int hashCode()
+    {
+<span class="nc" id="L112">        final int prime = 31;</span>
+<span class="nc" id="L113">        int result = 1;</span>
+<span class="nc" id="L114">        result = prime * result + Arrays.hashCode(coverageContext);</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        result = prime * result + ((description == null) ? 0 : description.hashCode());</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        result = prime * result + ((fieldName == null) ? 0 : fieldName.hashCode());</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        result = prime * result + ((host == null) ? 0 : host.hashCode());</span>
+<span class="nc" id="L118">        result = prime * result + (int) (lowerBound ^ (lowerBound &gt;&gt;&gt; 32));</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        result = prime * result + (lowerBoundInclusive ? 1231 : 1237);</span>
+<span class="nc" id="L120">        result = prime * result + port;</span>
+<span class="nc" id="L121">        result = prime * result + (int) (upperBound ^ (upperBound &gt;&gt;&gt; 32));</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        result = prime * result + (upperBoundInclusive ? 1231 : 1237);</span>
+<span class="nc" id="L123">        return result;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (this == obj)</span>
+<span class="nc" id="L130">            return true;</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (obj == null)</span>
+<span class="nc" id="L132">            return false;</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (getClass() != obj.getClass())</span>
+<span class="nc" id="L134">            return false;</span>
+<span class="nc" id="L135">        CoverageEntry other = (CoverageEntry) obj;</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        if (!Arrays.equals(coverageContext, other.coverageContext))</span>
+<span class="nc" id="L137">            return false;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (description == null)</span>
+        {
+<span class="nc bnc" id="L140" title="All 2 branches missed.">            if (other.description != null)</span>
+<span class="nc" id="L141">                return false;</span>
+        }
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        else if (!description.equals(other.description))</span>
+<span class="nc" id="L144">            return false;</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (fieldName == null)</span>
+        {
+<span class="nc bnc" id="L147" title="All 2 branches missed.">            if (other.fieldName != null)</span>
+<span class="nc" id="L148">                return false;</span>
+        }
+<span class="nc bnc" id="L150" title="All 2 branches missed.">        else if (!fieldName.equals(other.fieldName))</span>
+<span class="nc" id="L151">            return false;</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        if (host == null)</span>
+        {
+<span class="nc bnc" id="L154" title="All 2 branches missed.">            if (other.host != null)</span>
+<span class="nc" id="L155">                return false;</span>
+        }
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        else if (!host.equals(other.host))</span>
+<span class="nc" id="L158">            return false;</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">        if (lowerBound != other.lowerBound)</span>
+<span class="nc" id="L160">            return false;</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        if (lowerBoundInclusive != other.lowerBoundInclusive)</span>
+<span class="nc" id="L162">            return false;</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (port != other.port)</span>
+<span class="nc" id="L164">            return false;</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">        if (upperBound != other.upperBound)</span>
+<span class="nc" id="L166">            return false;</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (upperBoundInclusive != other.upperBoundInclusive)</span>
+<span class="nc" id="L168">            return false;</span>
+<span class="nc" id="L169">        return true;</span>
+    }
+
+    @Override
+    public String toString()
+    {
+<span class="nc" id="L175">        return &quot;CoverageEntry [host=&quot; + host + &quot;, port=&quot; + port + &quot;, fieldName=&quot; + fieldName + &quot;, lowerBound=&quot; + lowerBound</span>
+                + &quot;, lowerBoundInclusive=&quot; + lowerBoundInclusive + &quot;, upperBound=&quot; + upperBound + &quot;, upperBoundInclusive=&quot;
+                + upperBoundInclusive + &quot;, description=&quot; + description + &quot;]&quot;;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

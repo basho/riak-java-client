@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BucketInput.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.api.commands.mapreduce</a> &gt; <span class="el_source">BucketInput.java</span></div><h1>BucketInput.java</h1><pre class="source lang-java linenums">package com.basho.riak.client.api.commands.mapreduce;
+
+import com.basho.riak.client.core.query.Namespace;
+import com.basho.riak.client.api.commands.mapreduce.filters.KeyFilter;
+
+import java.util.Collection;
+
+/**
+ * MapReduce Input that provides a whole bucket's contents as input for the MapReduce job.
+ */
+public class BucketInput implements MapReduceInput
+{
+    private final Namespace namespace;
+    private final Collection&lt;KeyFilter&gt; filters;
+
+    /**
+     * Creates a BucketInput from the provided namespace, and applicable keyfilters.
+     * @param namespace the namespace to keylist over
+     * @param filters a collection of {@link KeyFilter}s to filter the namespace's keys by
+     */
+    public BucketInput(Namespace namespace, Collection&lt;KeyFilter&gt; filters)
+<span class="fc" id="L22">    {</span>
+<span class="fc" id="L23">        this.namespace = namespace;</span>
+<span class="fc" id="L24">        this.filters = filters;</span>
+<span class="fc" id="L25">    }</span>
+
+    /**
+     * Gets the namespace of the input.
+     * @return the namespace of the input.
+     */
+    public Namespace getNamespace()
+    {
+<span class="fc" id="L33">        return namespace;</span>
+    }
+
+    /**
+     * Indicates whether the input has any keyfilters to apply.
+     * @return whether the input includes any keyfilters
+     */
+    public boolean hasFilters()
+    {
+<span class="fc bfc" id="L42" title="All 4 branches covered.">        return filters != null &amp;&amp; !filters.isEmpty();</span>
+    }
+
+    /**
+     * Gets the keyfilter collection of the input.
+     * @return the keyfilter collection of the input.
+     */
+    public Collection&lt;KeyFilter&gt; getFilters()
+    {
+<span class="fc" id="L51">        return filters;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>

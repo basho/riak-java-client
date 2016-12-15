@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchOperation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Riak Client for Java</a> &gt; <a href="index.source.html" class="el_package">com.basho.riak.client.core.operations</a> &gt; <span class="el_source">SearchOperation.java</span></div><h1>SearchOperation.java</h1><pre class="source lang-java linenums">/*
+ * Copyright 2013 Basho Technologies Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.basho.riak.client.core.operations;
+
+import com.basho.riak.client.core.FutureOperation;
+import com.basho.riak.client.core.RiakMessage;
+import com.basho.riak.client.core.util.BinaryValue;
+import com.basho.riak.protobuf.RiakMessageCodes;
+import com.basho.riak.protobuf.RiakPB.RpbPair;
+import com.basho.riak.protobuf.RiakSearchPB;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * A Riak Search or Yokozuna query operation.
+ * &lt;p&gt;
+ * Due to the nature of both Riak Search and Yokozuna, all Strings must be
+ * UTF-8 encoded.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * This operation will fail if search is not enabled or the index does not exist.
+ * &lt;/p&gt;
+ *
+ * @author Brian Roach &lt;roach at basho dot com&gt;
+ * @since 2.0
+ */
+public class SearchOperation extends FutureOperation&lt;SearchOperation.Response, RiakSearchPB.RpbSearchQueryResp, BinaryValue&gt;
+{
+    private final String queryString;
+    private final BinaryValue indexName;
+    private final RiakSearchPB.RpbSearchQueryReq.Builder reqBuilder;
+
+    private SearchOperation(Builder builder)
+<span class="nc" id="L53">    {</span>
+<span class="nc" id="L54">        this.reqBuilder = builder.reqBuilder;</span>
+<span class="nc" id="L55">        this.queryString = builder.queryString;</span>
+<span class="nc" id="L56">        this.indexName = builder.indexName;</span>
+<span class="nc" id="L57">    }</span>
+
+    @Override
+    protected SearchOperation.Response convert(List&lt;RiakSearchPB.RpbSearchQueryResp&gt; rawResponse)
+    {
+        // This isn't a streaming op, there will only be one protobuf
+<span class="nc" id="L63">        RiakSearchPB.RpbSearchQueryResp resp = rawResponse.get(0);</span>
+<span class="nc" id="L64">        List&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; docList = new LinkedList&lt;&gt;();</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        for (RiakSearchPB.RpbSearchDoc pbDoc : resp.getDocsList())</span>
+        {
+<span class="nc" id="L67">            Map&lt;String, List&lt;String&gt;&gt; map = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            for (RpbPair pair : pbDoc.getFieldsList())</span>
+            {
+<span class="nc" id="L70">                String key = pair.getKey().toStringUtf8();</span>
+<span class="nc" id="L71">                List&lt;String&gt; list = map.get(key);</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                if (null == list)</span>
+                {
+<span class="nc" id="L74">                    list = new LinkedList&lt;&gt;();</span>
+<span class="nc" id="L75">                    map.put(key, list);</span>
+                }
+<span class="nc" id="L77">                list.add(pair.getValue().toStringUtf8());</span>
+<span class="nc" id="L78">            }</span>
+<span class="nc" id="L79">            docList.add(map);</span>
+<span class="nc" id="L80">        }</span>
+<span class="nc" id="L81">        return new Response(docList, resp.getMaxScore(), resp.getNumFound());</span>
+    }
+
+    @Override
+    protected RiakMessage createChannelMessage()
+    {
+<span class="nc" id="L87">        RiakSearchPB.RpbSearchQueryReq req = reqBuilder.build();</span>
+<span class="nc" id="L88">        return new RiakMessage(RiakMessageCodes.MSG_SearchQueryReq, req.toByteArray());</span>
+    }
+
+    @Override
+    protected RiakSearchPB.RpbSearchQueryResp decode(RiakMessage rawMessage)
+    {
+<span class="nc" id="L94">        Operations.checkPBMessageType(rawMessage, RiakMessageCodes.MSG_SearchQueryResp);</span>
+        try
+        {
+<span class="nc" id="L97">            return RiakSearchPB.RpbSearchQueryResp.parseFrom(rawMessage.getData());</span>
+        }
+<span class="nc" id="L99">        catch (InvalidProtocolBufferException ex)</span>
+        {
+<span class="nc" id="L101">            throw new IllegalArgumentException(&quot;Invalid message received&quot;, ex);</span>
+        }
+    }
+
+    @Override
+    public BinaryValue getQueryInfo()
+    {
+<span class="nc" id="L108">        return BinaryValue.create(indexName.toString() +&quot;: &quot; +queryString);</span>
+    }
+
+    public static class Builder
+    {
+        private final BinaryValue indexName;
+        private final String queryString;
+<span class="nc" id="L115">        private final RiakSearchPB.RpbSearchQueryReq.Builder reqBuilder =</span>
+<span class="nc" id="L116">            RiakSearchPB.RpbSearchQueryReq.newBuilder();</span>
+
+        public Builder(BinaryValue indexName, String queryString)
+<span class="nc" id="L119">        {</span>
+<span class="nc bnc" id="L120" title="All 4 branches missed.">            if (null == indexName || indexName.length() == 0)</span>
+            {
+<span class="nc" id="L122">                throw new IllegalArgumentException(&quot;Index name cannot be null or zero length&quot;);</span>
+            }
+<span class="nc bnc" id="L124" title="All 4 branches missed.">            if (null == queryString || queryString.length() == 0)</span>
+            {
+<span class="nc" id="L126">                throw new IllegalArgumentException(&quot;Query string cannot be null or zero length&quot;);</span>
+            }
+
+<span class="nc" id="L129">            this.indexName = indexName;</span>
+<span class="nc" id="L130">            this.queryString = queryString;</span>
+<span class="nc" id="L131">            reqBuilder.setIndex(ByteString.copyFrom(indexName.unsafeGetValue()));</span>
+<span class="nc" id="L132">            reqBuilder.setQ(ByteString.copyFromUtf8(queryString));</span>
+<span class="nc" id="L133">        }</span>
+
+        /**
+         * Specify the maximum number of results to return.
+         * Riak defaults to 10 if this is not asSet.
+         *
+         * @param rows the maximum number of results to return.
+         * @return a reference to this object.
+         */
+        public Builder withNumRows(int rows)
+        {
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            if (rows &lt; 0)</span>
+            {
+<span class="nc" id="L146">                throw new IllegalArgumentException(&quot;Rows must be &gt;= 0&quot;);</span>
+            }
+<span class="nc" id="L148">            reqBuilder.setRows(rows);</span>
+<span class="nc" id="L149">            return this;</span>
+        }
+
+        /**
+         * Specify the starting result of the query.
+         * Useful for pagination. The default is 0.
+         *
+         * @param start the index of the starting result.
+         * @return a reference to this object.
+         */
+        public Builder withStart(int start)
+        {
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            if (start &lt; 0)</span>
+            {
+<span class="nc" id="L163">                throw new IllegalArgumentException(&quot;Start must be &gt;= 0&quot;);</span>
+            }
+<span class="nc" id="L165">            reqBuilder.setStart(start);</span>
+<span class="nc" id="L166">            return this;</span>
+        }
+
+        /**
+         * Sort the results on the specified field name.
+         * Default is “none”, which causes the results to be sorted in descending order by score.
+         *
+         * @param fieldName the fieldname to sort the results on.
+         * @return a reference to this object.
+         */
+        public Builder withSortField(String fieldName)
+        {
+<span class="nc" id="L178">            stringCheck(fieldName);</span>
+<span class="nc" id="L179">            reqBuilder.setSort(ByteString.copyFromUtf8(fieldName));</span>
+<span class="nc" id="L180">            return this;</span>
+        }
+
+        /**
+         * Filters the search by an additional query scoped to inline fields.
+         *
+         * @param filterQuery the filter query.
+         * @return a reference to this object.
+         */
+        public Builder withFilterQuery(String filterQuery)
+        {
+<span class="nc" id="L191">            stringCheck(filterQuery);</span>
+<span class="nc" id="L192">            reqBuilder.setFilter(ByteString.copyFromUtf8(filterQuery));</span>
+<span class="nc" id="L193">            return this;</span>
+        }
+
+        /**
+         * Use the provided field as the default.
+         * Overrides the “default_field” setting in the schema file.
+         *
+         * @param fieldName the name of the field.
+         * @return a reference to this object.
+         */
+        public Builder withDefaultField(String fieldName)
+        {
+<span class="nc" id="L205">            stringCheck(fieldName);</span>
+<span class="nc" id="L206">            reqBuilder.setDf(ByteString.copyFromUtf8(fieldName));</span>
+<span class="nc" id="L207">            return this;</span>
+        }
+
+        /**
+         * Set the default operation.
+         * Allowed settings are either “and” or “or”.
+         * Overrides the “default_op” setting in the schema file.
+         *
+         * @param op A string containing either &quot;and&quot; or &quot;or&quot;.
+         * @return a reference to this object.
+         */
+        public Builder withDefaultOperation(String op)
+        {
+<span class="nc" id="L220">            stringCheck(op);</span>
+<span class="nc" id="L221">            reqBuilder.setOp(ByteString.copyFromUtf8(op));</span>
+<span class="nc" id="L222">            return this;</span>
+        }
+
+        /**
+         * Only return the provided fields.
+         * Filters the results to only contain the provided fields.
+         *
+         * @param fields a list of field names.
+         * @return a reference to this object.
+         */
+        public Builder withReturnFields(List&lt;String&gt; fields)
+        {
+<span class="nc bnc" id="L234" title="All 2 branches missed.">            for (String f : fields)</span>
+            {
+<span class="nc" id="L236">                stringCheck(f);</span>
+<span class="nc" id="L237">                reqBuilder.addFl(ByteString.copyFromUtf8(f));</span>
+<span class="nc" id="L238">            }</span>
+<span class="nc" id="L239">            return this;</span>
+        }
+
+        /**
+         * Sorts all of the results by bucket key, or the search score, before the given rows are chosen.
+         * This is useful when paginating to ensure the results are returned in a consistent order.
+         *
+         * @param presort a String containing either &quot;key&quot; or &quot;score&quot;.
+         * @return a reference to this object.
+         */
+        public Builder withPresort(String presort)
+        {
+<span class="nc" id="L251">            stringCheck(presort);</span>
+<span class="nc" id="L252">            reqBuilder.setPresort(ByteString.copyFromUtf8(presort));</span>
+<span class="nc" id="L253">            return this;</span>
+        }
+
+        private void stringCheck(String arg)
+        {
+<span class="nc bnc" id="L258" title="All 4 branches missed.">            if (null == arg || arg.length() == 0)</span>
+            {
+<span class="nc" id="L260">                throw new IllegalArgumentException(&quot;Argument cannot be null or zero length&quot;);</span>
+            }
+<span class="nc" id="L262">        }</span>
+
+        public SearchOperation build()
+        {
+<span class="nc" id="L266">            return new SearchOperation(this);</span>
+        }
+    }
+
+    public static class Response implements Iterable
+    {
+        private final List&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; results;
+        private final float maxScore;
+        private final int numResults;
+
+        Response(List&lt;Map&lt;String,List&lt;String&gt;&gt;&gt; results, float maxScore, int numResults)
+<span class="nc" id="L277">        {</span>
+<span class="nc" id="L278">            this.results = results;</span>
+<span class="nc" id="L279">            this.maxScore = maxScore;</span>
+<span class="nc" id="L280">            this.numResults = numResults;</span>
+<span class="nc" id="L281">        }</span>
+
+        @Override
+        public Iterator&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; iterator()
+        {
+<span class="nc" id="L286">            return results.iterator();</span>
+        }
+
+        /**
+         * Returns the max score from the search query.
+         * @return the max score.
+         */
+        public float getMaxScore()
+        {
+<span class="nc" id="L295">            return maxScore;</span>
+        }
+
+        /**
+         * Returns the number of results from the search query.
+         * @return the number of results.
+         */
+        public int numResults()
+        {
+<span class="nc" id="L304">            return numResults;</span>
+        }
+
+        /**
+         * Returns the entire list of results from the search query.
+         * @return a list containing all the result sets.
+         */
+        public List&lt;Map&lt;String, List&lt;String&gt;&gt;&gt; getAllResults()
+        {
+<span class="nc" id="L313">            return results;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.7.201606060606</span></div></body></html>
