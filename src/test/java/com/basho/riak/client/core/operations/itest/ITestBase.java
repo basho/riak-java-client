@@ -20,7 +20,6 @@ import com.basho.riak.client.api.commands.kv.ListKeys;
 import com.basho.riak.client.api.commands.kv.MultiDelete;
 import com.basho.riak.client.core.RiakCluster;
 import com.basho.riak.client.core.RiakFuture;
-import com.basho.riak.client.core.RiakFutureListener;
 import com.basho.riak.client.core.RiakNode;
 import com.basho.riak.client.core.netty.RiakResponseException;
 import com.basho.riak.client.core.operations.*;
@@ -30,7 +29,6 @@ import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.indexes.LongIntIndex;
 import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -45,7 +43,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.List;
 import java.util.concurrent.*;
 
 import static org.junit.Assert.*;
@@ -63,6 +60,7 @@ public abstract class ITestBase
     protected static boolean testBucketType;
     protected static boolean testCrdt;
     protected static boolean testHllDataType;
+    protected static boolean testGSetDataType;
     protected static boolean testTimeSeries;
     protected static boolean testCoveragePlan;
     protected static boolean legacyRiakSearch;
@@ -70,6 +68,7 @@ public abstract class ITestBase
     protected static BinaryValue bucketName;
     protected static BinaryValue counterBucketType;
     protected static BinaryValue setBucketType;
+    protected static BinaryValue gsetBucketType;
     protected static BinaryValue hllBucketType;
     protected static BinaryValue mapBucketType;
     protected static BinaryValue bucketType;
@@ -85,8 +84,8 @@ public abstract class ITestBase
     public TestName testName = new TestName();
 
     @BeforeClass
-    public static void setUp() throws CertificateException, IOException, KeyStoreException,
-            NoSuchAlgorithmException
+    public static void setUp()
+            throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, InterruptedException
     {
         bucketName = BinaryValue.unsafeCreate("ITestBase".getBytes());
 
@@ -138,20 +137,24 @@ public abstract class ITestBase
          *
          * riak-admin bucket-type create maps '{"props":{"allow_mult":true, "datatype": "map"}}'
          * riak-admin bucket-type create sets '{"props":{"allow_mult":true, "datatype": "set"}}'
+         * riak-admin bucket-type create gsets '{"props":{"allow_mult":true, "datatype": "gset"}}'
          * riak-admin bucket-type create counters '{"props":{"allow_mult":true, "datatype": "counter"}}'
+         * riak-admin bucket-type create hlls '{"props":{"allow_mult":true, "datatype": "hll"}}'
          * riak-admin bucket-type activate maps
          * riak-admin bucket-type activate sets
+         * riak-admin bucket-type activate gsets
          * riak-admin bucket-type activate counters
+         * riak-admin bucket-type activate hlls
          */
         counterBucketType = BinaryValue.create("counters");
         setBucketType = BinaryValue.create("sets");
+        gsetBucketType = BinaryValue.create("gsets");
         hllBucketType = BinaryValue.create("hlls");
         mapBucketType = BinaryValue.create("maps");
 
         mapReduceBucketType = BinaryValue.create("mr");
 
         testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt", "true"));
-        testHllDataType = Boolean.parseBoolean(System.getProperty("com.basho.riak.hlldt", "false"));
 
         testTimeSeries = Boolean.parseBoolean(System.getProperty("com.basho.riak.timeseries", "false"));
 
@@ -183,6 +186,21 @@ public abstract class ITestBase
 
         cluster = new RiakCluster.Builder(builder.build()).build();
         cluster.start();
+
+        testHllDataType = testCrdt && checkExistanceOfBucketType(hllBucketType);
+        testGSetDataType = testCrdt && checkExistanceOfBucketType(gsetBucketType);
+    }
+
+    private static boolean checkExistanceOfBucketType(BinaryValue bucketType) throws InterruptedException
+    {
+        final Namespace ns = new Namespace(bucketType, bucketType);
+        final FetchBucketPropsOperation fetchBucketPropsOp = new FetchBucketPropsOperation.Builder(ns).build();
+
+        final RiakFuture<FetchBucketPropsOperation.Response, Namespace>
+                bucketPropsFuture = cluster.execute(fetchBucketPropsOp);
+
+        bucketPropsFuture.await();
+        return bucketPropsFuture.isSuccess();
     }
 
     @AfterClass

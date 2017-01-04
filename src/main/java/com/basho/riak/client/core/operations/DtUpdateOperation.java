@@ -293,6 +293,18 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             return setOpBuilder.build();
         }
 
+        RiakDtPB.GSetOp getGSetOp(GSetOp op)
+        {
+            RiakDtPB.GSetOp.Builder setOpBuilder = RiakDtPB.GSetOp.newBuilder();
+
+            for (BinaryValue element : op.getAdds())
+            {
+                setOpBuilder.addAdds(ByteString.copyFrom(element.unsafeGetValue()));
+            }
+
+            return setOpBuilder.build();
+        }
+
         RiakDtPB.HllOp getHllOp(HllOp op)
         {
             RiakDtPB.HllOp.Builder hllOpBuilder = RiakDtPB.HllOp.newBuilder();
@@ -411,6 +423,10 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             {
                 withOp((SetOp) op);
             }
+            else if (op instanceof GSetOp)
+            {
+                withOp((GSetOp) op);
+            }
             else if (op instanceof HllOp)
             {
                 withOp((HllOp) op);
@@ -439,6 +455,12 @@ public class DtUpdateOperation extends FutureOperation<DtUpdateOperation.Respons
             reqBuilder.setOp(RiakDtPB.DtOp.newBuilder()
                 .setSetOp(getSetOp(op)));
 
+            return this;
+        }
+
+        private Builder withOp(GSetOp op)
+        {
+            reqBuilder.setOp(RiakDtPB.DtOp.newBuilder().setGsetOp(getGSetOp(op)));
             return this;
         }
 

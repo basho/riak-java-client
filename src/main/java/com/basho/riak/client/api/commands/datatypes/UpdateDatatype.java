@@ -270,7 +270,7 @@ public abstract class UpdateDatatype<T extends RiakDatatype,S>
          */
         public T withReturnDatatype(boolean returnDatatype)
         {
-            withOption(Option.RETURN_BODY, true);
+            withOption(Option.RETURN_BODY, returnDatatype);
             return self();
         }
 

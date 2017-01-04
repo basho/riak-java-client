@@ -76,7 +76,7 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response>
     }
 
     /**
-     * Builder used to construct an UpdateSet command.
+     * Builder used to construct an UpdateSet command..
      */
     public static class Builder extends UpdateDatatype.Builder<Builder>
     {
@@ -85,9 +85,43 @@ public class UpdateSet extends UpdateDatatype<RiakSet, UpdateSet.Response>
          * @param location the location of the set in Riak.
          * @param update the update to apply to the set.
          */
+        public Builder(Location location, GSetUpdate update)
+        {
+            super(location, update);
+            if (update == null)
+            {
+                throw new IllegalArgumentException("Update cannot be null");
+            }
+        }
+
+        /**
+         * Construct a Builder for an UpdateSet command.
+         * @param location the location of the set in Riak.
+         * @param update the update to apply to the set.
+         */
         public Builder(Location location, SetUpdate update)
         {
             super(location, update);
+            if (update == null)
+            {
+                throw new IllegalArgumentException("Update cannot be null");
+            }
+        }
+
+        /**
+         * Constructs a builder for an UpdateSet command with only a Namespace.
+         * <p>
+         * By providing only a Namespace with the update, Riak will create the
+         * set, generate the key,
+         * and return it in the response.
+         * </p>
+         * @param namespace the namespace to create the datatype.
+         * @param update the update to apply
+         * @see Response#getGeneratedKey()
+         */
+        public Builder(Namespace namespace, GSetUpdate update)
+        {
+            super(namespace, update);
             if (update == null)
             {
                 throw new IllegalArgumentException("Update cannot be null");
