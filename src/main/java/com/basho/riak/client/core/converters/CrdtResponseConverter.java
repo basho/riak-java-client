@@ -96,6 +96,10 @@ public class CrdtResponseConverter
         {
             element = parseHll(response.getHllValue());
         }
+        else if (response.getGsetValueCount() > 0)
+        {
+            element = parseSet(response.getGsetValueList());
+        }
 
         return element;
     }
