@@ -106,7 +106,7 @@ com.basho.riak.coveragePlan | false | Riak KV/TS Coverage Plan Tests <br>(need c
 com.basho.riak.security | false | Riak Security Tests
 com.basho.riak.clientcert | false | Riak Security Tests with Certificates
 
-To run the HyperLogLog or GSet Data Type tests, you much have two test bucket types setup as following:
+To run the HyperLogLog or GSet Data Type tests, you must have two test bucket types setup as following:
 ```
 riak-admin bucket-type create gsets '{"props":{"allow_mult":true, "datatype": "gset"}}'
 riak-admin bucket-type create hlls '{"props":{"allow_mult":true, "datatype": "hll"}}'
