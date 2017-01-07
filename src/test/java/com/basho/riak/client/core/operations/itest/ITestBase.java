@@ -239,6 +239,7 @@ public abstract class ITestBase
         ks.setCertificateEntry("cacert", caCert);
 
         builder.withAuth("riakpass", "Test1234", ks);
+        builder.withTls(true, true);
     }
 
     protected void setBucketNameToTestName()

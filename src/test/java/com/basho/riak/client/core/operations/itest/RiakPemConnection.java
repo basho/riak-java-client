@@ -163,6 +163,7 @@ public class RiakPemConnection
     {
         RiakNode.Builder builder = createRiakNodeBuilder();
         builder.withAuth(username, password, trustStore);
+        builder.withTls(true, true);
         RiakCluster cluster = initializeRiakCluster(builder);
 
         return cluster;
@@ -199,6 +200,7 @@ public class RiakPemConnection
 
         RiakNode.Builder builder = createRiakNodeBuilder();
         builder.withAuth(username, password, trustStore, keyStore, "");
+        builder.withTls(true, true);
         RiakCluster cluster = initializeRiakCluster(builder);
 
         return cluster;

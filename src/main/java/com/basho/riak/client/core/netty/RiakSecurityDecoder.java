@@ -1,19 +1,3 @@
-/*
- * Copyright 2014 Basho Technologies Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.basho.riak.client.core.netty;
 
 import com.basho.riak.client.core.RiakMessage;
@@ -49,6 +33,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
     private final SSLEngine sslEngine;
     private final String username;
     private final String password;
+
     private final Logger logger = LoggerFactory.getLogger(RiakSecurityDecoder.class);
     private volatile DefaultPromise<Void> promise;
 
@@ -56,11 +41,29 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
 
     private volatile State state = State.TLS_START;
 
-    public RiakSecurityDecoder(SSLEngine engine, String username, String password)
+    public RiakSecurityDecoder(String username, String password)
+    {
+        this.sslEngine = null;
+        this.username = username;
+        this.password = password;
+        this.state = State.AUTH_WAIT;
+    }
+
+    public RiakSecurityDecoder(SSLEngine engine, boolean startTls,
+            String username, String password)
     {
         this.sslEngine = engine;
         this.username = username;
         this.password = password;
+
+        if (startTls)
+        {
+            this.state = State.TLS_START;
+        }
+        else
+        {
+            this.state = State.SSL_WAIT;
+        }
     }
 
     @Override
@@ -91,16 +94,7 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                         {
                             case RiakMessageCodes.MSG_StartTls:
                                 logger.debug("Received MSG_RpbStartTls reply");
-                                // change state
-                                this.state = State.SSL_WAIT;
-                                // insert SSLHandler
-                                SslHandler sslHandler = new SslHandler(sslEngine);
-                                // get promise
-                                Future<Channel> hsFuture = sslHandler.handshakeFuture();
-                                // register callback
-                                hsFuture.addListener(new SslListener());
-                                // Add handler
-                                chc.channel().pipeline().addFirst(Constants.SSL_HANDLER, sslHandler);
+                                startTlsHandshake(chc);
                                 break;
                             case RiakMessageCodes.MSG_ErrorResp:
                                 logger.debug("Received MSG_ErrorResp reply to startTls");
@@ -150,13 +144,58 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
         }
     }
 
-    private void init(ChannelHandlerContext ctx)
+    private void init(ChannelHandlerContext chc)
     {
-        state = State.TLS_WAIT;
-        promise = new DefaultPromise<>(ctx.executor());
-        promiseLatch.countDown();
-        ctx.channel().writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_StartTls,
-                                    new byte[0]));
+        if (state == State.SSL_WAIT)
+        {
+            // NB: nothing else to do, on TLS handshake completion state
+            // will move to AUTH_WAIT
+            startTlsHandshake(chc);
+        }
+        else
+        {
+            RiakMessage msg = null;
+
+            switch (state)
+            {
+                case AUTH_WAIT:
+                    msg = buildAuthReqMsg();
+                    break;
+                case TLS_START:
+                    msg = new RiakMessage(RiakMessageCodes.MSG_StartTls, new byte[0]);
+                    state = State.TLS_WAIT;
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected TLS state: " + state);
+            }
+
+            promise = new DefaultPromise<>(chc.executor());
+            promiseLatch.countDown();
+            chc.channel().writeAndFlush(msg);
+        }
+    }
+
+    private void startTlsHandshake(ChannelHandlerContext chc)
+    {
+        // change state
+        this.state = State.SSL_WAIT;
+        // insert SSLHandler
+        SslHandler sslHandler = new SslHandler(sslEngine);
+        // get promise
+        Future<Channel> hsFuture = sslHandler.handshakeFuture();
+        // register callback
+        hsFuture.addListener(new SslListener());
+        // Add handler
+        chc.channel().pipeline().addFirst(Constants.SSL_HANDLER, sslHandler);
+    }
+
+    private RiakMessage buildAuthReqMsg()
+    {
+        RiakPB.RpbAuthReq authReq = RiakPB.RpbAuthReq.newBuilder()
+            .setUser(ByteString.copyFromUtf8(username))
+            .setPassword(ByteString.copyFromUtf8(password))
+            .build();
+        return new RiakMessage(RiakMessageCodes.MSG_AuthReq, authReq.toByteArray());
     }
 
     @Override
@@ -213,20 +252,18 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
         {
             if (future.isSuccess())
             {
-                logger.debug("SSL Handshake success!");
+                logger.debug("TLS handshake success");
                 Channel c = future.getNow();
+                // TODO FUTURE technically the changes in basho/riak_api#119
+                // allow for TLS encryption *without* Riak security enabled
+                // But who would really want that?
                 state = State.AUTH_WAIT;
-                RiakPB.RpbAuthReq authReq =
-                RiakPB.RpbAuthReq.newBuilder()
-                    .setUser(ByteString.copyFromUtf8(username))
-                    .setPassword(ByteString.copyFromUtf8(password))
-                    .build();
-                c.writeAndFlush(new RiakMessage(RiakMessageCodes.MSG_AuthReq,
-                                authReq.toByteArray()));
+                RiakMessage msg = buildAuthReqMsg();
+                c.writeAndFlush(msg);
             }
             else
             {
-                logger.error("SSL Handshake failed: ", future.cause());
+                logger.error("TLS handshake failed: ", future.cause());
                 promise.tryFailure(future.cause());
             }
         }

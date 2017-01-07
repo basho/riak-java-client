@@ -93,6 +93,7 @@ public class RiakJKSConnection
     {
         RiakNode.Builder builder = createRiakNodeBuilder();
         builder.withAuth(username, password, trustStore);
+        builder.withTls(true, true);
         RiakCluster cluster = initializeRiakCluster(builder);
 
         return cluster;
@@ -130,6 +131,7 @@ public class RiakJKSConnection
 
         RiakNode.Builder builder = createRiakNodeBuilder();
         builder.withAuth(username, password, trustStore, keyStore, keyPasswd);
+        builder.withTls(true, true);
         RiakCluster cluster = initializeRiakCluster(builder);
 
         return cluster;

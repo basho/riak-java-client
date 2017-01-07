@@ -14,10 +14,10 @@ import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertNotNull;
 
-public class ITestJKSSecuredConnection
+public class ITestPlaintextAuthConnection
 {
     private static boolean security;
-    private static boolean securityClientCert;
+    private static boolean tls;
     private RiakCluster cluster;
 
     @BeforeClass
@@ -26,12 +26,11 @@ public class ITestJKSSecuredConnection
         /**
          * Riak security.
          *
-         * If you want to test SSL/AUTH, you need to set up your system as described
+         * If you want to test AUTH, you need to set up your system as described
          * in the README.md's "Security Tests" section.
          */
-
         security = Boolean.parseBoolean(System.getProperty("com.basho.riak.security"));
-        securityClientCert = Boolean.parseBoolean(System.getProperty("com.basho.riak.security.clientcert"));
+        tls = Boolean.parseBoolean(System.getProperty("com.basho.riak.security.tls"));
     }
 
     @After
@@ -44,11 +43,12 @@ public class ITestJKSSecuredConnection
     }
 
     @Test
-    public void testCetificateBasedAuthentication() throws Exception
+    public void testPlaintextAuthentication() throws Exception
     {
-        Assume.assumeTrue(securityClientCert);
+        Assume.assumeTrue(security);
+        Assume.assumeFalse(tls);
 
-        cluster = RiakJKSConnection.getRiakCluster("riakuser", "riakuser", "riak_cert_user.jks", "riak123", "");
+        cluster = RiakPlaintextAuthConnection.getRiakCluster("riakpass", "Test1234");
 
         assertCanGetConnection();
     }
@@ -57,18 +57,9 @@ public class ITestJKSSecuredConnection
     public void testTrustBasedAuthentication() throws Exception
     {
         Assume.assumeTrue(security);
+        Assume.assumeFalse(tls);
 
-        cluster = RiakJKSConnection.getRiakCluster("riak_trust_user", "riak_trust_user");
-
-        assertCanGetConnection();
-    }
-
-    @Test
-    public void testPasswordBasedAuthentication() throws Exception
-    {
-        Assume.assumeTrue(security);
-
-        cluster = RiakJKSConnection.getRiakCluster("riakpass", "Test1234");
+        cluster = RiakPlaintextAuthConnection.getRiakCluster("riak_trust_user", "riak_trust_user");
 
         assertCanGetConnection();
     }
