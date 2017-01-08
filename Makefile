@@ -1,14 +1,20 @@
 .PHONY: all clean compile protogen configure-security-certs help
 .PHONY: test unit-test integration-test
-.PHONY: integration-test-timeseries integration-test-hll integration-test-security
+.PHONY: integration-test-timeseries integration-test-hll
+.PHONY: integration-test-security integration-test-security-tls
 
 PROJDIR = $(realpath $(CURDIR))
 RESOURCES_DIR = $(PROJDIR)/src/test/resources/
 CA_DIR = $(PROJDIR)/tools/test-ca
 CERTS_DIR = $(CA_DIR)/certs
 PRIVATE_DIR = $(CA_DIR)/private
-RIAK_PORT ?= 808f
+RIAK_PORT ?= 8087
+RIAK_TLS_PORT ?= 8487
 RUN_YOKOZUNA ?= true
+
+# NB: to enable test debug logging, run:
+# make TEST_DEBUG=test-debug-logging ...
+TEST_DEBUG ?= default
 
 all: test
 
@@ -26,16 +32,26 @@ unit-test:
 	mvn test
 
 integration-test:
-	mvn -Pitest,default -Dcom.basho.riak.yokozuna=$(RUN_YOKOZUNA) -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
+	mvn -Pitest,$(TEST_DEBUG) -Dcom.basho.riak.yokozuna=$(RUN_YOKOZUNA) -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
 
 integration-test-hll:
-	mvn -Pitest,default -Dcom.basho.riak.yokozuna=false -Dcom.basho.riak.pbcport=$(RIAK_PORT) -Dcom.basho.riak.hlldt=true verify
+	mvn -Pitest,$(TEST_DEBUG) -Dcom.basho.riak.yokozuna=false -Dcom.basho.riak.pbcport=$(RIAK_PORT) -Dcom.basho.riak.hlldt=true verify
 
 integration-test-timeseries:
-	mvn -Pitest,default -Dcom.basho.riak.yokozuna=false -Dcom.basho.riak.timeseries=true -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
+	mvn -Pitest,$(TEST_DEBUG) -Dcom.basho.riak.yokozuna=false -Dcom.basho.riak.timeseries=true -Dcom.basho.riak.pbcport=$(RIAK_PORT) verify
 
 integration-test-security: configure-security-certs
-	mvn -Pitest,default -Dcom.basho.riak.yokozuna=$(RUN_YOKOZUNA) -Dcom.basho.riak.security=true -Dcom.basho.riak.security.clientcert=true -Dcom.basho.riak.pbcport=$(RIAK_PORT) test-compile failsafe:integration-test
+	mvn -Pitest,$(TEST_DEBUG) -Dcom.basho.riak.yokozuna=$(RUN_YOKOZUNA) \
+		-Dcom.basho.riak.security=true \
+		-Dcom.basho.riak.security.clientcert=true \
+		-Dcom.basho.riak.pbcport=$(RIAK_PORT) test-compile failsafe:integration-test
+
+integration-test-security-tls: configure-security-certs
+	mvn -Pitest,$(TEST_DEBUG) -Dcom.basho.riak.yokozuna=$(RUN_YOKOZUNA) \
+		-Dcom.basho.riak.security=true \
+		-Dcom.basho.riak.security.startTls=false \
+		-Dcom.basho.riak.security.clientcert=true \
+		-Dcom.basho.riak.pbcport=$(RIAK_TLS_PORT) test-compile failsafe:integration-test
 
 protogen:
 	mvn -Pprotobuf-generate generate-sources

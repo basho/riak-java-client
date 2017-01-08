@@ -146,6 +146,9 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
 
     private void init(ChannelHandlerContext chc)
     {
+        promise = new DefaultPromise<>(chc.executor());
+        promiseLatch.countDown();
+
         if (state == State.SSL_WAIT)
         {
             // NB: nothing else to do, on TLS handshake completion state
@@ -169,8 +172,6 @@ public class RiakSecurityDecoder extends ByteToMessageDecoder
                     throw new IllegalStateException("Unexpected TLS state: " + state);
             }
 
-            promise = new DefaultPromise<>(chc.executor());
-            promiseLatch.countDown();
             chc.channel().writeAndFlush(msg);
         }
     }

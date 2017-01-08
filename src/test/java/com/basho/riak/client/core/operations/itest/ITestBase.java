@@ -239,7 +239,13 @@ public abstract class ITestBase
         ks.setCertificateEntry("cacert", caCert);
 
         builder.withAuth("riakpass", "Test1234", ks);
-        builder.withTls(true, true);
+
+        // NB: set to "false" to test using Riak 2.3 and later tls-only port
+        // don't also forget to set the Riak port with com.basho.riak.pbcport
+        final boolean startTls =
+            Boolean.parseBoolean(System.getProperty("com.basho.riak.security.startTls", "true"));
+
+        builder.withTls(true, startTls);
     }
 
     protected void setBucketNameToTestName()

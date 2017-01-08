@@ -23,6 +23,10 @@ public class RiakJKSConnection
      */
     private static final int testRiakPort = Integer.getInteger("com.basho.riak.pbcport", RiakNode.Builder.DEFAULT_REMOTE_PORT);
 
+    // NB: set to "false" to test using Riak 2.3 and later tls-only port
+    // don't also forget to set the Riak port with com.basho.riak.pbcport
+    private static final boolean startTls = Boolean.parseBoolean(System.getProperty("com.basho.riak.security.startTls", "true"));
+
     /**
      * Load Keystore using the storeFilePath and storePassword
      * @param storePath path to the Keystore file
@@ -93,7 +97,7 @@ public class RiakJKSConnection
     {
         RiakNode.Builder builder = createRiakNodeBuilder();
         builder.withAuth(username, password, trustStore);
-        builder.withTls(true, true);
+        builder.withTls(true, startTls);
         RiakCluster cluster = initializeRiakCluster(builder);
 
         return cluster;
@@ -131,7 +135,7 @@ public class RiakJKSConnection
 
         RiakNode.Builder builder = createRiakNodeBuilder();
         builder.withAuth(username, password, trustStore, keyStore, keyPasswd);
-        builder.withTls(true, true);
+        builder.withTls(true, startTls);
         RiakCluster cluster = initializeRiakCluster(builder);
 
         return cluster;
