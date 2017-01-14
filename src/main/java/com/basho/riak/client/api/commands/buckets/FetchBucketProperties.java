@@ -19,6 +19,7 @@ package com.basho.riak.client.api.commands.buckets;
 import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
+import java.util.Objects;
 
 /**
  * Command used to fetch the properties of a bucket in Riak.
@@ -49,6 +50,23 @@ public final class FetchBucketProperties extends AsIsRiakCommand<FetchBucketProp
     protected FetchBucketPropsOperation buildCoreOperation()
     {
         return new FetchBucketPropsOperation.Builder(namespace).build();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof FetchBucketProperties)) {
+            return false;
+        }
+        FetchBucketProperties otherFetchBucketProperties = (FetchBucketProperties) other;
+        return Objects.equals(namespace, otherFetchBucketProperties.namespace);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(namespace);
     }
 
     /**
