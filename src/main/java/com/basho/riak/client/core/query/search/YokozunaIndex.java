@@ -15,6 +15,8 @@
  */
 package com.basho.riak.client.core.query.search;
 
+import java.util.Objects;
+
 /**
  * Represents a Yokozuna Index.
  *
@@ -114,5 +116,24 @@ public class YokozunaIndex
     public Integer getNVal()
     {
         return nVal;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof YokozunaIndex)) {
+            return false;
+        }
+        YokozunaIndex otherYokozunaIndex = (YokozunaIndex) other;
+        return Objects.equals(name, otherYokozunaIndex.name) &&
+                Objects.equals(schema, otherYokozunaIndex.schema) &&
+                Objects.equals(nVal, otherYokozunaIndex.nVal);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, schema, nVal);
     }
 }
