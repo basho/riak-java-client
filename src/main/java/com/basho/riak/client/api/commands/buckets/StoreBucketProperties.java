@@ -20,6 +20,7 @@ import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.functions.Function;
+import java.util.Objects;
 
 /**
  * Command used to store (modify) the properties of a bucket in Riak.
@@ -213,6 +214,48 @@ public final class StoreBucketProperties extends AsIsRiakCommand<Void, Namespace
         }
 
         return builder.build();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof StoreBucketProperties)) {
+            return false;
+        }
+        StoreBucketProperties otherStoreBucketProperties = (StoreBucketProperties) other;
+        return Objects.equals(namespace, otherStoreBucketProperties.namespace) &&
+                Objects.equals(allowMulti, otherStoreBucketProperties.allowMulti) &&
+                Objects.equals(backend, otherStoreBucketProperties.backend) &&
+                Objects.equals(basicQuorum, otherStoreBucketProperties.basicQuorum) &&
+                Objects.equals(bigVClock, otherStoreBucketProperties.bigVClock) &&
+                Objects.equals(chashkeyFunction, otherStoreBucketProperties.chashkeyFunction) &&
+                Objects.equals(lastWriteWins, otherStoreBucketProperties.lastWriteWins) &&
+                Objects.equals(linkWalkFunction, otherStoreBucketProperties.linkWalkFunction) &&
+                Objects.equals(rw, otherStoreBucketProperties.rw) &&
+                Objects.equals(dw, otherStoreBucketProperties.dw) &&
+                Objects.equals(w, otherStoreBucketProperties.w) &&
+                Objects.equals(r, otherStoreBucketProperties.r) &&
+                Objects.equals(pr, otherStoreBucketProperties.pr) &&
+                Objects.equals(pw, otherStoreBucketProperties.pw) &&
+                Objects.equals(notFoundOk, otherStoreBucketProperties.notFoundOk) &&
+                Objects.equals(preCommitHook, otherStoreBucketProperties.preCommitHook) &&
+                Objects.equals(postCommitHook, otherStoreBucketProperties.postCommitHook) &&
+                Objects.equals(oldVClock, otherStoreBucketProperties.oldVClock) &&
+                Objects.equals(youngVClock, otherStoreBucketProperties.youngVClock) &&
+                Objects.equals(smallVClock, otherStoreBucketProperties.smallVClock) &&
+                Objects.equals(nval, otherStoreBucketProperties.nval) &&
+                Objects.equals(legacySearch, otherStoreBucketProperties.legacySearch) &&
+                Objects.equals(searchIndex, otherStoreBucketProperties.searchIndex) &&
+                Objects.equals(hllPrecision, otherStoreBucketProperties.hllPrecision);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(namespace, allowMulti, backend, basicQuorum, bigVClock, chashkeyFunction, lastWriteWins,
+                linkWalkFunction, rw, dw, w, r, pr, pw, notFoundOk, preCommitHook, postCommitHook, oldVClock,
+                youngVClock, smallVClock, nval, legacySearch, searchIndex, hllPrecision);
     }
 
     public static class Builder
