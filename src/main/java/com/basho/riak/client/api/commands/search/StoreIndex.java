@@ -3,6 +3,7 @@ package com.basho.riak.client.api.commands.search;
 import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.YzPutIndexOperation;
 import com.basho.riak.client.core.query.search.YokozunaIndex;
+import java.util.Objects;
 
 /**
  * Command used to store a search index in Riak.
@@ -34,6 +35,24 @@ public final class StoreIndex extends AsIsRiakCommand<Void, YokozunaIndex>
         }
 
         return opBuilder.build();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof StoreIndex)) {
+            return false;
+        }
+        Builder otherStoreIndex = ((StoreIndex) other).cmdBuilder;
+        return Objects.equals(cmdBuilder.index, otherStoreIndex.index)
+                && Objects.equals(cmdBuilder.timeout, otherStoreIndex.timeout);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(cmdBuilder.index, cmdBuilder.timeout);
     }
 
     /**
