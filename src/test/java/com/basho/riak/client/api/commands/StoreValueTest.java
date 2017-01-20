@@ -29,11 +29,7 @@ import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
 import com.basho.riak.client.core.query.RiakObjectTest;
-import com.basho.riak.client.core.query.indexes.StringBinIndex;
-import com.basho.riak.client.core.query.links.RiakLink;
-import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakKvPB;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -79,7 +75,7 @@ public class StoreValueTest
         when(mockFuture.isDone()).thenReturn(true);
         when(mockCluster.execute(any(FutureOperation.class))).thenReturn(mockFuture);
         client = new RiakClient(mockCluster);
-        riakObject = RiakObjectTest.CreateFilledObject();
+        riakObject = RiakObjectTest.createFilledObject();
     }
 
     @Test
@@ -114,8 +110,8 @@ public class StoreValueTest
     @Test
     public void testEqualsWithRiakObject()
     {
-        final RiakObject riakObject1 = RiakObjectTest.CreateFilledObject();
-        final RiakObject riakObject2 = RiakObjectTest.CreateFilledObject();
+        final RiakObject riakObject1 = RiakObjectTest.createFilledObject();
+        final RiakObject riakObject2 = RiakObjectTest.createFilledObject();
 
         final StoreValue value1 = filledStoreValue(riakObject1);
         final StoreValue value2 = filledStoreValue(riakObject2);

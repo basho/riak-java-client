@@ -30,6 +30,7 @@ import com.basho.riak.client.core.util.BinaryValue;
  */
 public class RawIndex extends RiakIndex<BinaryValue>
 {
+    private static final long serialVersionUID = -9062911855629713886L;
     private RawIndex(Name name)
     {
         super(name);

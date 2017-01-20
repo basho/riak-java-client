@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.query.links;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,8 +28,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see RiakLink
  * @since 2.0
  */
-public class RiakLinks implements Iterable<RiakLink>
+public class RiakLinks implements Iterable<RiakLink>, Serializable
 {
+    private static final long serialVersionUID = 8826161124877321843L;
     private final Set<RiakLink> links = Collections.newSetFromMap(new ConcurrentHashMap<RiakLink, Boolean>());
 
     /**

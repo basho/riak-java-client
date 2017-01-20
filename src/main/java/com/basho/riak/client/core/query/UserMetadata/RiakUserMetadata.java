@@ -18,6 +18,7 @@ package com.basho.riak.client.core.query.UserMetadata;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.DefaultCharset;
 
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
@@ -41,8 +42,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see com.basho.riak.client.core.query.RiakObject#getUserMeta()
  * @since 2.0
  */
-public class RiakUserMetadata
+public class RiakUserMetadata implements Serializable
 {
+    private static final long serialVersionUID = 9001811266201347973L;
     private final ConcurrentHashMap<BinaryValue, BinaryValue> meta = new ConcurrentHashMap<>();
 
     /**

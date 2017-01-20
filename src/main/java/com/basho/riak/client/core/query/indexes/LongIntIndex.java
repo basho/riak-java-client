@@ -34,6 +34,7 @@ import java.nio.charset.Charset;
  */
 public class LongIntIndex extends RiakIndex<Long>
 {
+    private static final long serialVersionUID = 6311824439922246390L;
     private LongIntIndex(Name name)
     {
         super(name);

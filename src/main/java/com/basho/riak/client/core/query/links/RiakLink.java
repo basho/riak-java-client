@@ -18,6 +18,7 @@ package com.basho.riak.client.core.query.links;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.DefaultCharset;
 
+import java.io.Serializable;
 import java.nio.charset.Charset;
 
 /**
@@ -36,8 +37,9 @@ import java.nio.charset.Charset;
  * @author Brian Roach <roach at basho dot com>
  * @since 1.0
  */
-public class RiakLink
+public class RiakLink implements Serializable
 {
+    private static final long serialVersionUID = -4016542401563611460L;
     private final BinaryValue bucket;
     private final BinaryValue key;
     private final BinaryValue tag;

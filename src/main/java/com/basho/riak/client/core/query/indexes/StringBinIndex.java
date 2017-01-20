@@ -46,7 +46,8 @@ import java.nio.charset.Charset;
  */
 public class StringBinIndex extends RiakIndex<String>
 {
-    private final Charset charset;
+    private static final long serialVersionUID = -5151153157935896563L;
+    private transient Charset charset;
 
     private StringBinIndex(Name name)
     {
@@ -109,5 +110,20 @@ public class StringBinIndex extends RiakIndex<String>
         {
             return new StringBinIndex(this);
         }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream stream)
+            throws java.io.IOException
+    {
+        stream.defaultWriteObject();
+        stream.writeUTF(charset.name());
+    }
+
+    private void readObject(java.io.ObjectInputStream stream)
+            throws java.io.IOException, ClassNotFoundException
+    {
+        stream.defaultReadObject();
+        final String charsetName = stream.readUTF();
+        charset = Charset.forName(charsetName);
     }
 }
