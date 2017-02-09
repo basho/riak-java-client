@@ -4,6 +4,8 @@ import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.YzPutIndexOperation;
 import com.basho.riak.client.core.query.search.YokozunaIndex;
 
+import java.util.Objects;
+
 /**
  * Command used to store a search index in Riak.
  * <p>
@@ -36,6 +38,31 @@ public final class StoreIndex extends AsIsRiakCommand<Void, YokozunaIndex>
         return opBuilder.build();
     }
 
+    @Override
+    public boolean equals(Object other)
+    {
+        if (this == other)
+        {
+            return true;
+        }
+
+        if (!(other instanceof StoreIndex))
+        {
+            return false;
+        }
+
+        Builder otherStoreIndex = ((StoreIndex) other).cmdBuilder;
+
+        return Objects.equals(cmdBuilder.index, otherStoreIndex.index) &&
+               Objects.equals(cmdBuilder.timeout, otherStoreIndex.timeout);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(cmdBuilder.index, cmdBuilder.timeout);
+    }
+
     /**
      * Builder for a StoreIndex command.
      */
@@ -60,6 +87,7 @@ public final class StoreIndex extends AsIsRiakCommand<Void, YokozunaIndex>
          * By default, riak has a 45s timeout for Yokozuna index creation.
          * Setting this value will override that default for this operation.
          * </p>
+         *
          * @param timeout the timeout in milliseconds to be sent to riak.
          * @return a reference to this object.
          */

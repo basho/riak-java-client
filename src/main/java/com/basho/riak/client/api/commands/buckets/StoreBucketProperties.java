@@ -21,6 +21,8 @@ import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.functions.Function;
 
+import java.util.Objects;
+
 /**
  * Command used to store (modify) the properties of a bucket in Riak.
  * <p>
@@ -28,11 +30,12 @@ import com.basho.riak.client.core.query.functions.Function;
  * {@code
  * Namespace ns = new Namespace("my_type", "my_bucket");
  * StoreBucketProperties sbp =
- *  new StoreBucketProperties.Builder(ns)
- *      .withAllowMulti(true)
- *      .build();
+ * new StoreBucketProperties.Builder(ns)
+ * .withAllowMulti(true)
+ * .build();
  * client.execute(sbp);}</pre>
  * </p>
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -94,8 +97,7 @@ public final class StoreBucketProperties extends AsIsRiakCommand<Void, Namespace
     @Override
     protected StoreBucketPropsOperation buildCoreOperation()
     {
-        StoreBucketPropsOperation.Builder builder =
-            new StoreBucketPropsOperation.Builder(namespace);
+        StoreBucketPropsOperation.Builder builder = new StoreBucketPropsOperation.Builder(namespace);
 
         if (allowMulti != null)
         {
@@ -215,6 +217,76 @@ public final class StoreBucketProperties extends AsIsRiakCommand<Void, Namespace
         return builder.build();
     }
 
+    @Override
+    public boolean equals(Object other)
+    {
+        if (this == other)
+        {
+            return true;
+        }
+
+        if (!(other instanceof StoreBucketProperties))
+        {
+            return false;
+        }
+
+        StoreBucketProperties otherStoreBucketProperties = (StoreBucketProperties) other;
+
+        return Objects.equals(namespace, otherStoreBucketProperties.namespace) &&
+               Objects.equals(allowMulti, otherStoreBucketProperties.allowMulti) &&
+               Objects.equals(backend, otherStoreBucketProperties.backend) &&
+               Objects.equals(basicQuorum, otherStoreBucketProperties.basicQuorum) &&
+               Objects.equals(bigVClock, otherStoreBucketProperties.bigVClock) &&
+               Objects.equals(chashkeyFunction, otherStoreBucketProperties.chashkeyFunction) &&
+               Objects.equals(lastWriteWins, otherStoreBucketProperties.lastWriteWins) &&
+               Objects.equals(linkWalkFunction, otherStoreBucketProperties.linkWalkFunction) &&
+               Objects.equals(rw, otherStoreBucketProperties.rw) &&
+               Objects.equals(dw, otherStoreBucketProperties.dw) &&
+               Objects.equals(w, otherStoreBucketProperties.w) &&
+               Objects.equals(r, otherStoreBucketProperties.r) &&
+               Objects.equals(pr, otherStoreBucketProperties.pr) &&
+               Objects.equals(pw, otherStoreBucketProperties.pw) &&
+               Objects.equals(notFoundOk, otherStoreBucketProperties.notFoundOk) &&
+               Objects.equals(preCommitHook, otherStoreBucketProperties.preCommitHook) &&
+               Objects.equals(postCommitHook, otherStoreBucketProperties.postCommitHook) &&
+               Objects.equals(oldVClock, otherStoreBucketProperties.oldVClock) &&
+               Objects.equals(youngVClock, otherStoreBucketProperties.youngVClock) &&
+               Objects.equals(smallVClock, otherStoreBucketProperties.smallVClock) &&
+               Objects.equals(nval, otherStoreBucketProperties.nval) &&
+               Objects.equals(legacySearch, otherStoreBucketProperties.legacySearch) &&
+               Objects.equals(searchIndex, otherStoreBucketProperties.searchIndex) &&
+               Objects.equals(hllPrecision, otherStoreBucketProperties.hllPrecision);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(namespace,
+                            allowMulti,
+                            backend,
+                            basicQuorum,
+                            bigVClock,
+                            chashkeyFunction,
+                            lastWriteWins,
+                            linkWalkFunction,
+                            rw,
+                            dw,
+                            w,
+                            r,
+                            pr,
+                            pw,
+                            notFoundOk,
+                            preCommitHook,
+                            postCommitHook,
+                            oldVClock,
+                            youngVClock,
+                            smallVClock,
+                            nval,
+                            legacySearch,
+                            searchIndex,
+                            hllPrecision);
+    }
+
     public static class Builder
     {
         private final Namespace namespace;
@@ -282,7 +354,7 @@ public final class StoreBucketProperties extends AsIsRiakCommand<Void, Namespace
 
         /**
          * Set the basic_quorum value.
-         *
+         * <p>
          * The parameter controls whether a read request should return early in
          * some fail cases. E.g. If a quorum of nodes has already returned
          * notfound/error, don't wait around for the rest.
@@ -301,7 +373,9 @@ public final class StoreBucketProperties extends AsIsRiakCommand<Void, Namespace
          *
          * @param bigVClock a long representing a epoch time value.
          * @return a reference to this object.
-         * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a>
+         * @see
+         * <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
+         * Clock Pruning</a>
          */
         public Builder withBigVClock(Long bigVClock)
         {
@@ -475,7 +549,9 @@ public final class StoreBucketProperties extends AsIsRiakCommand<Void, Namespace
          *
          * @param oldVClock an long representing a epoch time value.
          * @return a reference to this object.
-         * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a>
+         * @see
+         * <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
+         * Clock Pruning</a>
          */
         public Builder withOldVClock(Long oldVClock)
         {
@@ -488,7 +564,9 @@ public final class StoreBucketProperties extends AsIsRiakCommand<Void, Namespace
          *
          * @param youngVClock a long representing a epoch time value.
          * @return a reference to this object.
-         * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a>
+         * @see
+         * <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
+         * Clock Pruning</a>
          */
         public Builder withYoungVClock(Long youngVClock)
         {
@@ -501,7 +579,9 @@ public final class StoreBucketProperties extends AsIsRiakCommand<Void, Namespace
          *
          * @param smallVClock a long representing a epoch time value.
          * @return a reference to this object.
-         * @see <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector Clock Pruning</a>
+         * @see
+         * <a href="http://docs.basho.com/riak/latest/theory/concepts/Vector-Clocks/#Vector-Clock-Pruning">Vector
+         * Clock Pruning</a>
          */
         public Builder withSmallVClock(Long smallVClock)
         {
@@ -528,11 +608,11 @@ public final class StoreBucketProperties extends AsIsRiakCommand<Void, Namespace
         /**
          * Enable Legacy Riak Search. Setting this to true causes the search
          * pre-commit hook to be added.
-         *
+         * <p>
          * <b>Note this is only for legacy Riak (&lt; v2.0) Search support.</b>
          *
          * @param enable add/remove (true/false) the pre-commit hook for Legacy
-         * Riak Search.
+         *               Riak Search.
          * @return a reference to this object.
          */
         public Builder withLegacyRiakSearchEnabled(boolean enable)
