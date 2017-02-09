@@ -20,6 +20,8 @@ import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
 
+import java.util.Objects;
+
 /**
  * Command used to fetch the properties of a bucket in Riak.
  * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
@@ -30,9 +32,11 @@ import com.basho.riak.client.core.query.Namespace;
  * FetchBucketProperties fbp = new FetchBucketProperties.Builder(ns).build();
  * FetchBucketPropsOperation.Response resp = client.execute(fbp);
  * BucketProperties props = resp.getBucketProperties();}</pre>
- * Note that this simply returns the core response {@link com.basho.riak.client.core.operations.FetchBucketPropsOperation.Response}
- *
+ * Note that this simply returns the core response
+ * {@link com.basho.riak.client.core.operations.FetchBucketPropsOperation.Response}
+ * <p>
  * </p>
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -51,6 +55,30 @@ public final class FetchBucketProperties extends AsIsRiakCommand<FetchBucketProp
         return new FetchBucketPropsOperation.Builder(namespace).build();
     }
 
+    @Override
+    public boolean equals(Object other)
+    {
+        if (this == other)
+        {
+            return true;
+        }
+
+        if (!(other instanceof FetchBucketProperties))
+        {
+            return false;
+        }
+
+        FetchBucketProperties otherFetchBucketProperties = (FetchBucketProperties) other;
+
+        return Objects.equals(namespace, otherFetchBucketProperties.namespace);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(namespace);
+    }
+
     /**
      * Builder used to construct a FetchBucketPoperties command.
      */
@@ -60,6 +88,7 @@ public final class FetchBucketProperties extends AsIsRiakCommand<FetchBucketProp
 
         /**
          * Construct a Builder for a FetchBucketProperties command.
+         *
          * @param namespace The namespace for the bucket.
          */
         public Builder(Namespace namespace)
@@ -73,6 +102,7 @@ public final class FetchBucketProperties extends AsIsRiakCommand<FetchBucketProp
 
         /**
          * Construct a new FetchBucketProperties command.
+         *
          * @return a new FetchBucketProperties command.
          */
         public FetchBucketProperties build()

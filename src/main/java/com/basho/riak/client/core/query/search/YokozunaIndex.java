@@ -15,6 +15,8 @@
  */
 package com.basho.riak.client.core.query.search;
 
+import java.util.Objects;
+
 /**
  * Represents a Yokozuna Index.
  *
@@ -28,7 +30,7 @@ public class YokozunaIndex
 
     /**
      * Constructs a Yokozuna index without naming the schema.
-     *
+     * <p>
      * Due to an implementation detail on the Riak side, the index name is restricted
      * to US-ASCII characters. The supplied String is converted to bytes
      * using the UTF-8 Charset.
@@ -46,7 +48,7 @@ public class YokozunaIndex
      * to US-ASCII characters. The supplied String is converted to bytes
      * using the UTF-8 Charset.
      *
-     * @param name The name of the index.
+     * @param name   The name of the index.
      * @param schema The name of a schema
      */
     public YokozunaIndex(String name, String schema)
@@ -89,6 +91,7 @@ public class YokozunaIndex
 
     /**
      * Returns the schema name for this index.
+     *
      * @return The schema name.
      */
     public String getSchema()
@@ -114,5 +117,31 @@ public class YokozunaIndex
     public Integer getNVal()
     {
         return nVal;
+    }
+
+    @Override
+    public boolean equals(Object other)
+    {
+        if (this == other)
+        {
+            return true;
+        }
+
+        if (!(other instanceof YokozunaIndex))
+        {
+            return false;
+        }
+
+        YokozunaIndex otherYokozunaIndex = (YokozunaIndex) other;
+
+        return Objects.equals(name, otherYokozunaIndex.name) &&
+               Objects.equals(schema, otherYokozunaIndex.schema) &&
+               Objects.equals(nVal, otherYokozunaIndex.nVal);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(name, schema, nVal);
     }
 }
