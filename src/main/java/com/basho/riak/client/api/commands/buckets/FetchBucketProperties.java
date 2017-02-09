@@ -19,6 +19,7 @@ package com.basho.riak.client.api.commands.buckets;
 import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.FetchBucketPropsOperation;
 import com.basho.riak.client.core.query.Namespace;
+
 import java.util.Objects;
 
 /**
@@ -31,9 +32,11 @@ import java.util.Objects;
  * FetchBucketProperties fbp = new FetchBucketProperties.Builder(ns).build();
  * FetchBucketPropsOperation.Response resp = client.execute(fbp);
  * BucketProperties props = resp.getBucketProperties();}</pre>
- * Note that this simply returns the core response {@link com.basho.riak.client.core.operations.FetchBucketPropsOperation.Response}
- *
+ * Note that this simply returns the core response
+ * {@link com.basho.riak.client.core.operations.FetchBucketPropsOperation.Response}
+ * <p>
  * </p>
+ *
  * @author Dave Rusek <drusek at basho dot com>
  * @since 2.0
  */
@@ -53,19 +56,26 @@ public final class FetchBucketProperties extends AsIsRiakCommand<FetchBucketProp
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (this == other) {
+    public boolean equals(Object other)
+    {
+        if (this == other)
+        {
             return true;
         }
-        if (!(other instanceof FetchBucketProperties)) {
+
+        if (!(other instanceof FetchBucketProperties))
+        {
             return false;
         }
+
         FetchBucketProperties otherFetchBucketProperties = (FetchBucketProperties) other;
+
         return Objects.equals(namespace, otherFetchBucketProperties.namespace);
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return Objects.hash(namespace);
     }
 
@@ -78,6 +88,7 @@ public final class FetchBucketProperties extends AsIsRiakCommand<FetchBucketProp
 
         /**
          * Construct a Builder for a FetchBucketProperties command.
+         *
          * @param namespace The namespace for the bucket.
          */
         public Builder(Namespace namespace)
@@ -91,6 +102,7 @@ public final class FetchBucketProperties extends AsIsRiakCommand<FetchBucketProp
 
         /**
          * Construct a new FetchBucketProperties command.
+         *
          * @return a new FetchBucketProperties command.
          */
         public FetchBucketProperties build()
