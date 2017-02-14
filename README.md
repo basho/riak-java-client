@@ -99,13 +99,20 @@ com.basho.riak.yokozuna | true | Riak KV 2.0 Solr/Yokozuna Search Tests
 com.basho.riak.2i | true | Riak KV Secondary Index Tests
 com.basho.riak.mr | true | Riak KV MapReduce Tests
 com.basho.riak.crdt | true | Riak KV 2.0 Data Type Tests
-com.basho.riak.hlldt | true | Riak KV 2.2 HyperLogLog Data Type Tests
 com.basho.riak.lifecycle | true | Java Client Node/Cluster Lifecycle Tests
 com.basho.riak.timeseries | false | Riak TS TimeSeries Tests
 com.basho.riak.riakSearch | false | Riak KV 1.0 Legacy Search Tests
 com.basho.riak.coveragePlan | false | Riak KV/TS Coverage Plan Tests <br>(need cluster to run these )
 com.basho.riak.security | false | Riak Security Tests
 com.basho.riak.clientcert | false | Riak Security Tests with Certificates
+
+To run the HyperLogLog or GSet Data Type tests, you must have two test bucket types setup as following:
+```
+riak-admin bucket-type create gsets '{"props":{"allow_mult":true, "datatype": "gset"}}'
+riak-admin bucket-type create hlls '{"props":{"allow_mult":true, "datatype": "hll"}}'
+riak-admin bucket-type activate gsets
+riak-admin bucket-type activate hlls
+```
 
 Some tests may require more than one feature to run, so please check the test to see which ones are required before running.
 

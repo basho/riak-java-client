@@ -96,6 +96,10 @@ public class CrdtResponseConverter
         {
             element = parseHll(response.getHllValue());
         }
+        else if (response.getGsetValueCount() > 0)
+        {
+            element = parseSet(response.getGsetValueList());
+        }
 
         return element;
     }
@@ -116,6 +120,9 @@ public class CrdtResponseConverter
                 break;
             case HLL:
                 element = parseHll(response.getValue().getHllValue());
+                break;
+            case GSET:
+                element = parseSet(response.getValue().getGsetValueList());
                 break;
             default:
                 throw new IllegalStateException("No known datatype returned");

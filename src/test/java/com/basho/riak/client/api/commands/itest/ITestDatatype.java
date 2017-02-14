@@ -14,6 +14,7 @@ import org.junit.Test;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -30,7 +31,8 @@ public class ITestDatatype extends ITestAutoCleanupBase
     private final String shoppingCart = "cart";
 
     private final Namespace carts = new Namespace(mapBucketType, bucketName);
-    private final Namespace uniqueUsers = new Namespace(hllBucketType, BinaryValue.create("uniqueUsers"));
+    private final Namespace uniqueUsersCount = new Namespace(hllBucketType, BinaryValue.create("uniqueUsersCount"));
+    private final Namespace uniqueUsers = new Namespace(gsetBucketType, BinaryValue.create("uniqueUsers"));
 
     private final RiakClient client = new RiakClient(cluster);
 
@@ -150,13 +152,13 @@ public class ITestDatatype extends ITestAutoCleanupBase
     public void testHyperLogLog() throws ExecutionException, InterruptedException
     {
         Assume.assumeTrue(testHllDataType);
-        resetAndEmptyBucket(uniqueUsers);
+        resetAndEmptyBucket(uniqueUsersCount);
 
         HllUpdate hllUpdate = new HllUpdate().add("user1").add("user2")
                                              .addAll(Arrays.asList("foo", "bar", "baz"))
                                              .add("user1");
 
-        final UpdateHll hllUpdateCmd = new UpdateHll.Builder(uniqueUsers, hllUpdate)
+        final UpdateHll hllUpdateCmd = new UpdateHll.Builder(uniqueUsersCount, hllUpdate)
                                                                     .withOption(Option.RETURN_BODY, true)
                                                                     .build();
 
@@ -165,7 +167,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
         assertNotNull(hllResponse.getDatatype());
         assertEquals(Long.valueOf(5), hllResponse.getDatatype().view());
 
-        final Location location = new Location(uniqueUsers, hllResponse.getGeneratedKey());
+        final Location location = new Location(uniqueUsersCount, hllResponse.getGeneratedKey());
 
         FetchHll hllFetchCmd = new FetchHll.Builder(location).build();
         final RiakHll fetchHll = client.execute(hllFetchCmd);
@@ -178,14 +180,49 @@ public class ITestDatatype extends ITestAutoCleanupBase
     public void testNotFoundHyperLogLog() throws ExecutionException, InterruptedException
     {
         Assume.assumeTrue(testHllDataType);
-        resetAndEmptyBucket(uniqueUsers);
+        resetAndEmptyBucket(uniqueUsersCount);
 
-        final Location location = new Location(uniqueUsers, "hll_not_found");
+        final Location location = new Location(uniqueUsersCount, "hll_not_found");
 
         FetchHll hllFetchCmd = new FetchHll.Builder(location).build();
         final RiakHll fetchHll = client.execute(hllFetchCmd);
 
         assertNotNull(fetchHll);
         assertEquals(0l, fetchHll.getCardinality());
+    }
+
+    @Test
+    public void testGSet() throws ExecutionException , InterruptedException
+    {
+        Assume.assumeTrue(testGSetDataType);
+        final Location location = new Location(uniqueUsers, "site-2017-01-01-" + new Random().nextLong());
+
+        FetchSet fetchSet = new FetchSet.Builder(location).build();
+        final FetchSet.Response initialFetchResponse = client.execute(fetchSet);
+
+        final RiakSet initialSet = initialFetchResponse.getDatatype();
+        assertTrue(initialSet.view().isEmpty());
+
+        GSetUpdate gsu = new GSetUpdate().add("user1").add("user2").add("user3");
+        UpdateSet us = new UpdateSet.Builder(location, gsu).withReturnDatatype(true).build();
+
+        final UpdateSet.Response updateResponse = client.execute(us);
+        final Set<BinaryValue> updatedSet = updateResponse.getDatatype().view();
+
+        assertFalse(updatedSet.isEmpty());
+        assertTrue(updatedSet.contains(BinaryValue.create("user1")));
+        assertTrue(updatedSet.contains(BinaryValue.create("user2")));
+        assertTrue(updatedSet.contains(BinaryValue.create("user3")));
+        assertFalse(updateResponse.hasContext());
+
+        final FetchSet.Response loadedFetchResponse = client.execute(fetchSet);
+
+        final Set<BinaryValue> loadedSet = loadedFetchResponse.getDatatype().view();
+
+        assertFalse(loadedSet.isEmpty());
+        assertTrue(loadedSet.contains(BinaryValue.create("user1")));
+        assertTrue(loadedSet.contains(BinaryValue.create("user2")));
+        assertTrue(loadedSet.contains(BinaryValue.create("user3")));
+        assertFalse(loadedFetchResponse.hasContext());
     }
 }
