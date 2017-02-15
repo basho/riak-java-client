@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.api.commands.kv;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
 import com.basho.riak.client.core.FutureOperation;
@@ -78,10 +79,15 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
     private final Namespace namespace;
     private final int timeout;
 
-    ListKeys(Builder builder)
+    ListKeys(Builder builder) throws ListException
     {
         this.namespace = builder.namespace;
         this.timeout = builder.timeout;
+
+        if (builder.allowListing == false)
+        {
+            throw new ListException();
+        }
     }
 
     @Override
@@ -163,6 +169,7 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
     {
         private final Namespace namespace;
         private int timeout;
+        private boolean allowListing;
 
         /**
          * Constructs a Builder for a ListKeys command.
@@ -175,6 +182,21 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
                 throw new IllegalArgumentException("Namespace cannot be null");
             }
             this.namespace = namespace;
+        }
+
+        /**
+         * Allow this listing command
+         * <p>
+         * Bucket and key list operations are expensive and should not
+         * be used in production, however using this method will allow
+         * the command to be built.
+         * </p>
+         * @return a reference to this object.
+         */
+            public Builder withAllowListing()
+        {
+            this.allowListing = true;
+            return this;
         }
 
         /**
@@ -196,7 +218,7 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
          * Construct the ListKeys command.
          * @return A ListKeys command.
          */
-        public ListKeys build()
+        public ListKeys build() throws ListException
         {
             return new ListKeys(this);
         }
