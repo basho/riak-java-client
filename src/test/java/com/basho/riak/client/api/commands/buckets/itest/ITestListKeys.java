@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -66,11 +67,19 @@ public class ITestListKeys extends ITestBase
     }
 
     @Test
-    public void testLargeStreamingListKeys() throws ListException, ExecutionException, InterruptedException
+    public void testLargeStreamingListKeys() throws ExecutionException, InterruptedException
     {
         assumeTrue(testBucketType);
 
-        ListKeys lk = new ListKeys.Builder(typedNamespace).withAllowListing().build();
+        ListKeys lk = null;
+        try
+        {
+            lk = new ListKeys.Builder(typedNamespace).withAllowListing().build();
+        }
+        catch (ListException ex)
+        {
+            fail(ex.getMessage());
+        }
 
         final RiakFuture<ListKeys.Response, Namespace> streamFuture =
                 client.executeAsyncStreaming(lk, 200);

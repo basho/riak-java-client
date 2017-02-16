@@ -16,6 +16,7 @@
 package com.basho.riak.client.api.commands.buckets;
 
 import com.basho.riak.client.api.commands.ChunkedResponseIterator;
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.StreamableRiakCommand;
 import com.basho.riak.client.core.FutureOperation;
 import com.basho.riak.client.core.StreamingRiakFuture;
@@ -68,10 +69,15 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
     private final int timeout;
     private final BinaryValue type;
 
-    ListBuckets(Builder builder)
+    ListBuckets(Builder builder) throws ListException
     {
         this.timeout = builder.timeout;
         this.type = builder.type;
+
+        if (builder.allowListing == false)
+        {
+            throw new ListException();
+        }
     }
 
     @Override
@@ -170,6 +176,7 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
     {
         private int timeout;
         private final BinaryValue type;
+        private boolean allowListing;
 
         /**
          * Construct a Builder for a ListBuckets command.
@@ -178,6 +185,21 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
         public Builder(String type)
         {
             this.type = BinaryValue.create(type);
+        }
+
+        /**
+         * Allow this listing command
+         * <p>
+         * Bucket and key list operations are expensive and should not
+         * be used in production, however using this method will allow
+         * the command to be built.
+         * </p>
+         * @return a reference to this object.
+         */
+            public Builder withAllowListing()
+        {
+            this.allowListing = true;
+            return this;
         }
 
         /**
@@ -208,7 +230,7 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
          * Construct a new ListBuckets command.
          * @return a new ListBuckets command.
          */
-        public ListBuckets build()
+        public ListBuckets build() throws ListException
         {
             return new ListBuckets(this);
         }

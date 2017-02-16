@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.buckets.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.buckets.ListBuckets;
 import com.basho.riak.client.api.commands.kv.StoreValue;
@@ -35,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -91,7 +93,15 @@ public class ITestListBuckets extends ITestBase
 
     private void testListBuckets(Namespace namespace) throws InterruptedException, ExecutionException
     {
-        ListBuckets listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType()).build();
+        ListBuckets listBucketsCommand = null;
+        try
+        {
+            listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType()).withAllowListing().build();
+        }
+        catch (ListException ex)
+        {
+            fail(ex.getMessage());
+        }
 
         final ListBuckets.Response listResponse = client.execute(listBucketsCommand);
 
@@ -109,7 +119,15 @@ public class ITestListBuckets extends ITestBase
 
     private void testListBucketsStreaming(Namespace namespace) throws InterruptedException, ExecutionException
     {
-        ListBuckets listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType()).build();
+        ListBuckets listBucketsCommand = null;
+        try
+        {
+            listBucketsCommand = new ListBuckets.Builder(namespace.getBucketType()).withAllowListing().build();
+        }
+        catch (ListException ex)
+        {
+            fail(ex.getMessage());
+        }
 
         final RiakFuture<ListBuckets.Response, BinaryValue> streamingFuture =
                 client.executeAsyncStreaming(listBucketsCommand, 500);
