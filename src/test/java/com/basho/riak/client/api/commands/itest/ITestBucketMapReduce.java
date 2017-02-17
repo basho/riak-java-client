@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.RiakFuture;
 import com.basho.riak.client.api.commands.buckets.StoreBucketProperties;
@@ -42,6 +43,7 @@ import org.junit.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -134,13 +136,21 @@ public class ITestBucketMapReduce extends ITestBase
     private void erlangBucketMR(String bucketType) throws InterruptedException, ExecutionException
     {
         Namespace ns = new Namespace(bucketType, mrBucketName);
-        BucketMapReduce bmr =
-            new BucketMapReduce.Builder()
+        BucketMapReduce bmr = null;
+        try
+        {
+            bmr = new BucketMapReduce.Builder()
+                .withAllowListing()
                 .withNamespace(ns)
                 .withMapPhase(Function.newErlangFunction("riak_kv_mapreduce", "map_object_value"), false)
                 .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_string_to_integer"), false)
                 .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_sort"), true)
                 .build();
+        }
+        catch (ListException ex)
+        {
+            fail(ex.getMessage());
+        }
 
          MapReduce.Response response = client.execute(bmr);
 
@@ -157,13 +167,21 @@ public class ITestBucketMapReduce extends ITestBase
     private void streamingErlangBucketMR(String bucketType) throws InterruptedException, ExecutionException
     {
         Namespace ns = new Namespace(bucketType, mrBucketName);
-        BucketMapReduce bmr =
-                new BucketMapReduce.Builder()
-                        .withNamespace(ns)
-                        .withMapPhase(Function.newErlangFunction("riak_kv_mapreduce", "map_object_value"), false)
-                        .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_string_to_integer"), false)
-                        .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_sort"), true)
-                        .build();
+        BucketMapReduce bmr = null;
+        try
+        {
+            bmr = new BucketMapReduce.Builder()
+                .withAllowListing()
+                .withNamespace(ns)
+                .withMapPhase(Function.newErlangFunction("riak_kv_mapreduce", "map_object_value"), false)
+                .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_string_to_integer"), false)
+                .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_sort"), true)
+                .build();
+        }
+        catch (ListException ex)
+        {
+            fail(ex.getMessage());
+        }
 
         final RiakFuture<MapReduce.Response, BinaryValue> streamingFuture =
                 client.executeAsyncStreaming(bmr, 10);
@@ -231,12 +249,20 @@ public class ITestBucketMapReduce extends ITestBase
     private void JsBucketMR(String bucketType) throws InterruptedException, ExecutionException
     {
         Namespace ns = new Namespace(bucketType, mrBucketName);
-        BucketMapReduce bmr =
-            new BucketMapReduce.Builder()
+        BucketMapReduce bmr = null;
+        try
+        {
+            bmr = new BucketMapReduce.Builder()
+                .withAllowListing()
                 .withNamespace(ns)
                 .withMapPhase(Function.newNamedJsFunction("Riak.mapValuesJson"), false)
                 .withReducePhase(Function.newNamedJsFunction("Riak.reduceNumericSort"), true)
                 .build();
+        }
+        catch (ListException ex)
+        {
+            fail(ex.getMessage());
+        }
 
         RiakFuture<MapReduce.Response, BinaryValue> future = client.executeAsync(bmr);
 
@@ -259,12 +285,20 @@ public class ITestBucketMapReduce extends ITestBase
     public void multiPhaseResult() throws InterruptedException, ExecutionException
     {
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, mrBucketName);
-        BucketMapReduce bmr =
-            new BucketMapReduce.Builder()
+        BucketMapReduce bmr = null;
+        try
+        {
+            bmr = new BucketMapReduce.Builder()
+                .withAllowListing()
                 .withNamespace(ns)
                 .withMapPhase(Function.newNamedJsFunction("Riak.mapValuesJson"), true)
                 .withReducePhase(Function.newNamedJsFunction("Riak.reduceNumericSort"), true)
                 .build();
+        }
+        catch (ListException ex)
+        {
+            fail(ex.getMessage());
+        }
 
         RiakFuture<MapReduce.Response, BinaryValue> future = client.executeAsync(bmr);
 
@@ -288,8 +322,11 @@ public class ITestBucketMapReduce extends ITestBase
     public void keyFilter() throws InterruptedException, ExecutionException
     {
         Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, mrBucketName);
-        BucketMapReduce bmr =
-            new BucketMapReduce.Builder()
+        BucketMapReduce bmr = null;
+        try
+        {
+            bmr = new BucketMapReduce.Builder()
+                .withAllowListing()
                 .withNamespace(ns)
                 .withMapPhase(Function.newNamedJsFunction("Riak.mapValuesJson"))
                 .withReducePhase(Function.newErlangFunction("riak_kv_mapreduce", "reduce_sort"),true)
@@ -297,6 +334,11 @@ public class ITestBucketMapReduce extends ITestBase
                 .withKeyFilter(new StringToIntFilter())
                 .withKeyFilter(new LogicalAndFilter(new LessThanFilter<>(50), new GreaterThanFilter<>(45)))
                 .build();
+        }
+        catch (ListException ex)
+        {
+            fail(ex.getMessage());
+        }
 
         RiakFuture<MapReduce.Response, BinaryValue> future = client.executeAsync(bmr);
 
@@ -315,8 +357,10 @@ public class ITestBucketMapReduce extends ITestBase
         Assume.assumeTrue(testBucketType);
 
         Namespace ns = new Namespace(mapReduceBucketType.toString(), mrBucketName);
-        BucketMapReduce bmr =
-            new BucketMapReduce.Builder()
+        BucketMapReduce bmr = null;
+        try
+        {
+            bmr = new BucketMapReduce.Builder()
                 .withNamespace(ns)
                 .withMapPhase(Function.newAnonymousJsFunction(
                     "function(value, keydata, arg) {" +
@@ -327,6 +371,11 @@ public class ITestBucketMapReduce extends ITestBase
                         "    return[];" +
                         "}"), true)
                 .build();
+        }
+        catch (ListException ex)
+        {
+            fail(ex.getMessage());
+        }
 
         MapReduce.Response response = client.execute(bmr);
 
@@ -339,8 +388,10 @@ public class ITestBucketMapReduce extends ITestBase
         Assume.assumeTrue(testBucketType);
 
         Namespace ns = new Namespace(mapReduceBucketType.toString(), mrBucketName);
-        BucketMapReduce bmr =
-            new BucketMapReduce.Builder()
+        BucketMapReduce bmr = null;
+        try
+        {
+            bmr = new BucketMapReduce.Builder()
                 .withNamespace(ns)
                 .withKeyFilter(new TokenizeFilter("_",3))
                 .withKeyFilter(new StringToIntFilter())
@@ -351,6 +402,11 @@ public class ITestBucketMapReduce extends ITestBase
                         "  return [data];" +
                         "}"), true)
                 .build();
+        }
+        catch (ListException ex)
+        {
+            fail(ex.getMessage());
+        }
 
         RiakFuture<MapReduce.Response, BinaryValue> future = client.executeAsync(bmr);
 
