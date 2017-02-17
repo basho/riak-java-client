@@ -361,6 +361,7 @@ public class ITestBucketMapReduce extends ITestBase
         try
         {
             bmr = new BucketMapReduce.Builder()
+                .withAllowListing()
                 .withNamespace(ns)
                 .withMapPhase(Function.newAnonymousJsFunction(
                     "function(value, keydata, arg) {" +
@@ -392,6 +393,7 @@ public class ITestBucketMapReduce extends ITestBase
         try
         {
             bmr = new BucketMapReduce.Builder()
+                .withAllowListing()
                 .withNamespace(ns)
                 .withKeyFilter(new TokenizeFilter("_",3))
                 .withKeyFilter(new StringToIntFilter())
