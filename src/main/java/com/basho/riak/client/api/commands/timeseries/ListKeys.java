@@ -23,7 +23,7 @@ public class ListKeys extends AsIsRiakCommand<QueryResult, String>
         this.tableName = builder.tableName;
         this.timeout = builder.timeout;
 
-        if (builder.allowListing == false)
+        if (!builder.allowListing)
         {
             throw new ListException();
         }
@@ -69,7 +69,7 @@ public class ListKeys extends AsIsRiakCommand<QueryResult, String>
          * </p>
          * @return a reference to this object.
          */
-            public Builder withAllowListing()
+        public Builder withAllowListing()
         {
             this.allowListing = true;
             return this;

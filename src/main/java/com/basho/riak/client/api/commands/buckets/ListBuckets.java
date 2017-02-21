@@ -74,7 +74,7 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
         this.timeout = builder.timeout;
         this.type = builder.type;
 
-        if (builder.allowListing == false)
+        if (!builder.allowListing)
         {
             throw new ListException();
         }
@@ -196,7 +196,7 @@ public final class ListBuckets extends StreamableRiakCommand.StreamableRiakComma
          * </p>
          * @return a reference to this object.
          */
-            public Builder withAllowListing()
+        public Builder withAllowListing()
         {
             this.allowListing = true;
             return this;

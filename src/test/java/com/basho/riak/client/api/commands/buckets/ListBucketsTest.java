@@ -71,22 +71,11 @@ public class ListBucketsTest
         Assert.assertEquals(ByteString.copyFrom(type.unsafeGetValue()), builder.getType());
     }
 
-    @Test
-    public void listBucketsThrowsListException()
+    @Test(expected = ListException.class)
+    public void listBucketsThrowsListException() throws ListException
     {
-        boolean sawException = false;
-
         ListBuckets.Builder b = new ListBuckets.Builder("bucket_type");
-        try
-        {
-            b.build();
-        }
-        catch (ListException ex)
-        {
-            sawException = true;
-        }
-
-        Assert.assertTrue(sawException);
+        b.build();
     }
 
     @Test

@@ -84,7 +84,7 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
         this.namespace = builder.namespace;
         this.timeout = builder.timeout;
 
-        if (builder.allowListing == false)
+        if (!builder.allowListing)
         {
             throw new ListException();
         }
@@ -193,7 +193,7 @@ public final class ListKeys extends StreamableRiakCommand.StreamableRiakCommandW
          * </p>
          * @return a reference to this object.
          */
-            public Builder withAllowListing()
+        public Builder withAllowListing()
         {
             this.allowListing = true;
             return this;
