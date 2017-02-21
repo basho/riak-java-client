@@ -16,6 +16,7 @@
 
 package com.basho.riak.client.api.commands.buckets.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.kv.ListKeys;
 import com.basho.riak.client.core.RiakFuture;
@@ -34,6 +35,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -69,7 +71,15 @@ public class ITestListKeys extends ITestBase
     {
         assumeTrue(testBucketType);
 
-        ListKeys lk = new ListKeys.Builder(typedNamespace).build();
+        ListKeys lk = null;
+        try
+        {
+            lk = new ListKeys.Builder(typedNamespace).withAllowListing().build();
+        }
+        catch (ListException ex)
+        {
+            fail(ex.getMessage());
+        }
 
         final RiakFuture<ListKeys.Response, Namespace> streamFuture =
                 client.executeAsyncStreaming(lk, 200);

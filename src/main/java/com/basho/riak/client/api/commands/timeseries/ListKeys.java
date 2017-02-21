@@ -1,5 +1,6 @@
 package com.basho.riak.client.api.commands.timeseries;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.AsIsRiakCommand;
 import com.basho.riak.client.core.operations.ts.ListKeysOperation;
 import com.basho.riak.client.core.query.timeseries.QueryResult;
@@ -17,10 +18,15 @@ public class ListKeys extends AsIsRiakCommand<QueryResult, String>
     private final String tableName;
     private final int timeout;
 
-    private ListKeys(ListKeys.Builder builder)
+    private ListKeys(ListKeys.Builder builder) throws ListException
     {
         this.tableName = builder.tableName;
         this.timeout = builder.timeout;
+
+        if (!builder.allowListing)
+        {
+            throw new ListException();
+        }
     }
 
     @Override
@@ -43,6 +49,7 @@ public class ListKeys extends AsIsRiakCommand<QueryResult, String>
     {
         private final String tableName;
         private int timeout;
+        private boolean allowListing;
 
         /**
          * Construct a Builder for a Time Series ListKeys command.
@@ -51,6 +58,21 @@ public class ListKeys extends AsIsRiakCommand<QueryResult, String>
         public Builder(String tableName)
         {
             this.tableName = tableName;
+        }
+
+        /**
+         * Allow this listing command
+         * <p>
+         * Bucket and key list operations are expensive and should not
+         * be used in production, however using this method will allow
+         * the command to be built.
+         * </p>
+         * @return a reference to this object.
+         */
+        public Builder withAllowListing()
+        {
+            this.allowListing = true;
+            return this;
         }
 
         /**
@@ -77,7 +99,7 @@ public class ListKeys extends AsIsRiakCommand<QueryResult, String>
          * Construct a Time Series ListKeys object.
          * @return a new Time Series ListKeys instance.
          */
-        public ListKeys build()
+        public ListKeys build() throws ListException
         {
             return new ListKeys(this);
         }

@@ -1,5 +1,6 @@
 package com.basho.riak.client.api.commands.buckets;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.core.*;
 import com.basho.riak.client.core.operations.ListBucketsOperation;
@@ -56,7 +57,7 @@ public class ListBucketsTest
     private void testListBuckets(String bucketType) throws Exception
     {
         final BinaryValue type = BinaryValue.createFromUtf8(bucketType);
-        ListBuckets.Builder list = new ListBuckets.Builder(type);
+        ListBuckets.Builder list = new ListBuckets.Builder(type).withAllowListing();
         client.execute(list.build());
 
         ArgumentCaptor<FutureOperation> captor =
@@ -68,6 +69,13 @@ public class ListBucketsTest
                 (RiakKvPB.RpbListBucketsReq.Builder) Whitebox.getInternalState(operation, "reqBuilder");
 
         Assert.assertEquals(ByteString.copyFrom(type.unsafeGetValue()), builder.getType());
+    }
+
+    @Test(expected = ListException.class)
+    public void listBucketsThrowsListException() throws ListException
+    {
+        ListBuckets.Builder b = new ListBuckets.Builder("bucket_type");
+        b.build();
     }
 
     @Test

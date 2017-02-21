@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.kv.ListKeys;
 import com.basho.riak.client.api.commands.kv.MultiDelete;
@@ -32,6 +33,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -218,8 +220,16 @@ public abstract class ITestBase
     {
         RiakClient client = new RiakClient(cluster);
 
-        ListKeys listKeys = new ListKeys.Builder(namespace).build();
-        final ListKeys.Response listKeyResponse = client.execute(listKeys);
+        ListKeys.Response listKeyResponse = null;
+        try
+        {
+            ListKeys listKeys = new ListKeys.Builder(namespace).withAllowListing().build();
+            listKeyResponse = client.execute(listKeys);
+        }
+        catch (ListException ex)
+        {
+            fail(ex.getMessage());
+        }
 
         MultiDelete multiDelete = new MultiDelete.Builder().addLocations(listKeyResponse).build();
         final MultiDelete.Response deleteResponse = client.execute(multiDelete);
