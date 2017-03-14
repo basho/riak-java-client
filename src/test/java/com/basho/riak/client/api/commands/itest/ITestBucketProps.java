@@ -76,22 +76,16 @@ public class ITestBucketProps extends ITestAutoCleanupBase
     @Test(expected=IllegalArgumentException.class)
     public void fetchBucketPropsIllegalArgumentException() throws ExecutionException, InterruptedException
     {
-        RiakClient client = new RiakClient(cluster);
-
         FetchBucketProperties fetchProps = new FetchBucketProperties.Builder(null).build();
-        FetchBucketPropsOperation.Response fetchResponse = client.execute(fetchProps);
     }
 
     @Test(expected=IllegalArgumentException.class)
     public void storeBucketPropsIllegalArgumentException() throws ExecutionException, InterruptedException
     {
-        RiakClient client = new RiakClient(cluster);
-
         StoreBucketProperties storeProps = new StoreBucketProperties.Builder(null)
                 .withNVal(4)
                 .withR(1)
                 .build();
-        client.execute(storeProps);
     }
 
     @Test(expected=IllegalArgumentException.class)
