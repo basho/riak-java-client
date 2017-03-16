@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Basho Technologies Inc.
+ * Copyright Basho Technologies Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.google.protobuf.ByteString;
  * @author Luke Bakken <lbakken@basho.com>
  * @since 2.2
  */
-//TODO: return some sort of "success" instead of Void
 public class StoreBucketTypePropsOperation extends StorePropertiesOperation<BinaryValue>
 {
     private final RiakPB.RpbSetBucketTypeReq.Builder reqBuilder;

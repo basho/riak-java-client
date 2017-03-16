@@ -26,7 +26,6 @@ import com.google.protobuf.ByteString;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-//TODO: return some sort of "success" instead of Void
 public class StoreBucketPropsOperation extends StorePropertiesOperation<Namespace>
 {
     private final RiakPB.RpbSetBucketReq.Builder reqBuilder;

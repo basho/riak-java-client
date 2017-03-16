@@ -9,7 +9,7 @@ import org.junit.Test;
 
 /**
  *
- * @author Luke Bakken <lbakken at basho dot com>
+ * @author Luke Bakken <lbakken@basho.com>
  */
 public class RiakMessageTest
 {
