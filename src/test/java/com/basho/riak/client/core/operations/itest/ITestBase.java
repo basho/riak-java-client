@@ -76,6 +76,7 @@ public abstract class ITestBase
     protected static BinaryValue bucketType;
     protected static BinaryValue yokozunaBucketType;
     protected static BinaryValue mapReduceBucketType;
+    protected static BinaryValue plainBucketType;
     protected static String overrideCert;
     protected static final int NUMBER_OF_PARALLEL_REQUESTS = 10;
     protected static final int NUMBER_OF_TEST_VALUES = 100;
@@ -155,6 +156,8 @@ public abstract class ITestBase
         mapBucketType = BinaryValue.create("maps");
 
         mapReduceBucketType = BinaryValue.create("mr");
+
+        plainBucketType = BinaryValue.create("plain");
 
         testCrdt = Boolean.parseBoolean(System.getProperty("com.basho.riak.crdt", "true"));
 

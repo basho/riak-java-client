@@ -18,7 +18,7 @@ import java.util.List;
 /**
  *
  * @author Alex Moore <amoore at basho dot com>
- * @author Luke Bakken <lbakken at basho dot com>
+ * @author Luke Bakken <lbakken@basho.com>
  */
 public class TermToBinaryCodecTest
 {
