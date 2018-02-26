@@ -23,7 +23,7 @@ import com.basho.riak.client.core.query.timeseries.Quantum;
 import com.basho.riak.client.core.query.timeseries.TableDefinition;
 import com.basho.riak.protobuf.RiakTsPB;
 import org.junit.Test;
-import org.mockito.internal.util.reflection.Whitebox;
+import org.powermock.reflect.Whitebox;
 
 import java.util.Arrays;
 import java.util.EnumSet;
