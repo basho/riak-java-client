@@ -362,7 +362,6 @@
                     <source>${java.target.version}</source>
                     <target>${java.target.version}</target>
                     <compilerArgs>
-                        <arg>-Werror</arg>
                         <arg>-Xlint:all</arg>
                     </compilerArgs>
                 </configuration>
