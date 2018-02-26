@@ -158,12 +158,13 @@ public class DefaultNodeManagerTest
         assertEquals(mockNodes.size() + 1, healthy.size());
     }
 
-    private class IsException extends ArgumentMatcher<Exception>
+    private class IsException implements ArgumentMatcher<Object>
     {
         @Override
         public boolean matches(Object argument)
         {
             return argument instanceof Exception;
         }
+
     }
 }
