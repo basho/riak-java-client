@@ -229,16 +229,12 @@ public class RiakClusterTest
         RiakNode node = mock(RiakNode.class);
         RiakNode.Builder nodeBuilder = spy(new RiakNode.Builder());
         doReturn(node).when(nodeBuilder).build();
-        PowerMockito.mockStatic(FastThreadLocal.class);
-        PowerMockito.doNothing().when(FastThreadLocal.class, "destroy");
-        PowerMockito.doNothing().when(FastThreadLocal.class, "removeAll");
 
         RiakCluster cluster = new RiakCluster.Builder(nodeBuilder.build()).build();
         Whitebox.setInternalState(cluster, "state", RiakCluster.State.SHUTDOWN);
 
         cluster.cleanup();
 
-        verifyStatic(times(2));
     }
 
     @Test(expected = IllegalStateException.class)
