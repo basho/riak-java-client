@@ -1,7 +1,10 @@
 sudo: required
 dist: trusty
 language: java
-jdk: oraclejdk8
+jdk:
+  - oraclejdk8
+  - oraclejdk9
+  - openjdk8
 services:
   - docker
 cache:
@@ -23,3 +26,4 @@ env:
 notifications:
   slack:
     secure: lCGUVnffHyrS1rpOlencvFdID7pVF2leOvbmxAKf/svkjJDLd0BWa9SgLjUDtAQ7vCa8B03rO0fWmlyynDJBQmudjytm+h8BVgAFJNm0SQOAm4ALNsWmixo4XoXhPl3rl3VmXRrx/bvLI8nA4ZIARak6RXoOXqHnl8KmkNhhxw8=
+
