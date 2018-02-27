@@ -4,6 +4,7 @@ import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.CharsetUtils;
 import com.basho.riak.protobuf.RiakTsPB;
 import com.google.protobuf.ByteString;
+import org.apache.commons.codec.binary.Hex;
 
 import javax.xml.bind.DatatypeConverter;
 import java.util.Arrays;
@@ -397,7 +398,7 @@ public class Cell
             final int length = blobValue.length > 8 ? 8 : blobValue.length;
             final byte[] blobBlurb = Arrays.copyOfRange(blobValue, 0, length);
             sb.append("0x");
-            sb.append(DatatypeConverter.printHexBinary(blobBlurb));
+            sb.append( Hex.encodeHex(blobBlurb ,true));
         }
 
         sb.append(" }");

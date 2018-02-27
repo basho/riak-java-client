@@ -1,7 +1,10 @@
 sudo: required
 dist: trusty
 language: java
-jdk: oraclejdk8
+jdk:
+  - oraclejdk8
+  - oraclejdk9
+  - openjdk8
 services:
   - docker
 cache:
@@ -16,10 +19,11 @@ after_script:
 env:
   matrix:
     - RIAK_FLAVOR=riak-ts RIAK_DOWNLOAD_URL=docker
-    - RIAK_VERSION=2.0.7 RIAK_FLAVOR=riak-kv RIAK_DOWNLOAD_URL=http://s3.amazonaws.com/downloads.basho.com/riak/2.0/2.0.7/ubuntu/trusty/riak_2.0.7-1_amd64.deb
+      #    - RIAK_VERSION=2.0.8 RIAK_FLAVOR=riak-kv RIAK_DOWNLOAD_URL=http://s3.amazonaws.com/downloads.basho.com/riak/2.0/2.0.8/ubuntu/trusty/riak_2.0.8-1_amd64.deb
     - RIAK_VERSION=2.2.0 RIAK_FLAVOR=riak-kv RIAK_DOWNLOAD_URL=http://s3.amazonaws.com/downloads.basho.com/riak/2.2/2.2.0/ubuntu/trusty/riak_2.2.0-1_amd64.deb
   global:
     - RIAK_HOSTS=localhost:8087
 notifications:
   slack:
     secure: lCGUVnffHyrS1rpOlencvFdID7pVF2leOvbmxAKf/svkjJDLd0BWa9SgLjUDtAQ7vCa8B03rO0fWmlyynDJBQmudjytm+h8BVgAFJNm0SQOAm4ALNsWmixo4XoXhPl3rl3VmXRrx/bvLI8nA4ZIARak6RXoOXqHnl8KmkNhhxw8=
+

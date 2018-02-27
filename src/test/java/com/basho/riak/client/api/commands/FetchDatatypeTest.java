@@ -25,7 +25,7 @@ import com.basho.riak.client.core.query.crdt.types.RiakMap;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
 import org.junit.Test;
-import org.mockito.internal.util.reflection.Whitebox;
+import org.powermock.reflect.Whitebox;
 
 import java.util.ArrayList;
 
@@ -47,7 +47,7 @@ public class FetchDatatypeTest extends MockedResponseOperationTest<DtFetchOperat
         super.setupResponse(mockedResponse);
 
         when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<>()));
-        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[] {'1'}));
+//        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[] {'1'}));
     }
 
     @Test

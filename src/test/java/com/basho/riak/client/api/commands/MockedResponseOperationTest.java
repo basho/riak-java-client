@@ -50,9 +50,9 @@ public abstract class MockedResponseOperationTest<O extends FutureOperation, R> 
 
         mockResponse = Mockito.mock(responseClass);
         when(mockFuture.get()).thenReturn(mockResponse);
-        when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
-        when(mockFuture.isCancelled()).thenReturn(false);
-        when(mockFuture.isDone()).thenReturn(true);
+//        when(mockFuture.get(anyLong(), any(TimeUnit.class))).thenReturn(mockResponse);
+//        when(mockFuture.isCancelled()).thenReturn(false);
+//        when(mockFuture.isDone()).thenReturn(true);
 
         setupResponse(mockedResponse());
     }

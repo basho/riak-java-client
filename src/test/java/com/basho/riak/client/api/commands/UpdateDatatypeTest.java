@@ -28,7 +28,7 @@ import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.protobuf.RiakDtPB;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.internal.util.reflection.Whitebox;
+import org.powermock.reflect.Whitebox;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -52,8 +52,8 @@ public class UpdateDatatypeTest extends MockedResponseOperationTest<DtUpdateOper
     {
         super.setupResponse(mockedResponse);
 
-        when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<>()));
-        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[] {'1'}));
+//        when(mockedResponse.getCrdtElement()).thenReturn(new RiakMap(new ArrayList<>()));
+//        when(mockedResponse.getContext()).thenReturn(BinaryValue.create(new byte[] {'1'}));
 
         when(context.getValue()).thenReturn(BinaryValue.unsafeCreate(new byte[] {'1'}));
     }

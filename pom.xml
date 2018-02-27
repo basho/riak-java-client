@@ -7,9 +7,6 @@
     <name>Riak Client for Java</name>
     <description>Java client for Riak 2.0</description>
     <url>https://github.com/basho/riak-java-client</url>
-    <prerequisites>
-        <maven>3.0</maven>
-    </prerequisites>
 
     <licenses>
         <license>
@@ -69,7 +66,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <powermock.version>1.6.5</powermock.version>
+        <powermock.version>2.0.0-beta.5</powermock.version>
         <slf4j.version>1.7.21</slf4j.version>
         <jackson.version>2.8.0</jackson.version>
         <java.target.version>1.8</java.target.version>
@@ -339,7 +336,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.7.201606060606</version>
+                <version>0.8.0</version>
                 <executions>
                     <execution>
                         <id>jacoco-initialize</id>
@@ -365,34 +362,9 @@
                     <source>${java.target.version}</source>
                     <target>${java.target.version}</target>
                     <compilerArgs>
-                        <arg>-Werror</arg>
                         <arg>-Xlint:all</arg>
                     </compilerArgs>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.4.1</version>
-                <executions>
-                    <execution>
-                        <id>enforce-property</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <fail>true</fail>
-                            <rules>
-                                <requireMavenVersion>
-                                    <version>3.0</version>
-                                </requireMavenVersion>
-                                <requireJavaVersion>
-                                    <version>${java.target.version}</version>
-                                </requireJavaVersion>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -443,14 +415,8 @@
             <version>${slf4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>1.10.19</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
+            <artifactId>powermock-api-mockito2</artifactId>
             <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
@@ -497,6 +463,11 @@
             <groupId>org.erlang.otp</groupId>
             <artifactId>jinterface</artifactId>
             <version>1.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.10</version>
         </dependency>
     </dependencies>
 </project>
