@@ -19,7 +19,7 @@ after_script:
 env:
   matrix:
     - RIAK_FLAVOR=riak-ts RIAK_DOWNLOAD_URL=docker
-    - RIAK_VERSION=2.0.8 RIAK_FLAVOR=riak-kv RIAK_DOWNLOAD_URL=http://s3.amazonaws.com/downloads.basho.com/riak/2.0/2.0.8/ubuntu/trusty/riak_2.0.8-1_amd64.deb
+      #    - RIAK_VERSION=2.0.8 RIAK_FLAVOR=riak-kv RIAK_DOWNLOAD_URL=http://s3.amazonaws.com/downloads.basho.com/riak/2.0/2.0.8/ubuntu/trusty/riak_2.0.8-1_amd64.deb
     - RIAK_VERSION=2.2.0 RIAK_FLAVOR=riak-kv RIAK_DOWNLOAD_URL=http://s3.amazonaws.com/downloads.basho.com/riak/2.2/2.2.0/ubuntu/trusty/riak_2.2.0-1_amd64.deb
   global:
     - RIAK_HOSTS=localhost:8087
