@@ -150,16 +150,48 @@ public final class Search extends AsIsRiakCommand<SearchOperation.Response, Bina
         return builder.build();
     }
 
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+
+        if (!(o instanceof Search))
+        {
+            return false;
+        }
+
+        Search search = (Search) o;
+
+        return start == search.start &&
+                rows == search.rows &&
+                Objects.equals(index, search.index) &&
+                Objects.equals(query, search.query) &&
+                presort == search.presort &&
+                Objects.equals(filterQuery, search.filterQuery) &&
+                Objects.equals(sortField, search.sortField) &&
+                Objects.equals(returnFields, search.returnFields) &&
+                Objects.equals(options, search.options);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(index, query, start, rows, presort, filterQuery, sortField, returnFields, options);
+    }
+
     /*
-    * Options For controlling how Riak performs the search operation.
-    * <p>
-    * These options can be supplied to the {@link Search.Builder} to change
-    * how Riak performs the operation. These override the defaults provided
-    * by Riak.
-    * </p>
-    * @author Dave Rusek <drusek at basho dot com>
-    * @since 2.0
-    */
+		* Options For controlling how Riak performs the search operation.
+		* <p>
+		* These options can be supplied to the {@link Search.Builder} to change
+		* how Riak performs the operation. These override the defaults provided
+		* by Riak.
+		* </p>
+		* @author Dave Rusek <drusek at basho dot com>
+		* @since 2.0
+		*/
    public static final class Option<T> extends RiakOption<T>
    {
        /**
