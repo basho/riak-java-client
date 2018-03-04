@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.lang.AutoCloseable;
 
 /**
  * <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
@@ -159,7 +160,7 @@ import java.util.concurrent.TimeoutException;
  * @author Sergey Galkin <srggal at gmail dot com>
  * @since 2.0
  */
-public class RiakClient
+public class RiakClient implements AutoCloseable
 {
     private final RiakCluster cluster;
 
@@ -454,6 +455,18 @@ public class RiakClient
     public Future<Boolean> shutdown()
     {
         return cluster.shutdown();
+    }
+
+
+    /**
+     * Implementation of the AutoCloseable-Inteface.
+     * <p>
+     *     The Client will be automatically shut down when used with try-with-resource statement
+     * </p>
+     */
+    @Override
+    public void close() throws ExecutionException, InterruptedException {
+        this.shutdown().get();
     }
 
     /**
