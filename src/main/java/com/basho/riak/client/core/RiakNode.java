@@ -1,18 +1,3 @@
-/*
- * Copyright 2013 Basho Technologies, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.basho.riak.client.core;
 
 import com.basho.riak.client.core.netty.*;
@@ -47,6 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Brian Roach <roach at basho dot com>
  * @author Sergey Galkin <srggal at gmail dot com>
  * @author Alex Moore <amoore at basho dot com>
+ * @author Luke Bakken <lbakken at basho dot com>
  * @since 2.0
  */
 public class RiakNode implements RiakResponseListener
@@ -56,7 +42,7 @@ public class RiakNode implements RiakResponseListener
         CREATED, RUNNING, HEALTH_CHECKING, SHUTTING_DOWN, SHUTDOWN;
     }
 
-    private final Logger logger = LoggerFactory.getLogger(RiakNode.class);
+    private static final Logger logger = LoggerFactory.getLogger(RiakNode.class);
 
     private final LinkedBlockingDeque<ChannelWithIdleTime> available = new LinkedBlockingDeque<>();
     private final ConcurrentLinkedQueue<ChannelWithIdleTime> recentlyClosed = new ConcurrentLinkedQueue<>();
@@ -66,12 +52,16 @@ public class RiakNode implements RiakResponseListener
 
     private final Sync permits;
     private final String remoteAddress;
+
+    private final boolean tls;
+    private final boolean startTls;
     private final int port;
     private final String username;
     private final String password;
     private final KeyStore trustStore;
     private final KeyStore keyStore;
     private final String keyPassword;
+
     private final AtomicLong consecutiveFailedOperations = new AtomicLong(0);
     private final AtomicLong consecutiveFailedConnectionAttempts = new AtomicLong(0);
 
@@ -197,6 +187,20 @@ public class RiakNode implements RiakResponseListener
         {
             permits = new Sync(builder.maxConnections);
         }
+
+        // TLS settings. If user has provided a Trust Store
+        // they definitely want TLS encryption, which may be
+        // provided by the legacy PB port (requires RpbStartTls)
+        // or the new tls port in Riak 2.3
+        if (this.trustStore != null)
+        {
+            this.tls = true;
+        }
+        else
+        {
+            this.tls = builder.tls;
+        }
+        this.startTls = builder.startTls;
 
         checkNetworkAddressCacheSettings();
 
@@ -722,81 +726,96 @@ public class RiakNode implements RiakResponseListener
         consecutiveFailedConnectionAttempts.set(0);
         Channel c = f.channel();
 
-        if (trustStore != null)
-        {
-            setupTLSAndAuthenticate(c);
-        }
+        setupSecurity(c);
 
         return c;
     }
 
-    private void setupTLSAndAuthenticate(Channel c) throws ConnectionFailedException
+    private void setupSecurity(Channel c) throws ConnectionFailedException
     {
-        SSLContext context;
-        try
+        RiakSecurityDecoder decoder = null;
+
+        if (tls == false)
         {
-            context = SSLContext.getInstance("TLS");
-            TrustManagerFactory tmf =
-                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(trustStore);
-                if (keyStore!=null)
+            if (username != null)
             {
-                KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                kmf.init(keyStore, keyPassword==null?"".toCharArray():keyPassword.toCharArray());
-                context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-            }
-            else
-            {
-                context.init(null, tmf.getTrustManagers(), null);
+                decoder = new RiakSecurityDecoder(username, password);
             }
         }
-        catch (Exception ex)
+        else
         {
-            c.close();
-            logger.error("Failure configuring SSL; {}:{} {}", remoteAddress, port, ex);
-            throw new ConnectionFailedException(ex);
+            SSLContext context;
+            try
+            {
+                context = SSLContext.getInstance("TLS");
+                TrustManagerFactory tmf =
+                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                tmf.init(trustStore);
+                if (keyStore != null)
+                {
+                    KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                    kmf.init(keyStore, keyPassword==null?"".toCharArray():keyPassword.toCharArray());
+                    context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+                }
+                else
+                {
+                    context.init(null, tmf.getTrustManagers(), null);
+                }
+            }
+            catch (Exception ex)
+            {
+                c.close();
+                logger.error("Failure configuring SSL; {}:{} {}", remoteAddress, port, ex);
+                throw new ConnectionFailedException(ex);
+            }
+
+            SSLEngine engine = context.createSSLEngine();
+
+            Set<String> protocols = new HashSet<>(Arrays.asList(engine.getSupportedProtocols()));
+
+            if (protocols.contains("TLSv1.2"))
+            {
+                engine.setEnabledProtocols(new String[] {"TLSv1.2"});
+                logger.debug("Using TLSv1.2");
+            }
+            else if (protocols.contains("TLSv1.1"))
+            {
+                engine.setEnabledProtocols(new String[] {"TLSv1.1"});
+                logger.debug("Using TLSv1.1");
+            }
+
+            engine.setUseClientMode(true);
+            decoder = new RiakSecurityDecoder(engine, startTls, username, password);
         }
 
-        SSLEngine engine = context.createSSLEngine();
-
-        Set<String> protocols = new HashSet<>(Arrays.asList(engine.getSupportedProtocols()));
-
-        if (protocols.contains("TLSv1.2"))
+        if (decoder == null)
         {
-            engine.setEnabledProtocols(new String[] {"TLSv1.2"});
-            logger.debug("Using TLSv1.2");
-        }
-        else if (protocols.contains("TLSv1.1"))
-        {
-            engine.setEnabledProtocols(new String[] {"TLSv1.1"});
-            logger.debug("Using TLSv1.1");
+            return;
         }
 
-        engine.setUseClientMode(true);
-        RiakSecurityDecoder decoder = new RiakSecurityDecoder(engine, username, password);
         c.pipeline().addFirst(decoder);
 
         try
         {
             DefaultPromise<Void> promise = decoder.getPromise();
-                logger.debug("Waiting on SSL Promise");
+            logger.debug("Waiting on TLS/Auth Promise");
             promise.await();
 
             if (promise.isSuccess())
             {
-                logger.debug("Auth succeeded; {}:{}", remoteAddress, port);
+                logger.debug("TLS/Auth succeeded; {}:{}", remoteAddress, port);
             }
             else
             {
                 c.close();
-                logger.error("Failure during Auth; {}:{} {}",remoteAddress, port, promise.cause());
+                logger.error("Failure during TLS/Auth; {}:{} {}",remoteAddress, port, promise.cause());
                 throw new ConnectionFailedException(promise.cause());
             }
         }
         catch (InterruptedException e)
         {
             c.close();
-            logger.error("Thread interrupted during Auth; {}:{}",
+            logger.error("Thread interrupted during TLS/Auth; {}:{}",
                 remoteAddress, port);
             Thread.currentThread().interrupt();
             throw new ConnectionFailedException(e);
@@ -1255,36 +1274,55 @@ public class RiakNode implements RiakResponseListener
          * @see #withRemoteAddress(java.lang.String)
          */
         public final static String DEFAULT_REMOTE_ADDRESS = "127.0.0.1";
+
         /**
          * The default port number to be used if not specified: {@value #DEFAULT_REMOTE_PORT}
          *
          * @see #withRemotePort(int)
          */
         public final static int DEFAULT_REMOTE_PORT = 8087;
+
         /**
          * The default minimum number of connections to maintain if not specified: {@value #DEFAULT_MIN_CONNECTIONS}
          *
          * @see #withMinConnections(int)
          */
         public final static int DEFAULT_MIN_CONNECTIONS = 1;
+
         /**
          * The default maximum number of connections allowed if not specified: {@value #DEFAULT_MAX_CONNECTIONS}
          *
          * @see #withMaxConnections(int)
          */
         public final static int DEFAULT_MAX_CONNECTIONS = 0;
+
         /**
          * The default idle timeout in milliseconds for connections if not specified: {@value #DEFAULT_IDLE_TIMEOUT}
          *
          * @see #withIdleTimeout(int)
          */
         public final static int DEFAULT_IDLE_TIMEOUT = 1000;
+
         /**
          * The default connection timeout in milliseconds if not specified: {@value #DEFAULT_CONNECTION_TIMEOUT}
          *
          * @see #withConnectionTimeout(int)
          */
         public final static int DEFAULT_CONNECTION_TIMEOUT = 0;
+
+        /**
+         * The default value for requiring TLS encryption
+         *
+         * @see #withTls(boolean, boolean)
+         */
+        public final static boolean DEFAULT_TLS = false;
+
+        /**
+         * The default value for using legacy STARTTLS message
+         *
+         * @see #withTls(boolean, boolean)
+         */
+        public final static boolean DEFAULT_START_TLS = true;
 
         /**
          * The default HealthCheckFactory.
@@ -1306,6 +1344,8 @@ public class RiakNode implements RiakResponseListener
         private Bootstrap bootstrap;
         private ScheduledExecutorService executor;
         private boolean blockOnMaxConnections;
+        private boolean tls = DEFAULT_TLS;
+        private boolean startTls = DEFAULT_START_TLS;
         private String username;
         private String password;
         private KeyStore trustStore;
@@ -1496,6 +1536,42 @@ public class RiakNode implements RiakResponseListener
         }
 
         /**
+         * Request TLS encryption and legacy TLS handshake message (STARTTLS)
+         * <p>
+         * Note this requires Riak to have been configured with security enabled.
+         * </p>
+         *
+         * @param tls connection <b>requires</b> encryption.
+         * @param startTls use legacy STARTTLS message.
+         */
+        public Builder withTls(boolean tls, boolean startTls)
+        {
+            this.tls = tls;
+            this.startTls = startTls;
+            return this;
+        }
+
+        /**
+         * Set the credentials for Riak security and authentication.
+         * <p>
+         * Riak supports authentication and authorization features.
+         * These credentials will be used for all connections.
+         * </p>
+         * <p>
+         * Note this requires Riak to have been configured with security enabled.
+         * </p>
+         *
+         * @param username the riak user name.
+         * @param password the password for this user.
+         */
+        public Builder withAuth(String username, String password)
+        {
+            this.username = username;
+            this.password = password;
+            return this;
+        }
+
+        /**
          * Set the credentials for Riak security and authentication.
          * <p>
          * Riak supports authentication and authorization features.
@@ -1512,6 +1588,7 @@ public class RiakNode implements RiakResponseListener
          */
         public Builder withAuth(String username, String password, KeyStore trustStore)
         {
+            this.tls = true;
             this.username = username;
             this.password = password;
             this.trustStore = trustStore;
@@ -1537,6 +1614,7 @@ public class RiakNode implements RiakResponseListener
          */
         public Builder withAuth(String username, String password, KeyStore trustStore, KeyStore keyStore, String keyPassword)
         {
+            this.tls = true;
             this.username = username;
             this.password = password;
             this.trustStore = trustStore;
@@ -1569,6 +1647,26 @@ public class RiakNode implements RiakResponseListener
          */
         public RiakNode build()
         {
+            if (tls && trustStore == null)
+            {
+                if (trustStore == null)
+                {
+                    // User requested TLS but no Trust Store provided
+                    final String e = "TLS requested but TLS trust store is null.";
+                    logger.error(e);
+                    throw new IllegalArgumentException(e);
+                }
+
+                if (username == null)
+                {
+                    // User requested TLS but no username provided, which is
+                    // required for both password and cert TLS auth
+                    final String e = "TLS requested but user name is null.";
+                    logger.error(e);
+                    throw new IllegalArgumentException(e);
+                }
+            }
+
             return new RiakNode(this);
         }
 
