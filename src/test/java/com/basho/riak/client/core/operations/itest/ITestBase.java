@@ -15,6 +15,7 @@
  */
 package com.basho.riak.client.core.operations.itest;
 
+import com.basho.riak.client.RiakTestFunctions;
 import com.basho.riak.client.api.ListException;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.commands.kv.ListKeys;
@@ -54,7 +55,7 @@ import static org.junit.Assert.*;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public abstract class ITestBase
+public abstract class ITestBase extends RiakTestFunctions
 {
     protected static RiakCluster cluster;
     protected static boolean testYokozuna;

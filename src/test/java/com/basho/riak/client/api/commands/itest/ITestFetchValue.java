@@ -16,15 +16,14 @@
 
 package com.basho.riak.client.api.commands.itest;
 
+import com.basho.riak.client.RiakTestFunctions;
 import com.basho.riak.client.api.cap.ConflictResolver;
 import com.basho.riak.client.api.cap.ConflictResolverFactory;
 import com.basho.riak.client.api.cap.UnresolvedConflictException;
 import com.basho.riak.client.core.operations.itest.ITestAutoCleanupBase;
-import com.basho.riak.client.api.commands.kv.FetchValue.Option;
 import com.basho.riak.client.api.commands.kv.FetchValue;
 import com.basho.riak.client.api.RiakClient;
 import com.basho.riak.client.api.annotations.RiakVClock;
-import com.basho.riak.client.api.cap.DefaultResolver;
 import com.basho.riak.client.api.cap.VClock;
 import com.basho.riak.client.core.operations.StoreBucketPropsOperation;
 import com.basho.riak.client.api.commands.kv.StoreValue;
@@ -32,19 +31,17 @@ import com.basho.riak.client.api.convert.JSONConverter;
 import com.basho.riak.client.core.query.Location;
 import com.basho.riak.client.core.query.Namespace;
 import com.basho.riak.client.core.query.RiakObject;
-import com.basho.riak.client.core.query.indexes.LongIntIndex;
-import com.basho.riak.client.core.query.indexes.StringBinIndex;
-import com.basho.riak.client.core.util.BinaryValue;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import static org.junit.Assert.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import static net.javacrumbs.jsonunit.JsonAssert.*;
+import net.javacrumbs.jsonunit.core.Option;
 import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -57,49 +54,27 @@ public class ITestFetchValue extends ITestAutoCleanupBase
     private RiakClient client = new RiakClient(cluster);
 
     @Test
-    public void simpleTestDefaultType()
-    {
+    public void simpleTestDefaultType() throws ExecutionException, InterruptedException {
         simpleTest(Namespace.DEFAULT_BUCKET_TYPE);
     }
 
     @Test
-    public void simpleTestTestType()
-    {
+    public void simpleTestTestType() throws ExecutionException, InterruptedException {
         Assume.assumeTrue(testBucketType);
         simpleTest(bucketType.toString());
     }
 
-    private void simpleTest(String bucketType)
-    {
-        try
-        {
-            Namespace ns = new Namespace(bucketType, bucketName.toString());
-            Location loc = new Location(ns, "test_fetch_key1");
+    private void simpleTest(String bucketType) throws ExecutionException, InterruptedException {
+        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        Location loc = new Location(ns, "test_fetch_key1");
 
-            Pojo pojo = new Pojo();
-            pojo.value = "test value";
-            StoreValue sv =
-                new StoreValue.Builder(pojo).withLocation(loc).build();
+        Pojo pojo = new Pojo();
+        pojo.value = "test value";
 
-            StoreValue.Response resp = client.execute(sv);
+        createKValue(client, loc, pojo, false);
 
-            FetchValue fv = new FetchValue.Builder(loc).build();
-            FetchValue.Response fResp = client.execute(fv);
-
-            assertEquals(pojo.value, fResp.getValue(Pojo.class).value);
-
-            RiakObject ro = fResp.getValue(RiakObject.class);
-            assertNotNull(ro.getValue());
-            assertEquals("{\"value\":\"test value\"}", ro.getValue().toString());
-        }
-        catch (ExecutionException ex)
-        {
-            System.out.println(ex.getCause().getCause());
-        }
-        catch (InterruptedException ex)
-        {
-            Logger.getLogger(ITestFetchValue.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        final Pojo theFetchedPojo = fetchByLocationAs(client, loc, Pojo.class);
+        assertJsonEquals("{value: 'test value', vclock: '${json-unit.regex}[a-zA-Z0-9+/=]+'}", theFetchedPojo);
     }
 
     @Test
@@ -117,10 +92,8 @@ public class ITestFetchValue extends ITestAutoCleanupBase
 
     private void notFound(String bucketType) throws ExecutionException, InterruptedException
     {
-        Namespace ns = new Namespace(bucketType, bucketName.toString());
-        Location loc = new Location(ns, "test_fetch_key2");
-        FetchValue fv = new FetchValue.Builder(loc).build();
-        FetchValue.Response fResp = client.execute(fv);
+        final FetchValue.Response fResp = fetchByLocation(client,
+                new Location(new Namespace(bucketType, bucketName.toString()), "test_fetch_key2"));
 
         assertFalse(fResp.hasValues());
         assertTrue(fResp.isNotFound());
@@ -157,7 +130,7 @@ public class ITestFetchValue extends ITestAutoCleanupBase
         client.execute(sv);
 
         FetchValue fv = new FetchValue.Builder(loc)
-                            .withOption(Option.DELETED_VCLOCK, false)
+                            .withOption(FetchValue.Option.DELETED_VCLOCK, false)
                             .build();
 
         FetchValue.Response fResp = client.execute(fv);
@@ -211,9 +184,7 @@ public class ITestFetchValue extends ITestAutoCleanupBase
         ConflictResolverFactory.getInstance()
             .registerConflictResolver(pojoTypeRef, resolver);
 
-        FetchValue fv = new FetchValue.Builder(loc).build();
-
-        FetchValue.Response fResp = client.execute(fv);
+        FetchValue.Response fResp = fetchByLocation(client, loc);
 
         assertEquals(2, fResp.getNumberOfValues());
         assertNotNull(fResp.getVectorClock());
@@ -233,103 +204,98 @@ public class ITestFetchValue extends ITestAutoCleanupBase
     {
         Pojo pojo = new Pojo();
         pojo.value = "test value";
-        StoreValue sv =
-            new StoreValue.Builder(pojo).withLocation(loc).build();
 
-        client.execute(sv);
+        createKValue(client, loc, pojo, false);
 
         pojo.value = "Pick me!";
 
-        sv = new StoreValue.Builder(pojo).withLocation(loc).build();
-
-        client.execute(sv);
+        createKValue(client, loc, pojo, false);
         return pojo;
     }
 
     @Test
-    public void fetchAnnotatedPojoDefaultType() throws ExecutionException, InterruptedException
+    public void fetchAnnotatedPojoDefaultType() throws ExecutionException, InterruptedException, IOException
     {
         fetchAnnotatedPojo(Namespace.DEFAULT_BUCKET_TYPE);
     }
 
     @Test
-    public void fetchAnnotatedPojoTestType() throws ExecutionException, InterruptedException
+    public void fetchAnnotatedPojoTestType() throws ExecutionException, InterruptedException, IOException
     {
         Assume.assumeTrue(testBucketType);
         fetchAnnotatedPojo(bucketType.toString());
     }
 
-    private void fetchAnnotatedPojo(String bucketType) throws ExecutionException, InterruptedException
+    private void fetchAnnotatedPojo(String bucketType) throws ExecutionException, InterruptedException, IOException
     {
-        Namespace ns = new Namespace(bucketType, bucketName.toString());
+        final Namespace ns = new Namespace(bucketType, bucketName.toString());
+
+        createKVData(client, ns, "{" +
+                "   key: 'test_fetch_key5', " +
+                "   value: {" +
+                "       value: 'my value'" +
+                "   }" +
+                "}");
+
         Location loc = new Location(ns, "test_fetch_key5");
 
-        String jsonValue = "{\"value\":\"my value\"}";
+        final RiakAnnotatedPojo rap = fetchByLocationAs(client,
+                new Location(ns, "test_fetch_key5"),
+                RiakAnnotatedPojo.class);
 
-        RiakObject ro = new RiakObject()
-                        .setValue(BinaryValue.create(jsonValue))
-                        .setContentType("application/json");
-
-        StoreValue sv = new StoreValue.Builder(ro).withLocation(loc).build();
-        client.execute(sv);
-
-        FetchValue fv = new FetchValue.Builder(loc).build();
-        FetchValue.Response resp = client.execute(fv);
-
-        RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
-
-        assertNotNull(rap.bucketName);
-        assertEquals(ns.getBucketNameAsString(), rap.bucketName);
-        assertNotNull(rap.key);
-        assertEquals(loc.getKeyAsString(), rap.key);
-        assertNotNull(rap.bucketType);
-        assertEquals(ns.getBucketTypeAsString(), rap.bucketType);
-        assertNotNull(rap.contentType);
-        assertEquals(ro.getContentType(), rap.contentType);
-        assertNotNull(rap.vclock);
-        assertNotNull(rap.vtag);
-        assertNotNull(rap.lastModified);
-        assertNotNull(rap.value);
-        assertFalse(rap.deleted);
-        assertNotNull(rap.value);
-        assertEquals("my value", rap.value);
+        assertJsonEquals("{" +
+                "key: 'test_fetch_key5', " +
+                "bucketName: 'ITestBase'," +
+                "bucketType: '" + ns.getBucketTypeAsString()  +"'," +
+                "contentType: 'application/json'," +
+                "deleted: false," +
+                "value: 'my value'," +
+                "vclock: '${json-unit.any-string}'," +
+                "vtag: '${json-unit.any-string}'," +
+                "lastModified: '${json-unit.any-number}'" +
+            "}",
+            rap,
+            when(Option.IGNORING_EXTRA_FIELDS));
     }
 
     @Test
-    public void fetchAnnotatedPojoWIthIndexes() throws ExecutionException, InterruptedException
+    public void fetchAnnotatedPojoWIthIndexes() throws ExecutionException, InterruptedException, IOException
     {
-        Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
-        Location loc = new Location(ns,"test_fetch_key6");
+        final Namespace ns = new Namespace(Namespace.DEFAULT_BUCKET_TYPE, bucketName.toString());
 
-        String jsonValue = "{\"value\":\"my value\"}";
+        createKVData(client, ns, "{" +
+                "   key: 'test_fetch_key6', " +
+                "   value: {" +
+                "       value: 'my value'" +
+                "   }," +
+                "   indices: {" +
+                "       email: 'roach@basho.com'," +
+                "       user_id: 1" +
+                "   }" +
+                "}");
 
-        RiakObject ro = new RiakObject()
-                        .setValue(BinaryValue.create(jsonValue))
-                        .setContentType("application/json");
+        final RiakAnnotatedPojo rap = RiakTestFunctions.fetchByLocationAs(client,
+                new Location(ns,"test_fetch_key6"),
+                RiakAnnotatedPojo.class);
 
-        ro.getIndexes().getIndex(StringBinIndex.named("email")).add("roach@basho.com");
-        ro.getIndexes().getIndex(LongIntIndex.named("user_id")).add(1L);
-
-        StoreValue sv = new StoreValue.Builder(ro).withLocation(loc).build();
-        client.execute(sv);
-
-        FetchValue fv = new FetchValue.Builder(loc).build();
-        FetchValue.Response resp = client.execute(fv);
-
-        RiakAnnotatedPojo rap = resp.getValue(RiakAnnotatedPojo.class);
-
-        assertNotNull(rap.emailIndx);
-        assertTrue(rap.emailIndx.contains("roach@basho.com"));
-        assertEquals(rap.userId.longValue(), 1L);
+        assertJsonEquals("{" +
+                "   key: 'test_fetch_key6'," +
+                "   emailIndx: [" +
+                "       'roach@basho.com'" +
+                "  ]," +
+                "   userId: 1" +
+                "}",
+                rap,
+                when(Option.IGNORING_EXTRA_FIELDS));
     }
 
     public static class Pojo
     {
         @JsonProperty
-        String value;
+        public String value;
 
         @RiakVClock
-        VClock vclock;
+        public VClock vclock;
     }
 
     public static class MyResolver implements ConflictResolver<Pojo>
