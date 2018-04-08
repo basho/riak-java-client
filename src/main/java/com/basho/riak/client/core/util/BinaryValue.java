@@ -15,6 +15,10 @@
  */
 package com.basho.riak.client.core.util;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
@@ -39,12 +43,13 @@ import java.util.Arrays;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public final class BinaryValue
+public final class BinaryValue implements Serializable
 {
     /**
      * It is expected that UTF-8 charset is available.
      */
     private static final Charset theUTF8 = Charset.forName("UTF-8");
+    private static final long serialVersionUID = 3976425010879879957L;
 
     private final byte[] data;
 

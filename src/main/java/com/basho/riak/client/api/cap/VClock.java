@@ -15,13 +15,15 @@
  */
 package com.basho.riak.client.api.cap;
 
+import java.io.Serializable;
+
 /**
  * Access the opaque Riak vector clock as either a String or array of bytes.
  *
  * @author Russel Brown <russelldb at basho dot com>
  * @since 1.0
  */
-public interface VClock
+public interface VClock extends Serializable
 {
     /**
      * Get the bytes that make up this VClock.

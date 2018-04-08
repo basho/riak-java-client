@@ -23,6 +23,7 @@ import com.basho.riak.client.core.query.links.RiakLinks;
 import com.basho.riak.client.core.util.BinaryValue;
 import com.basho.riak.client.core.util.CharsetUtils;
 
+import java.io.Serializable;
 import java.nio.charset.Charset;
 
 /**
@@ -49,7 +50,7 @@ import java.nio.charset.Charset;
  * @author Brian Roach <roach at basho dot com>
  * @since 2.0
  */
-public final class RiakObject
+public final class RiakObject implements Serializable
 {
     /**
      * The default content type assigned when storing in Riak if one is not
@@ -58,6 +59,7 @@ public final class RiakObject
      * @see RiakObject#setContentType(java.lang.String)
      */
     public final static String DEFAULT_CONTENT_TYPE = "application/octet-stream";
+    private static final long serialVersionUID = 484390882043340231L;
 
     // Mutable types.
     // Worth noting here is that changes to the contents of this

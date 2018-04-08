@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
  */
 public class BigIntIndex extends RiakIndex<BigInteger>
 {
+    private static final long serialVersionUID = -1815784710534656508L;
     private BigIntIndex(Name name)
     {
         super(name);

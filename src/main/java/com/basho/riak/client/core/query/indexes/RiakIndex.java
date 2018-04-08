@@ -16,6 +16,8 @@
 package com.basho.riak.client.core.query.indexes;
 
 import com.basho.riak.client.core.util.BinaryValue;
+
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -50,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * href="http://docs.basho.com/riak/latest/dev/using/2i/">Using Secondary
  * Indexes in Riak</a>
  */
-public abstract class RiakIndex<T> implements Iterable<T>
+public abstract class RiakIndex<T> implements Iterable<T>, Serializable
 {
     private final Set<BinaryValue> values;
     private final IndexType type;
@@ -443,4 +445,16 @@ public abstract class RiakIndex<T> implements Iterable<T>
 
         abstract T createIndex();
     }
+
+//    protected final void doWriteObkject(java.io.ObjectOutputStream stream) throws java.io.IOException
+//    {
+//        stream.writeUTF(name);
+//        stream.writeObject(type);
+//        stream.writeObject(values);
+//    }
+//
+//    protected final void doReadObject(java.io.ObjectInputStream stream)
+//            throws java.io.IOException, ClassNotFoundException
+//    {
+//    }
 }
