@@ -205,6 +205,7 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
+                            <additionalparam>--allow-script-in-comments</additionalparam>
                             <excludePackageNames>com.basho.riak.protobuf.util</excludePackageNames>
                         </configuration>
                     </plugin>
