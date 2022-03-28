@@ -11,11 +11,9 @@ import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.Test;
 
+import javax.swing.*;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
@@ -124,6 +122,38 @@ public class ITestDatatype extends ITestAutoCleanupBase
         }
         assertTrue(setView.containsAll(expectedSet));
         assertTrue(expectedSet.containsAll(setView));
+
+        // cart - asSet - item removal
+        ByteBuffer b = ByteBuffer.allocate(4);
+        b.putInt(5);
+
+        // - remove item '5'
+        SetUpdate su            = new SetUpdate().remove(BinaryValue.create(b.array()));
+        MapUpdate mu            = new MapUpdate().update(shoppingCart, su);
+        MapUpdate muUser        = new MapUpdate().update(username, mu);
+        UpdateMap updateEntry   = new UpdateMap.Builder(carts, muUser).build();
+        UpdateMap.Response res  = client.execute(updateEntry);
+
+//        // - fetch updated map
+//        FetchMap fetchMap                   = new FetchMap.Builder(loc).build();
+//        FetchMap.Response fetchMapResponse  = client.execute(fetchMap);
+//        RiakMap updatedUsersMap             = fetchMapResponse.getDatatype();
+//        RiakMap updatedUsernameMap          = updatedUsersMap.getMap(username);
+//        RiakSet updatedShoppingCartSet      = updatedUsernameMap.getSet(shoppingCart);
+//        Set<BinaryValue> updatedSetView     = updatedShoppingCartSet.view();
+//
+//        // - build expected set
+//        int[] iArray                        = {0, 1, 2, 3, 4, 6, 7, 8, 9};
+//        Set<BinaryValue> updatedExpectedSet = new HashSet<>();
+//        for (int i = 0; i < iArray.length; i++) {
+//            ByteBuffer buf = ByteBuffer.allocate(4);
+//            buf.putInt(iArray[i]);
+//            updatedExpectedSet.add(BinaryValue.create(buf.array()));
+//        }
+//
+//        // - compare sets
+//        assertTrue(updatedSetView.containsAll(updatedExpectedSet));
+//        assertTrue(updatedExpectedSet.containsAll(updatedSetView));
     }
 
     public void testConflict() throws ExecutionException, InterruptedException
