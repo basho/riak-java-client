@@ -123,16 +123,9 @@ public class ITestDatatype extends ITestAutoCleanupBase
         assertTrue(setView.containsAll(expectedSet));
         assertTrue(expectedSet.containsAll(setView));
 
-        // cart - asSet - item removal
-        ByteBuffer b = ByteBuffer.allocate(4);
-        b.putInt(5);
-
-        // - remove item '5'
-        SetUpdate su            = new SetUpdate().remove(BinaryValue.create(b.array()));
-        for (BinaryValue item : expectedSet) {
-            System.out.println(" - " + item.getClass());
-        }
-        System.out.println("\n\n");
+//        // cart - asSet - item removal ByteBuffer b = ByteBuffer.allocate(4); b.putInt(5); // - remove item '5'
+//        SetUpdate su            = new SetUpdate().remove(BinaryValue.create(b.array())); for (BinaryValue item :
+//        expectedSet) { System.out.println(" - " + item.getClass()); } System.out.println("\n\n");
 //        MapUpdate mu            = new MapUpdate().update(shoppingCart, su);
 //        MapUpdate muUser        = new MapUpdate().update(username, mu);
 //        UpdateMap updateEntry   = new UpdateMap.Builder(carts, muUser).build();
@@ -226,24 +219,37 @@ public class ITestDatatype extends ITestAutoCleanupBase
     }
 
     @Test
-    public void testGSet() throws ExecutionException , InterruptedException
-    {
-        Assume.assumeTrue(testGSetDataType);
-        resetAndEmptyBucket(uniqueUsers);
+    public void testSet() throws ExecutionException, InterruptedException {
+        Assume.assumeTrue(testSetDataType);
+//        resetAndEmptyBucket(uniqueUsers);
 
-        final Location location = new Location(uniqueUsers, "site-2017-01-01-" + new Random().nextLong());
+        final Location location = new Location(uniqueUsers, "users-" + new Random().nextLong());
 
-        FetchSet fetchSet = new FetchSet.Builder(location).build();
-        final FetchSet.Response initialFetchResponse = client.execute(fetchSet);
+        FetchSet fetchSet                               = new FetchSet.Builder(location).build();
+        final FetchSet.Response initialFetchResponse    = client.execute(fetchSet);
 
         final RiakSet initialSet = initialFetchResponse.getDatatype();
         assertTrue(initialSet.view().isEmpty());
+    }
 
-        GSetUpdate gsu = new GSetUpdate().add("user1").add("user2").add("user3");
-        UpdateSet us = new UpdateSet.Builder(location, gsu).withReturnDatatype(true).build();
-
-        final UpdateSet.Response updateResponse = client.execute(us);
-        final Set<BinaryValue> updatedSet = updateResponse.getDatatype().view();
+    @Test
+    public void testGSet() throws ExecutionException, InterruptedException {
+        Assume.assumeTrue(testGSetDataType);
+        resetAndEmptyBucket(uniqueUsers);
+//
+//        final Location location = new Location(uniqueUsers, "site-2017-01-01-" + new Random().nextLong());
+//
+//        FetchSet fetchSet = new FetchSet.Builder(location).build();
+//        final FetchSet.Response initialFetchResponse = client.execute(fetchSet);
+//
+//        final RiakSet initialSet = initialFetchResponse.getDatatype();
+//        assertTrue(initialSet.view().isEmpty());
+//
+//        GSetUpdate gsu = new GSetUpdate().add("user1").add("user2").add("user3");
+//        UpdateSet us = new UpdateSet.Builder(location, gsu).withReturnDatatype(true).build();
+//
+//        final UpdateSet.Response updateResponse = client.execute(us);
+//        final Set<BinaryValue> updatedSet = updateResponse.getDatatype().view();
 
 //        assertFalse(updatedSet.isEmpty());
 //        assertTrue(updatedSet.contains(BinaryValue.create("user1")));
