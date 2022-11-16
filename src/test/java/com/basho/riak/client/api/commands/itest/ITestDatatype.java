@@ -30,6 +30,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
 
     private final Namespace carts = new Namespace(mapBucketType, bucketName);
     private final Namespace uniqueUsersCount = new Namespace(hllBucketType, BinaryValue.create("uniqueUsersCount"));
+    private final Namespace uniqueUsersSet = new Namespace(setBucketType, BinaryValue.create("uniqueUsersSet"));
     private final Namespace uniqueUsers = new Namespace(gsetBucketType, BinaryValue.create("uniqueUsers"));
 
     private final RiakClient client = new RiakClient(cluster);
@@ -122,35 +123,6 @@ public class ITestDatatype extends ITestAutoCleanupBase
         }
         assertTrue(setView.containsAll(expectedSet));
         assertTrue(expectedSet.containsAll(setView));
-
-//        // cart - asSet - item removal ByteBuffer b = ByteBuffer.allocate(4); b.putInt(5); // - remove item '5'
-//        SetUpdate su            = new SetUpdate().remove(BinaryValue.create(b.array())); for (BinaryValue item :
-//        expectedSet) { System.out.println(" - " + item.getClass()); } System.out.println("\n\n");
-//        MapUpdate mu            = new MapUpdate().update(shoppingCart, su);
-//        MapUpdate muUser        = new MapUpdate().update(username, mu);
-//        UpdateMap updateEntry   = new UpdateMap.Builder(carts, muUser).build();
-//        UpdateMap.Response res  = client.execute(updateEntry);
-
-//        // - fetch updated map
-//        FetchMap fetchMap                   = new FetchMap.Builder(loc).build();
-//        FetchMap.Response fetchMapResponse  = client.execute(fetchMap);
-//        RiakMap updatedUsersMap             = fetchMapResponse.getDatatype();
-//        RiakMap updatedUsernameMap          = updatedUsersMap.getMap(username);
-//        RiakSet updatedShoppingCartSet      = updatedUsernameMap.getSet(shoppingCart);
-//        Set<BinaryValue> updatedSetView     = updatedShoppingCartSet.view();
-//
-//        // - build expected set
-//        int[] iArray                        = {0, 1, 2, 3, 4, 6, 7, 8, 9};
-//        Set<BinaryValue> updatedExpectedSet = new HashSet<>();
-//        for (int i = 0; i < iArray.length; i++) {
-//            ByteBuffer buf = ByteBuffer.allocate(4);
-//            buf.putInt(iArray[i]);
-//            updatedExpectedSet.add(BinaryValue.create(buf.array()));
-//        }
-//
-//        // - compare sets
-//        assertTrue(updatedSetView.containsAll(updatedExpectedSet));
-//        assertTrue(updatedExpectedSet.containsAll(updatedSetView));
     }
 
     public void testConflict() throws ExecutionException, InterruptedException
@@ -221,15 +193,44 @@ public class ITestDatatype extends ITestAutoCleanupBase
     @Test
     public void testSet() throws ExecutionException, InterruptedException {
         Assume.assumeTrue(testSetDataType);
-//        resetAndEmptyBucket(uniqueUsers);
+        resetAndEmptyBucket(uniqueUsersSet);
 
-        final Location location = new Location(uniqueUsers, "users-" + new Random().nextLong());
+        final Location location = new Location(uniqueUsersSet, "users-" + new Random().nextLong());
 
-        FetchSet fetchSet                               = new FetchSet.Builder(location).build();
-        final FetchSet.Response initialFetchResponse    = client.execute(fetchSet);
+        FetchSet fetchSet = new FetchSet.Builder(location).build();
+        final FetchSet.Response initialFetchResponse = client.execute(fetchSet);
 
         final RiakSet initialSet = initialFetchResponse.getDatatype();
         assertTrue(initialSet.view().isEmpty());
+
+        SetUpdate su = new SetUpdate()
+                .add("user1")
+                .add("user2")
+                .add("user3");
+        UpdateSet update = new UpdateSet.Builder(location, su).build();
+        client.execute(update);
+
+        final FetchSet.Response newItemsResponse = client.execute(fetchSet);
+        Set<BinaryValue> updatedSet = newItemsResponse.getDatatype().view();
+        assertFalse(updatedSet.isEmpty());
+        assertTrue(updatedSet.contains(BinaryValue.create("user1")));
+        assertTrue(updatedSet.contains(BinaryValue.create("user2")));
+        assertTrue(updatedSet.contains(BinaryValue.create("user3")));
+        assertFalse(updatedSet.contains(BinaryValue.create("user4")));
+
+        final FetchSet.Response removeItemResponse = client.execute(fetchSet);
+        Context ctx = removeItemResponse.getContext();
+        SetUpdate suRemoveItem = new SetUpdate().remove("user2");
+        UpdateSet updateRemove = new UpdateSet.Builder(location, suRemoveItem).withContext(ctx).build();
+        client.execute(updateRemove);
+
+        final FetchSet.Response removedResponse = client.execute(fetchSet);
+        Set<BinaryValue> removedItemSet = removedResponse.getDatatype().view();
+        assertFalse(removedItemSet.isEmpty());
+        assertTrue(removedItemSet.contains(BinaryValue.create("user1")));
+        assertFalse(removedItemSet.contains(BinaryValue.create("user2")));
+        assertTrue(removedItemSet.contains(BinaryValue.create("user3")));
+        assertFalse(removedItemSet.contains(BinaryValue.create("user4")));
     }
 
     @Test
