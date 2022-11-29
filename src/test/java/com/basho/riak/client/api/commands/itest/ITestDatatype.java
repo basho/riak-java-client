@@ -11,7 +11,6 @@ import com.basho.riak.client.core.util.BinaryValue;
 import org.junit.Assume;
 import org.junit.Test;
 
-import javax.swing.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +30,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
     private final Namespace carts = new Namespace(mapBucketType, bucketName);
     private final Namespace uniqueUsersCount = new Namespace(hllBucketType, BinaryValue.create("uniqueUsersCount"));
     private final Namespace uniqueUsersSet = new Namespace(setBucketType, BinaryValue.create("uniqueUsersSet"));
-    private final Namespace uniqueUsers = new Namespace(gsetBucketType, BinaryValue.create("uniqueUsers"));
+    private final Namespace uniqueUsersGSet = new Namespace(gsetBucketType, BinaryValue.create("uniqueUsersGSet"));
 
     private final RiakClient client = new RiakClient(cluster);
 
@@ -236,36 +235,30 @@ public class ITestDatatype extends ITestAutoCleanupBase
     @Test
     public void testGSet() throws ExecutionException, InterruptedException {
         Assume.assumeTrue(testGSetDataType);
-        resetAndEmptyBucket(uniqueUsers);
-//
-//        final Location location = new Location(uniqueUsers, "site-2017-01-01-" + new Random().nextLong());
-//
-//        FetchSet fetchSet = new FetchSet.Builder(location).build();
-//        final FetchSet.Response initialFetchResponse = client.execute(fetchSet);
-//
-//        final RiakSet initialSet = initialFetchResponse.getDatatype();
-//        assertTrue(initialSet.view().isEmpty());
-//
-//        GSetUpdate gsu = new GSetUpdate().add("user1").add("user2").add("user3");
-//        UpdateSet us = new UpdateSet.Builder(location, gsu).withReturnDatatype(true).build();
-//
-//        final UpdateSet.Response updateResponse = client.execute(us);
-//        final Set<BinaryValue> updatedSet = updateResponse.getDatatype().view();
+        resetAndEmptyBucket(uniqueUsersGSet);
 
-//        assertFalse(updatedSet.isEmpty());
-//        assertTrue(updatedSet.contains(BinaryValue.create("user1")));
-//        assertTrue(updatedSet.contains(BinaryValue.create("user2")));
-//        assertTrue(updatedSet.contains(BinaryValue.create("user3")));
-//        assertFalse(updateResponse.hasContext());
+        final Location location = new Location(uniqueUsersGSet, "users-" + new Random().nextLong());
 
-//        final FetchSet.Response loadedFetchResponse = client.execute(fetchSet);
-//
-//        final Set<BinaryValue> loadedSet = loadedFetchResponse.getDatatype().view();
-//
-//        assertFalse(loadedSet.isEmpty());
-//        assertTrue(loadedSet.contains(BinaryValue.create("user1")));
-//        assertTrue(loadedSet.contains(BinaryValue.create("user2")));
-//        assertTrue(loadedSet.contains(BinaryValue.create("user3")));
-//        assertFalse(loadedFetchResponse.hasContext());
+        FetchSet fetchSet = new FetchSet.Builder(location).build();
+        final FetchSet.Response initialFetchResponse = client.execute(fetchSet);
+
+        final RiakSet initialSet = initialFetchResponse.getDatatype();
+        assertTrue(initialSet.view().isEmpty());
+
+        GSetUpdate gsu = new GSetUpdate()
+                .add("user1")
+                .add("user2")
+                .add("user3");
+        UpdateSet us = new UpdateSet.Builder(location, gsu).build();
+
+        final UpdateSet.Response updateResponse = client.execute(us);
+        final FetchSet.Response newItemResponse = client.execute(fetchSet);
+        final Set<BinaryValue> updatedSet = newItemResponse.getDatatype().view();
+
+        assertFalse(updatedSet.isEmpty());
+        assertTrue(updatedSet.contains(BinaryValue.create("user1")));
+        assertTrue(updatedSet.contains(BinaryValue.create("user2")));
+        assertTrue(updatedSet.contains(BinaryValue.create("user3")));
+        assertFalse(updatedSet.contains(BinaryValue.create("user4")));
     }
 }
