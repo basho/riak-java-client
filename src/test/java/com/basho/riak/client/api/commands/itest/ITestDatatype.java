@@ -232,7 +232,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
         assertFalse(removedItemSet.contains(BinaryValue.create("user4")));
     }
 
-    @Test
+    @Test(expected = java.lang.Error.class)
     public void testGSet() throws ExecutionException, InterruptedException {
         Assume.assumeTrue(testGSetDataType);
         resetAndEmptyBucket(uniqueUsersGSet);
@@ -260,5 +260,19 @@ public class ITestDatatype extends ITestAutoCleanupBase
         assertTrue(updatedSet.contains(BinaryValue.create("user2")));
         assertTrue(updatedSet.contains(BinaryValue.create("user3")));
         assertFalse(updatedSet.contains(BinaryValue.create("user4")));
+
+        final FetchSet.Response removeItemResponse = client.execute(fetchSet);
+        Context ctx = removeItemResponse.getContext();
+        GSetUpdate suRemoveItem = new GSetUpdate().remove("user2");
+        UpdateSet updateRemove = new UpdateSet.Builder(location, suRemoveItem).withContext(ctx).build();
+        client.execute(updateRemove);
+
+        final FetchSet.Response removedResponse = client.execute(fetchSet);
+        Set<BinaryValue> removedItemSet = removedResponse.getDatatype().view();
+        assertTrue(removedItemSet.isEmpty());
+        assertTrue(removedItemSet.contains(BinaryValue.create("user1")));
+        assertTrue(removedItemSet.contains(BinaryValue.create("user2")));
+        assertTrue(removedItemSet.contains(BinaryValue.create("user3")));
+        assertFalse(removedItemSet.contains(BinaryValue.create("user4")));
     }
 }
