@@ -232,7 +232,7 @@ public class ITestDatatype extends ITestAutoCleanupBase
         assertFalse(removedItemSet.contains(BinaryValue.create("user4")));
     }
 
-    @Test(expected = java.lang.Error.class)
+    @Test
     public void testGSet() throws ExecutionException, InterruptedException {
         Assume.assumeTrue(testGSetDataType);
         resetAndEmptyBucket(uniqueUsersGSet);
@@ -250,11 +250,10 @@ public class ITestDatatype extends ITestAutoCleanupBase
                 .add("user2")
                 .add("user3");
         UpdateSet us = new UpdateSet.Builder(location, gsu).build();
+        client.execute(us);
 
-        final UpdateSet.Response updateResponse = client.execute(us);
         final FetchSet.Response newItemResponse = client.execute(fetchSet);
         final Set<BinaryValue> updatedSet = newItemResponse.getDatatype().view();
-
         assertFalse(updatedSet.isEmpty());
         assertTrue(updatedSet.contains(BinaryValue.create("user1")));
         assertTrue(updatedSet.contains(BinaryValue.create("user2")));
@@ -263,13 +262,17 @@ public class ITestDatatype extends ITestAutoCleanupBase
 
         final FetchSet.Response removeItemResponse = client.execute(fetchSet);
         Context ctx = removeItemResponse.getContext();
-        GSetUpdate suRemoveItem = new GSetUpdate().remove("user2");
-        UpdateSet updateRemove = new UpdateSet.Builder(location, suRemoveItem).withContext(ctx).build();
-        client.execute(updateRemove);
+        try {
+            SetUpdate suRemoveItem = new SetUpdate().remove("user2");
+            UpdateSet updateRemove = new UpdateSet.Builder(location, suRemoveItem).withContext(ctx).build();
+            client.execute(updateRemove);
+        } catch (Exception e) {
+            // We are expecting the error. If the error occurs, the test is good.
+        }
 
         final FetchSet.Response removedResponse = client.execute(fetchSet);
         Set<BinaryValue> removedItemSet = removedResponse.getDatatype().view();
-        assertTrue(removedItemSet.isEmpty());
+        assertFalse(removedItemSet.isEmpty());
         assertTrue(removedItemSet.contains(BinaryValue.create("user1")));
         assertTrue(removedItemSet.contains(BinaryValue.create("user2")));
         assertTrue(removedItemSet.contains(BinaryValue.create("user3")));
