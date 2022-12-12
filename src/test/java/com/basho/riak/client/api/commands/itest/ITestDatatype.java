@@ -266,7 +266,8 @@ public class ITestDatatype extends ITestAutoCleanupBase
             SetUpdate suRemoveItem = new SetUpdate().remove("user2");
             UpdateSet updateRemove = new UpdateSet.Builder(location, suRemoveItem).withContext(ctx).build();
             client.execute(updateRemove);
-        } catch (Exception e) {
+            fail("Expected exception was not thrown.");
+        } catch (IllegalArgumentException e) {
             // We are expecting the error. If the error occurs, the test is good.
         }
 
