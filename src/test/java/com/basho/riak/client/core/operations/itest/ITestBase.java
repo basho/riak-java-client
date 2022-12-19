@@ -62,6 +62,7 @@ public abstract class ITestBase
     protected static boolean testBucketType;
     protected static boolean testCrdt;
     protected static boolean testHllDataType;
+    protected static boolean testSetDataType;
     protected static boolean testGSetDataType;
     protected static boolean testTimeSeries;
     protected static boolean testCoveragePlan;
@@ -193,6 +194,7 @@ public abstract class ITestBase
         cluster.start();
 
         testHllDataType = testCrdt && checkExistanceOfBucketType(hllBucketType);
+        testSetDataType = testCrdt && checkExistanceOfBucketType(setBucketType);
         testGSetDataType = testCrdt && checkExistanceOfBucketType(gsetBucketType);
     }
 

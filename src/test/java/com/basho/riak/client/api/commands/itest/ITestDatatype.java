@@ -12,10 +12,7 @@ import org.junit.Assume;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
@@ -32,7 +29,8 @@ public class ITestDatatype extends ITestAutoCleanupBase
 
     private final Namespace carts = new Namespace(mapBucketType, bucketName);
     private final Namespace uniqueUsersCount = new Namespace(hllBucketType, BinaryValue.create("uniqueUsersCount"));
-    private final Namespace uniqueUsers = new Namespace(gsetBucketType, BinaryValue.create("uniqueUsers"));
+    private final Namespace uniqueUsersSet = new Namespace(setBucketType, BinaryValue.create("uniqueUsersSet"));
+    private final Namespace uniqueUsersGSet = new Namespace(gsetBucketType, BinaryValue.create("uniqueUsersGSet"));
 
     private final RiakClient client = new RiakClient(cluster);
 
@@ -192,10 +190,11 @@ public class ITestDatatype extends ITestAutoCleanupBase
     }
 
     @Test
-    public void testGSet() throws ExecutionException , InterruptedException
-    {
-        Assume.assumeTrue(testGSetDataType);
-        final Location location = new Location(uniqueUsers, "site-2017-01-01-" + new Random().nextLong());
+    public void testSet() throws ExecutionException, InterruptedException {
+        Assume.assumeTrue(testSetDataType);
+        resetAndEmptyBucket(uniqueUsersSet);
+
+        final Location location = new Location(uniqueUsersSet, "users-" + new Random().nextLong());
 
         FetchSet fetchSet = new FetchSet.Builder(location).build();
         final FetchSet.Response initialFetchResponse = client.execute(fetchSet);
@@ -203,26 +202,81 @@ public class ITestDatatype extends ITestAutoCleanupBase
         final RiakSet initialSet = initialFetchResponse.getDatatype();
         assertTrue(initialSet.view().isEmpty());
 
-        GSetUpdate gsu = new GSetUpdate().add("user1").add("user2").add("user3");
-        UpdateSet us = new UpdateSet.Builder(location, gsu).withReturnDatatype(true).build();
+        SetUpdate su = new SetUpdate()
+                .add("user1")
+                .add("user2")
+                .add("user3");
+        UpdateSet update = new UpdateSet.Builder(location, su).build();
+        client.execute(update);
 
-        final UpdateSet.Response updateResponse = client.execute(us);
-        final Set<BinaryValue> updatedSet = updateResponse.getDatatype().view();
-
+        final FetchSet.Response newItemsResponse = client.execute(fetchSet);
+        Set<BinaryValue> updatedSet = newItemsResponse.getDatatype().view();
         assertFalse(updatedSet.isEmpty());
         assertTrue(updatedSet.contains(BinaryValue.create("user1")));
         assertTrue(updatedSet.contains(BinaryValue.create("user2")));
         assertTrue(updatedSet.contains(BinaryValue.create("user3")));
-        assertFalse(updateResponse.hasContext());
+        assertFalse(updatedSet.contains(BinaryValue.create("user4")));
 
-        final FetchSet.Response loadedFetchResponse = client.execute(fetchSet);
+        final FetchSet.Response removeItemResponse = client.execute(fetchSet);
+        Context ctx = removeItemResponse.getContext();
+        SetUpdate suRemoveItem = new SetUpdate().remove("user2");
+        UpdateSet updateRemove = new UpdateSet.Builder(location, suRemoveItem).withContext(ctx).build();
+        client.execute(updateRemove);
 
-        final Set<BinaryValue> loadedSet = loadedFetchResponse.getDatatype().view();
+        final FetchSet.Response removedResponse = client.execute(fetchSet);
+        Set<BinaryValue> removedItemSet = removedResponse.getDatatype().view();
+        assertFalse(removedItemSet.isEmpty());
+        assertTrue(removedItemSet.contains(BinaryValue.create("user1")));
+        assertFalse(removedItemSet.contains(BinaryValue.create("user2")));
+        assertTrue(removedItemSet.contains(BinaryValue.create("user3")));
+        assertFalse(removedItemSet.contains(BinaryValue.create("user4")));
+    }
 
-        assertFalse(loadedSet.isEmpty());
-        assertTrue(loadedSet.contains(BinaryValue.create("user1")));
-        assertTrue(loadedSet.contains(BinaryValue.create("user2")));
-        assertTrue(loadedSet.contains(BinaryValue.create("user3")));
-        assertFalse(loadedFetchResponse.hasContext());
+    @Test
+    public void testGSet() throws ExecutionException, InterruptedException {
+        Assume.assumeTrue(testGSetDataType);
+        resetAndEmptyBucket(uniqueUsersGSet);
+
+        final Location location = new Location(uniqueUsersGSet, "users-" + new Random().nextLong());
+
+        FetchSet fetchSet = new FetchSet.Builder(location).build();
+        final FetchSet.Response initialFetchResponse = client.execute(fetchSet);
+
+        final RiakSet initialSet = initialFetchResponse.getDatatype();
+        assertTrue(initialSet.view().isEmpty());
+
+        GSetUpdate gsu = new GSetUpdate()
+                .add("user1")
+                .add("user2")
+                .add("user3");
+        UpdateSet us = new UpdateSet.Builder(location, gsu).build();
+        client.execute(us);
+
+        final FetchSet.Response newItemResponse = client.execute(fetchSet);
+        final Set<BinaryValue> updatedSet = newItemResponse.getDatatype().view();
+        assertFalse(updatedSet.isEmpty());
+        assertTrue(updatedSet.contains(BinaryValue.create("user1")));
+        assertTrue(updatedSet.contains(BinaryValue.create("user2")));
+        assertTrue(updatedSet.contains(BinaryValue.create("user3")));
+        assertFalse(updatedSet.contains(BinaryValue.create("user4")));
+
+        final FetchSet.Response removeItemResponse = client.execute(fetchSet);
+        Context ctx = removeItemResponse.getContext();
+        try {
+            SetUpdate suRemoveItem = new SetUpdate().remove("user2");
+            UpdateSet updateRemove = new UpdateSet.Builder(location, suRemoveItem).withContext(ctx).build();
+            client.execute(updateRemove);
+            fail("Expected exception was not thrown.");
+        } catch (IllegalArgumentException e) {
+            // We are expecting the error. If the error occurs, the test is good.
+        }
+
+        final FetchSet.Response removedResponse = client.execute(fetchSet);
+        Set<BinaryValue> removedItemSet = removedResponse.getDatatype().view();
+        assertFalse(removedItemSet.isEmpty());
+        assertTrue(removedItemSet.contains(BinaryValue.create("user1")));
+        assertTrue(removedItemSet.contains(BinaryValue.create("user2")));
+        assertTrue(removedItemSet.contains(BinaryValue.create("user3")));
+        assertFalse(removedItemSet.contains(BinaryValue.create("user4")));
     }
 }
