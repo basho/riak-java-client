@@ -1,0 +1,16 @@
+mvn clean
+mvn -Pjar-with-dependencies assembly:single
+
+mvn -Pitest,default -Dcom.basho.riak.host=192.168.33.11 -Dcom.basho.riak.pbcport=8087 verify
+mvn -Pitest -Dcom.basho.riak.host=192.168.33.11 -Dcom.basho.riak.pbcport=8087 verify
+mvn -Pdefault -Dcom.basho.riak.host=192.168.33.11 -Dcom.basho.riak.pbcport=8087 verify
+
+mvn -Pitest,default -Dcom.basho.riak.host=192.168.33.11 -Dcom.basho.riak.pbcport=8087 -DskipTests verify
+
+
+
+
+
+
+sudo riak-admin bucket-type create maps '{"props":{"datatype":"map"}}'
+sudo riak-admin bucket-type create plain ''

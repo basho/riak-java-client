@@ -42,6 +42,20 @@ public class SetUpdate extends GSetUpdate
     {
     }
 
+    @Override
+    public SetUpdate add(BinaryValue value)
+    {
+        super.add(value);
+        return this;
+    }
+
+    @Override
+    public SetUpdate add(String value)
+    {
+        super.add(value);
+        return this;
+    }
+
     /**
      * Remove the provided value from the set in Riak.
      * @param value the value to be removed.
